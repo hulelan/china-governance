@@ -1,1 +1,19 @@
 node_modules/
+__pycache__/
+*.pyc
+
+# Database (too large for git — 134 MB)
+documents.db
+documents.db-shm
+documents.db-wal
+
+# Archived HTML files (large, regenerable via crawler)
+raw_html/
+
+# Exported data (regenerable)
+citation_edges.csv
+document_nodes.csv
+
+# Docker volumes
+caddy_data/
+caddy_config/

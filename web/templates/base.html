@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gray-950 text-gray-200">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}China Governance Docs{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { font-family: 'Inter', -apple-system, system-ui, sans-serif; font-size: 13px; }
+        .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; }
+        .dense-table td, .dense-table th { padding: 3px 8px; }
+        .dense-table tr:hover { background: rgba(255,255,255,0.04); }
+        mark { background: #fbbf24; color: #000; padding: 0 2px; }
+        .level-central { color: #f87171; }
+        .level-provincial { color: #fb923c; }
+        .level-municipal { color: #60a5fa; }
+        .level-district { color: #34d399; }
+        .level-unknown { color: #9ca3af; }
+        .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+        .badge-central { background: #991b1b; color: #fca5a5; }
+        .badge-provincial { background: #92400e; color: #fed7aa; }
+        .badge-municipal { background: #1e3a5f; color: #93c5fd; }
+        .badge-district { background: #064e3b; color: #6ee7b7; }
+        .badge-department { background: #312e81; color: #a5b4fc; }
+        a { color: #60a5fa; }
+        a:hover { color: #93c5fd; text-decoration: underline; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen">
+    <!-- Nav -->
+    <nav class="bg-gray-900 border-b border-gray-800 px-4 py-1.5 flex items-center gap-6 text-xs sticky top-0 z-50">
+        <a href="/" class="font-bold text-white text-sm tracking-tight no-underline hover:no-underline">
+            <span class="text-red-500">CN</span>GOV
+        </a>
+        <a href="/browse" class="text-gray-400 hover:text-white no-underline">Browse</a>
+        <a href="/search" class="text-gray-400 hover:text-white no-underline">Search</a>
+        <a href="/network" class="text-gray-400 hover:text-white no-underline">Network</a>
+        <a href="/dashboard" class="text-gray-400 hover:text-white no-underline">Dashboard</a>
+        <div class="ml-auto text-gray-600">
+            {{ stats.total|default(0) }} docs &middot; {{ stats.site_count|default(0) }} sites
+        </div>
+    </nav>
+
+    <main class="px-4 py-3">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

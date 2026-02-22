@@ -1,0 +1,9 @@
+# Replace with your domain when ready
+# yourdomain.com {
+#     reverse_proxy web:8000
+# }
+
+# Local development / HTTP-only mode
+:80 {
+    reverse_proxy web:8000
+}

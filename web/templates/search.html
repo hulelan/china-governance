@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Search{% if q %}: {{ q }}{% endif %} — CNGOV{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <form action="/search" method="get" class="mb-4">
+        <input type="text" name="q" value="{{ q }}" autofocus
+               placeholder="Search by title, body text, document number, keyword..."
+               class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none">
+    </form>
+
+    {% if q %}
+    <div class="text-xs text-gray-500 mb-2">{{ "{:,}".format(total) }} results for "{{ q }}"</div>
+
+    <table class="w-full dense-table text-xs bg-gray-900 border border-gray-800 rounded">
+        <tbody>
+        {% for doc in results %}
+            <tr class="border-b border-gray-800/50">
+                <td class="py-2">
+                    <a href="/document/{{ doc.id }}" class="text-sm">{{ doc.title }}</a>
+                    {% if doc.document_number %}
+                    <span class="mono text-amber-400 ml-2">{{ doc.document_number }}</span>
+                    {% endif %}
+                    <br>
+                    <span class="text-gray-500">{{ doc.publisher }} &middot; {{ doc.site_key }}</span>
+                    {% if doc.snippet %}
+                    <br><span class="text-gray-400">{{ doc.snippet|safe }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if total > 50 %}
+    <div class="flex items-center gap-2 mt-2 text-xs">
+        {% if page > 1 %}
+        <a href="/search?q={{ q }}&page={{ page - 1 }}" class="px-2 py-1 bg-gray-800 rounded">Prev</a>
+        {% endif %}
+        <span class="text-gray-500">Page {{ page }}</span>
+        {% if page * 50 < total %}
+        <a href="/search?q={{ q }}&page={{ page + 1 }}" class="px-2 py-1 bg-gray-800 rounded">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% elif q == '' %}
+    <!-- Empty state -->
+    {% endif %}
+</div>
+{% endblock %}

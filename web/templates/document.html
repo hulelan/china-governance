@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ doc.title[:60] }} — CNGOV{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-3 gap-4">
+        <!-- Left: metadata + citations (1 col) -->
+        <div class="space-y-3">
+            <!-- Metadata -->
+            <div class="bg-gray-900 border border-gray-800 rounded">
+                <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Metadata</div>
+                <table class="w-full dense-table text-xs">
+                    <tr class="border-b border-gray-800/50">
+                        <td class="text-gray-500 w-24">Title</td>
+                        <td class="text-white font-medium">{{ doc.title }}</td>
+                    </tr>
+                    {% if doc.document_number %}
+                    <tr class="border-b border-gray-800/50">
+                        <td class="text-gray-500">文号</td>
+                        <td class="mono text-amber-400">{{ doc.document_number }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="border-b border-gray-800/50">
+                        <td class="text-gray-500">Publisher</td>
+                        <td>{{ doc.publisher }}</td>
+                    </tr>
+                    <tr class="border-b border-gray-800/50">
+                        <td class="text-gray-500">Site</td>
+                        <td><a href="/browse?site={{ doc.site_key }}">{{ doc.site_key }}</a></td>
+                    </tr>
+                    <tr class="border-b border-gray-800/50">
+                        <td class="text-gray-500">Date</td>
+                        <td class="mono">{{ doc.date_published or 'N/A' }}</td>
+                    </tr>
+                    {% if doc.classify_main_name %}
+                    <tr class="border-b border-gray-800/50">
+                        <td class="text-gray-500">Category</td>
+                        <td>{{ doc.classify_main_name }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if doc.identifier %}
+                    <tr class="border-b border-gray-800/50">
+                        <td class="text-gray-500">Identifier</td>
+                        <td class="mono text-gray-400" style="font-size:11px">{{ doc.identifier }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if doc.keywords %}
+                    <tr class="border-b border-gray-800/50">
+                        <td class="text-gray-500">Keywords</td>
+                        <td>{{ doc.keywords }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+
+            <!-- Verification -->
+            <div class="bg-gray-900 border border-gray-800 rounded">
+                <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Verification</div>
+                <div class="p-2 text-xs space-y-2">
+                    {% if doc.url %}
+                    <div>
+                        <span class="text-gray-500">Original URL:</span><br>
+                        <a href="{{ doc.url }}" target="_blank" rel="noopener" class="mono text-[11px] break-all">{{ doc.url }}</a>
+                    </div>
+                    {% endif %}
+                    {% if doc.post_url and doc.post_url != doc.url %}
+                    <div>
+                        <span class="text-gray-500">Alt URL:</span><br>
+                        <a href="{{ doc.post_url }}" target="_blank" rel="noopener" class="mono text-[11px] break-all">{{ doc.post_url }}</a>
+                    </div>
+                    {% endif %}
+                    {% if doc.raw_html_sha256 %}
+                    <div>
+                        <span class="text-gray-500">SHA-256:</span><br>
+                        <span class="mono text-[10px] text-gray-400 break-all">{{ doc.raw_html_sha256 }}</span>
+                    </div>
+                    {% endif %}
+                    {% if doc.raw_html_path %}
+                    <a href="/compare/{{ doc.id }}" class="block mt-2 text-center bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 rounded no-underline">
+                        Compare with archived HTML
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Citations this doc makes -->
+            {% if cites %}
+            <div class="bg-gray-900 border border-gray-800 rounded">
+                <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Cites ({{ cites|length }})</div>
+                <div class="max-h-72 overflow-y-auto">
+                <table class="w-full dense-table text-xs">
+                    {% for c in cites %}
+                    <tr class="border-b border-gray-800/50">
+                        <td>
+                            <span class="mono level-{{ c.level }}">{{ c.docnum }}</span>
+                            {% if c.resolved %}
+                            <br><a href="/document/{{ c.resolved.id }}" class="text-[11px] text-gray-400">{{ c.resolved.title[:50] }}</a>
+                            {% endif %}
+                        </td>
+                        <td class="text-right text-gray-500 w-8">{{ c.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Cited by -->
+            {% if cited_by %}
+            <div class="bg-gray-900 border border-gray-800 rounded">
+                <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Cited By ({{ cited_by|length }})</div>
+                <div class="max-h-48 overflow-y-auto">
+                <table class="w-full dense-table text-xs">
+                    {% for cb in cited_by %}
+                    <tr class="border-b border-gray-800/50">
+                        <td><a href="/document/{{ cb.id }}">{{ cb.title[:60] }}</a></td>
+                        <td class="text-gray-500 w-16">{{ cb.site_key }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: body text (2 cols) -->
+        <div class="col-span-2">
+            <div class="bg-gray-900 border border-gray-800 rounded">
+                <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider flex justify-between">
+                    <span>Body Text</span>
+                    {% if doc.body_text_cn %}
+                    <span class="text-gray-600">{{ doc.body_text_cn|length|string }} chars</span>
+                    {% endif %}
+                </div>
+                <div class="p-4 text-sm leading-relaxed max-h-[80vh] overflow-y-auto">
+                    {% if doc.body_text_cn %}
+                        <div class="whitespace-pre-wrap">{{ doc.body_text_cn }}</div>
+                    {% else %}
+                        <div class="text-gray-600 italic">Body text not yet extracted. <a href="{{ doc.url }}" target="_blank">View on original site</a></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
