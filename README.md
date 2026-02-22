@@ -90,10 +90,8 @@ china-governance/
 ├── docs/                       # Project documentation
 │   ├── spec.md                 #   Original project specification
 │   ├── conversation.md         #   Initial design conversation
-│   ├── crawler-plan.md         #   Crawler implementation plan
-│   ├── crawler-scratchpad.md   #   Crawler session log
-│   ├── web-plan.md             #   Web app implementation plan
-│   └── web-scratchpad.md       #   Web app session log
+│   ├── strategy/               #   Landscape research, direction options
+│   └── implementation/         #   Build plans and session logs
 │
 ├── requirements.txt            # Python dependencies
 ├── documents.db                # (gitignored) SQLite database, 141 MB
