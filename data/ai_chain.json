@@ -1,0 +1,1739 @@
+{
+  "topic": "Artificial Intelligence (人工智能)",
+  "scope": "Shenzhen",
+  "generated": "build_ai_chain.py",
+  "stats": {
+    "source_documents": 87,
+    "formal_citations": 11,
+    "named_citations": 57,
+    "unique_referenced_policies": 40
+  },
+  "hierarchy": {
+    "central": [
+      {
+        "name": "教育强国建设规划纲要（2024—2035年）",
+        "level": "central",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "中小学人工智能通识教育指南",
+        "level": "central",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "中小学生成式人工智能使用指南",
+        "level": "central",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      }
+    ],
+    "provincial": [
+      {
+        "name": "广东省科学技术厅关于组织申报2025～2026年度广东省重点领域研发计划“新一代人工智能”专项的通知",
+        "level": "provincial",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "广东省科学技术厅关于组织申报2024年度广东省重点领域研发计划“新一代人工智能”旗舰项目的通知",
+        "level": "provincial",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      }
+    ],
+    "municipal": [
+      {
+        "name": "深圳市加快打造人工智能先锋城市行动方案",
+        "level": "municipal",
+        "citation_count": 3,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "电子科技大学（深圳）高等研究院人工智能与机器人创新研究院成立方案",
+        "level": "municipal",
+        "citation_count": 2,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳市加快推动人工智能高质量发展高水平应用行动方案（2023—2024年）",
+        "level": "municipal",
+        "citation_count": 2,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳市算力基础设施高质量发展行动计划（2024-2025）",
+        "level": "municipal",
+        "citation_count": 2,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳市加快打造人工智能先锋城市行动计划 (2025—2026 年)",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳北软件产业基地实施办法",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 11575926,
+          "title": "《深圳市龙华区打造深圳北软件产业基地实施办法》政策解读",
+          "document_number": "",
+          "site_key": "szlhq",
+          "date_published": "2024-09-27 15:06:42"
+        }
+      },
+      {
+        "name": "深圳实验教育集团“人工智能+大模型”工作计划",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "关于<“十五五”时期深圳打造具有全球影响力的人工智能创新高地研究>课题公开招标的公告",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 11004970,
+          "title": "公告",
+          "document_number": "",
+          "site_key": "sf",
+          "date_published": "2023-11-27 10:13:12"
+        }
+      },
+      {
+        "name": "深圳市促进重大科技基础设施和大型科研仪器开放共享管理办法",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 10414236,
+          "title": "深圳市人民政府办公厅关于印发深圳市促进重大科技基础设施和大型科研仪器开放共享管理办法的通知",
+          "document_number": "深府办规〔2022〕3号",
+          "site_key": "sf",
+          "date_published": "2023-02-07 15:17:58"
+        }
+      },
+      {
+        "name": "深圳市科技计划项目管理办法",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳市新一代人工智能发展行动计划（2019－2023年）",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳市鼓励总部企业高质量发展实施办法",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳市住房和建设局关于做好我市建设工程施工图审查改革工作的通知",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 7763889,
+          "title": "深圳市住房和建设局关于做好我市建设工程施工图审查改革工作的通知",
+          "document_number": "深建规〔2020〕9号",
+          "site_key": "zjj",
+          "date_published": "2020-06-08 15:25:11"
+        }
+      },
+      {
+        "name": "深圳市建设工程勘察设计管理系统AI审图操作指南",
+        "level": "municipal",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      }
+    ],
+    "district": [
+      {
+        "name": "龙华区加快推动人工智能创新发展行动方案（2024-2025年）",
+        "level": "district",
+        "citation_count": 7,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳市龙华区促进人工智能产业发展若干措施",
+        "level": "district",
+        "citation_count": 4,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 9222042,
+          "title": "深圳市龙华区促进人工智能产业发展若干措施",
+          "document_number": "深龙华府办规〔2021〕9号",
+          "site_key": "szlhq",
+          "date_published": "2021-09-27 18:55:49"
+        }
+      },
+      {
+        "name": "深圳市龙华区推动人工智能及机器人产业发展若干措施",
+        "level": "district",
+        "citation_count": 2,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 11839311,
+          "title": "深圳市龙华区人民政府办公室关于印发《深圳市龙华区推动人工智能及机器人产业发展若干措施》的通知",
+          "document_number": "深龙华府办规〔2024〕20号",
+          "site_key": "szlhq",
+          "date_published": "2024-12-02 17:33:20"
+        }
+      },
+      {
+        "name": "龙华区打造深圳北软件产业基地三年实施方案（2024-2026）（征求意见稿）",
+        "level": "district",
+        "citation_count": 2,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "龙华区人工智能项目（一期）建设工作方案",
+        "level": "district",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳市龙华区打造深圳北软件产业基地实施办法",
+        "level": "district",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 11575926,
+          "title": "《深圳市龙华区打造深圳北软件产业基地实施办法》政策解读",
+          "document_number": "",
+          "site_key": "szlhq",
+          "date_published": "2024-09-27 15:06:42"
+        }
+      },
+      {
+        "name": "深圳市龙华区关于促进人工智能产业发展三年行动计划（2021-2023年）",
+        "level": "district",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "中共深圳市龙华区委深圳市龙华区人民政府关于建设数字龙华打造“一圈一区三廊”区域发展格局的决定",
+        "level": "district",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "深圳市龙华区区级财政专项资金管理办法",
+        "level": "district",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 9395219,
+          "title": "龙华区区级财政专项资金管理办法",
+          "document_number": "深龙华府规〔2021〕10号",
+          "site_key": "szlhq",
+          "date_published": "2021-11-24 17:21:51"
+        }
+      },
+      {
+        "name": "深圳市龙华区支持工业互联网产业发展若干措施",
+        "level": "district",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 9220820,
+          "title": "深圳市龙华区支持工业互联网产业发展若干措施",
+          "document_number": "深龙华府办规〔2021〕6号",
+          "site_key": "szlhq",
+          "date_published": "2021-09-27 14:43:01"
+        }
+      },
+      {
+        "name": "深圳市龙华区促进生命健康产业发展若干措施",
+        "level": "district",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 9222089,
+          "title": "深圳市龙华区促进生命健康产业发展若干措施",
+          "document_number": "深龙华府办规〔2021〕11号",
+          "site_key": "szlhq",
+          "date_published": "2021-09-27 19:34:30"
+        }
+      },
+      {
+        "name": "深圳市龙华区重大产业项目招商引资实施细则",
+        "level": "district",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      }
+    ],
+    "unknown": [
+      {
+        "name": "境内深度合成服务算法备案清单",
+        "level": "unknown",
+        "citation_count": 2,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "关于在干部教育培训中进一步加强考察培训学员管理的规定",
+        "level": "unknown",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "场景革命与范式重塑：人工智能驱动基础教育变革的育才行动",
+        "level": "unknown",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "推动人工智能及机器人产业发展若干措施",
+        "level": "unknown",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 11839311,
+          "title": "深圳市龙华区人民政府办公室关于印发《深圳市龙华区推动人工智能及机器人产业发展若干措施》的通知",
+          "document_number": "深龙华府办规〔2024〕20号",
+          "site_key": "szlhq",
+          "date_published": "2024-12-02 17:33:20"
+        }
+      },
+      {
+        "name": "服务保障数字经济健康发展二十条措施",
+        "level": "unknown",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "关于全面推进数字经济审判工作的实施方案",
+        "level": "unknown",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      },
+      {
+        "name": "关于推动制造业高质量发展坚定不移打造制造强市的若干措施",
+        "level": "unknown",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 10275894,
+          "title": "图解：《关于推动制造业高质量发展坚定不移打造制造强市的若干措施》政策解读",
+          "document_number": "",
+          "site_key": "sf",
+          "date_published": "2022-11-25 19:03:47"
+        }
+      },
+      {
+        "name": "关于进一步支持我区建筑业现代化数字化转型升级的若干措施",
+        "level": "unknown",
+        "citation_count": 1,
+        "in_corpus": true,
+        "corpus_match": {
+          "id": 11381075,
+          "title": "关于废止《关于进一步支持我区建筑业现代化数字化转型升级的若干措施》的政策解读",
+          "document_number": "",
+          "site_key": "szlhq",
+          "date_published": "2024-06-20 16:01:39"
+        }
+      },
+      {
+        "name": "房屋建筑制图统一标准",
+        "level": "unknown",
+        "citation_count": 1,
+        "in_corpus": false,
+        "corpus_match": null
+      }
+    ]
+  },
+  "source_documents_by_level": {
+    "department": [
+      {
+        "id": 12639589,
+        "site_key": "fgw",
+        "title": "算力引擎聚势腾飞 深圳人工智能全链生态建设提质增效",
+        "document_number": null,
+        "date_published": "2026-02-10 09:30:13",
+        "classify": "工作动态",
+        "publisher": "深圳市发展和改革委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 12625171,
+        "site_key": "fgw",
+        "title": "深圳市推动人工智能赋能教育发展项目谋划预研中标公告",
+        "document_number": null,
+        "date_published": "2026-01-30 15:08:18",
+        "classify": "通知公告",
+        "publisher": "深圳市发展和改革委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 12560613,
+        "site_key": "szeb",
+        "title": "全国中小学人工智能教育联盟在深圳成立",
+        "document_number": null,
+        "date_published": "2025-12-22 17:08:17",
+        "classify": "工作动态",
+        "publisher": "深圳市教育局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12533076,
+        "site_key": "stic",
+        "title": "深圳市科技创新局关于面向深圳市人工智能、生物医药、高端医疗器械等领域企业开展科技伦理治理现状调研问卷的通知",
+        "document_number": null,
+        "date_published": "2025-12-05 09:42:54",
+        "classify": "通知公告",
+        "publisher": "深圳市科技创新局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12530170,
+        "site_key": "fgw",
+        "title": "深圳市发展和改革委员会关于深圳市推动人工智能赋能教育发展项目谋划预研公开招标的公告",
+        "document_number": null,
+        "date_published": "2025-12-03 16:50:54",
+        "classify": "通知公告",
+        "publisher": "深圳市发展和改革委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 12477457,
+        "site_key": "hrss",
+        "title": "深圳市人力资源和社会保障局关于2025年深圳市人力资源服务业人工智能主题培训项目的公开征集公告",
+        "document_number": null,
+        "date_published": "2025-11-06 09:46:02",
+        "classify": "政府采购",
+        "publisher": "深圳市人力资源和社会保障局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12283222,
+        "site_key": "hrss",
+        "title": "广东积极推进人工智能训练师评价，为人工智能产业“蓄势赋能”",
+        "document_number": null,
+        "date_published": "2025-07-17 09:52:27",
+        "classify": "工作动态",
+        "publisher": "深圳市人力资源和社会保障局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12229716,
+        "site_key": "hrss",
+        "title": "关于遴选人工智能等9个项目制培训（专项类）承训机构的公告",
+        "document_number": null,
+        "date_published": "2025-06-16 16:12:17",
+        "classify": "政府采购",
+        "publisher": "深圳市人力资源和社会保障局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12207806,
+        "site_key": "fgw",
+        "title": "关于公示人工智能券（算力券）项目资格审核结果情况的通知",
+        "document_number": null,
+        "date_published": "2025-06-03 15:28:32",
+        "classify": "通知公告",
+        "publisher": "深圳市发展和改革委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 12204964,
+        "site_key": "wjw",
+        "title": "市疾控中心成功举办人工智能基础知识及安全意识全员培训",
+        "document_number": null,
+        "date_published": "2025-05-30 16:34:01",
+        "classify": "工作动态",
+        "publisher": "深圳市卫生健康委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 12188522,
+        "site_key": "stic",
+        "title": "深圳市科技创新局关于转发国家重点研发计划颠覆性技术创新重点专项2025年度人工智能驱动的科学研究领域项目申报指引的通知",
+        "document_number": null,
+        "date_published": "2025-05-21 17:56:42",
+        "classify": "工作动态",
+        "publisher": "深圳市科技创新局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12162638,
+        "site_key": "stic",
+        "title": "深圳市科技创新局关于转发组织申报2025-2026年度广东省重点领域研发计划“新一代人工智能”专项的通知",
+        "document_number": null,
+        "date_published": "2025-05-08 11:26:45",
+        "classify": "工作动态",
+        "publisher": "深圳市科技创新局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12153955,
+        "site_key": "audit",
+        "title": "深圳市审计局组织全市审计机关开展人工智能基础培训",
+        "document_number": null,
+        "date_published": "2025-04-30 10:58:24",
+        "classify": "工作动态",
+        "publisher": "深圳市审计局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12139623,
+        "site_key": "swj",
+        "title": "梅林水库试行人工智能场景运用，以科技赋能守护城市大“水缸”",
+        "document_number": null,
+        "date_published": "2025-04-22 17:52:47",
+        "classify": "工作动态",
+        "publisher": "深圳市水务局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12135608,
+        "site_key": "hrss",
+        "title": "勤学春来早，启航向未来 | 市人力资源保障局举办数字化转型暨人工智能专题培训",
+        "document_number": null,
+        "date_published": "2025-04-21 09:46:42",
+        "classify": "工作动态",
+        "publisher": "深圳市人力资源和社会保障局",
+        "admin_level": "department"
+      },
+      {
+        "id": 12014206,
+        "site_key": "szeb",
+        "title": "聚焦人工智能！这场基础教育改革对话会在深圳举行",
+        "document_number": null,
+        "date_published": "2025-02-24 10:13:56",
+        "classify": "工作动态",
+        "publisher": "深圳市教育局",
+        "admin_level": "department"
+      },
+      {
+        "id": 11909046,
+        "site_key": "fgw",
+        "title": "“十五五”时期深圳打造具有全球影响力的人工智能创新高地研究课题中标公告",
+        "document_number": null,
+        "date_published": "2024-12-19 17:57:12",
+        "classify": "通知公告",
+        "publisher": "深圳市发展和改革委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 11388097,
+        "site_key": "yjgl",
+        "title": "深圳市城市公共安全技术联合创新中心“人工智能在应急管理领域创新应用”座谈交流活动顺利召开",
+        "document_number": null,
+        "date_published": "2024-06-24 17:55:51",
+        "classify": "工作动态",
+        "publisher": "深圳市应急管理局",
+        "admin_level": "department"
+      },
+      {
+        "id": 11341387,
+        "site_key": "stic",
+        "title": "深圳市科技创新系统“人工智能+数据要素×”专题培训班成功举办",
+        "document_number": null,
+        "date_published": "2024-06-05 16:42:21",
+        "classify": "工作动态",
+        "publisher": "深圳市科技创新局",
+        "admin_level": "department"
+      },
+      {
+        "id": 11186150,
+        "site_key": "stic",
+        "title": "深圳市科技创新局关于转发组织申报2024年度广东省重点领域研发计划“新一代人工智能”旗舰项目的通知",
+        "document_number": null,
+        "date_published": "2024-03-11 18:10:25",
+        "classify": "通知公告",
+        "publisher": "深圳市科技创新局",
+        "admin_level": "department"
+      },
+      {
+        "id": 10906936,
+        "site_key": "stic",
+        "title": "深圳市科技创新委员会关于发布2023年度人工智能社会实验项目申请指南的通知",
+        "document_number": null,
+        "date_published": "2023-10-24 17:35:09",
+        "classify": "通知公告",
+        "publisher": "深圳市科技创新委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 10785990,
+        "site_key": "stic",
+        "title": "深圳市科技创新委员会关于征集人工智能社会实验选题建议的通知",
+        "document_number": null,
+        "date_published": "2023-08-15 10:56:44",
+        "classify": "通知公告",
+        "publisher": "深圳市科技创新委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 10649103,
+        "site_key": "yjgl",
+        "title": "深圳市城市公共安全技术联合创新中心开展结合防范灾害事故谈人工智能应用专题座谈会议",
+        "document_number": null,
+        "date_published": "2023-06-14 22:54:09",
+        "classify": "工作动态",
+        "publisher": "深圳市应急管理局",
+        "admin_level": "department"
+      },
+      {
+        "id": 10610837,
+        "site_key": "stic",
+        "title": "深圳市科技创新委员会关于征集深圳创投日走进前海—南方创投网人工智能大数据专场路演项目的通知",
+        "document_number": null,
+        "date_published": "2023-05-24 17:30:19",
+        "classify": "通知公告",
+        "publisher": "深圳市科技创新委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 10182727,
+        "site_key": "stic",
+        "title": "深圳市科技创新委员会关于2022年度人工智能社会实验项目拟资助项目的公示（公示已结束）",
+        "document_number": null,
+        "date_published": "2022-10-21 15:33:02",
+        "classify": "其他资金信息",
+        "publisher": "深圳市科技创新委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 10072776,
+        "site_key": "stic",
+        "title": "深圳市科技创新委员会转发科技部关于支持建设新一代人工智能示范应用场景的通知",
+        "document_number": null,
+        "date_published": "2022-09-02 18:03:52",
+        "classify": "通知公告",
+        "publisher": "深圳市科技创新委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 9141031,
+        "site_key": "stic",
+        "title": "深圳市科技创新委员会关于转发《广东省科学技术厅关于征集2021年度广东省新一代人工智能创新成果的通知》的通知",
+        "document_number": null,
+        "date_published": "2021-09-18 11:11:51",
+        "classify": "通知公告",
+        "publisher": "深圳市科技创新委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 8972612,
+        "site_key": "stic",
+        "title": "深圳市科技创新委员会关于转发《科技部关于发布科技创新2030—“新一代人工智能”重大项目2021年度项目申报指南的通知》的通知",
+        "document_number": null,
+        "date_published": "2021-07-13 18:02:25",
+        "classify": "通知公告",
+        "publisher": "深圳市科技创新委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 8464450,
+        "site_key": "zjj",
+        "title": "深圳市住房和建设局关于应用人工智能进行施工图监督抽查及开展培训工作的通知",
+        "document_number": null,
+        "date_published": "2021-01-14 10:10:54",
+        "classify": "通知公告",
+        "publisher": "深圳市住房和建设局",
+        "admin_level": "department"
+      },
+      {
+        "id": 8265015,
+        "site_key": "stic",
+        "title": "深圳市科技创新委员会关于转发《广东省科学技术厅关于组织申报2020～2021年度广东省重点领域研发计划“新一代人工智能”重大专项项目的通知》的通知",
+        "document_number": null,
+        "date_published": "2020-11-13 17:37:08",
+        "classify": "通知公告",
+        "publisher": "深圳市科技创新委员会",
+        "admin_level": "department"
+      },
+      {
+        "id": 5530633,
+        "site_key": "hrss",
+        "title": "高校毕业生就业政策效果评估及人工智能和机器人应用对就业影响的调研项目中标结果公示",
+        "document_number": null,
+        "date_published": "2018-03-13 16:50:19",
+        "classify": "重大建设项目",
+        "publisher": "",
+        "admin_level": "department"
+      },
+      {
+        "id": 5530657,
+        "site_key": "hrss",
+        "title": "高校毕业生就业政策效果评估及人工智能和机器人应用对就业影响的调研招标书",
+        "document_number": null,
+        "date_published": "2018-01-30 18:55:12",
+        "classify": "重大建设项目",
+        "publisher": "",
+        "admin_level": "department"
+      }
+    ],
+    "district": [
+      {
+        "id": 12580985,
+        "site_key": "szlhq",
+        "title": "主动将大数据思维融入法治实践",
+        "document_number": null,
+        "date_published": "2025-12-31 15:20:10",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12575401,
+        "site_key": "szlhq",
+        "title": "龙华区举办人工智能国际交流合作活动",
+        "document_number": null,
+        "date_published": "2025-12-29 15:08:25",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12560701,
+        "site_key": "szlhq",
+        "title": "龙华区人工智能与半导体专业园区揭牌",
+        "document_number": null,
+        "date_published": "2025-12-22 17:23:26",
+        "classify": "园区基地",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12557737,
+        "site_key": "szlhq",
+        "title": "人工智能为龙华数字文创发展“打辅助”",
+        "document_number": null,
+        "date_published": "2025-12-19 15:20:13",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12511339,
+        "site_key": "szlhq",
+        "title": "能做咖啡 能传火炬 龙华鸿蒙产品C位出道",
+        "document_number": null,
+        "date_published": "2025-11-21 17:52:23",
+        "classify": "投资动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12492150,
+        "site_key": "szlhq",
+        "title": "30家代表性企业与机构组团参展",
+        "document_number": null,
+        "date_published": "2025-11-14 10:39:42",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12490621,
+        "site_key": "szlhq",
+        "title": "高交会明日启幕 龙华营造“天圆地方”",
+        "document_number": null,
+        "date_published": "2025-11-13 14:50:35",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12471330,
+        "site_key": "szlhq",
+        "title": "他们脱下戎装 投身科技创新前沿战场",
+        "document_number": null,
+        "date_published": "2025-11-03 11:49:46",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12418859,
+        "site_key": "szpsq",
+        "title": "深圳市坪山区工业和信息化局关于公开征求《深圳市坪山区人工智能和软件信息产业高质量发展资金支持措施（征求意见稿）》意见的公告",
+        "document_number": null,
+        "date_published": "2025-09-29 17:19:07",
+        "classify": "其他文件",
+        "publisher": "深圳市坪山区工业和信息化局",
+        "admin_level": "district"
+      },
+      {
+        "id": 12417355,
+        "site_key": "szlhq",
+        "title": "龙华区人工智能与半导体专业园区揭牌",
+        "document_number": null,
+        "date_published": "2025-09-29 14:24:52",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12323526,
+        "site_key": "szlhq",
+        "title": "龙华区“工信惠企通”人工智能终端专场举办",
+        "document_number": null,
+        "date_published": "2025-08-11 11:41:07",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12289680,
+        "site_key": "szlhq",
+        "title": "第四届“龙华杯”深台围棋交流活动圆满落幕",
+        "document_number": null,
+        "date_published": "2025-07-22 11:41:34",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12229151,
+        "site_key": "szlhq",
+        "title": "龙华智检技术研发迈出关键一步",
+        "document_number": null,
+        "date_published": "2025-06-16 14:29:49",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12226125,
+        "site_key": "szlhq",
+        "title": "“龙藤”AI，执行亮剑！",
+        "document_number": null,
+        "date_published": "2025-06-13 11:05:40",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12217685,
+        "site_key": "szlhq",
+        "title": "全国首个人工智能辅助执行系统在龙华正式上线运营",
+        "document_number": null,
+        "date_published": "2025-06-09 14:48:17",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12192305,
+        "site_key": "szlhq",
+        "title": "以学促干抢占信息技术革命先机",
+        "document_number": null,
+        "date_published": "2025-05-23 15:31:32",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12178330,
+        "site_key": "szlhq",
+        "title": "龙华为工程建设装上“智慧大脑”",
+        "document_number": null,
+        "date_published": "2025-05-16 10:25:38",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12140565,
+        "site_key": "szlhq",
+        "title": "“AI大脑”赋能基层医疗，重塑卫生健康服务全链条",
+        "document_number": null,
+        "date_published": "2025-04-23 14:30:13",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12092713,
+        "site_key": "szlhq",
+        "title": "应用人工智能提升委员履职质效",
+        "document_number": null,
+        "date_published": "2025-03-27 15:07:39",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12076840,
+        "site_key": "szlhq",
+        "title": "龙华区启动“超级AI教师”种子计划",
+        "document_number": null,
+        "date_published": "2025-03-18 15:28:42",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12060302,
+        "site_key": "szlhq",
+        "title": "人工智能产业升级重要“助推器”落地龙华",
+        "document_number": null,
+        "date_published": "2025-03-07 11:11:49",
+        "classify": "投资动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12059861,
+        "site_key": "szlhq",
+        "title": "人工智能产业升级重要“助推器”落地龙华",
+        "document_number": null,
+        "date_published": "2025-03-07 10:20:48",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12054242,
+        "site_key": "szlhq",
+        "title": "AI赋能 让市民生活有“智”更有“质”",
+        "document_number": null,
+        "date_published": "2025-03-04 11:00:22",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12052163,
+        "site_key": "szlhq",
+        "title": "凝智聚力抢滩人工智能发展高地",
+        "document_number": null,
+        "date_published": "2025-03-03 11:28:12",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12010850,
+        "site_key": "szgm",
+        "title": "王伟中到深圳专题调研，强调要培育壮大机器人、人工智能等新兴产业未来产业 加快建设更具国际竞争力的现代化产业体系 孟凡利参加调研",
+        "document_number": null,
+        "date_published": "2025-02-20 17:14:22",
+        "classify": "投资动态",
+        "publisher": "深圳市光明区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12008070,
+        "site_key": "szlhq",
+        "title": "龙华将实施人工智能企业倍增计划",
+        "document_number": null,
+        "date_published": "2025-02-19 10:32:56",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 12008056,
+        "site_key": "szlhq",
+        "title": "龙华区召开人工智能应用场景推广研讨会",
+        "document_number": null,
+        "date_published": "2025-02-19 10:27:59",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11993205,
+        "site_key": "szlhq",
+        "title": "扎根龙华投资热土，创新驱动再创新局",
+        "document_number": null,
+        "date_published": "2025-02-10 11:44:19",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11898557,
+        "site_key": "szlhq",
+        "title": "龙华首家人工智能及机器人专业园区揭牌",
+        "document_number": null,
+        "date_published": "2024-12-16 10:22:23",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11843308,
+        "site_key": "szlhq",
+        "title": "《深圳市龙华区推动人工智能及机器人产业发展若干措施》政策解读",
+        "document_number": null,
+        "date_published": "2024-12-03 16:51:05",
+        "classify": "其他文件及解读",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11839311,
+        "site_key": "szlhq",
+        "title": "深圳市龙华区人民政府办公室关于印发《深圳市龙华区推动人工智能及机器人产业发展若干措施》的通知",
+        "document_number": "深龙华府办规〔2024〕20号",
+        "date_published": "2024-12-02 17:33:20",
+        "classify": "规范性文件",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11752135,
+        "site_key": "szns",
+        "title": "关于开通人工智能算法扶持项目的通知",
+        "document_number": null,
+        "date_published": "2024-11-21 10:04:40",
+        "classify": "其他文件",
+        "publisher": "深圳市南山区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11724075,
+        "site_key": "szlhq",
+        "title": "龙华区率先引入人工智能视觉分析管理平台",
+        "document_number": null,
+        "date_published": "2024-11-14 11:10:28",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11504789,
+        "site_key": "szlhq",
+        "title": "龙华中轴跻身深圳十大人工智能集聚区",
+        "document_number": null,
+        "date_published": "2024-08-16 16:54:29",
+        "classify": "投资动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11498983,
+        "site_key": "szlhq",
+        "title": "龙华中轴跻身深圳十大人工智能集聚区",
+        "document_number": null,
+        "date_published": "2024-08-15 10:15:23",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11482185,
+        "site_key": "szlhq",
+        "title": "龙华全力抢滩人工智能发展高地",
+        "document_number": null,
+        "date_published": "2024-08-05 10:17:38",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11376510,
+        "site_key": "szlhq",
+        "title": "龙华区出实招推进人工智能教学创新实践",
+        "document_number": null,
+        "date_published": "2024-06-19 10:03:48",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11340037,
+        "site_key": "szlhq",
+        "title": "龙华政府在线智能客服迭代升级",
+        "document_number": null,
+        "date_published": "2024-06-05 09:53:59",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11256544,
+        "site_key": "szlhq",
+        "title": "大浪街道公益培训助企业提质增效",
+        "document_number": null,
+        "date_published": "2024-04-23 11:17:29",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11251453,
+        "site_key": "szlhq",
+        "title": "龙华法院召开司法问需会",
+        "document_number": null,
+        "date_published": "2024-04-19 10:45:01",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11251449,
+        "site_key": "szlhq",
+        "title": "福城街道开展送法惠企进园区活动",
+        "document_number": null,
+        "date_published": "2024-04-19 10:43:23",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11245072,
+        "site_key": "szlhq",
+        "title": "大浪举办人工智能辅助设计公益培训",
+        "document_number": null,
+        "date_published": "2024-04-16 10:04:50",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11236039,
+        "site_key": "szlhq",
+        "title": "龙华GPT智能客服“善解人意”",
+        "document_number": null,
+        "date_published": "2024-04-10 09:44:07",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11167284,
+        "site_key": "szlhq",
+        "title": "龙华新型工业智算中心护航高质量发展",
+        "document_number": null,
+        "date_published": "2024-02-29 09:47:36",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11162660,
+        "site_key": "szlhq",
+        "title": "龙华抢抓人工智能战略机遇培育新质生产力",
+        "document_number": null,
+        "date_published": "2024-02-27 10:02:08",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 11148377,
+        "site_key": "szlhq",
+        "title": "《龙华区加快推动人工智能创新发展行动方案（2024—2025年）》发布",
+        "document_number": null,
+        "date_published": "2024-02-19 09:36:04",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 10742094,
+        "site_key": "szlhq",
+        "title": "龙华区人大常委会举办人大代表大讲堂",
+        "document_number": null,
+        "date_published": "2023-07-27 11:02:09",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 10695097,
+        "site_key": "szlhq",
+        "title": "深圳北站港澳青年创新创业中心举办今年首期路演活动",
+        "document_number": null,
+        "date_published": "2023-07-05 10:21:41",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 10441034,
+        "site_key": "szlhq",
+        "title": "集聚创新要素打造千亿级产业链群",
+        "document_number": null,
+        "date_published": "2023-02-22 16:40:26",
+        "classify": "投资动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 10431958,
+        "site_key": "szlhq",
+        "title": "首届全国人工智能创新应用大赛生态构建专题赛和总决赛落户龙华",
+        "document_number": null,
+        "date_published": "2023-02-17 10:30:58",
+        "classify": "工作动态",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 9932795,
+        "site_key": "szlhq",
+        "title": "龙华区科技创新局关于《深圳市龙华区促进人工智能产业发展若干措施操作指引》的政策解读",
+        "document_number": null,
+        "date_published": "2022-07-05 15:16:47",
+        "classify": "其他文件及解读",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 9222104,
+        "site_key": "szlhq",
+        "title": "龙华区科技创新局关于《深圳市龙华区促进人工智能产业发展若干措施》的政策解读",
+        "document_number": null,
+        "date_published": "2021-09-27 19:39:27",
+        "classify": "其他文件及解读",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 9222042,
+        "site_key": "szlhq",
+        "title": "深圳市龙华区促进人工智能产业发展若干措施",
+        "document_number": "深龙华府办规〔2021〕9号",
+        "date_published": "2021-09-27 18:55:49",
+        "classify": "规范性文件",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      },
+      {
+        "id": 9153082,
+        "site_key": "szlhq",
+        "title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+        "document_number": "深龙华府规〔2021〕9 号",
+        "date_published": "2021-09-26 10:51:31",
+        "classify": "规范性文件",
+        "publisher": "深圳市龙华区人民政府",
+        "admin_level": "district"
+      }
+    ],
+    "municipal": [
+      {
+        "id": 12191817,
+        "site_key": "sz",
+        "title": "2025全球人工智能终端展暨第六届深圳国际人工智能展举行",
+        "document_number": null,
+        "date_published": "2025-05-23 12:02:09",
+        "classify": "政务动态",
+        "publisher": "深圳市人民政府办公厅",
+        "admin_level": "municipal"
+      }
+    ]
+  },
+  "formal_citations": [
+    {
+      "source_id": 12477457,
+      "source_title": "深圳市人力资源和社会保障局关于2025年深圳市人力资源服务业人工智能主题培训项目的公开征集公告",
+      "cited_ref": "中组发〔2013〕8号",
+      "cited_level": "unknown",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 11843308,
+      "source_title": "《深圳市龙华区推动人工智能及机器人产业发展若干措施》政策解读",
+      "cited_ref": "深龙华府办规〔2024〕20号",
+      "cited_level": "district",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 11843308,
+      "source_title": "《深圳市龙华区推动人工智能及机器人产业发展若干措施》政策解读",
+      "cited_ref": "深龙华府办规〔2021〕9号",
+      "cited_level": "district",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 11839311,
+      "source_title": "深圳市龙华区人民政府办公室关于印发《深圳市龙华区推动人工智能及机器人产业发展若干措施》的通知",
+      "cited_ref": "深府办规〔2022〕3号",
+      "cited_level": "municipal",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 10072776,
+      "source_title": "深圳市科技创新委员会转发科技部关于支持建设新一代人工智能示范应用场景的通知",
+      "cited_ref": "国科发规〔2022〕228号",
+      "cited_level": "unknown",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 9932795,
+      "source_title": "龙华区科技创新局关于《深圳市龙华区促进人工智能产业发展若干措施操作指引》的政策解读",
+      "cited_ref": "深龙华府办规〔2021〕9号",
+      "cited_level": "district",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 9153082,
+      "source_title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+      "cited_ref": "深龙华府规〔2017〕3号",
+      "cited_level": "district",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 9153082,
+      "source_title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+      "cited_ref": "按深龙华府规〔2017〕3号",
+      "cited_level": "unknown",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 9141031,
+      "source_title": "深圳市科技创新委员会关于转发《广东省科学技术厅关于征集2021年度广东省新一代人工智能创新成果的通知》的通知",
+      "cited_ref": "粤科函高字〔2021〕1132号",
+      "cited_level": "unknown",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 8464450,
+      "source_title": "深圳市住房和建设局关于应用人工智能进行施工图监督抽查及开展培训工作的通知",
+      "cited_ref": "建办质函〔2020〕329号",
+      "cited_level": "unknown",
+      "citation_type": "formal"
+    },
+    {
+      "source_id": 8464450,
+      "source_title": "深圳市住房和建设局关于应用人工智能进行施工图监督抽查及开展培训工作的通知",
+      "cited_ref": "深建规〔2020〕9号",
+      "cited_level": "municipal",
+      "citation_type": "formal"
+    }
+  ],
+  "named_citations": [
+    {
+      "source_id": 12639589,
+      "source_title": "算力引擎聚势腾飞 深圳人工智能全链生态建设提质增效",
+      "cited_name": "深圳市加快打造人工智能先锋城市行动计划 (2025—2026 年)",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12560613,
+      "source_title": "全国中小学人工智能教育联盟在深圳成立",
+      "cited_name": "教育强国建设规划纲要（2024—2035年）",
+      "cited_level": "central",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12560613,
+      "source_title": "全国中小学人工智能教育联盟在深圳成立",
+      "cited_name": "中小学人工智能通识教育指南",
+      "cited_level": "central",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12560613,
+      "source_title": "全国中小学人工智能教育联盟在深圳成立",
+      "cited_name": "中小学生成式人工智能使用指南",
+      "cited_level": "central",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12511339,
+      "source_title": "能做咖啡 能传火炬 龙华鸿蒙产品C位出道",
+      "cited_name": "深圳北软件产业基地实施办法",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12477457,
+      "source_title": "深圳市人力资源和社会保障局关于2025年深圳市人力资源服务业人工智能主题培训项目的公开征集公告",
+      "cited_name": "关于在干部教育培训中进一步加强考察培训学员管理的规定",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12162638,
+      "source_title": "深圳市科技创新局关于转发组织申报2025-2026年度广东省重点领域研发计划“新一代人工智能”专项的通知",
+      "cited_name": "广东省科学技术厅关于组织申报2025～2026年度广东省重点领域研发计划“新一代人工智能”专项的通知",
+      "cited_level": "provincial",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12060302,
+      "source_title": "人工智能产业升级重要“助推器”落地龙华",
+      "cited_name": "电子科技大学（深圳）高等研究院人工智能与机器人创新研究院成立方案",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12059861,
+      "source_title": "人工智能产业升级重要“助推器”落地龙华",
+      "cited_name": "电子科技大学（深圳）高等研究院人工智能与机器人创新研究院成立方案",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12052163,
+      "source_title": "凝智聚力抢滩人工智能发展高地",
+      "cited_name": "龙华区加快推动人工智能创新发展行动方案（2024-2025年）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12052163,
+      "source_title": "凝智聚力抢滩人工智能发展高地",
+      "cited_name": "深圳市龙华区推动人工智能及机器人产业发展若干措施",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12014206,
+      "source_title": "聚焦人工智能！这场基础教育改革对话会在深圳举行",
+      "cited_name": "深圳实验教育集团“人工智能+大模型”工作计划",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12014206,
+      "source_title": "聚焦人工智能！这场基础教育改革对话会在深圳举行",
+      "cited_name": "场景革命与范式重塑：人工智能驱动基础教育变革的育才行动",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12008070,
+      "source_title": "龙华将实施人工智能企业倍增计划",
+      "cited_name": "龙华区加快推动人工智能创新发展行动方案（2024-2025年）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12008070,
+      "source_title": "龙华将实施人工智能企业倍增计划",
+      "cited_name": "深圳市龙华区推动人工智能及机器人产业发展若干措施",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 12008070,
+      "source_title": "龙华将实施人工智能企业倍增计划",
+      "cited_name": "龙华区人工智能项目（一期）建设工作方案",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11909046,
+      "source_title": "“十五五”时期深圳打造具有全球影响力的人工智能创新高地研究课题中标公告",
+      "cited_name": "关于<“十五五”时期深圳打造具有全球影响力的人工智能创新高地研究>课题公开招标的公告",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11898557,
+      "source_title": "龙华首家人工智能及机器人专业园区揭牌",
+      "cited_name": "推动人工智能及机器人产业发展若干措施",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11843308,
+      "source_title": "《深圳市龙华区推动人工智能及机器人产业发展若干措施》政策解读",
+      "cited_name": "深圳市龙华区促进人工智能产业发展若干措施",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11839311,
+      "source_title": "深圳市龙华区人民政府办公室关于印发《深圳市龙华区推动人工智能及机器人产业发展若干措施》的通知",
+      "cited_name": "深圳市加快推动人工智能高质量发展高水平应用行动方案（2023—2024年）",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11839311,
+      "source_title": "深圳市龙华区人民政府办公室关于印发《深圳市龙华区推动人工智能及机器人产业发展若干措施》的通知",
+      "cited_name": "深圳市龙华区打造深圳北软件产业基地实施办法",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11839311,
+      "source_title": "深圳市龙华区人民政府办公室关于印发《深圳市龙华区推动人工智能及机器人产业发展若干措施》的通知",
+      "cited_name": "境内深度合成服务算法备案清单",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11839311,
+      "source_title": "深圳市龙华区人民政府办公室关于印发《深圳市龙华区推动人工智能及机器人产业发展若干措施》的通知",
+      "cited_name": "深圳市促进重大科技基础设施和大型科研仪器开放共享管理办法",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11752135,
+      "source_title": "关于开通人工智能算法扶持项目的通知",
+      "cited_name": "境内深度合成服务算法备案清单",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11504789,
+      "source_title": "龙华中轴跻身深圳十大人工智能集聚区",
+      "cited_name": "深圳市加快打造人工智能先锋城市行动方案",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11504789,
+      "source_title": "龙华中轴跻身深圳十大人工智能集聚区",
+      "cited_name": "龙华区加快推动人工智能创新发展行动方案（2024-2025年）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11504789,
+      "source_title": "龙华中轴跻身深圳十大人工智能集聚区",
+      "cited_name": "深圳市龙华区促进人工智能产业发展若干措施",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11504789,
+      "source_title": "龙华中轴跻身深圳十大人工智能集聚区",
+      "cited_name": "龙华区打造深圳北软件产业基地三年实施方案（2024-2026）（征求意见稿）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11498983,
+      "source_title": "龙华中轴跻身深圳十大人工智能集聚区",
+      "cited_name": "深圳市加快打造人工智能先锋城市行动方案",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11498983,
+      "source_title": "龙华中轴跻身深圳十大人工智能集聚区",
+      "cited_name": "龙华区加快推动人工智能创新发展行动方案（2024-2025年）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11498983,
+      "source_title": "龙华中轴跻身深圳十大人工智能集聚区",
+      "cited_name": "深圳市龙华区促进人工智能产业发展若干措施",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11498983,
+      "source_title": "龙华中轴跻身深圳十大人工智能集聚区",
+      "cited_name": "龙华区打造深圳北软件产业基地三年实施方案（2024-2026）（征求意见稿）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11482185,
+      "source_title": "龙华全力抢滩人工智能发展高地",
+      "cited_name": "深圳市加快打造人工智能先锋城市行动方案",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11482185,
+      "source_title": "龙华全力抢滩人工智能发展高地",
+      "cited_name": "深圳市龙华区促进人工智能产业发展若干措施",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11482185,
+      "source_title": "龙华全力抢滩人工智能发展高地",
+      "cited_name": "龙华区加快推动人工智能创新发展行动方案（2024-2025年）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11251453,
+      "source_title": "龙华法院召开司法问需会",
+      "cited_name": "服务保障数字经济健康发展二十条措施",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11251453,
+      "source_title": "龙华法院召开司法问需会",
+      "cited_name": "关于全面推进数字经济审判工作的实施方案",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11186150,
+      "source_title": "深圳市科技创新局关于转发组织申报2024年度广东省重点领域研发计划“新一代人工智能”旗舰项目的通知",
+      "cited_name": "广东省科学技术厅关于组织申报2024年度广东省重点领域研发计划“新一代人工智能”旗舰项目的通知",
+      "cited_level": "provincial",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11167284,
+      "source_title": "龙华新型工业智算中心护航高质量发展",
+      "cited_name": "深圳市算力基础设施高质量发展行动计划（2024-2025）",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11162660,
+      "source_title": "龙华抢抓人工智能战略机遇培育新质生产力",
+      "cited_name": "深圳市算力基础设施高质量发展行动计划（2024-2025）",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11162660,
+      "source_title": "龙华抢抓人工智能战略机遇培育新质生产力",
+      "cited_name": "龙华区加快推动人工智能创新发展行动方案（2024-2025年）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 11148377,
+      "source_title": "《龙华区加快推动人工智能创新发展行动方案（2024—2025年）》发布",
+      "cited_name": "龙华区加快推动人工智能创新发展行动方案（2024-2025年）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 10649103,
+      "source_title": "深圳市城市公共安全技术联合创新中心开展结合防范灾害事故谈人工智能应用专题座谈会议",
+      "cited_name": "深圳市加快推动人工智能高质量发展高水平应用行动方案（2023—2024年）",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 10182727,
+      "source_title": "深圳市科技创新委员会关于2022年度人工智能社会实验项目拟资助项目的公示（公示已结束）",
+      "cited_name": "深圳市科技计划项目管理办法",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9222104,
+      "source_title": "龙华区科技创新局关于《深圳市龙华区促进人工智能产业发展若干措施》的政策解读",
+      "cited_name": "深圳市龙华区关于促进人工智能产业发展三年行动计划（2021-2023年）",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9222104,
+      "source_title": "龙华区科技创新局关于《深圳市龙华区促进人工智能产业发展若干措施》的政策解读",
+      "cited_name": "深圳市新一代人工智能发展行动计划（2019－2023年）",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9222104,
+      "source_title": "龙华区科技创新局关于《深圳市龙华区促进人工智能产业发展若干措施》的政策解读",
+      "cited_name": "中共深圳市龙华区委深圳市龙华区人民政府关于建设数字龙华打造“一圈一区三廊”区域发展格局的决定",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9153082,
+      "source_title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+      "cited_name": "深圳市鼓励总部企业高质量发展实施办法",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9153082,
+      "source_title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+      "cited_name": "关于推动制造业高质量发展坚定不移打造制造强市的若干措施",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9153082,
+      "source_title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+      "cited_name": "深圳市龙华区区级财政专项资金管理办法",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9153082,
+      "source_title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+      "cited_name": "深圳市龙华区支持工业互联网产业发展若干措施",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9153082,
+      "source_title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+      "cited_name": "深圳市龙华区促进生命健康产业发展若干措施",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9153082,
+      "source_title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+      "cited_name": "关于进一步支持我区建筑业现代化数字化转型升级的若干措施",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 9153082,
+      "source_title": "深圳市龙华区关于招大商招优商招好商的若干措施",
+      "cited_name": "深圳市龙华区重大产业项目招商引资实施细则",
+      "cited_level": "district",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 8464450,
+      "source_title": "深圳市住房和建设局关于应用人工智能进行施工图监督抽查及开展培训工作的通知",
+      "cited_name": "深圳市住房和建设局关于做好我市建设工程施工图审查改革工作的通知",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 8464450,
+      "source_title": "深圳市住房和建设局关于应用人工智能进行施工图监督抽查及开展培训工作的通知",
+      "cited_name": "房屋建筑制图统一标准",
+      "cited_level": "unknown",
+      "citation_type": "named"
+    },
+    {
+      "source_id": 8464450,
+      "source_title": "深圳市住房和建设局关于应用人工智能进行施工图监督抽查及开展培训工作的通知",
+      "cited_name": "深圳市建设工程勘察设计管理系统AI审图操作指南",
+      "cited_level": "municipal",
+      "citation_type": "named"
+    }
+  ]
+}

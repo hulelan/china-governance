@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}What Shenzhen Is Actually Doing About AI — CNGOV{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <article class="text-sm leading-relaxed text-gray-300">
+        <h1 class="text-xl font-bold text-white mb-1">What Shenzhen Is Actually Doing About AI</h1>
+        <p class="text-xs text-gray-500 mb-6">
+            A policy chain analysis from the CNGOV corpus &middot; {{ doc_count }} documents analyzed &middot; 20 government sites
+        </p>
+
+        <div class="bg-gray-900 border border-gray-800 rounded px-4 py-3 mb-6 text-xs text-gray-400">
+            <span class="font-semibold text-gray-300">Summary:</span>
+            We traced AI policy from central government directives through Shenzhen's municipal strategy
+            down to district-level implementation. The result reveals a governance system where districts
+            compete to implement central priorities — and Longhua district is far ahead of its peers,
+            having issued three generations of AI policy since 2021 with specific subsidy amounts totaling
+            hundreds of millions of yuan.
+        </div>
+
+        <h2 class="text-base font-bold text-white mt-6 mb-2">The question</h2>
+        <p class="mb-3">
+            When the State Council signals that artificial intelligence is a national priority, what
+            happens next? Western coverage of Chinese AI policy tends to focus on central government
+            announcements — the broad strokes. But in China's governance system, central directives
+            are starting signals, not finishing lines. The real action is local: provinces, cities,
+            and districts translating top-level ambitions into specific budgets, subsidies, and programs.
+        </p>
+        <p class="mb-3">
+            This analysis traces the AI policy chain in Shenzhen — from central directives down to
+            district implementation — using {{ doc_count }} government documents from 16 departments
+            and districts. The goal: make visible what a Chinese bureaucrat would intuit but the
+            outside world cannot easily see.
+        </p>
+
+        <h2 class="text-base font-bold text-white mt-6 mb-2">The chain we found</h2>
+
+        <p class="mb-3">
+            The policy chain has four layers. At each layer, governments reference the layer above
+            as justification and then add their own specifics:
+        </p>
+
+        <!-- Chain visualization -->
+        <div class="space-y-3 mb-4">
+            <div class="bg-gray-900 border-l-4 border-red-500 px-4 py-2.5">
+                <div class="text-xs font-bold text-red-400 uppercase mb-1">Central</div>
+                <p class="text-xs text-gray-300">
+                    The State Council and ministries set direction. Key documents include the
+                    <span class="text-white">Education Superpower Construction Plan (2024-2035)</span>
+                    and the State Council's <span class="text-white">"AI+" action plan</span> approved in August 2025.
+                    These establish AI as a national strategic priority across education, manufacturing,
+                    and public services.
+                </p>
+            </div>
+
+            <div class="flex justify-center">
+                <div class="w-0.5 h-3 bg-gray-700"></div>
+            </div>
+
+            <div class="bg-gray-900 border-l-4 border-orange-500 px-4 py-2.5">
+                <div class="text-xs font-bold text-orange-400 uppercase mb-1">Provincial — Guangdong</div>
+                <p class="text-xs text-gray-300">
+                    Guangdong province channels central priorities into R&D funding.
+                    The provincial S&T department issues annual calls for
+                    <span class="text-white">"Next-Generation AI" research proposals</span>,
+                    providing the funding pipeline that Shenzhen entities apply to.
+                </p>
+            </div>
+
+            <div class="flex justify-center">
+                <div class="w-0.5 h-3 bg-gray-700"></div>
+            </div>
+
+            <div class="bg-gray-900 border-l-4 border-blue-500 px-4 py-2.5">
+                <div class="text-xs font-bold text-blue-400 uppercase mb-1">Municipal — Shenzhen</div>
+                <p class="text-xs text-gray-300">
+                    Shenzhen has issued at least three major AI plans, each escalating in ambition:
+                </p>
+                <ul class="text-xs text-gray-400 mt-1 list-disc list-inside space-y-0.5">
+                    <li>Next-Generation AI Development Action Plan (2019-2023)</li>
+                    <li>Accelerating High-Quality AI Development Action Plan (2023-2024) — <span class="text-gray-300">cited by 2 district documents</span></li>
+                    <li>Accelerating the Building of an AI Pioneer City Action Plan — <span class="text-gray-300">cited 3 times, the current flagship</span></li>
+                    <li>AI Pioneer City Action Plan (2025-2026) — <span class="text-gray-300">the latest version</span></li>
+                </ul>
+                <p class="text-xs text-gray-400 mt-1.5">
+                    <span class="text-yellow-500/80">Key finding:</span> None of these municipal plans are in our corpus.
+                    They're referenced by name from district documents but were published on a part of the
+                    Shenzhen portal we haven't crawled yet. This itself reveals the fragmentation problem
+                    — even within one city, policy documents are scattered across sites.
+                </p>
+            </div>
+
+            <div class="flex justify-center">
+                <div class="w-0.5 h-3 bg-gray-700"></div>
+            </div>
+
+            <div class="bg-gray-900 border-l-4 border-green-500 px-4 py-2.5">
+                <div class="text-xs font-bold text-green-400 uppercase mb-1">District — Implementation</div>
+                <p class="text-xs text-gray-300">
+                    This is where policy becomes action. Districts translate municipal plans into
+                    budgets, subsidies, and specific programs. But the response is dramatically uneven.
+                </p>
+            </div>
+        </div>
+
+        <h2 class="text-base font-bold text-white mt-6 mb-2">The Longhua anomaly</h2>
+        <p class="mb-3">
+            Of the 16 departments and districts in our corpus, <span class="text-white font-semibold">Longhua
+            district produced 30 of the 89 AI-titled documents</span> — more than a third. The next closest
+            is the S&T Innovation Bureau (24, a municipal-level department), followed by the Development
+            &amp; Reform Commission (14). Most districts produced zero or one.
+        </p>
+        <p class="mb-3">
+            Longhua hasn't just talked about AI — it has issued <span class="text-white">three generations of
+            formal policy</span>:
+        </p>
+
+        <table class="w-full dense-table text-xs mb-4 bg-gray-900 border border-gray-800 rounded">
+            <thead>
+                <tr class="text-gray-500 border-b border-gray-800">
+                    <th class="text-left">Year</th>
+                    <th class="text-left">Policy</th>
+                    <th class="text-left">Focus</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b border-gray-800/50">
+                    <td class="text-gray-400">2021</td>
+                    <td>
+                        <a href="/document/9222042">Measures to Promote AI Industry Development</a>
+                        <span class="mono text-gray-500 ml-1">深龙华府办规〔2021〕9号</span>
+                    </td>
+                    <td class="text-gray-400">Public service platforms, incubators, R&D subsidies</td>
+                </tr>
+                <tr class="border-b border-gray-800/50">
+                    <td class="text-gray-400">2024 (Feb)</td>
+                    <td>
+                        <a href="/document/11148377">AI Innovation Action Plan (2024-2025)</a>
+                    </td>
+                    <td class="text-gray-400">"Six-One" system: cluster, scenarios, platforms, policy, alliance, fund. Compute infrastructure, green AI.</td>
+                </tr>
+                <tr>
+                    <td class="text-gray-400">2024 (Nov)</td>
+                    <td>
+                        <a href="/document/11839311">Measures to Promote AI and Robotics Industry Development</a>
+                        <span class="mono text-gray-500 ml-1">深龙华府办规〔2024〕20号</span>
+                    </td>
+                    <td class="text-gray-400">Compute vouchers, algorithm registration rewards, embodied intelligence, scenario matching</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 class="text-base font-bold text-white mt-6 mb-2">What the money reveals</h2>
+        <p class="mb-3">
+            The 2024 Longhua policy (<a href="/document/11839311">深龙华府办规〔2024〕20号</a>) contains
+            specific subsidy amounts that reveal priorities:
+        </p>
+        <ul class="text-xs space-y-1.5 mb-4 text-gray-300">
+            <li><span class="text-white font-semibold">Compute vouchers:</span> up to 3 million yuan per company (30% of procurement costs) — solving the GPU access problem</li>
+            <li><span class="text-white font-semibold">Algorithm registration:</span> up to 1 million yuan per algorithm registered with the Cyberspace Administration — rewarding regulatory compliance</li>
+            <li><span class="text-white font-semibold">GenAI model filing:</span> 500,000 yuan per model that passes national GenAI service filing — incentivizing approved large models</li>
+            <li><span class="text-white font-semibold">Embodied intelligence R&D:</span> 50% of R&D costs, up to 1 million yuan — bet on physical AI/robotics</li>
+            <li><span class="text-white font-semibold">Application scenario matching:</span> up to 4 million yuan for demand-side and 2 million for supply-side — creating markets for AI products</li>
+            <li><span class="text-white font-semibold">Public service platforms:</span> up to 20 million yuan — the largest single item, for shared compute and testing infrastructure</li>
+            <li><span class="text-white font-semibold">Standards development:</span> 600,000 yuan for international standards, 400,000 for national — incentivizing standards participation</li>
+        </ul>
+        <p class="mb-3">
+            The total annual budget ceiling for AI scenario matching alone is 20 million yuan. This is a single
+            district — one of six in Shenzhen — putting real money behind implementation.
+        </p>
+
+        <h2 class="text-base font-bold text-white mt-6 mb-2">What's changed from 2021 to 2024</h2>
+        <p class="mb-3">
+            Comparing Longhua's 2021 and 2024 policies reveals how the AI landscape shifted:
+        </p>
+        <ul class="text-xs space-y-1.5 mb-4 text-gray-300">
+            <li><span class="text-white">2021 was about building foundations:</span> incubators, service platforms, basic R&D support. The eligible categories read like a textbook — computer vision, NLP, intelligent sensors.</li>
+            <li><span class="text-white">2024 is about deployment and governance:</span> compute vouchers (GPU access is the bottleneck now), GenAI model registration (regulation caught up), embodied intelligence (robotics is the new frontier), and "AI+" scenario application (getting AI into actual use).</li>
+            <li><span class="text-white">New in 2024:</span> explicit references to "new quality productive forces" (新质生产力), Xi Jinping's signature economic phrase — showing how districts align their language with current political priorities.</li>
+            <li><span class="text-white">The scope expanded from AI to AI + robotics</span> — reflecting the national bet on embodied intelligence and humanoid robots.</li>
+        </ul>
+
+        <h2 class="text-base font-bold text-white mt-6 mb-2">The silence of the other districts</h2>
+        <p class="mb-3">
+            If Longhua is the story of aggressive implementation, the other districts are a story of
+            absence. In our corpus:
+        </p>
+        <ul class="text-xs space-y-1 mb-4 text-gray-300">
+            <li><span class="text-white">Nanshan:</span> 2 documents — one implementation plan from 2023 (body text extraction failed, likely different CMS)</li>
+            <li><span class="text-white">Pingshan:</span> 1 document — a draft subsidy measure under public comment in 2025</li>
+            <li><span class="text-white">Guangming:</span> 1 document — a provincial leader visit mentioning AI in passing</li>
+            <li><span class="text-white">Other districts:</span> zero AI-titled documents</li>
+        </ul>
+        <p class="mb-3">
+            This could mean several things: these districts genuinely haven't prioritized AI, or
+            they've published their policies through channels we haven't crawled (WeChat, different
+            CMS systems), or they're implementing AI under different labels. But the contrast with
+            Longhua's 30 documents is striking.
+        </p>
+
+        <h2 class="text-base font-bold text-white mt-6 mb-2">What this tells us</h2>
+        <p class="mb-3">
+            Three observations for Western analysts:
+        </p>
+        <ol class="text-xs space-y-2 mb-4 text-gray-300 list-decimal list-inside">
+            <li><span class="text-white font-semibold">Chinese AI policy is not monolithic.</span>
+                The same central directive produces dramatically different local responses. Longhua
+                has three generations of AI policy with specific budgets; neighboring districts have
+                near-zero. "China's AI strategy" is actually dozens of divergent local strategies.</li>
+            <li><span class="text-white font-semibold">The subsidy details reveal actual priorities.</span>
+                Central speeches say "AI is important." Longhua's 2024 policy says "we'll pay 500,000
+                yuan per GenAI model that passes national filing." The specificity gap between
+                central rhetoric and local implementation is where the real signal is.</li>
+            <li><span class="text-white font-semibold">Policy evolution is traceable.</span>
+                Comparing 2021→2024, you can see the AI conversation shift from "build infrastructure"
+                to "deploy and regulate." The addition of compute vouchers, GenAI model registration
+                incentives, and embodied intelligence subsidies maps directly onto the global AI
+                timeline (ChatGPT → regulation → robotics). Local Chinese policy evolves in dialogue
+                with global technology trends, not in isolation from them.</li>
+        </ol>
+
+        <div class="bg-gray-900 border border-gray-800 rounded px-4 py-3 mt-6 text-xs text-gray-500">
+            <span class="font-semibold text-gray-400">About this analysis:</span>
+            Based on {{ doc_count }} AI-related documents from 20 Shenzhen government sites, extracted
+            via the <a href="/">CNGOV</a> corpus. Policy chains traced via formal document number (文号)
+            citations and named document references.
+            <a href="/chain/ai">View the full policy chain</a>.
+        </div>
+    </article>
+</div>
+{% endblock %}

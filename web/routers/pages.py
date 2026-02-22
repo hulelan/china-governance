@@ -1,4 +1,5 @@
 """Server-rendered HTML page routes."""
+import json
 import re
 from collections import Counter
 from pathlib import Path
@@ -161,4 +162,36 @@ async def dashboard(request: Request):
         "top_cited": top_cited,
         "coverage_labels": coverage_labels, "coverage_body": coverage_body,
         "coverage_no_body": coverage_no_body,
+    })
+
+
+CHAIN_DATA_DIR = Path(__file__).parent.parent.parent / "data"
+
+
+@router.get("/chain/ai", response_class=HTMLResponse)
+async def chain_ai(request: Request):
+    db = request.app.state.db
+    stats = await get_stats(db)
+
+    # Load pre-built chain data
+    chain_path = CHAIN_DATA_DIR / "ai_chain.json"
+    chain = {}
+    if chain_path.exists():
+        with open(chain_path) as f:
+            chain = json.load(f)
+
+    return templates.TemplateResponse("chain.html", {
+        "request": request, "stats": stats, "chain": chain,
+    })
+
+
+@router.get("/analysis/ai", response_class=HTMLResponse)
+async def analysis_ai(request: Request):
+    db = request.app.state.db
+    stats = await get_stats(db)
+    doc_count = (await db.execute_fetchall(
+        "SELECT COUNT(*) as cnt FROM documents WHERE title LIKE '%人工智能%' OR keywords LIKE '%人工智能%' OR abstract LIKE '%人工智能%'"
+    ))[0]["cnt"]
+    return templates.TemplateResponse("writeup.html", {
+        "request": request, "stats": stats, "doc_count": doc_count,
     })
