@@ -116,7 +116,7 @@ async def dashboard(request: Request):
     timeline_data = [yr["count"] for yr in stats["by_year"]]
 
     # Citation hierarchy — compute from body text
-    rows = await db.execute_fetchall(
+    rows = await db.fetch(
         "SELECT body_text_cn FROM documents WHERE body_text_cn != ''"
     )
     level_counts = Counter()
@@ -136,7 +136,7 @@ async def dashboard(request: Request):
 
     # Top cited
     known_docs = {}
-    for r in await db.execute_fetchall(
+    for r in await db.fetch(
         "SELECT id, document_number, title FROM documents WHERE document_number != ''"
     ):
         known_docs[r["document_number"]] = (r["id"], r["title"])
@@ -188,9 +188,9 @@ async def chain_default(request: Request):
 async def analysis_ai(request: Request):
     db = request.app.state.db
     stats = await get_stats(db)
-    doc_count = (await db.execute_fetchall(
-        "SELECT COUNT(*) as cnt FROM documents WHERE title LIKE '%人工智能%' OR keywords LIKE '%人工智能%' OR abstract LIKE '%人工智能%'"
-    ))[0]["cnt"]
+    doc_count = await db.fetchval(
+        "SELECT COUNT(*) FROM documents WHERE title LIKE '%人工智能%' OR keywords LIKE '%人工智能%' OR abstract LIKE '%人工智能%'"
+    )
     return templates.TemplateResponse("writeup.html", {
         "request": request, "stats": stats, "doc_count": doc_count,
     })

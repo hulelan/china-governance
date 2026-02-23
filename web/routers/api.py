@@ -69,19 +69,20 @@ async def api_categories(request: Request):
 async def api_network(request: Request, site: str = None, min_degree: int = 2):
     """Citation network as nodes + edges for D3.js."""
     db = request.app.state.db
-    where = "WHERE body_text_cn != ''"
-    params = []
-    if site:
-        where += " AND site_key = ?"
-        params.append(site)
 
-    rows = await db.execute_fetchall(
-        f"SELECT id, title, document_number, site_key, body_text_cn, publisher "
-        f"FROM documents {where}", params
-    )
+    if site:
+        rows = await db.fetch(
+            "SELECT id, title, document_number, site_key, body_text_cn, publisher "
+            "FROM documents WHERE body_text_cn != '' AND site_key = $1", site
+        )
+    else:
+        rows = await db.fetch(
+            "SELECT id, title, document_number, site_key, body_text_cn, publisher "
+            "FROM documents WHERE body_text_cn != ''"
+        )
 
     # Build known docs lookup
-    all_docs = await db.execute_fetchall(
+    all_docs = await db.fetch(
         "SELECT id, document_number, title, site_key FROM documents WHERE document_number != ''"
     )
     known = {r["document_number"]: dict(r) for r in all_docs}

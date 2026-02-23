@@ -19,16 +19,18 @@ async def get_chain(db, keyword: str):
     Returns a dict with hierarchy, source docs, and stats — same shape as
     the old ai_chain.json so the template works with minimal changes.
     """
+    search_pattern = f"%{keyword}%"
+
     # Source documents: docs matching the topic that have body text
-    source_rows = await db.execute_fetchall(
+    source_rows = await db.fetch(
         """SELECT d.id, d.title, d.document_number, d.site_key,
                   d.date_published, d.publisher, s.admin_level
            FROM documents d
            JOIN sites s ON s.site_key = d.site_key
-           WHERE (d.title LIKE ? OR d.keywords LIKE ? OR d.abstract LIKE ?)
+           WHERE (d.title LIKE $1 OR d.keywords LIKE $1 OR d.abstract LIKE $1)
              AND d.body_text_cn IS NOT NULL AND LENGTH(d.body_text_cn) > 20
            ORDER BY d.date_published DESC""",
-        (f"%{keyword}%", f"%{keyword}%", f"%{keyword}%")
+        search_pattern
     )
 
     source_ids = [r["id"] for r in source_rows]
@@ -53,15 +55,14 @@ async def get_chain(db, keyword: str):
         })
 
     # Get citations FROM these source documents
-    placeholders = ",".join("?" * len(source_ids))
-    citation_rows = await db.execute_fetchall(
-        f"""SELECT c.target_ref, c.target_id, c.citation_type, c.target_level,
+    citation_rows = await db.fetch(
+        """SELECT c.target_ref, c.target_id, c.citation_type, c.target_level,
                    c.source_id,
                    d.title as target_title, d.site_key as target_site_key,
                    d.document_number as target_docnum, d.date_published as target_date
             FROM citations c
             LEFT JOIN documents d ON d.id = c.target_id
-            WHERE c.source_id IN ({placeholders})""",
+            WHERE c.source_id = ANY($1::int[])""",
         source_ids
     )
 
@@ -135,7 +136,7 @@ def _empty_chain(keyword: str):
 
 async def get_citation_stats(db):
     """Get aggregate citation flow statistics for the dashboard."""
-    rows = await db.execute_fetchall(
+    rows = await db.fetch(
         """SELECT source_level, target_level, COUNT(*) as cnt
            FROM citations
            GROUP BY source_level, target_level

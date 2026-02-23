@@ -37,64 +37,71 @@ async def get_documents(db, site_key=None, category=None, year=None,
                         has_docnum=None, page=1, per_page=50):
     where = ["1=1"]
     params = []
+    param_idx = 0
+
     if site_key:
-        where.append("d.site_key = ?")
+        param_idx += 1
+        where.append(f"d.site_key = ${param_idx}")
         params.append(site_key)
     if category:
-        where.append("d.classify_main_name = ?")
+        param_idx += 1
+        where.append(f"d.classify_main_name = ${param_idx}")
         params.append(category)
     if year:
-        where.append("d.date_written >= ? AND d.date_written < ?")
-        import calendar
         from datetime import datetime
         start = int(datetime(int(year), 1, 1).timestamp())
         end = int(datetime(int(year) + 1, 1, 1).timestamp())
-        params.extend([start, end])
+        param_idx += 1
+        where.append(f"d.date_written >= ${param_idx}")
+        params.append(start)
+        param_idx += 1
+        where.append(f"d.date_written < ${param_idx}")
+        params.append(end)
     if has_docnum:
         where.append("d.document_number != ''")
 
     where_sql = " AND ".join(where)
     offset = (page - 1) * per_page
 
-    total = (await db.execute_fetchall(
-        f"SELECT COUNT(*) FROM documents d WHERE {where_sql}", params
-    ))[0][0]
+    total = await db.fetchval(
+        f"SELECT COUNT(*) FROM documents d WHERE {where_sql}", *params
+    )
 
-    rows = await db.execute_fetchall(
+    param_idx += 1
+    limit_idx = param_idx
+    param_idx += 1
+    offset_idx = param_idx
+
+    rows = await db.fetch(
         f"""SELECT d.id, d.title, d.document_number, d.publisher,
                    d.date_written, d.date_published, d.site_key,
                    d.classify_main_name, d.body_text_cn != '' as has_body
             FROM documents d
             WHERE {where_sql}
             ORDER BY d.date_written DESC
-            LIMIT ? OFFSET ?""",
-        params + [per_page, offset]
+            LIMIT ${limit_idx} OFFSET ${offset_idx}""",
+        *params, per_page, offset
     )
     return rows, total
 
 
 async def get_document(db, doc_id: int):
-    rows = await db.execute_fetchall(
-        "SELECT * FROM documents WHERE id = ?", (doc_id,)
+    return await db.fetchrow(
+        "SELECT * FROM documents WHERE id = $1", doc_id
     )
-    return rows[0] if rows else None
 
 
 async def get_document_citations(db, doc_id: int):
-    """Get citations made by this document and documents that cite it.
-
-    Reads from the pre-computed citations table. Falls back to on-the-fly
-    extraction if no citations exist (e.g. before extract_citations.py has run).
-    """
+    """Get citations made by this document and documents that cite it."""
     # Forward: what this document references
-    cites_rows = await db.execute_fetchall(
+    cites_rows = await db.fetch(
         """SELECT c.target_ref, c.target_id, c.citation_type, c.target_level,
                   d.title as target_title, d.site_key as target_site_key
            FROM citations c
            LEFT JOIN documents d ON d.id = c.target_id
-           WHERE c.source_id = ?
+           WHERE c.source_id = $1
            ORDER BY c.citation_type, c.target_level""",
-        (doc_id,)
+        doc_id
     )
 
     cites = []
@@ -114,14 +121,14 @@ async def get_document_citations(db, doc_id: int):
         cites.append(cite)
 
     # Reverse: what references this document
-    cited_by_rows = await db.execute_fetchall(
+    cited_by_rows = await db.fetch(
         """SELECT c.source_id, c.citation_type, c.source_level,
                   d.title, d.site_key, d.publisher
            FROM citations c
            JOIN documents d ON d.id = c.source_id
-           WHERE c.target_id = ?
+           WHERE c.target_id = $1
            ORDER BY c.source_level, d.date_written DESC""",
-        (doc_id,)
+        doc_id
     )
 
     cited_by = []
@@ -135,92 +142,51 @@ async def get_document_citations(db, doc_id: int):
             "level": row["source_level"],
         })
 
-    # Fallback: if citations table is empty, use legacy on-the-fly extraction
-    if not cites and not cited_by:
-        return await _get_document_citations_legacy(db, doc_id)
-
-    return cites, cited_by
-
-
-async def _get_document_citations_legacy(db, doc_id: int):
-    """Legacy on-the-fly citation extraction (before extract_citations.py has run)."""
-    doc = await get_document(db, doc_id)
-    if not doc:
-        return [], []
-
-    cites = []
-    body = doc["body_text_cn"] or ""
-    refs = REF_PATTERN.findall(body)
-    for ref in set(refs):
-        resolved = await db.execute_fetchall(
-            "SELECT id, title, site_key FROM documents WHERE document_number = ?",
-            (ref,)
-        )
-        cites.append({
-            "ref": ref,
-            "type": "formal",
-            "level": get_admin_level(ref),
-            "resolved": dict(resolved[0]) if resolved else None,
-        })
-
-    cited_by = []
-    doc_num = doc["document_number"]
-    if doc_num:
-        rows = await db.execute_fetchall(
-            "SELECT id, title, site_key, publisher FROM documents "
-            "WHERE body_text_cn LIKE ? AND id != ?",
-            (f"%{doc_num}%", doc_id)
-        )
-        cited_by = [{"id": r["id"], "title": r["title"], "site_key": r["site_key"],
-                      "publisher": r["publisher"], "type": "formal", "level": "unknown"}
-                     for r in rows]
-
     return cites, cited_by
 
 
 async def get_sites(db):
-    rows = await db.execute_fetchall("""
+    return await db.fetch("""
         SELECT s.site_key, s.name, s.base_url, s.admin_level, s.sid,
                COUNT(d.id) as doc_count,
                SUM(CASE WHEN d.body_text_cn != '' THEN 1 ELSE 0 END) as body_count,
                SUM(CASE WHEN d.document_number != '' THEN 1 ELSE 0 END) as docnum_count
         FROM sites s
         LEFT JOIN documents d ON d.site_key = s.site_key
-        GROUP BY s.site_key
+        GROUP BY s.site_key, s.name, s.base_url, s.admin_level, s.sid
         ORDER BY doc_count DESC
     """)
-    return rows
 
 
 async def get_categories(db):
-    rows = await db.execute_fetchall("""
+    return await db.fetch("""
         SELECT classify_main_name, COUNT(*) as count
         FROM documents
         WHERE classify_main_name != ''
         GROUP BY classify_main_name
         ORDER BY count DESC
     """)
-    return rows
 
 
 async def get_stats(db):
-    total = (await db.execute_fetchall("SELECT COUNT(*) FROM documents"))[0][0]
-    with_body = (await db.execute_fetchall(
+    total = await db.fetchval("SELECT COUNT(*) FROM documents")
+    with_body = await db.fetchval(
         "SELECT COUNT(*) FROM documents WHERE body_text_cn != ''"
-    ))[0][0]
-    with_docnum = (await db.execute_fetchall(
+    )
+    with_docnum = await db.fetchval(
         "SELECT COUNT(*) FROM documents WHERE document_number != ''"
-    ))[0][0]
-    site_count = (await db.execute_fetchall("SELECT COUNT(*) FROM sites"))[0][0]
+    )
+    site_count = await db.fetchval("SELECT COUNT(*) FROM sites")
 
     # By year
-    year_rows = await db.execute_fetchall("""
-        SELECT CAST(strftime('%Y', date_written, 'unixepoch') AS INTEGER) as year,
+    year_rows = await db.fetch("""
+        SELECT EXTRACT(YEAR FROM to_timestamp(date_written))::int as year,
                COUNT(*) as count
         FROM documents
         WHERE date_written > 0
         GROUP BY year
-        HAVING year >= 2015 AND year <= 2030
+        HAVING EXTRACT(YEAR FROM to_timestamp(date_written))::int >= 2015
+           AND EXTRACT(YEAR FROM to_timestamp(date_written))::int <= 2030
         ORDER BY year
     """)
 
@@ -234,16 +200,13 @@ async def get_stats(db):
 
 
 def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
-    """Truncate FTS snippet to max_len chars, preserving HTML mark tags."""
+    """Truncate search snippet to max_len chars, preserving HTML mark tags."""
     if not snippet or len(snippet) <= max_len:
         return snippet or ""
-    # Find a good break point near max_len
     cut = snippet[:max_len]
-    # Don't cut inside a <mark> tag
     open_tag = cut.rfind("<mark>")
     close_tag = cut.rfind("</mark>")
     if open_tag > close_tag:
-        # We're inside a <mark> tag, extend to close it
         end = snippet.find("</mark>", open_tag)
         if end != -1:
             cut = snippet[:end + len("</mark>")]
@@ -252,28 +215,49 @@ def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
 
 async def search_documents(db, query: str, page: int = 1, per_page: int = 50):
     offset = (page - 1) * per_page
-    # FTS5 search
-    rows = await db.execute_fetchall(
+    search_pattern = f"%{query}%"
+
+    rows = await db.fetch(
         """SELECT d.id, d.title, d.document_number, d.publisher,
                   d.date_written, d.site_key, d.classify_main_name,
-                  snippet(documents_fts, 1, '<mark>', '</mark>', '…', 16) as snippet
-           FROM documents_fts
-           JOIN documents d ON d.id = documents_fts.rowid
-           WHERE documents_fts MATCH ?
-           ORDER BY bm25(documents_fts)
-           LIMIT ? OFFSET ?""",
-        (query, per_page, offset)
+                  CASE
+                    WHEN d.title LIKE $1 THEN d.title
+                    WHEN d.abstract LIKE $1 THEN d.abstract
+                    ELSE SUBSTR(d.body_text_cn, 1, 200)
+                  END as snippet
+           FROM documents d
+           WHERE d.title LIKE $1
+              OR d.document_number LIKE $1
+              OR d.keywords LIKE $1
+              OR d.abstract LIKE $1
+              OR d.body_text_cn LIKE $1
+           ORDER BY
+             CASE WHEN d.title LIKE $1 THEN 0
+                  WHEN d.document_number LIKE $1 THEN 1
+                  WHEN d.keywords LIKE $1 THEN 2
+                  ELSE 3 END,
+             d.date_written DESC
+           LIMIT $2 OFFSET $3""",
+        search_pattern, per_page, offset
     )
-    # Truncate snippets and convert to dicts
+
     results = []
     for r in rows:
         d = dict(r)
-        d["snippet"] = _truncate_snippet(d.get("snippet", ""))
+        # Add <mark> tags around the query in the snippet
+        raw = d.get("snippet") or ""
+        if query and raw:
+            raw = raw.replace(query, f"<mark>{query}</mark>")
+        d["snippet"] = _truncate_snippet(raw)
         results.append(d)
-    # Count
-    count_rows = await db.execute_fetchall(
-        "SELECT COUNT(*) FROM documents_fts WHERE documents_fts MATCH ?",
-        (query,)
+
+    total = await db.fetchval(
+        """SELECT COUNT(*) FROM documents d
+           WHERE d.title LIKE $1
+              OR d.document_number LIKE $1
+              OR d.keywords LIKE $1
+              OR d.abstract LIKE $1
+              OR d.body_text_cn LIKE $1""",
+        search_pattern
     )
-    total = count_rows[0][0] if count_rows else 0
-    return results, total
+    return results, total or 0
