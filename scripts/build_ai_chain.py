@@ -19,25 +19,13 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from analyze import REF_PATTERN, classify_issuer, get_admin_level
+from analyze import (
+    REF_PATTERN, classify_issuer, get_admin_level,
+    NAMED_REF_PATTERN, POLICY_KEYWORDS, EXCLUDE_KEYWORDS,
+    is_policy_document, classify_named_ref_level,
+)
 
 DB_PATH = Path(__file__).parent.parent / "documents.db"
-
-# Pattern for named document references in 《》 brackets
-# Exclude very short matches and common non-policy names
-NAMED_REF_PATTERN = re.compile(r"《([^》]{8,100})》")
-
-# Keywords that indicate a named reference is a policy/plan document
-POLICY_KEYWORDS = [
-    "方案", "措施", "意见", "通知", "规定", "规划", "条例", "办法",
-    "纲要", "计划", "指南", "指引", "行动", "决定", "公告", "细则",
-    "制度", "标准", "清单",
-]
-
-# Keywords to exclude (books, reports, speeches, etc.)
-EXCLUDE_KEYWORDS = [
-    "白皮书", "报告", "讲话", "文章", "演讲", "论文",
-]
 
 AI_QUERY = """
 SELECT id, site_key, title, document_number, date_published,
@@ -47,29 +35,6 @@ WHERE (title LIKE '%人工智能%' OR keywords LIKE '%人工智能%' OR abstract
   AND body_text_cn IS NOT NULL AND LENGTH(body_text_cn) > 20
 ORDER BY date_published DESC
 """
-
-
-def classify_named_ref_level(name: str) -> str:
-    """Guess the administrative level of a named reference from its content."""
-    if any(k in name for k in ["国务院", "国家", "全国", "中共中央", "教育部", "科技部", "工信部", "教育强国", "中小学"]):
-        return "central"
-    if any(k in name for k in ["广东省", "省"]):
-        return "provincial"
-    if any(k in name for k in ["深圳市"]) and not any(k in name for k in ["龙华", "南山", "坪山", "福田", "罗湖", "宝安", "盐田", "光明", "龙岗", "大鹏"]):
-        return "municipal"
-    if any(k in name for k in ["龙华", "南山", "坪山", "福田", "罗湖", "宝安", "盐田", "光明", "龙岗", "大鹏"]):
-        return "district"
-    # Check for Shenzhen-level patterns
-    if "深圳" in name and "区" not in name:
-        return "municipal"
-    return "unknown"
-
-
-def is_policy_document(name: str) -> bool:
-    """Check if a named reference looks like a policy document."""
-    if any(k in name for k in EXCLUDE_KEYWORDS):
-        return False
-    return any(k in name for k in POLICY_KEYWORDS)
 
 
 def build_chain():

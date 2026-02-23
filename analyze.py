@@ -19,7 +19,11 @@ from pathlib import Path
 
 DB_PATH = Path(__file__).parent / "documents.db"
 
-# Pattern for document number references: Chinese chars + bracket + year + bracket + number + 号
+# ---------------------------------------------------------------------------
+# Citation extraction patterns
+# ---------------------------------------------------------------------------
+
+# Formal 文号 references: Chinese chars + bracket + year + bracket + number + 号
 REF_PATTERN = re.compile(
     r"([\u4e00-\u9fff]+[\u3014\u3008\u300a\uff08\u2018\u301a]"
     r"(?:19|20)\d{2}"
@@ -138,6 +142,45 @@ def get_admin_level(doc_number: str) -> str:
         return "municipal"
     elif any(clean.startswith(p) for p in district_prefixes):
         return "district"
+    return "unknown"
+
+
+# Named 《》 references (policy documents cited by name)
+NAMED_REF_PATTERN = re.compile(r"《([^》]{8,100})》")
+
+POLICY_KEYWORDS = [
+    "方案", "措施", "意见", "通知", "规定", "规划", "条例", "办法",
+    "纲要", "计划", "指南", "指引", "行动", "决定", "公告", "细则",
+    "制度", "标准", "清单",
+]
+
+EXCLUDE_KEYWORDS = [
+    "白皮书", "报告", "讲话", "文章", "演讲", "论文",
+]
+
+
+def is_policy_document(name: str) -> bool:
+    """Check if a named reference looks like a policy document."""
+    if any(k in name for k in EXCLUDE_KEYWORDS):
+        return False
+    return any(k in name for k in POLICY_KEYWORDS)
+
+
+def classify_named_ref_level(name: str) -> str:
+    """Guess the administrative level of a named 《》 reference."""
+    if any(k in name for k in ["国务院", "国家", "全国", "中共中央", "教育部", "科技部",
+                                 "工信部", "教育强国", "中小学"]):
+        return "central"
+    if any(k in name for k in ["广东省", "省"]):
+        return "provincial"
+    if any(k in name for k in ["深圳市"]) and not any(
+        k in name for k in ["龙华", "南山", "坪山", "福田", "罗湖", "宝安", "盐田", "光明", "龙岗", "大鹏"]
+    ):
+        return "municipal"
+    if any(k in name for k in ["龙华", "南山", "坪山", "福田", "罗湖", "宝安", "盐田", "光明", "龙岗", "大鹏"]):
+        return "district"
+    if "深圳" in name and "区" not in name:
+        return "municipal"
     return "unknown"
 
 

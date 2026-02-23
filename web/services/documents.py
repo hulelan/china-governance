@@ -81,30 +81,88 @@ async def get_document(db, doc_id: int):
 
 
 async def get_document_citations(db, doc_id: int):
-    """Get citations made by this document and documents that cite it."""
+    """Get citations made by this document and documents that cite it.
+
+    Reads from the pre-computed citations table. Falls back to on-the-fly
+    extraction if no citations exist (e.g. before extract_citations.py has run).
+    """
+    # Forward: what this document references
+    cites_rows = await db.execute_fetchall(
+        """SELECT c.target_ref, c.target_id, c.citation_type, c.target_level,
+                  d.title as target_title, d.site_key as target_site_key
+           FROM citations c
+           LEFT JOIN documents d ON d.id = c.target_id
+           WHERE c.source_id = ?
+           ORDER BY c.citation_type, c.target_level""",
+        (doc_id,)
+    )
+
+    cites = []
+    for row in cites_rows:
+        cite = {
+            "ref": row["target_ref"],
+            "type": row["citation_type"],
+            "level": row["target_level"],
+            "resolved": None,
+        }
+        if row["target_id"]:
+            cite["resolved"] = {
+                "id": row["target_id"],
+                "title": row["target_title"],
+                "site_key": row["target_site_key"],
+            }
+        cites.append(cite)
+
+    # Reverse: what references this document
+    cited_by_rows = await db.execute_fetchall(
+        """SELECT c.source_id, c.citation_type, c.source_level,
+                  d.title, d.site_key, d.publisher
+           FROM citations c
+           JOIN documents d ON d.id = c.source_id
+           WHERE c.target_id = ?
+           ORDER BY c.source_level, d.date_written DESC""",
+        (doc_id,)
+    )
+
+    cited_by = []
+    for row in cited_by_rows:
+        cited_by.append({
+            "id": row["source_id"],
+            "title": row["title"],
+            "site_key": row["site_key"],
+            "publisher": row["publisher"],
+            "type": row["citation_type"],
+            "level": row["source_level"],
+        })
+
+    # Fallback: if citations table is empty, use legacy on-the-fly extraction
+    if not cites and not cited_by:
+        return await _get_document_citations_legacy(db, doc_id)
+
+    return cites, cited_by
+
+
+async def _get_document_citations_legacy(db, doc_id: int):
+    """Legacy on-the-fly citation extraction (before extract_citations.py has run)."""
     doc = await get_document(db, doc_id)
     if not doc:
         return [], []
 
-    # Citations this document makes
     cites = []
     body = doc["body_text_cn"] or ""
     refs = REF_PATTERN.findall(body)
     for ref in set(refs):
-        count = refs.count(ref)
-        # Try to resolve in corpus
         resolved = await db.execute_fetchall(
             "SELECT id, title, site_key FROM documents WHERE document_number = ?",
             (ref,)
         )
         cites.append({
-            "docnum": ref,
-            "count": count,
+            "ref": ref,
+            "type": "formal",
             "level": get_admin_level(ref),
             "resolved": dict(resolved[0]) if resolved else None,
         })
 
-    # Documents that cite this one
     cited_by = []
     doc_num = doc["document_number"]
     if doc_num:
@@ -113,7 +171,9 @@ async def get_document_citations(db, doc_id: int):
             "WHERE body_text_cn LIKE ? AND id != ?",
             (f"%{doc_num}%", doc_id)
         )
-        cited_by = [dict(r) for r in rows]
+        cited_by = [{"id": r["id"], "title": r["title"], "site_key": r["site_key"],
+                      "publisher": r["publisher"], "type": "formal", "level": "unknown"}
+                     for r in rows]
 
     return cites, cited_by
 

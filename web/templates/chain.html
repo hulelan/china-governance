@@ -1,29 +1,48 @@
 {% extends "base.html" %}
-{% block title %}AI Policy Chain — CNGOV{% endblock %}
+{% block title %}{{ keyword|default('Policy') }} Chain — CNGOV{% endblock %}
 {% block content %}
 <div class="max-w-6xl mx-auto">
-    <div class="mb-4">
-        <h1 class="text-lg font-bold text-white">AI Policy Chain: Shenzhen</h1>
-        <p class="text-xs text-gray-500 mt-1">
-            How artificial intelligence policy flows from central government directives through provincial, municipal, and district implementation.
-            {{ chain.stats.source_documents|default(0) }} source documents analyzed &middot;
-            {{ chain.stats.formal_citations|default(0) }} formal citations &middot;
-            {{ chain.stats.named_citations|default(0) }} named references
-        </p>
+    <div class="mb-4 flex items-start justify-between">
+        <div>
+            <h1 class="text-lg font-bold text-white">Policy Chain: {{ keyword }}</h1>
+            <p class="text-xs text-gray-500 mt-1">
+                How policy flows from central government through provincial, municipal, and district implementation.
+                {{ chain.stats.source_documents|default(0) }} source documents &middot;
+                {{ chain.stats.formal_citations|default(0) }} formal citations &middot;
+                {{ chain.stats.named_citations|default(0) }} named references
+            </p>
+        </div>
+        <!-- Topic selector -->
+        {% if topics %}
+        <div class="flex gap-1.5 flex-wrap">
+            {% for t_key, t_keyword in topics.items() %}
+            <a href="/chain/{{ t_key }}"
+               class="px-2.5 py-1 rounded text-xs no-underline
+                      {% if t_key == topic %}bg-blue-600 text-white{% else %}bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white{% endif %}">
+                {{ t_keyword }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
+
+    {% if chain.stats.source_documents == 0 %}
+    <div class="bg-gray-900 border border-gray-800 rounded px-4 py-6 text-center text-gray-500 text-sm">
+        No documents found for "{{ keyword }}". Try a different topic above.
+    </div>
+    {% else %}
 
     <!-- Vertical chain -->
     {% set levels = [
-        ("central", "Central Government", "Directives, plans, and guidelines from the State Council, ministries, and CPC Central Committee", "badge-central"),
-        ("provincial", "Guangdong Province", "Provincial R&D programs and implementation directives", "badge-provincial"),
-        ("municipal", "Shenzhen Municipality", "Citywide AI action plans, compute infrastructure, and industry policies", "badge-municipal"),
-        ("district", "Districts & Departments", "District-level implementation measures, subsidies, and action plans", "badge-district"),
+        ("central", "Central Government", "State Council, ministries, CPC Central Committee", "badge-central"),
+        ("provincial", "Provincial", "Provincial government and departments", "badge-provincial"),
+        ("municipal", "Municipal", "Citywide plans, policies, and industry strategy", "badge-municipal"),
+        ("district", "District", "District-level implementation, subsidies, and action plans", "badge-district"),
     ] %}
 
     <div class="space-y-0">
     {% for level_key, level_name, level_desc, badge_class in levels %}
         {% set policies = chain.hierarchy[level_key]|default([]) %}
-        {% set source_docs = chain.source_documents_by_level.get(level_key, []) if level_key in ['district', 'department'] else [] %}
 
         <!-- Level card -->
         <div class="relative">
@@ -47,6 +66,7 @@
                         <tr class="text-gray-500 border-b border-gray-800">
                             <th class="text-left w-8">Refs</th>
                             <th class="text-left">Policy Document</th>
+                            <th class="text-left w-16">Type</th>
                             <th class="text-left w-24">Status</th>
                         </tr>
                     </thead>
@@ -56,14 +76,15 @@
                             <td class="text-gray-400 mono">{{ p.citation_count }}x</td>
                             <td>
                                 {% if p.in_corpus and p.corpus_match %}
-                                    <a href="/document/{{ p.corpus_match.id }}">{{ p.name }}</a>
+                                    <a href="/document/{{ p.corpus_match.id }}">{{ p.name[:80] }}{% if p.name|length > 80 %}…{% endif %}</a>
                                     {% if p.corpus_match.document_number %}
                                         <span class="mono text-gray-500 ml-1">{{ p.corpus_match.document_number }}</span>
                                     {% endif %}
                                 {% else %}
-                                    <span class="text-gray-300">{{ p.name }}</span>
+                                    <span class="text-gray-300">{{ p.name[:80] }}{% if p.name|length > 80 %}…{% endif %}</span>
                                 {% endif %}
                             </td>
+                            <td class="text-gray-600 text-[10px]">{{ p.type }}</td>
                             <td>
                                 {% if p.in_corpus %}
                                     <span class="text-green-500 text-xs">in corpus</span>
@@ -86,13 +107,14 @@
     <!-- Source documents section -->
     <div class="mt-6 mb-4">
         <h2 class="text-sm font-bold text-white mb-1">Source Documents in Corpus</h2>
-        <p class="text-xs text-gray-500">AI-related documents in our archive that reference the policies above. Grouped by issuing level.</p>
+        <p class="text-xs text-gray-500">Documents matching "{{ keyword }}" that reference the policies above.</p>
     </div>
 
     {% set src_levels = [
-        ("department", "Municipal Departments", "badge-department"),
-        ("district", "Districts", "badge-district"),
+        ("central", "Central", "badge-central"),
+        ("provincial", "Provincial", "badge-provincial"),
         ("municipal", "Municipal", "badge-municipal"),
+        ("district", "District", "badge-district"),
     ] %}
 
     {% for src_level, src_label, src_badge in src_levels %}
@@ -121,7 +143,7 @@
                     <tr class="border-b border-gray-800/50 hover:bg-gray-800/30">
                     {% endif %}
                         <td class="text-gray-500 mono">{{ d.site_key }}</td>
-                        <td><a href="/document/{{ d.id }}">{{ d.title[:80] }}{% if d.title|length > 80 %}...{% endif %}</a></td>
+                        <td><a href="/document/{{ d.id }}">{{ d.title[:80] }}{% if d.title|length > 80 %}…{% endif %}</a></td>
                         <td class="mono text-gray-400">{{ d.document_number or '' }}</td>
                         <td class="text-gray-500">{{ d.date_published[:10] if d.date_published else '' }}</td>
                     </tr>
@@ -135,10 +157,12 @@
     <!-- Methodology note -->
     <div class="mt-6 bg-gray-900/50 border border-gray-800 rounded px-4 py-3 text-xs text-gray-500">
         <span class="font-semibold text-gray-400">Methodology:</span>
-        Policy references extracted via two methods: formal document number (文号) pattern matching using regex,
+        Policy references extracted via formal document number (文号) pattern matching
         and named document references in《》brackets filtered for policy-relevant keywords.
-        Administrative level classification based on issuer prefix patterns.
-        Source corpus: {{ chain.stats.source_documents|default(0) }} AI-related documents from 20 Shenzhen government sites.
+        Source: {{ chain.stats.source_documents|default(0) }} documents matching "{{ keyword }}".
+        <a href="/analysis/ai">Read the AI analysis</a>.
     </div>
+
+    {% endif %}
 </div>
 {% endblock %}

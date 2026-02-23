@@ -14,6 +14,7 @@ from web.services.documents import (
     get_sites, get_stats, get_categories, search_documents,
     REF_PATTERN, get_admin_level,
 )
+from web.services.chain import get_chain, TOPIC_KEYWORDS
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -165,24 +166,22 @@ async def dashboard(request: Request):
     })
 
 
-CHAIN_DATA_DIR = Path(__file__).parent.parent.parent / "data"
-
-
-@router.get("/chain/ai", response_class=HTMLResponse)
-async def chain_ai(request: Request):
+@router.get("/chain/{topic}", response_class=HTMLResponse)
+async def chain_page(request: Request, topic: str = "ai"):
     db = request.app.state.db
     stats = await get_stats(db)
-
-    # Load pre-built chain data
-    chain_path = CHAIN_DATA_DIR / "ai_chain.json"
-    chain = {}
-    if chain_path.exists():
-        with open(chain_path) as f:
-            chain = json.load(f)
+    keyword = TOPIC_KEYWORDS.get(topic, topic)
+    chain = await get_chain(db, keyword)
 
     return templates.TemplateResponse("chain.html", {
         "request": request, "stats": stats, "chain": chain,
+        "topic": topic, "keyword": keyword, "topics": TOPIC_KEYWORDS,
     })
+
+
+@router.get("/chain", response_class=HTMLResponse)
+async def chain_default(request: Request):
+    return await chain_page(request, "ai")
 
 
 @router.get("/analysis/ai", response_class=HTMLResponse)

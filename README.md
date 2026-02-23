@@ -1,44 +1,19 @@
-# CNGOV — Shenzhen Government Document Corpus
+# CNGOV — Chinese Government Document Corpus
 
-A searchable archive of 45,130 Chinese government documents from 20 Shenzhen municipal and district government websites. Includes a crawler pipeline, full-text search, citation network analysis, and an interactive web interface for browsing and verifying documents against original sources.
+A searchable archive of 46,600+ Chinese government documents spanning central government to district level. Crawls multiple platforms (State Council, NDRC, Guangdong gkmlpt) into a unified database with full-text search, citation network analysis, and an interactive web interface.
 
 ## What's in the corpus
 
-| Metric | Count |
-|--------|-------|
-| Documents | 45,130 |
-| Government sites | 20 |
-| With body text | 6,700 (15%) |
-| With document number (文号) | 4,255 |
-| Cross-reference citations | ~2,900 edges |
-| Raw HTML archived | 6,754 files with SHA-256 hashes |
+| Layer | Sites | Documents | Source |
+|-------|-------|-----------|--------|
+| **Central** | State Council, NDRC | 1,500 | gov.cn, ndrc.gov.cn |
+| **Municipal** | Shenzhen (14 departments) | 37,384 | gkmlpt API |
+| **District** | 6 Shenzhen districts | 16,091 | gkmlpt API |
+| **Total** | **22** | **46,600+** | |
 
-All documents come from Shenzhen's standardized `gkmlpt` (government open information) platform, which uses a common API across all 20 sites. Documents span 2015-2026 and cover categories like 通知公告, 工作动态, 财政预决算, 招标采购, 规范性文件, and 20+ others.
+Additional gkmlpt sites configured but not yet crawled: Guangdong Province, Guangzhou, Zhuhai, Huizhou, Jiangmen.
 
-### Sites
-
-| Key | Name | Docs |
-|-----|------|------|
-| szlhq | Longhua District | 6,134 |
-| mzj | Civil Affairs Bureau | 5,015 |
-| ga | Public Security Bureau | 5,010 |
-| hrss | Human Resources & Social Security | 3,236 |
-| swj | Commerce Bureau | 2,889 |
-| jtys | Transport Bureau | 2,843 |
-| stic | S&T Innovation Bureau | 2,710 |
-| fgw | Development & Reform Commission | 2,552 |
-| zjj | Housing & Construction Bureau | 2,353 |
-| sf | Justice Bureau | 2,019 |
-| szeb | Education Bureau | 1,999 |
-| yjgl | Emergency Management Bureau | 1,996 |
-| szpsq | Pingshan District | 1,636 |
-| wjw | Health Commission | 1,238 |
-| szgm | Guangming District | 905 |
-| sz | Shenzhen Main Portal | 844 |
-| szlh | Luohu District | 759 |
-| audit | Audit Bureau | 469 |
-| szns | Nanshan District | 309 |
-| szft | Futian District | 214 |
+Documents span 2015-2026 and cover categories like 通知公告, 工作动态, 财政预决算, 招标采购, 规范性文件, and 20+ others. Cross-reference citations (~2,900 edges) link documents across administrative levels.
 
 ## Quick start
 
@@ -55,7 +30,13 @@ uvicorn web.app:app --port 8000
 
 ```
 china-governance/
-├── crawler.py                  # Document crawler (metadata + body text)
+├── crawler.py                  # Backwards-compatible entry point (calls crawlers.gkmlpt)
+├── crawlers/                   # Multi-platform crawler package
+│   ├── base.py                 #   Shared: init_db, fetch, store_document, save_raw_html
+│   ├── gkmlpt.py               #   Guangdong gkmlpt platform (25 sites configured)
+│   ├── ndrc.py                 #   NDRC static HTML crawler (5 policy sections)
+│   └── gov.py                  #   State Council crawler (JSON feed + two HTML templates)
+│
 ├── analyze.py                  # Cross-reference analysis, citation network
 ├── export_network.py           # Export citation graph as CSV
 │
@@ -91,11 +72,12 @@ china-governance/
 │   ├── spec.md                 #   Original project specification
 │   ├── conversation.md         #   Initial design conversation
 │   ├── strategy/               #   Landscape research, direction options
+│   ├── references/             #   Platform surveys, crawlability assessments
 │   └── implementation/         #   Build plans and session logs
 │
 ├── requirements.txt            # Python dependencies
-├── documents.db                # (gitignored) SQLite database, 141 MB
-├── raw_html/                   # (gitignored) Archived HTML, 524 MB
+├── documents.db                # (gitignored) SQLite database
+├── raw_html/                   # (gitignored) Archived HTML
 ├── citation_edges.csv          # (gitignored) Exported citation edges
 └── document_nodes.csv          # (gitignored) Exported document nodes
 ```
@@ -137,24 +119,40 @@ Three layers of content verification against original government websites:
 
 Note: All Shenzhen government sites use HTTP only (HTTPS fails). The web app links out to originals rather than iframing them to avoid mixed-content issues.
 
-## Crawler
+## Crawlers
 
-The crawler targets Shenzhen's `gkmlpt` API, a standardized open government information platform used across all 20 sites.
+Three platform-specific crawlers write to the same `documents.db`. The `site_key` and `admin_level` fields distinguish sources.
+
+### gkmlpt (Guangdong open government platform)
 
 ```bash
-# Crawl metadata for all sites
-python crawler.py
-
-# Crawl a specific site
-python crawler.py --site sz
-
-# Backfill body text (prioritize docs with 文号)
-python crawler.py --backfill-bodies --policy-first
+python -m crawlers.gkmlpt                         # Crawl all 25 configured sites
+python -m crawlers.gkmlpt --site sz               # Crawl only Shenzhen main portal
+python -m crawlers.gkmlpt --site gd               # Crawl Guangdong Province
+python -m crawlers.gkmlpt --backfill-bodies --policy-first  # Fetch missing body text
+python -m crawlers.gkmlpt --list-sites            # Show all configured sites
 ```
 
-**API pattern:** `https://{site}.sz.gov.cn/gkmlpt/api/all/{category_id}?page={n}&sid={sid}`
+API pattern: `http://{site}/gkmlpt/api/all/{category_id}?page={n}&sid={sid}`
 
-Body text extraction fetches individual document pages and parses the HTML for the main content section.
+### NDRC (National Development and Reform Commission)
+
+```bash
+python -m crawlers.ndrc                           # Crawl all 5 policy sections
+python -m crawlers.ndrc --section tz              # Crawl only 通知 (notices)
+python -m crawlers.ndrc --list-only               # Index URLs without fetching bodies
+```
+
+Crawls static HTML listings at `ndrc.gov.cn/xxgk/zcfb/`. Sections: 发展改革委令, 规范性文件, 规划文本, 公告, 通知.
+
+### State Council
+
+```bash
+python -m crawlers.gov                            # Crawl from JSON feed (~1,000 docs)
+python -m crawlers.gov --list-only                # Index URLs without fetching bodies
+```
+
+Uses the JSON feed at `gov.cn/zhengce/zuixin/ZUIXINZHENGCE.json`. Parses two HTML templates for metadata and body text.
 
 ## Analysis
 
