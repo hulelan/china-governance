@@ -9,7 +9,8 @@ from web.routers import pages, api
 app = FastAPI(title="China Governance Documents", lifespan=lifespan)
 
 static_dir = Path(__file__).parent / "static"
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 # Serve raw HTML files for verification
 raw_html_dir = Path(__file__).parent.parent / "raw_html"
