@@ -75,7 +75,7 @@ async def get_documents(db, site_key=None, category=None, year=None,
     rows = await db.fetch(
         f"""SELECT d.id, d.title, d.document_number, d.publisher,
                    d.date_written, d.date_published, d.site_key,
-                   d.classify_main_name, d.body_text_cn != '' as has_body
+                   d.classify_main_name, (COALESCE(d.body_text_cn, '') != '') as has_body
             FROM documents d
             WHERE {where_sql}
             ORDER BY d.date_written DESC
@@ -180,14 +180,15 @@ async def get_stats(db):
 
     # By year
     year_rows = await db.fetch("""
-        SELECT EXTRACT(YEAR FROM to_timestamp(date_written))::int as year,
-               COUNT(*) as count
-        FROM documents
-        WHERE date_written > 0
-        GROUP BY year
-        HAVING EXTRACT(YEAR FROM to_timestamp(date_written))::int >= 2015
-           AND EXTRACT(YEAR FROM to_timestamp(date_written))::int <= 2030
-        ORDER BY year
+        SELECT yr as year, COUNT(*) as count
+        FROM (
+            SELECT EXTRACT(YEAR FROM to_timestamp(date_written))::int as yr
+            FROM documents
+            WHERE date_written > 0
+        ) sub
+        WHERE yr >= 2015 AND yr <= 2030
+        GROUP BY yr
+        ORDER BY yr
     """)
 
     return {
