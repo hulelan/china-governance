@@ -33,16 +33,19 @@ Backed by a verified, archived corpus with direct links to original government s
 
 ---
 
-## What We Have Now
+## What We Have Now (updated 2026-02-23)
 
-- **45,130 documents** from 20 Shenzhen government sites (2015–2026)
-- **Working web app** with full-text search, browsing, document detail, citation network visualization, and dashboard
-- **~2,900 citation edges** extracted via regex from 文号 patterns
+- **46,633 documents** from 22 government sites (20 Shenzhen + 2 central: State Council, NDRC)
+- **14,834 citation edges** extracted via regex (formal 文号 + named 《》 references)
+- **Working web app** with 9 pages: browse, search, document detail, citation network (D3.js), dashboard, policy chains (6 topics), AI analysis write-up, side-by-side comparison
+- **7 JSON API endpoints** under `/api/v1/`
 - **Citation hierarchy classified** by administrative level (central/provincial/municipal/district)
 - **Verification infrastructure**: SHA-256 hashes, direct links to originals, side-by-side comparison
-- **Docker deployment** ready
+- **Live deployment** at [chinagovernance.com](https://www.chinagovernance.com) on Railway (PostgreSQL + Docker)
+- **Dual-mode database**: PostgreSQL in production, SQLite for local development
+- **AI policy case study**: end-to-end proof of concept — backfill, citation extraction, chain view, analytical write-up
 
-See `docs/implementation/crawler-plan.md` and `docs/implementation/web-plan.md` for details on what's been built.
+See `docs/implementation/crawler-plan.md`, `docs/implementation/web-plan.md`, and `docs/implementation/ai-case-study-plan.md` for details on what's been built.
 
 ---
 
@@ -54,22 +57,28 @@ See `docs/implementation/crawler-plan.md` and `docs/implementation/web-plan.md` 
 
 ### Tasks
 
-1. **Backfill body text** for all 45,130 documents (or as many as have accessible content pages). This is a crawler re-run, not LLM work — just hitting content pages we skipped on the first pass.
+1. **Backfill body text** for all 46,633 documents (or as many as have accessible content pages). This is a crawler re-run, not LLM work — just hitting content pages we skipped on the first pass.
+   - **Status: NOT STARTED for full corpus.** Only done for 113 AI-related docs (87 succeeded). This is the highest-priority remaining task.
 
-2. **Re-run citation extraction** on the expanded corpus. We should go from ~2,900 edges to potentially 10,000+.
+2. **Re-run citation extraction** on the expanded corpus. We should go from ~14,834 edges to potentially 50,000+.
+   - **Status: PARTIALLY DONE.** Citation extraction has been run on the current corpus (14,834 edges). Needs re-run after full body text backfill.
 
-3. **Build "Policy Chain" view in the web app.** Given a central government document number (e.g., 国发〔2012〕52号), show:
-   - The central directive itself (title, date, summary)
-   - All Shenzhen documents that cite it, grouped by department/district
-   - Timeline: when each local response appeared
-   - This is the first version of "tracing a policy downward"
+3. ~~**Build "Policy Chain" view in the web app.**~~ **DONE.** `/chain/{topic}` shows cross-level policy chains for 6 topics (ai, digital, carbon, housing, education, health). Each shows central → municipal → district hierarchy with document links.
 
-4. **Build "Same-Level Comparison" view.** For a given central directive, compare which districts/departments responded and which didn't. A simple grid: rows = citing documents, columns = key metadata (department, date, category).
+4. **Build "Same-Level Comparison" view.** For a given central directive, compare which districts/departments responded and which didn't.
+   - **Status: NOT STARTED.** Deferred — the chain view partially covers this by grouping by level.
+
+### Completed additions (not in original plan)
+
+5. **AI policy case study write-up** — `/analysis/ai` — an analytical write-up demonstrating policy chain analysis. See `docs/implementation/ai-case-study-plan.md`.
+
+6. **Production deployment** — PostgreSQL on Railway, Dockerfile, dual-mode database layer, custom domain (chinagovernance.com). See `docs/implementation/web-scratchpad.md` for deployment log.
 
 ### What this demonstrates (portfolio value)
 - Data engineering at scale (corpus management, backfilling)
 - Domain expertise (understanding Chinese administrative hierarchy)
 - Analytical thinking (policy chain visualization)
+- Production deployment (PostgreSQL, Docker, Railway, custom domain)
 
 ### What this does NOT require
 - LLM API calls (all regex-based)

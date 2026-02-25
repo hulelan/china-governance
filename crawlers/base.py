@@ -103,6 +103,19 @@ def init_db(db_path: Path = None) -> sqlite3.Connection:
         CREATE INDEX IF NOT EXISTS idx_citations_target_id ON citations(target_id);
         CREATE INDEX IF NOT EXISTS idx_citations_target_ref ON citations(target_ref);
         CREATE INDEX IF NOT EXISTS idx_citations_levels ON citations(source_level, target_level);
+
+        CREATE TABLE IF NOT EXISTS subsidy_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            document_id INTEGER NOT NULL,
+            amount_value REAL,
+            amount_raw TEXT,
+            amount_context TEXT,
+            sector TEXT,
+            FOREIGN KEY (document_id) REFERENCES documents(id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_subsidy_items_doc ON subsidy_items(document_id);
+        CREATE INDEX IF NOT EXISTS idx_subsidy_items_sector ON subsidy_items(sector);
     """)
     conn.commit()
     return conn

@@ -10,28 +10,55 @@ TOPIC_KEYWORDS = {
     "housing": "住房",
     "education": "教育",
     "health": "卫生",
+    "subsidies": "补贴",
+}
+
+# Topics that need multiple keywords to capture the full document set
+TOPIC_MULTI_KEYWORDS = {
+    "subsidies": ["补贴", "扶持", "奖励", "资助", "引导基金", "专项资金"],
 }
 
 
-async def get_chain(db, keyword: str):
+async def get_chain(db, keyword: str, topic: str = None):
     """Build a policy chain from the citations table for a given topic keyword.
 
     Returns a dict with hierarchy, source docs, and stats — same shape as
     the old ai_chain.json so the template works with minimal changes.
     """
-    search_pattern = f"%{keyword}%"
+    multi_keywords = TOPIC_MULTI_KEYWORDS.get(topic) if topic else None
 
-    # Source documents: docs matching the topic that have body text
-    source_rows = await db.fetch(
-        """SELECT d.id, d.title, d.document_number, d.site_key,
-                  d.date_published, d.publisher, s.admin_level
-           FROM documents d
-           JOIN sites s ON s.site_key = d.site_key
-           WHERE (d.title LIKE $1 OR d.keywords LIKE $1 OR d.abstract LIKE $1)
-             AND d.body_text_cn IS NOT NULL AND LENGTH(d.body_text_cn) > 20
-           ORDER BY d.date_published DESC""",
-        search_pattern
-    )
+    if multi_keywords:
+        # Build OR query for multi-keyword topics
+        conditions = []
+        params = []
+        for i, kw in enumerate(multi_keywords):
+            p = f"${i + 1}"
+            conditions.append(f"(d.title LIKE {p} OR d.keywords LIKE {p} OR d.abstract LIKE {p})")
+            params.append(f"%{kw}%")
+
+        where_clause = " OR ".join(conditions)
+        source_rows = await db.fetch(
+            f"""SELECT d.id, d.title, d.document_number, d.site_key,
+                      d.date_published, d.publisher, s.admin_level
+               FROM documents d
+               JOIN sites s ON s.site_key = d.site_key
+               WHERE ({where_clause})
+                 AND d.body_text_cn IS NOT NULL AND LENGTH(d.body_text_cn) > 20
+               ORDER BY d.date_published DESC""",
+            *params
+        )
+    else:
+        search_pattern = f"%{keyword}%"
+        source_rows = await db.fetch(
+            """SELECT d.id, d.title, d.document_number, d.site_key,
+                      d.date_published, d.publisher, s.admin_level
+               FROM documents d
+               JOIN sites s ON s.site_key = d.site_key
+               WHERE (d.title LIKE $1 OR d.keywords LIKE $1 OR d.abstract LIKE $1)
+                 AND d.body_text_cn IS NOT NULL AND LENGTH(d.body_text_cn) > 20
+               ORDER BY d.date_published DESC""",
+            search_pattern
+        )
 
     source_ids = [r["id"] for r in source_rows]
     if not source_ids:

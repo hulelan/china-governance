@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block title %}Mapping Shenzhen's Subsidy Apparatus — CNGOV{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <article class="text-sm leading-relaxed text-gray-300">
+        <h1 class="text-xl font-bold text-white mb-1">Mapping Shenzhen's Subsidy Apparatus from the Bottom Up</h1>
+        <p class="text-xs text-gray-500 mb-6">
+            A bottom-up analysis from the CNGOV corpus &middot;
+            {{ subsidy_stats.documents_with_amounts }} documents with extractable amounts &middot;
+            {{ "%.1f"|format(subsidy_stats.total_amount_yi) }} billion yuan identified
+        </p>
+
+        <div class="bg-gray-900 border border-gray-800 rounded px-4 py-3 mb-6 text-xs text-gray-400">
+            <span class="font-semibold text-gray-300">Summary:</span>
+            We extracted structured subsidy data from {{ subsidy_stats.documents_with_amounts }} government documents
+            across Shenzhen's districts and departments. The result: a bottom-up map of how central industrial policy
+            translates into specific yuan amounts at the district level. Total identifiable subsidies:
+            <span class="text-white">{{ "{:,.0f}".format(subsidy_stats.total_amount_wan) }} 万元
+            ({{ "%.1f"|format(subsidy_stats.total_amount_yi) }} 亿元 / ~${{ "%.0f"|format(subsidy_stats.total_amount_yi * 1.4) }}M USD)</span>.
+            This is a floor, not a ceiling — many subsidy amounts remain in unparsed attachments.
+        </div>
+
+        <!-- ===== THE QUESTION ===== -->
+        <h2 class="text-base font-bold text-white mt-6 mb-2">The question</h2>
+        <p class="mb-3">
+            How large are Chinese state subsidies, and where does the money actually go? Existing estimates
+            come from the top down: the Kiel Institute's 2024 study put the figure at $2.37 trillion (roughly
+            15% of GDP), while CSIS estimated $231 billion in direct subsidies in 2019. These numbers are
+            widely cited in trade policy debates, but they're macro estimates built from national accounts
+            and firm-level disclosures.
+        </p>
+        <p class="mb-3">
+            Nobody has systematically looked at what local governments <em>actually publish</em> about their
+            subsidy programs. This matters because in China's governance system, central policy sets direction
+            while local governments write the checks. A State Council directive saying "support strategic
+            emerging industries" becomes a Shenzhen district policy saying "500,000 yuan per registered
+            AI algorithm."
+        </p>
+        <p class="mb-3">
+            This analysis uses the CNGOV corpus — {{ stats.total|default(0) }} government documents from
+            {{ stats.site_count|default(0) }} Shenzhen sites — to map subsidy flows from the bottom up.
+            We extracted specific yuan amounts, matched them to industry sectors, and traced which central
+            policies generate which local subsidies.
+        </p>
+
+        <!-- ===== THE DATA ===== -->
+        <h2 class="text-base font-bold text-white mt-6 mb-2">What the data shows</h2>
+
+        <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="bg-gray-900 border border-gray-800 rounded px-3 py-2 text-center">
+                <div class="text-lg font-bold text-white">{{ subsidy_stats.documents_with_amounts }}</div>
+                <div class="text-xs text-gray-500">documents with amounts</div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded px-3 py-2 text-center">
+                <div class="text-lg font-bold text-white">{{ subsidy_stats.total_items }}</div>
+                <div class="text-xs text-gray-500">individual subsidy items</div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded px-3 py-2 text-center">
+                <div class="text-lg font-bold text-white">{{ "%.1f"|format(subsidy_stats.total_amount_yi) }} 亿</div>
+                <div class="text-xs text-gray-500">total identified (yuan)</div>
+            </div>
+        </div>
+
+        <!-- ===== FINDING 1: DISTRICT RANKING ===== -->
+        <h2 class="text-base font-bold text-white mt-6 mb-2">Finding 1: The implementation gradient</h2>
+        <p class="mb-3">
+            Subsidy activity is not evenly distributed. Some districts and departments are prolific publishers
+            of subsidy policy; others are nearly silent. The ranking:
+        </p>
+
+        {% if by_district %}
+        <table class="w-full dense-table text-xs mb-4 bg-gray-900 border border-gray-800 rounded">
+            <thead>
+                <tr class="text-gray-500 border-b border-gray-800">
+                    <th class="text-left">Site</th>
+                    <th class="text-left">Level</th>
+                    <th class="text-right">Docs</th>
+                    <th class="text-right">Items</th>
+                    <th class="text-right">Total (万元)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in by_district[:12] %}
+                <tr class="border-b border-gray-800/50">
+                    <td class="text-gray-300">{{ d.name }}</td>
+                    <td><span class="badge badge-{{ d.admin_level }}">{{ d.admin_level }}</span></td>
+                    <td class="text-right text-gray-400">{{ d.doc_count }}</td>
+                    <td class="text-right text-gray-400">{{ d.item_count }}</td>
+                    <td class="text-right text-white mono">{{ "{:,.0f}".format(d.total_wan) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <p class="mb-3">
+            {% if by_district %}
+            <span class="text-white font-semibold">{{ by_district[0].name }}</span> leads with
+            {{ "{:,.0f}".format(by_district[0].total_wan) }} 万元 across {{ by_district[0].doc_count }} documents.
+            {% endif %}
+            This pattern — a small number of sites producing the vast majority of subsidy documentation —
+            raises the question of whether the silent sites aren't subsidizing, or simply aren't publishing.
+        </p>
+
+        <!-- ===== FINDING 2: SECTOR CONCENTRATION ===== -->
+        <h2 class="text-base font-bold text-white mt-6 mb-2">Finding 2: Where the money goes</h2>
+        <p class="mb-3">
+            We matched subsidy amounts against {{ by_sector|length }} industry sectors. The concentration
+            reveals which of Beijing's "strategic emerging industries" are actually receiving local funding:
+        </p>
+
+        {% if by_sector %}
+        <table class="w-full dense-table text-xs mb-4 bg-gray-900 border border-gray-800 rounded">
+            <thead>
+                <tr class="text-gray-500 border-b border-gray-800">
+                    <th class="text-left">Sector</th>
+                    <th class="text-right">Docs</th>
+                    <th class="text-right">Items</th>
+                    <th class="text-right">Total (万元)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in by_sector[:15] %}
+                <tr class="border-b border-gray-800/50">
+                    <td class="text-gray-300">{{ s.sector }}</td>
+                    <td class="text-right text-gray-400">{{ s.doc_count }}</td>
+                    <td class="text-right text-gray-400">{{ s.item_count }}</td>
+                    <td class="text-right text-white mono">{{ "{:,.0f}".format(s.total_wan) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <p class="mb-3">
+            The sector ranking doesn't simply mirror Beijing's rhetoric. Software and information technology
+            appear heavily because they're embedded in nearly every industrial policy — not because
+            "software" is a standalone priority. The more interesting signal is which sectors appear in
+            documents with the <em>largest</em> individual amounts, which points to where districts are
+            placing their biggest bets.
+        </p>
+
+        <!-- ===== FINDING 3: CENTRAL-TO-LOCAL LINKAGE ===== -->
+        <h2 class="text-base font-bold text-white mt-6 mb-2">Finding 3: From directive to yuan amount</h2>
+        <p class="mb-3">
+            The most powerful feature of this corpus is the ability to trace subsidies back to their
+            policy origin. When a district publishes a subsidy measure, it typically cites the central
+            and municipal documents that authorize it. The most-cited central policies in subsidy documents:
+        </p>
+
+        {% if central_linkage %}
+        <table class="w-full dense-table text-xs mb-4 bg-gray-900 border border-gray-800 rounded">
+            <thead>
+                <tr class="text-gray-500 border-b border-gray-800">
+                    <th class="text-left">Central Directive</th>
+                    <th class="text-left">Type</th>
+                    <th class="text-right">Cited by</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in central_linkage[:10] %}
+                <tr class="border-b border-gray-800/50">
+                    <td class="text-gray-300 mono">{{ c.target_ref }}</td>
+                    <td class="text-gray-400">{{ c.citation_type }}</td>
+                    <td class="text-right text-white">{{ c.citing_docs }} docs</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <p class="mb-3">
+            This is what a bottom-up approach can reveal that top-down estimates cannot: the specific
+            transmission mechanism from central directive to local cash. Each row in the table above
+            is a traceable chain from a State Council or ministry document to district-level subsidy
+            programs with specific yuan amounts.
+        </p>
+
+        <!-- ===== FINDING 4: TEMPORAL EVOLUTION ===== -->
+        <h2 class="text-base font-bold text-white mt-6 mb-2">Finding 4: How priorities shift over time</h2>
+
+        {% if timeline %}
+        <table class="w-full dense-table text-xs mb-4 bg-gray-900 border border-gray-800 rounded">
+            <thead>
+                <tr class="text-gray-500 border-b border-gray-800">
+                    <th class="text-left">Year</th>
+                    <th class="text-right">Docs</th>
+                    <th class="text-right">Items</th>
+                    <th class="text-right">Total (万元)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in timeline %}
+                <tr class="border-b border-gray-800/50">
+                    <td class="text-gray-300">{{ t.year }}</td>
+                    <td class="text-right text-gray-400">{{ t.doc_count }}</td>
+                    <td class="text-right text-gray-400">{{ t.item_count }}</td>
+                    <td class="text-right text-white mono">{{ "{:,.0f}".format(t.total_wan) if t.total_wan else "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <p class="mb-3">
+            Year-over-year changes in subsidy publication reveal shifting priorities. Spikes often
+            correspond to new Five-Year Plans (2021) or major central policy pushes. Dips may indicate
+            fiscal tightening, policy consolidation, or — importantly — reduced transparency rather
+            than reduced spending.
+        </p>
+
+        <!-- ===== FINDING 5: FISCAL SPECIFICITY GAP ===== -->
+        <h2 class="text-base font-bold text-white mt-6 mb-2">Finding 5: The specificity gap</h2>
+        <p class="mb-3">
+            The most analytically valuable signal in this data is the <em>specificity gap</em> between
+            central rhetoric and local implementation. Central policy says "support strategic emerging
+            industries." What does that actually mean in practice?
+        </p>
+
+        {% if top_docs %}
+        <p class="mb-2 text-xs text-gray-400">Documents with the most detailed subsidy breakdowns:</p>
+        <table class="w-full dense-table text-xs mb-4 bg-gray-900 border border-gray-800 rounded">
+            <thead>
+                <tr class="text-gray-500 border-b border-gray-800">
+                    <th class="text-left">Document</th>
+                    <th class="text-left">Site</th>
+                    <th class="text-right">Items</th>
+                    <th class="text-right">Total (万元)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in top_docs[:10] %}
+                <tr class="border-b border-gray-800/50">
+                    <td>
+                        <a href="/document/{{ d.id }}">{{ d.title[:60] }}{% if d.title|length > 60 %}...{% endif %}</a>
+                        {% if d.document_number %}
+                        <span class="mono text-gray-500 ml-1">{{ d.document_number }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-gray-400">{{ d.site_name }}</td>
+                    <td class="text-right text-gray-400">{{ d.item_count }}</td>
+                    <td class="text-right text-white mono">{{ "{:,.0f}".format(d.total_wan) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <p class="mb-3">
+            These documents are where central policy becomes fiscal reality. Each contains specific
+            eligibility criteria, subsidy caps, and sector targets that reveal what "support" actually
+            means. A researcher studying China's AI subsidies learns more from reading one of these
+            district-level implementation measures than from any number of State Council pronouncements.
+        </p>
+
+        <!-- ===== LARGEST AMOUNTS ===== -->
+        <h2 class="text-base font-bold text-white mt-6 mb-2">The largest single amounts</h2>
+
+        {% if top_programs %}
+        <table class="w-full dense-table text-xs mb-4 bg-gray-900 border border-gray-800 rounded">
+            <thead>
+                <tr class="text-gray-500 border-b border-gray-800">
+                    <th class="text-right">Amount</th>
+                    <th class="text-left">Context</th>
+                    <th class="text-left">Document</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in top_programs[:15] %}
+                <tr class="border-b border-gray-800/50">
+                    <td class="text-right text-white mono whitespace-nowrap">{{ p.amount_raw }}</td>
+                    <td class="text-gray-400">{{ p.amount_context[:80] }}{% if p.amount_context|length > 80 %}...{% endif %}</td>
+                    <td>
+                        <a href="/document/{{ p.doc_id }}">{{ p.title[:40] }}{% if p.title|length > 40 %}...{% endif %}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- ===== WHAT THIS MEANS ===== -->
+        <h2 class="text-base font-bold text-white mt-6 mb-2">What this tells us</h2>
+        <ol class="text-xs space-y-2 mb-4 text-gray-300 list-decimal list-inside">
+            <li><span class="text-white font-semibold">Bottom-up data reveals structure that top-down estimates miss.</span>
+                Macro estimates tell you the total; local documents tell you the mechanism. District-level
+                subsidy policies show exactly which industries are targeted, what the eligibility criteria
+                are, and how much money is available per firm. This is the level of detail that matters
+                for competitive analysis and trade policy.</li>
+            <li><span class="text-white font-semibold">Local subsidy publication is highly uneven.</span>
+                Some districts publish detailed subsidy measures with specific amounts; others publish
+                nothing. This creates a "transparency gradient" where the most active districts are the
+                most visible — and the silent ones may be spending just as much, or more, without
+                public documentation.</li>
+            <li><span class="text-white font-semibold">The central-to-local chain is traceable.</span>
+                Every district subsidy policy cites the higher-level documents that authorize it.
+                This means you can build a complete audit trail from a State Council directive
+                to a specific yuan amount in a specific district — the kind of evidence that
+                trade lawyers and policy analysts need.</li>
+            <li><span class="text-white font-semibold">Our numbers are a floor, not a ceiling.</span>
+                We can only extract amounts from documents with accessible body text (currently
+                {{ subsidy_stats.documents_with_amounts }} documents). Many subsidy details are in
+                PDF attachments, WeChat announcements, or unpublished internal documents. The
+                true scale is certainly larger.</li>
+        </ol>
+
+        <div class="bg-gray-900 border border-gray-800 rounded px-4 py-3 mt-6 text-xs text-gray-500">
+            <span class="font-semibold text-gray-400">About this analysis:</span>
+            Based on {{ subsidy_stats.documents_with_amounts }} subsidy-relevant documents from
+            {{ stats.site_count|default(0) }} Shenzhen government sites, extracted via the
+            <a href="/">CNGOV</a> corpus. Amounts identified using regex extraction of 万元/亿元
+            patterns in body text, matched against {{ by_sector|length }} industry sector keywords.
+            This analysis captures only amounts published in HTML body text — PDF/DOCX attachments
+            are not yet parsed.
+            <a href="/chain/subsidies">View the subsidy policy chain</a>.
+        </div>
+    </article>
+</div>
+{% endblock %}

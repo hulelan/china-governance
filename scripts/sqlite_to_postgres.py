@@ -99,9 +99,23 @@ CREATE INDEX IF NOT EXISTS idx_categories_site_key ON categories(site_key);
 CREATE INDEX IF NOT EXISTS idx_documents_title_trgm ON documents USING gin (title gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_documents_body_trgm ON documents USING gin (body_text_cn gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_documents_keywords_trgm ON documents USING gin (keywords gin_trgm_ops);
+
+CREATE TABLE IF NOT EXISTS subsidy_items (
+    id SERIAL PRIMARY KEY,
+    document_id INTEGER NOT NULL,
+    amount_value REAL,
+    amount_raw TEXT,
+    amount_context TEXT,
+    sector TEXT,
+    FOREIGN KEY (document_id) REFERENCES documents(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_subsidy_items_doc ON subsidy_items(document_id);
+CREATE INDEX IF NOT EXISTS idx_subsidy_items_sector ON subsidy_items(sector);
 """
 
 DROP_SCHEMA = """
+DROP TABLE IF EXISTS subsidy_items CASCADE;
 DROP TABLE IF EXISTS citations CASCADE;
 DROP TABLE IF EXISTS documents CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
@@ -190,9 +204,35 @@ def migrate(database_url: str, drop: bool = False):
             pg_conn.commit()
         print(f"  {len(rows):,} citations")
 
+    # --- Subsidy Items ---
+    try:
+        sqlite_conn.execute("SELECT 1 FROM subsidy_items LIMIT 1")
+        has_subsidy = True
+    except sqlite3.OperationalError:
+        has_subsidy = False
+
+    if has_subsidy:
+        print("[migrate] Migrating subsidy_items...")
+        rows = sqlite_conn.execute(
+            "SELECT document_id, amount_value, amount_raw, amount_context, sector FROM subsidy_items"
+        ).fetchall()
+        if rows:
+            insert_sql = (
+                "INSERT INTO subsidy_items (document_id, amount_value, amount_raw, amount_context, sector) "
+                "VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING"
+            )
+            batch_size = 2000
+            for i in range(0, len(rows), batch_size):
+                batch = rows[i:i + batch_size]
+                pg_cur.executemany(insert_sql, [tuple(r) for r in batch])
+                pg_conn.commit()
+            print(f"  {len(rows):,} subsidy items")
+    else:
+        print("[migrate] No subsidy_items table in SQLite (skipping)")
+
     # --- Verify ---
     print("\n[migrate] Verification:")
-    for table in ["sites", "categories", "documents", "citations"]:
+    for table in ["sites", "categories", "documents", "citations", "subsidy_items"]:
         pg_cur.execute(f"SELECT COUNT(*) FROM {table}")
         count = pg_cur.fetchone()[0]
         print(f"  {table}: {count:,} rows")
