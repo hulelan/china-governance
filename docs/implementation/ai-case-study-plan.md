@@ -213,6 +213,109 @@ This is the thing you'd send to someone at MERICS or CSIS to demonstrate the pro
 
 ---
 
+## Multi-Level Crawler Infrastructure (added 2026-02-28)
+
+The AI case study depends on having documents at every level of the policy chain. Here's where the crawler infrastructure stands.
+
+### Crawlers built
+
+| Level | Crawler | API/Approach | Status |
+|-------|---------|-------------|--------|
+| **Central** | `crawlers/ndrc.py` | Static HTML, `createPageHTML()` pagination, 5 sections under `/xxgk/zcfb/` | Built. 500 docs indexed (metadata only, zero body text). |
+| **Central** | `crawlers/gov.py` | JSON feed at `gov.cn/zhengce/zuixin/ZUIXINZHENGCE.json`. Two HTML templates for doc pages (Template A: formal with metadata table; Template B: article-style). Both share `#UCAP-CONTENT` for body. | Built. 1,003 docs indexed (metadata only, zero body text). |
+| **Provincial** | `crawlers/gkmlpt.py` site `gd` | Same gkmlpt API as Shenzhen. SID confirmed: 2. **Requires browser User-Agent** — default crawler UA gets connection reset. | Configured, never crawled. |
+| **Municipal** | `crawlers/gkmlpt.py` sites `sz` + 13 depts | gkmlpt API. 20 Shenzhen sites. | Crawled. 37,384 docs, ~5,500 with body text. |
+| **Municipal (other)** | `crawlers/gkmlpt.py` sites `gz`, `zhuhai`, `huizhou`, `jiangmen` | Same gkmlpt API. SIDs confirmed: Guangzhou 200001, Zhuhai 756001, Huizhou 752001, Jiangmen 750001. | Configured, never crawled. All reachable as of 2026-02-28. |
+| **District** | `crawlers/gkmlpt.py` 6 district sites | Same gkmlpt API. | Crawled. 7,746 docs, ~1,000 with body text. |
+
+### Reachability (tested 2026-02-28)
+
+```
+Central - NDRC:          OK (41,665 bytes)
+Central - Gov.cn:        OK (186,455 bytes)
+Provincial - Guangdong:  OK with browser UA (28,673 bytes) — FAILS with default crawler UA
+Municipal - Guangzhou:    OK (19,626 bytes)
+Municipal - Zhuhai:       OK (17,851 bytes)
+```
+
+### Current database inventory
+
+```
+Total: 46,634 docs, 6,819 with body text (14.6%)
+
+By level:
+  Central:     1,503 docs,     0 body text  (NDRC + State Council — metadata only)
+  Municipal:  37,384 docs, ~5,500 body text  (Shenzhen only)
+  District:    7,746 docs, ~1,000 body text  (6 Shenzhen districts)
+  Provincial:      0 docs                    (never crawled)
+  Other cities:    0 docs                    (never crawled)
+```
+
+### Diagnosis (updated 2026-02-28)
+
+Investigation found that the extraction code is **not broken** — it has a 0% failure rate on fetched HTML. The 6,819 raw HTML files we have all extracted successfully. The real problem: **34,244 gkmlpt documents were crawled with `--metadata-only`** and body text was never fetched. The backfill was started once but interrupted after ~558 docs.
+
+Remaining issues:
+1. **34,244 gkmlpt docs** — pages never fetched. Existing `extract_body_text()` works on all of them.
+2. **1,503 central docs** (NDRC + State Council) — crawlers smoke-tested with `--list-only`, body never fetched.
+3. **Provincial Guangdong** — never crawled. `gd.gov.cn` needs browser UA (resets connections with default crawler UA).
+4. **~153 non-gkmlpt page variants** — Nanshan `/xxgk/` pages use `<div class="tyxxy_main">` (126 docs) and gazette pages use `<div class="news_cont_d_wrap">` (27 docs). Need two fallback regex patterns.
+5. **~1,563 external URLs** (WeChat, Xinhua, etc.) — not extractable with simple HTML parsing. Not worth pursuing.
+
+### Plan: Get Body Text for Everything
+
+**Code changes** (all in `crawlers/gkmlpt.py`, ~37 lines total):
+
+1. **UA fix for Guangdong Province** — Add `BROWSER_UA` constant and `SITES_NEEDING_BROWSER_UA = {"gd"}`. Thread through `fetch_document_body()`, `crawl_site()`, `backfill_bodies()`, `sync_site()`. The `fetch()` in `base.py` already accepts a `headers` dict.
+
+2. **Two fallback extraction patterns** in `extract_body_text()` — after the existing `_CONFIG.DETAIL.content` block (which handles 99.6% of docs), add:
+   - `<div class="tyxxy_main">` → strip tags → return text (126 Nanshan docs)
+   - `<div class="news_cont_d_wrap">` → strip tags → return text (27 gazette docs)
+
+3. **Better backfill logging** — Add `--backfill-delay` CLI arg (default 0.5s, can reduce to 0.2s). Log every 20 docs with elapsed time + ETA. Show per-site breakdown at start.
+
+**Crawl runs** (parallel by site to cut 5 hours → ~1 hour):
+
+Phase A — Central + Provincial (parallel, ~30 min):
+```bash
+python -m crawlers.ndrc &                                 # ~500 docs
+python -m crawlers.gov &                                  # ~1,000 docs
+python -m crawlers.gkmlpt --site gd --metadata-only &    # discover size
+# then: python -m crawlers.gkmlpt --site gd              # full provincial crawl
+```
+
+Phase B — gkmlpt backfill (6 sites in parallel, ~45-60 min):
+```bash
+python -m crawlers.gkmlpt --backfill-bodies --site szlhq --policy-first &  # 5,979 docs
+python -m crawlers.gkmlpt --backfill-bodies --site ga --policy-first &     # 3,227 docs
+python -m crawlers.gkmlpt --backfill-bodies --site mzj --policy-first &    # 2,844 docs
+python -m crawlers.gkmlpt --backfill-bodies --site jtys --policy-first &   # 2,737 docs
+python -m crawlers.gkmlpt --backfill-bodies --site hrss --policy-first &   # 2,675 docs
+python -m crawlers.gkmlpt --backfill-bodies --site swj --policy-first &    # 2,612 docs
+# then next batch of sites, then final mop-up:
+python -m crawlers.gkmlpt --backfill-bodies --policy-first                 # catches remaining
+```
+
+Phase C — Citation re-extraction (~30 sec):
+```bash
+python scripts/extract_citations.py --force
+```
+
+Each backfill process is resumable — re-running picks up where it left off.
+
+**Expected outcome:**
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Body text coverage | 6,819 (14.6%) | ~43,000+ (~90%+) |
+| Central body text | 0 | ~100% |
+| Provincial (Guangdong) | 0 docs | new corpus |
+| Citation edges | 14,834 | significant increase |
+
+The ~10% gap = external URLs (WeChat, Xinhua) and 404s — not worth pursuing.
+
+---
+
 ## Build Order
 
 ```

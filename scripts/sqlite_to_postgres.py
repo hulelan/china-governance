@@ -112,9 +112,28 @@ CREATE TABLE IF NOT EXISTS subsidy_items (
 
 CREATE INDEX IF NOT EXISTS idx_subsidy_items_doc ON subsidy_items(document_id);
 CREATE INDEX IF NOT EXISTS idx_subsidy_items_sector ON subsidy_items(sector);
+
+CREATE TABLE IF NOT EXISTS document_changes (
+    id SERIAL PRIMARY KEY,
+    document_id INTEGER NOT NULL,
+    site_key TEXT NOT NULL,
+    change_type TEXT NOT NULL,
+    field_name TEXT,
+    old_value TEXT,
+    new_value TEXT,
+    detected_at TEXT NOT NULL,
+    sync_run_id TEXT,
+    FOREIGN KEY (document_id) REFERENCES documents(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_doc_changes_doc ON document_changes(document_id);
+CREATE INDEX IF NOT EXISTS idx_doc_changes_type ON document_changes(change_type);
+CREATE INDEX IF NOT EXISTS idx_doc_changes_detected ON document_changes(detected_at);
+CREATE INDEX IF NOT EXISTS idx_doc_changes_run ON document_changes(sync_run_id);
 """
 
 DROP_SCHEMA = """
+DROP TABLE IF EXISTS document_changes CASCADE;
 DROP TABLE IF EXISTS subsidy_items CASCADE;
 DROP TABLE IF EXISTS citations CASCADE;
 DROP TABLE IF EXISTS documents CASCADE;
@@ -230,9 +249,35 @@ def migrate(database_url: str, drop: bool = False):
     else:
         print("[migrate] No subsidy_items table in SQLite (skipping)")
 
+    # --- Document Changes ---
+    try:
+        sqlite_conn.execute("SELECT 1 FROM document_changes LIMIT 1")
+        has_changes = True
+    except sqlite3.OperationalError:
+        has_changes = False
+
+    if has_changes:
+        print("[migrate] Migrating document_changes...")
+        rows = sqlite_conn.execute(
+            "SELECT document_id, site_key, change_type, field_name, old_value, new_value, detected_at, sync_run_id FROM document_changes"
+        ).fetchall()
+        if rows:
+            insert_sql = (
+                "INSERT INTO document_changes (document_id, site_key, change_type, field_name, old_value, new_value, detected_at, sync_run_id) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING"
+            )
+            batch_size = 2000
+            for i in range(0, len(rows), batch_size):
+                batch = rows[i:i + batch_size]
+                pg_cur.executemany(insert_sql, [tuple(r) for r in batch])
+                pg_conn.commit()
+            print(f"  {len(rows):,} document changes")
+    else:
+        print("[migrate] No document_changes table in SQLite (skipping)")
+
     # --- Verify ---
     print("\n[migrate] Verification:")
-    for table in ["sites", "categories", "documents", "citations", "subsidy_items"]:
+    for table in ["sites", "categories", "documents", "citations", "subsidy_items", "document_changes"]:
         pg_cur.execute(f"SELECT COUNT(*) FROM {table}")
         count = pg_cur.fetchone()[0]
         print(f"  {table}: {count:,} rows")

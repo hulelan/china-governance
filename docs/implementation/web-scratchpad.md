@@ -125,3 +125,34 @@ Plan: `.claude/plans/validated-foraging-clover.md`
 **Files modified:** `web/services/chain.py`, `web/routers/pages.py`, `web/templates/base.html`, `crawlers/base.py`, `scripts/sqlite_to_postgres.py`
 
 **Status:** All code written and imports verified. Blocked on running extraction against DB (crawler holds write lock). Backfill in parallel session hit issues: many gkmlpt pages return empty body text because `extract_body_text()` regex doesn't match all page variants.
+
+### 2026-02-28 — Incremental Sync Feature
+
+**Goal:** Detect new documents, edits, and deletions since last crawl — without ever overwriting or deleting existing data.
+
+**Design constraint:** "Add additions but only mark deletions/changes" — new docs are fully inserted (with body text), but changes and deletions are only *recorded* in `document_changes`. The original document data is never overwritten or removed.
+
+**How it works:**
+1. **DISCOVER** — Hit listing API for all categories (cheap metadata-only, ~90s per site)
+2. **DIFF** — Compare API doc IDs + fields against DB: compute NEW / CHANGED / DELETED sets
+3. **ACT** — Insert new docs (fetch body too), record field-level changes and deletions without modifying originals
+
+**Schema: `document_changes` table**
+- `document_id`, `site_key`, `change_type` (added/modified/deleted)
+- `field_name`, `old_value`, `new_value` — for modified docs, which field changed and how
+- `detected_at`, `sync_run_id` — timestamp and grouping key per sync run
+- Fields compared: title, document_number, publisher, abstract, is_expired, is_abolished, keywords, url
+
+**CLI flags:**
+- `--sync` — run incremental sync (per-site with `--site` or all sites)
+- `--show-changes` — view change history grouped by sync run, with field-level diffs
+
+**Web page: `/changes`**
+- Stats cards (total changes, added, modified, deleted, sync runs)
+- Sync runs table with per-run breakdown
+- Recent changes feed with document links, change type badges, and field-level diffs
+
+**Live test:** `--sync --site audit` ran in ~90s, checked 470 docs against DB, found 1 genuinely new publication (深圳市审计局精心谋划2026年经济责任审计工作重点).
+
+**Files created:** `web/services/changes.py`, `web/templates/changes.html`
+**Files modified:** `crawlers/gkmlpt.py` (sync_site, _record_change, SYNC_COMPARE_FIELDS, --sync/--show-changes), `crawlers/base.py` (document_changes table), `scripts/sqlite_to_postgres.py` (document_changes schema + migration), `web/routers/pages.py` (/changes route), `web/templates/base.html` (nav link)

@@ -44,6 +44,8 @@ Backed by a verified, archived corpus with direct links to original government s
 - **Live deployment** at [chinagovernance.com](https://www.chinagovernance.com) on Railway (PostgreSQL + Docker)
 - **Dual-mode database**: PostgreSQL in production, SQLite for local development
 - **AI policy case study**: end-to-end proof of concept — backfill, citation extraction, chain view, analytical write-up
+- **Subsidy analysis pipeline**: multi-keyword matching, regex extraction of yuan amounts, sector attribution, report page at `/analysis/subsidies`
+- **Incremental sync**: `--sync` flag detects new/changed/deleted documents without overwriting originals; change history at `/changes`
 
 See `docs/implementation/crawler-plan.md`, `docs/implementation/web-plan.md`, and `docs/implementation/ai-case-study-plan.md` for details on what's been built.
 
@@ -174,7 +176,7 @@ These are ideas worth remembering but not committing to until the core product p
 - **Temporal analysis** — track how policy language evolves over time. When does a "pilot program" become "mandatory"?
 - **Government Guidance Fund tracking** — hedge fund use case from landscape research. Track which industries are receiving state capital at the provincial level.
 - **Academic API** — structured API access for researchers, enabling the "WRDS/FRED for Chinese government activity" vision from Direction 4 of our strategy docs.
-- **Newsletter/alert system** — notify subscribers when new documents appear in their policy areas of interest.
+- **Newsletter/alert system** — notify subscribers when new documents appear in their policy areas of interest. Foundation in place: incremental sync already detects new publications and records them in `document_changes`.
 
 ---
 

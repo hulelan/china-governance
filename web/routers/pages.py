@@ -19,6 +19,9 @@ from web.services.subsidies import (
     get_subsidy_timeline, get_top_subsidy_programs, get_top_subsidy_documents,
     get_central_subsidy_linkage,
 )
+from web.services.changes import (
+    get_recent_changes, get_sync_runs, get_change_stats,
+)
 from web.services.chain import get_chain, TOPIC_KEYWORDS
 
 router = APIRouter()
@@ -232,4 +235,26 @@ async def analysis_subsidies(request: Request):
         "top_programs": top_programs,
         "top_docs": top_docs,
         "central_linkage": central_linkage,
+    })
+
+
+@router.get("/changes", response_class=HTMLResponse)
+async def changes_page(request: Request):
+    db = request.app.state.db
+    stats = await get_stats(db)
+    try:
+        change_stats = await get_change_stats(db)
+        sync_runs = await get_sync_runs(db)
+        recent_changes = await get_recent_changes(db)
+    except Exception:
+        # document_changes table may not exist yet
+        change_stats = {"total": 0, "added": 0, "modified": 0, "deleted": 0, "runs": 0}
+        sync_runs = []
+        recent_changes = []
+
+    return templates.TemplateResponse("changes.html", {
+        "request": request, "stats": stats,
+        "change_stats": change_stats,
+        "sync_runs": sync_runs,
+        "recent_changes": recent_changes,
     })
