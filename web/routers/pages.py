@@ -1,4 +1,8 @@
-"""Server-rendered HTML page routes."""
+"""Server-rendered HTML page routes.
+
+Each handler queries the database via service functions and renders a
+Jinja2 template.  All pages receive a ``stats`` dict for the nav bar counters.
+"""
 import json
 import re
 from collections import Counter
@@ -30,6 +34,7 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templa
 
 @router.get("/", response_class=HTMLResponse)
 async def homepage(request: Request):
+    """Landing page with corpus overview, site list, and category breakdown."""
     db = request.app.state.db
     stats = await get_stats(db)
     sites = await get_sites(db)
@@ -45,6 +50,7 @@ async def browse(
     site: str = "", category: str = "", year: str = "",
     has_docnum: str = "", page: int = 1,
 ):
+    """Paginated document browser with filters for site, category, year, and doc-number presence."""
     db = request.app.state.db
     documents, total = await get_documents(
         db, site_key=site or None, category=category or None,
@@ -67,6 +73,7 @@ async def browse(
 
 @router.get("/document/{doc_id}", response_class=HTMLResponse)
 async def document_detail(request: Request, doc_id: int):
+    """Single document view with metadata, body text, and forward/reverse citations."""
     db = request.app.state.db
     doc = await get_document(db, doc_id)
     if not doc:
@@ -80,6 +87,7 @@ async def document_detail(request: Request, doc_id: int):
 
 @router.get("/compare/{doc_id}", response_class=HTMLResponse)
 async def compare(request: Request, doc_id: int):
+    """Side-by-side view of parsed text vs. raw HTML for a document."""
     db = request.app.state.db
     doc = await get_document(db, doc_id)
     if not doc:
@@ -91,6 +99,7 @@ async def compare(request: Request, doc_id: int):
 
 @router.get("/search", response_class=HTMLResponse)
 async def search_page(request: Request, q: str = "", page: int = 1):
+    """Full-text search page with highlighted snippets and pagination."""
     db = request.app.state.db
     results, total = [], 0
     if q:
@@ -106,6 +115,7 @@ async def search_page(request: Request, q: str = "", page: int = 1):
 
 @router.get("/network", response_class=HTMLResponse)
 async def network_page(request: Request):
+    """Interactive D3.js force-directed citation network graph."""
     db = request.app.state.db
     sites = await get_sites(db)
     return templates.TemplateResponse("network.html", {
@@ -115,6 +125,7 @@ async def network_page(request: Request):
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
+    """Analytics dashboard with timeline, citation hierarchy, top-cited docs, and coverage charts."""
     db = request.app.state.db
     stats = await get_stats(db)
     sites = await get_sites(db)
@@ -176,6 +187,7 @@ async def dashboard(request: Request):
 
 @router.get("/chain/{topic}", response_class=HTMLResponse)
 async def chain_page(request: Request, topic: str = "ai"):
+    """Policy chain page showing cross-level citation hierarchy for a topic (e.g. AI, housing)."""
     db = request.app.state.db
     stats = await get_stats(db)
     keyword = TOPIC_KEYWORDS.get(topic, topic)
@@ -189,11 +201,13 @@ async def chain_page(request: Request, topic: str = "ai"):
 
 @router.get("/chain", response_class=HTMLResponse)
 async def chain_default(request: Request):
+    """Redirect /chain to /chain/ai (default topic)."""
     return await chain_page(request, "ai")
 
 
 @router.get("/analysis/ai", response_class=HTMLResponse)
 async def analysis_ai(request: Request):
+    """Static write-up on AI governance with live document count."""
     db = request.app.state.db
     stats = await get_stats(db)
     doc_count = await db.fetchval(
@@ -206,6 +220,7 @@ async def analysis_ai(request: Request):
 
 @router.get("/analysis/subsidies", response_class=HTMLResponse)
 async def analysis_subsidies(request: Request):
+    """Subsidy analysis report with district, sector, and timeline breakdowns."""
     db = request.app.state.db
     stats = await get_stats(db)
     try:
@@ -240,6 +255,7 @@ async def analysis_subsidies(request: Request):
 
 @router.get("/changes", response_class=HTMLResponse)
 async def changes_page(request: Request):
+    """Document change tracker showing sync-run diffs (adds, modifications, deletions)."""
     db = request.app.state.db
     stats = await get_stats(db)
     try:

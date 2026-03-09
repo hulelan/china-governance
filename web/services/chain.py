@@ -145,6 +145,7 @@ async def get_chain(db, keyword: str, topic: str = None):
 
 
 def _empty_chain(keyword: str):
+    """Return a zero-result chain structure for topics with no matching documents."""
     return {
         "topic": keyword,
         "stats": {

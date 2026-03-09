@@ -1,4 +1,8 @@
-"""JSON API routes."""
+"""JSON API routes.
+
+All endpoints are prefixed with /api/v1 (see app.py).
+Responses are JSON dicts; list endpoints include pagination metadata.
+"""
 from fastapi import APIRouter, Request, Query
 from web.services.documents import (
     get_documents, get_document, get_document_citations,
@@ -15,6 +19,7 @@ async def api_documents(
     site: str = None, category: str = None, year: int = None,
     has_docnum: bool = None, page: int = 1, per_page: int = 50,
 ):
+    """Paginated document listing with optional filters by site, category, year, and doc-number presence."""
     db = request.app.state.db
     rows, total = await get_documents(db, site, category, year, has_docnum, page, per_page)
     return {"documents": [dict(r) for r in rows], "total": total, "page": page}
@@ -22,6 +27,7 @@ async def api_documents(
 
 @router.get("/documents/{doc_id}")
 async def api_document(request: Request, doc_id: int):
+    """Single document by ID. Returns all columns including body_text_cn."""
     db = request.app.state.db
     doc = await get_document(db, doc_id)
     if not doc:
@@ -31,6 +37,7 @@ async def api_document(request: Request, doc_id: int):
 
 @router.get("/documents/{doc_id}/citations")
 async def api_citations(request: Request, doc_id: int):
+    """Forward and reverse citations for a document (cites / cited_by)."""
     db = request.app.state.db
     cites, cited_by = await get_document_citations(db, doc_id)
     return {"cites": cites, "cited_by": cited_by}
@@ -38,6 +45,7 @@ async def api_citations(request: Request, doc_id: int):
 
 @router.get("/search")
 async def api_search(request: Request, q: str = "", page: int = 1):
+    """Full-text search across title, document_number, keywords, abstract, and body."""
     if not q:
         return {"results": [], "total": 0}
     db = request.app.state.db
@@ -47,6 +55,7 @@ async def api_search(request: Request, q: str = "", page: int = 1):
 
 @router.get("/sites")
 async def api_sites(request: Request):
+    """All crawled sites with document counts and body-text coverage."""
     db = request.app.state.db
     rows = await get_sites(db)
     return {"sites": [dict(r) for r in rows]}
@@ -54,12 +63,14 @@ async def api_sites(request: Request):
 
 @router.get("/stats")
 async def api_stats(request: Request):
+    """Corpus-wide statistics: totals, body-text coverage, and documents by year."""
     db = request.app.state.db
     return await get_stats(db)
 
 
 @router.get("/categories")
 async def api_categories(request: Request):
+    """Distinct document categories with counts (from gkmlpt classify_main_name)."""
     db = request.app.state.db
     rows = await get_categories(db)
     return {"categories": [dict(r) for r in rows]}

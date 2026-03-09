@@ -1,4 +1,8 @@
-"""Document query services."""
+"""Document query services.
+
+Provides async functions for querying the documents, sites, and categories
+tables.  Used by both the HTML page routes and the JSON API.
+"""
 import re
 from collections import Counter, defaultdict
 
@@ -23,6 +27,10 @@ ADMIN_LEVEL_PREFIXES = {
 
 
 def get_admin_level(doc_number: str) -> str:
+    """Classify a document number into an administrative level based on its prefix.
+
+    Returns one of: 'central', 'provincial', 'municipal', 'district', 'unknown'.
+    """
     clean = doc_number
     for meta in ("依据", "依照"):
         if clean.startswith(meta):
@@ -35,6 +43,7 @@ def get_admin_level(doc_number: str) -> str:
 
 async def get_documents(db, site_key=None, category=None, year=None,
                         has_docnum=None, page=1, per_page=50):
+    """Paginated document listing with optional filters. Returns (rows, total)."""
     where = ["1=1"]
     params = []
     param_idx = 0
@@ -86,6 +95,7 @@ async def get_documents(db, site_key=None, category=None, year=None,
 
 
 async def get_document(db, doc_id: int):
+    """Fetch a single document by ID, or None if not found."""
     return await db.fetchrow(
         "SELECT * FROM documents WHERE id = $1", doc_id
     )
@@ -146,6 +156,7 @@ async def get_document_citations(db, doc_id: int):
 
 
 async def get_sites(db):
+    """All sites with aggregate doc counts, body-text coverage, and doc-number counts."""
     return await db.fetch("""
         SELECT s.site_key, s.name, s.base_url, s.admin_level, s.sid,
                COUNT(d.id) as doc_count,
@@ -159,6 +170,7 @@ async def get_sites(db):
 
 
 async def get_categories(db):
+    """Distinct classify_main_name values with document counts, ordered by frequency."""
     return await db.fetch("""
         SELECT classify_main_name, COUNT(*) as count
         FROM documents
@@ -169,6 +181,7 @@ async def get_categories(db):
 
 
 async def get_stats(db):
+    """Corpus-wide statistics: total documents, body-text and doc-number coverage, and year breakdown."""
     total = await db.fetchval("SELECT COUNT(*) FROM documents")
     with_body = await db.fetchval(
         "SELECT COUNT(*) FROM documents WHERE body_text_cn != ''"
@@ -215,6 +228,7 @@ def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
 
 
 async def search_documents(db, query: str, page: int = 1, per_page: int = 50):
+    """LIKE-based search across title, doc number, keywords, abstract, and body. Returns (results, total)."""
     offset = (page - 1) * per_page
     search_pattern = f"%{query}%"
 
