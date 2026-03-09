@@ -238,81 +238,79 @@ Municipal - Guangzhou:    OK (19,626 bytes)
 Municipal - Zhuhai:       OK (17,851 bytes)
 ```
 
-### Current database inventory
+### Database inventory (updated 2026-03-02)
 
 ```
-Total: 46,634 docs, 6,819 with body text (14.6%)
-
-By level:
-  Central:     1,503 docs,     0 body text  (NDRC + State Council — metadata only)
-  Municipal:  37,384 docs, ~5,500 body text  (Shenzhen only)
-  District:    7,746 docs, ~1,000 body text  (6 Shenzhen districts)
-  Provincial:      0 docs                    (never crawled)
-  Other cities:    0 docs                    (never crawled)
+Total: 46,636 docs, 39,007 with body text (83.6%)
 ```
 
-### Diagnosis (updated 2026-02-28)
+**By level:**
 
-Investigation found that the extraction code is **not broken** — it has a 0% failure rate on fetched HTML. The 6,819 raw HTML files we have all extracted successfully. The real problem: **34,244 gkmlpt documents were crawled with `--metadata-only`** and body text was never fetched. The backfill was started once but interrupted after ~558 docs.
+| Level | Sites | Docs | Body text | Coverage |
+|-------|-------|------|-----------|----------|
+| Central | NDRC, State Council | 1,505 | 20 | 1% |
+| Municipal | Shenzhen Main Portal | 844 | 844 | 100% |
+| Department | 13 Shenzhen bureaus | 33,280 | 29,650 | 89% |
+| District | 6 Shenzhen districts | 10,957 | 8,998 | 82% |
+| Provincial | — | 0 | 0 | — |
+| Other cities | — | 0 | 0 | — |
 
-Remaining issues:
-1. **34,244 gkmlpt docs** — pages never fetched. Existing `extract_body_text()` works on all of them.
-2. **1,503 central docs** (NDRC + State Council) — crawlers smoke-tested with `--list-only`, body never fetched.
-3. **Provincial Guangdong** — never crawled. `gd.gov.cn` needs browser UA (resets connections with default crawler UA).
-4. **~153 non-gkmlpt page variants** — Nanshan `/xxgk/` pages use `<div class="tyxxy_main">` (126 docs) and gazette pages use `<div class="news_cont_d_wrap">` (27 docs). Need two fallback regex patterns.
-5. **~1,563 external URLs** (WeChat, Xinhua, etc.) — not extractable with simple HTML parsing. Not worth pursuing.
+**Per-site detail (department + district):**
 
-### Plan: Get Body Text for Everything
+| Site | Docs | Body | % | Notes |
+|------|------|------|---|-------|
+| Public Security Bureau (ga) | 5,010 | 4,930 | 98% | |
+| Longhua District (szlhq) | 6,134 | 5,906 | 96% | AI policy hotspot |
+| Health Commission (wjw) | 1,238 | 1,172 | 95% | |
+| Education Bureau (szeb) | 1,999 | 1,878 | 94% | |
+| Luohu District (szlh) | 759 | 705 | 93% | |
+| Emergency Mgmt (yjgl) | 1,996 | 1,816 | 91% | |
+| Civil Affairs (mzj) | 5,015 | 4,447 | 89% | |
+| Audit Bureau (audit) | 470 | 417 | 89% | |
+| Guangming District (szgm) | 905 | 804 | 89% | |
+| Transport (jtys) | 2,843 | 2,543 | 89% | |
+| Housing & Construction (zjj) | 2,353 | 2,081 | 88% | |
+| Commerce (swj) | 2,889 | 2,530 | 88% | |
+| Justice (sf) | 2,019 | 1,753 | 87% | |
+| HR & Social Security (hrss) | 3,236 | 2,802 | 87% | |
+| Pingshan District (szpsq) | 1,636 | 1,269 | 78% | |
+| Nanshan District (szns) | 309 | 203 | 66% | Many /xxgk/ pages |
+| S&T Innovation (stic) | 2,710 | 1,658 | 61% | |
+| Futian District (szft) | 214 | 111 | 52% | Many external URLs |
+| Dev & Reform (fgw) | 2,552 | 1,118 | 44% | DNS timeouts during backfill |
 
-**Code changes** (all in `crawlers/gkmlpt.py`, ~37 lines total):
+**Not yet crawled:**
+- Guangdong Province (`gd.gov.cn`) — configured, needs browser UA
+- Guangzhou, Zhuhai, Huizhou, Jiangmen — configured, never crawled
 
-1. **UA fix for Guangdong Province** — Add `BROWSER_UA` constant and `SITES_NEEDING_BROWSER_UA = {"gd"}`. Thread through `fetch_document_body()`, `crawl_site()`, `backfill_bodies()`, `sync_site()`. The `fetch()` in `base.py` already accepts a `headers` dict.
+### Backfill history (2026-03-01 → 2026-03-02)
 
-2. **Two fallback extraction patterns** in `extract_body_text()` — after the existing `_CONFIG.DETAIL.content` block (which handles 99.6% of docs), add:
-   - `<div class="tyxxy_main">` → strip tags → return text (126 Nanshan docs)
-   - `<div class="news_cont_d_wrap">` → strip tags → return text (27 gazette docs)
+The gkmlpt body text backfill ran overnight on March 1-2. Key events:
 
-3. **Better backfill logging** — Add `--backfill-delay` CLI arg (default 0.5s, can reduce to 0.2s). Log every 20 docs with elapsed time + ETA. Show per-site breakdown at start.
+1. **Parallel attempt failed** — 9 concurrent processes all hit `database is locked` (SQLite single-writer limitation)
+2. **Serial backfill worked** — single process at 0.3s delay, ~0.6 docs/s
+3. **URL filter fix** — original query included non-gkmlpt URLs (WeChat, NDRC, etc.). Fixed to `url LIKE '%gkmlpt%'`
+4. **Surrogate crash** — `UnicodeEncodeError` on one page's invalid UTF-16 surrogates. Fixed with `.encode('utf-8', errors='replace')`
+5. **Result:** 6,819 → 39,007 body texts (14.6% → 83.6%) in ~19 hours
 
-**Crawl runs** (parallel by site to cut 5 hours → ~1 hour):
+**Code changes applied to `crawlers/gkmlpt.py`:**
+- Browser UA for Guangdong Province (`SITES_NEEDING_BROWSER_UA`)
+- Two fallback extraction patterns (Nanshan `tyxxy_main`, gazette `news_cont_d_wrap`)
+- Better backfill logging with `--backfill-delay` CLI arg
+- URL filter: only process gkmlpt URLs, skip external/non-gkmlpt
+- Surrogate sanitization: `body_text.encode('utf-8', errors='replace').decode('utf-8')`
 
-Phase A — Central + Provincial (parallel, ~30 min):
-```bash
-python -m crawlers.ndrc &                                 # ~500 docs
-python -m crawlers.gov &                                  # ~1,000 docs
-python -m crawlers.gkmlpt --site gd --metadata-only &    # discover size
-# then: python -m crawlers.gkmlpt --site gd              # full provincial crawl
-```
+Full crawl log: `docs/log/crawl-log-mar-1.md`
 
-Phase B — gkmlpt backfill (6 sites in parallel, ~45-60 min):
-```bash
-python -m crawlers.gkmlpt --backfill-bodies --site szlhq --policy-first &  # 5,979 docs
-python -m crawlers.gkmlpt --backfill-bodies --site ga --policy-first &     # 3,227 docs
-python -m crawlers.gkmlpt --backfill-bodies --site mzj --policy-first &    # 2,844 docs
-python -m crawlers.gkmlpt --backfill-bodies --site jtys --policy-first &   # 2,737 docs
-python -m crawlers.gkmlpt --backfill-bodies --site hrss --policy-first &   # 2,675 docs
-python -m crawlers.gkmlpt --backfill-bodies --site swj --policy-first &    # 2,612 docs
-# then next batch of sites, then final mop-up:
-python -m crawlers.gkmlpt --backfill-bodies --policy-first                 # catches remaining
-```
+### Remaining to reach ~90%+
 
-Phase C — Citation re-extraction (~30 sec):
-```bash
-python scripts/extract_citations.py --force
-```
+1. **NDRC body text** — `python3 -m crawlers.ndrc` (500 docs, ~15 min). Crawler built, never fetched pages.
+2. **State Council body text** — `python3 -m crawlers.gov` (985 docs, ~30 min). Crawler built, only 20/1005 have body.
+3. **Dev & Reform re-try** — `python3 -m crawlers.gkmlpt --backfill-bodies --site fgw` (1,434 still missing, DNS issues during overnight run)
+4. **Citation re-extraction** — `python3 scripts/extract_citations.py --force`
+5. **Guangdong Province** — `python3 -m crawlers.gkmlpt --site gd` (new corpus, unknown size)
 
-Each backfill process is resumable — re-running picks up where it left off.
-
-**Expected outcome:**
-
-| Metric | Before | After |
-|--------|--------|-------|
-| Body text coverage | 6,819 (14.6%) | ~43,000+ (~90%+) |
-| Central body text | 0 | ~100% |
-| Provincial (Guangdong) | 0 docs | new corpus |
-| Citation edges | 14,834 | significant increase |
-
-The ~10% gap = external URLs (WeChat, Xinhua) and 404s — not worth pursuing.
+The ~5,500 external URLs (WeChat, Xinhua, CCTV, etc.) will never have body text — they represent the hard ceiling at ~88%.
 
 ---
 

@@ -14,6 +14,9 @@ raw_html/
 citation_edges.csv
 document_nodes.csv
 
+# Personal/scratch files
+random/
+
 # Docker volumes
 caddy_data/
 caddy_config/

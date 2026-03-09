@@ -232,7 +232,7 @@ def get_leaf_categories(tree: list) -> list[tuple[int, str]]:
 # --- Listing Discovery ---
 
 def crawl_category(
-    base_url: str, sid: str, cat_id: int, cat_name: str
+    base_url: str, sid: str, cat_id: int, cat_name: str, headers: dict = None
 ) -> list[dict]:
     """Fetch all documents in a category via the API."""
     page = 1
@@ -242,7 +242,7 @@ def crawl_category(
     while True:
         url = f"{base_url}/gkmlpt/api/all/{cat_id}?page={page}&sid={sid}"
         try:
-            data = fetch_json(url)
+            data = fetch_json(url, headers=headers)
         except (json.JSONDecodeError, ValueError):
             break
         except Exception as e:
@@ -414,7 +414,7 @@ def crawl_site(conn, site_key: str, site_cfg: dict, fetch_bodies: bool = True):
     total_docs = 0
     total_bodies = 0
     for cat_id, cat_name in leaves:
-        articles = crawl_category(base_url, sid, cat_id, cat_name)
+        articles = crawl_category(base_url, sid, cat_id, cat_name, headers=ua_headers)
         time.sleep(REQUEST_DELAY)
 
         for article in articles:
@@ -562,7 +562,7 @@ def sync_site(conn, site_key: str, site_cfg: dict):
 
     api_docs = {}  # id → article dict
     for cat_id, cat_name in leaves:
-        articles = crawl_category(base_url, sid, cat_id, cat_name)
+        articles = crawl_category(base_url, sid, cat_id, cat_name, headers=ua_headers)
         for article in articles:
             api_docs[article["id"]] = article
         time.sleep(REQUEST_DELAY)
