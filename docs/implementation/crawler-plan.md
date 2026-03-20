@@ -1,5 +1,29 @@
 # China Governance Crawler — Execution Plan
 
+> **Status: COMPLETED — Historical document.** This was the original Day 1 execution plan. Goals 1-4 and 6 are done. See `CLAUDE.md` for current operational commands.
+>
+> **Current state (2026-03-20):** 103,470+ documents across 42+ sites, 91% body text coverage. Central (NDRC, State Council, MOF, MEE), provincial (Guangdong + Beijing + Shanghai + Jiangsu), municipal (Shenzhen + 16 Guangdong cities), district, department. Plus ~830 PDF attachment texts extracted.
+
+## Post-Crawl: PDF Attachment Extraction
+
+Many government documents (budgets, regulations with official seals) are published as PDF attachments with only a stub body text like "点击查看：附件". The extraction script recovers text from these:
+
+```bash
+# Extract text from PDF attachments for stub-body documents
+python3 scripts/extract_pdf_text.py                  # All sites
+python3 scripts/extract_pdf_text.py --site gd        # One site
+python3 scripts/extract_pdf_text.py --dry-run        # Preview
+python3 scripts/extract_pdf_text.py --limit 50       # First 50 only
+```
+
+**How it works:**
+1. Finds documents with `body_text_cn` < 100 chars containing 附件/点击/下载
+2. Opens saved `raw_html/` to find attachment URLs (`/attachment/*.pdf` or any PDF URL)
+3. Downloads PDF, extracts text using PyMuPDF (`fitz`)
+4. Updates `body_text_cn` with extracted text
+
+**Results:** ~89% of PDFs have extractable text layers. ~11% are scanned (image-only, would need OCR). Safe to re-run — skips docs already updated.
+
 ## MVP Goal
 
 A working end-to-end pipeline for Shenzhen that crawls government documents from the gkmlpt platform, extracts structured metadata + body text, translates to English, tags by topic, and produces at least one concrete analytical output — e.g., *"Which State Council documents were most cited by Shenzhen departments in 2024?"*
@@ -90,7 +114,7 @@ Metadata comes from the API (30+ fields per document, richer than HTML parsing).
 
 Using SQLite (not PostgreSQL — simpler for MVP, trivially handles the scale). Schema in `crawler.py` `init_db()`. Raw HTML saved to `raw_html/{site_key}/{doc_id}.html`.
 
-**Current corpus: 45,130 documents across 20 sites. 1,456+ with body text (backfill running). 4,255 with 文号.**
+**Current corpus (2026-03-15): 103,470 documents across 37+ sites. ~94,000 with body text (91%). ~4,255 with 文号.**
 
 ### Done When
 

@@ -151,6 +151,16 @@ District (区级)      ← DONE
 
 The provincial and municipal layers are essentially free (gkmlpt). The central layer is where all the new work is.
 
+### What was actually built (2026-03-15)
+
+The expansion diverged from this plan. Instead of MOST/CAC/MIIT, we built:
+- **MOF** (`crawlers/mof.py`) — Ministry of Finance, 919 docs, 912 bodies. Covers fiscal policy, government guidance funds, VC regulation.
+- **MEE** (`crawlers/mee.py`) — Ministry of Ecology & Environment, 563 docs, 494 bodies. Covers environmental regulation, carbon policy.
+- **16 Guangdong cities** added to gkmlpt — Zhongshan, Shantou, Shaoguan, Heyuan, Shanwei, Yangjiang, Zhanjiang, Chaozhou, Jieyang, Yunfu, etc.
+- **3 more Shenzhen districts** — Yantian, Longgang, Dapeng.
+
+Total corpus: **103,470 docs, 91% body text**. MOST, CAC, and MIIT remain unbuilt.
+
 ---
 
 ## Recommended Build Order

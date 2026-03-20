@@ -13,21 +13,32 @@ These sites return HTTP 200 at `/gkmlpt/index` with `window._CONFIG` containing 
 | City | Domain | SID | Notes |
 |------|--------|-----|-------|
 | **Guangdong Province** (广东省) | `www.gd.gov.cn` | `2` | Provincial government |
-| **Shenzhen** (深圳) | `www.sz.gov.cn` | varies | 20 sites already crawled (45,130 docs) |
+| **Shenzhen** (深圳) | `www.sz.gov.cn` | varies | 23 sites crawled (~48k docs as of March 2026) |
 | **Guangzhou** (广州) | `www.gz.gov.cn` | `200001` | Provincial capital, largest Guangdong city |
 | **Zhuhai** (珠海) | `www.zhuhai.gov.cn` | `756001` | Special Economic Zone |
 | **Huizhou** (惠州) | `www.huizhou.gov.cn` | `752001` | |
 | **Jiangmen** (江门) | `www.jiangmen.gov.cn` | `750001` | |
 
-## Unreachable (Likely gkmlpt)
+## March 2026 Expansion Probe
 
-These Guangdong cities timed out or refused connections from our network. Given they're in the same province, they likely use gkmlpt too:
+A comprehensive probe of all remaining Guangdong cities confirmed 14 additional gkmlpt sites. These have been added to `crawlers/gkmlpt.py` SITES dict and crawled (~32k new docs).
+
+**Newly confirmed (14 sites):** Zhongshan (SID 760001), Shantou (754001), Zhaoqing (758001), Shaoguan (751001), Heyuan (762001), Shanwei (660001), Yangjiang (662001), Zhanjiang (759001), Chaozhou (768001), Jieyang (663001), Yunfu (766001), plus Shenzhen districts Yantian (755042), Longgang (755043), Dapeng (755038).
+
+**28 provinces probed — 0 use gkmlpt.** All returned 404, 403, or soft-404 redirects at `/gkmlpt/index`. This confirms gkmlpt is exclusively a Guangdong platform.
+
+## Previously Unreachable
+
+These Guangdong cities remain unreachable but are configured in SITES for future retry:
 
 | City | Domain | Result |
 |------|--------|--------|
-| **Dongguan** (东莞) | `www.dongguan.gov.cn` | Timeout |
-| **Zhongshan** (中山) | `www.zhongshan.gov.cn` | Timeout |
+| **Dongguan** (东莞) | `www.dg.gov.cn` | DNS resolution failed |
 | **Foshan** (佛山) | `www.foshan.gov.cn` | Connection refused |
+| **Meizhou** (梅州) | `www.meizhou.gov.cn` | HTTP 521 (Cloudflare) |
+| **Maoming** (茂名) | `www.maoming.gov.cn` | Read timeout |
+| **Qingyuan** (清远) | `www.qingyuan.gov.cn` | HTTP 404 |
+| **Bao'an** (宝安) | `www.baoan.gov.cn` | DNS resolution failed |
 
 ## Not gkmlpt
 

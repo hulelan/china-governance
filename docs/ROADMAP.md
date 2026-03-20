@@ -33,21 +33,28 @@ Backed by a verified, archived corpus with direct links to original government s
 
 ---
 
-## What We Have Now (updated 2026-02-23)
+## What We Have Now (updated 2026-03-15)
 
-- **46,633 documents** from 22 government sites (20 Shenzhen + 2 central: State Council, NDRC)
-- **14,834 citation edges** extracted via regex (formal 文号 + named 《》 references)
-- **Working web app** with 9 pages: browse, search, document detail, citation network (D3.js), dashboard, policy chains (6 topics), AI analysis write-up, side-by-side comparison
-- **7 JSON API endpoints** under `/api/v1/`
+- **103,470 documents** from 37+ government sites across 4 administrative levels
+  - **Central (4):** State Council, NDRC, Ministry of Finance (MOF), Ministry of Ecology & Environment (MEE)
+  - **Provincial (1):** Guangdong Province
+  - **Municipal (17):** Shenzhen + Guangzhou, Zhuhai, Huizhou, Jiangmen, Zhongshan, Shantou, Zhaoqing, Shaoguan, Heyuan, Shanwei, Yangjiang, Zhanjiang, Chaozhou, Jieyang, Yunfu, Dongguan
+  - **District (9):** Shenzhen districts (Futian, Nanshan, Luohu, Longhua, Pingshan, Guangming, Yantian, Longgang, Dapeng)
+  - **Department (13):** Shenzhen bureaus (S&T, Housing, Commerce, Transport, etc.)
+- **~94,000 documents with body text** (91% coverage, up from 15% in February)
+- **14,834+ citation edges** extracted via regex (formal 文号 + named 《》 references)
+- **Working web app** with 11 pages: browse, inbox, search, document detail (with mini citation network), citation network (D3.js), dashboard, policy chains (6 topics), AI analysis write-up, subsidy analysis, side-by-side comparison, change tracker
+- **JSON API** under `/api/v1/` with 9 endpoints
 - **Citation hierarchy classified** by administrative level (central/provincial/municipal/district)
 - **Verification infrastructure**: SHA-256 hashes, direct links to originals, side-by-side comparison
 - **Live deployment** at [chinagovernance.com](https://www.chinagovernance.com) on Railway (PostgreSQL + Docker)
-- **Dual-mode database**: PostgreSQL in production, SQLite for local development
+- **Dual-mode database**: PostgreSQL in production, SQLite for local development. Sync via `scripts/sqlite_to_postgres.py`.
 - **AI policy case study**: end-to-end proof of concept — backfill, citation extraction, chain view, analytical write-up
 - **Subsidy analysis pipeline**: multi-keyword matching, regex extraction of yuan amounts, sector attribution, report page at `/analysis/subsidies`
 - **Incremental sync**: `--sync` flag detects new/changed/deleted documents without overwriting originals; change history at `/changes`
+- **Geographic expansion probe**: confirmed gkmlpt is Guangdong-only. 28 other provinces tested — none use gkmlpt. Custom crawlers needed per province.
 
-See `docs/implementation/crawler-plan.md`, `docs/implementation/web-plan.md`, and `docs/implementation/ai-case-study-plan.md` for details on what's been built.
+See `CLAUDE.md` for operational commands and architecture overview.
 
 ---
 
@@ -55,15 +62,14 @@ See `docs/implementation/crawler-plan.md`, `docs/implementation/web-plan.md`, an
 
 **Goal:** Make the existing citation network *useful* by filling in body text gaps and surfacing policy chains in the UI.
 
-**The problem right now:** Only ~15% of documents have body text extracted. Citation analysis depends on body text (that's where the 文号 references live). We're seeing the network through a keyhole.
+**The problem right now:** Body text backfill is largely complete (91%), but citation re-extraction needs re-running against the expanded corpus to capture new edges.
 
 ### Tasks
 
-1. **Backfill body text** for all 46,633 documents (or as many as have accessible content pages). This is a crawler re-run, not LLM work — just hitting content pages we skipped on the first pass.
-   - **Status: NOT STARTED for full corpus.** Only done for 113 AI-related docs (87 succeeded). This is the highest-priority remaining task.
+1. ~~**Backfill body text**~~ **DONE.** 91% coverage (94k/103k docs). Completed via serial backfill with URL filtering, surrogate sanitization, and browser UA fixes.
 
 2. **Re-run citation extraction** on the expanded corpus. We should go from ~14,834 edges to potentially 50,000+.
-   - **Status: PARTIALLY DONE.** Citation extraction has been run on the current corpus (14,834 edges). Needs re-run after full body text backfill.
+   - **Status: NEEDS RE-RUN.** Citation extraction was last run against the old 46k corpus. Needs re-run now that body text is at 91%.
 
 3. ~~**Build "Policy Chain" view in the web app.**~~ **DONE.** `/chain/{topic}` shows cross-level policy chains for 6 topics (ai, digital, carbon, housing, education, health). Each shows central → municipal → district hierarchy with document links.
 

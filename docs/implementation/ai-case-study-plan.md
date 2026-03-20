@@ -221,12 +221,14 @@ The AI case study depends on having documents at every level of the policy chain
 
 | Level | Crawler | API/Approach | Status |
 |-------|---------|-------------|--------|
-| **Central** | `crawlers/ndrc.py` | Static HTML, `createPageHTML()` pagination, 5 sections under `/xxgk/zcfb/` | Built. 500 docs indexed (metadata only, zero body text). |
-| **Central** | `crawlers/gov.py` | JSON feed at `gov.cn/zhengce/zuixin/ZUIXINZHENGCE.json`. Two HTML templates for doc pages (Template A: formal with metadata table; Template B: article-style). Both share `#UCAP-CONTENT` for body. | Built. 1,003 docs indexed (metadata only, zero body text). |
-| **Provincial** | `crawlers/gkmlpt.py` site `gd` | Same gkmlpt API as Shenzhen. SID confirmed: 2. **Requires browser User-Agent** — default crawler UA gets connection reset. | Configured, never crawled. |
-| **Municipal** | `crawlers/gkmlpt.py` sites `sz` + 13 depts | gkmlpt API. 20 Shenzhen sites. | Crawled. 37,384 docs, ~5,500 with body text. |
-| **Municipal (other)** | `crawlers/gkmlpt.py` sites `gz`, `zhuhai`, `huizhou`, `jiangmen` | Same gkmlpt API. SIDs confirmed: Guangzhou 200001, Zhuhai 756001, Huizhou 752001, Jiangmen 750001. | Configured, never crawled. All reachable as of 2026-02-28. |
-| **District** | `crawlers/gkmlpt.py` 6 district sites | Same gkmlpt API. | Crawled. 7,746 docs, ~1,000 with body text. |
+| **Central** | `crawlers/ndrc.py` | Static HTML, `createPageHTML()` pagination, 5 sections under `/xxgk/zcfb/` | Crawled. 1,617 docs. |
+| **Central** | `crawlers/gov.py` | JSON feed at `gov.cn/zhengce/zuixin/ZUIXINZHENGCE.json`. Two HTML templates for doc pages (Template A: formal with metadata table; Template B: article-style). Both share `#UCAP-CONTENT` for body. | Crawled. 1,005 docs. |
+| **Central** | `crawlers/mof.py` | Ministry of Finance. | Crawled. 919 docs. |
+| **Central** | `crawlers/mee.py` | Ministry of Ecology and Environment. | Crawled. 563 docs. |
+| **Provincial** | `crawlers/gkmlpt.py` site `gd` | Same gkmlpt API as Shenzhen. SID confirmed: 2. **Requires browser User-Agent** — default crawler UA gets connection reset. | Crawled. 6,169 docs. |
+| **Municipal** | `crawlers/gkmlpt.py` sites `sz` + 13 depts | gkmlpt API. 20 Shenzhen sites. | Crawled. 1,007 (sz) + 33,280 (depts). |
+| **Municipal (other)** | `crawlers/gkmlpt.py` 16 Guangdong cities | Same gkmlpt API. Guangzhou, Zhuhai, Huizhou, Jiangmen, Zhongshan, Shaoguan, Heyuan, Shanwei, Yangjiang, Jieyang, Yunfu, Shantou, etc. | Crawled. ~34,500 docs total (Shantou 49 partial). |
+| **District** | `crawlers/gkmlpt.py` district sites | Same gkmlpt API. Dapeng (8,587), Longhua (6,254), Longgang (3,893), etc. | Crawled. ~18,700 docs. |
 
 ### Reachability (tested 2026-02-28)
 
@@ -238,50 +240,65 @@ Municipal - Guangzhou:    OK (19,626 bytes)
 Municipal - Zhuhai:       OK (17,851 bytes)
 ```
 
-### Database inventory (updated 2026-03-02)
+### Database inventory (updated 2026-03-15)
 
 ```
-Total: 46,636 docs, 39,007 with body text (83.6%)
+Total: 103,470 docs, ~94,000 with body text (91%)
 ```
 
 **By level:**
 
 | Level | Sites | Docs | Body text | Coverage |
 |-------|-------|------|-----------|----------|
-| Central | NDRC, State Council | 1,505 | 20 | 1% |
-| Municipal | Shenzhen Main Portal | 844 | 844 | 100% |
+| Central | NDRC (1,617), State Council/gov (1,005), MOF (919), MEE (563) | 4,104 | ~3,700 | ~90% |
+| Provincial | Guangdong/gd | 6,169 | ~5,600 | ~91% |
+| Municipal | Shenzhen sz (1,007) + 16 other Guangdong cities | ~35,500 | ~32,300 | ~91% |
 | Department | 13 Shenzhen bureaus | 33,280 | 29,650 | 89% |
-| District | 6 Shenzhen districts | 10,957 | 8,998 | 82% |
-| Provincial | — | 0 | 0 | — |
-| Other cities | — | 0 | 0 | — |
+| District | Dapeng (8,587), Longhua (6,254), Longgang (3,893), etc. | ~18,700 | ~17,000 | ~91% |
 
-**Per-site detail (department + district):**
+**Guangdong municipal cities:**
+
+| City | Docs | Notes |
+|------|------|-------|
+| Jieyang | 5,872 | |
+| Jiangmen | 4,228 | |
+| Huizhou | 3,826 | |
+| Heyuan | 3,757 | |
+| Guangzhou | 3,647 | |
+| Zhuhai | 3,517 | |
+| Shanwei | 3,186 | |
+| Yangjiang | 2,355 | |
+| Zhongshan | 2,347 | |
+| Shaoguan | 1,607 | |
+| Shenzhen sz | 1,007 | Main portal (departments counted separately) |
+| Yunfu | 658 | |
+| Shantou | 49 | Partial crawl |
+
+**Shenzhen per-site detail (department + district):**
 
 | Site | Docs | Body | % | Notes |
 |------|------|------|---|-------|
+| Dapeng District (szdpxq) | 8,587 | — | — | |
+| Longhua District (szlhq) | 6,254 | 5,906 | 94% | AI policy hotspot |
 | Public Security Bureau (ga) | 5,010 | 4,930 | 98% | |
-| Longhua District (szlhq) | 6,134 | 5,906 | 96% | AI policy hotspot |
-| Health Commission (wjw) | 1,238 | 1,172 | 95% | |
+| Longgang District (szlgq) | 3,893 | — | — | |
+| HR & Social Security (hrss) | 3,236 | 2,802 | 87% | |
+| Commerce (swj) | 2,889 | 2,530 | 88% | |
+| Transport (jtys) | 2,843 | 2,543 | 89% | |
+| S&T Innovation (stic) | 2,710 | 1,658 | 61% | |
+| Dev & Reform (fgw) | 2,552 | 1,118 | 44% | DNS timeouts during backfill |
+| Housing & Construction (zjj) | 2,353 | 2,081 | 88% | |
+| Justice (sf) | 2,019 | 1,753 | 87% | |
 | Education Bureau (szeb) | 1,999 | 1,878 | 94% | |
-| Luohu District (szlh) | 759 | 705 | 93% | |
 | Emergency Mgmt (yjgl) | 1,996 | 1,816 | 91% | |
 | Civil Affairs (mzj) | 5,015 | 4,447 | 89% | |
-| Audit Bureau (audit) | 470 | 417 | 89% | |
-| Guangming District (szgm) | 905 | 804 | 89% | |
-| Transport (jtys) | 2,843 | 2,543 | 89% | |
-| Housing & Construction (zjj) | 2,353 | 2,081 | 88% | |
-| Commerce (swj) | 2,889 | 2,530 | 88% | |
-| Justice (sf) | 2,019 | 1,753 | 87% | |
-| HR & Social Security (hrss) | 3,236 | 2,802 | 87% | |
+| Health Commission (wjw) | 1,238 | 1,172 | 95% | |
 | Pingshan District (szpsq) | 1,636 | 1,269 | 78% | |
+| Guangming District (szgm) | 905 | 804 | 89% | |
+| Luohu District (szlh) | 759 | 705 | 93% | |
+| Audit Bureau (audit) | 470 | 417 | 89% | |
 | Nanshan District (szns) | 309 | 203 | 66% | Many /xxgk/ pages |
-| S&T Innovation (stic) | 2,710 | 1,658 | 61% | |
 | Futian District (szft) | 214 | 111 | 52% | Many external URLs |
-| Dev & Reform (fgw) | 2,552 | 1,118 | 44% | DNS timeouts during backfill |
-
-**Not yet crawled:**
-- Guangdong Province (`gd.gov.cn`) — configured, needs browser UA
-- Guangzhou, Zhuhai, Huizhou, Jiangmen — configured, never crawled
 
 ### Backfill history (2026-03-01 → 2026-03-02)
 
@@ -291,7 +308,7 @@ The gkmlpt body text backfill ran overnight on March 1-2. Key events:
 2. **Serial backfill worked** — single process at 0.3s delay, ~0.6 docs/s
 3. **URL filter fix** — original query included non-gkmlpt URLs (WeChat, NDRC, etc.). Fixed to `url LIKE '%gkmlpt%'`
 4. **Surrogate crash** — `UnicodeEncodeError` on one page's invalid UTF-16 surrogates. Fixed with `.encode('utf-8', errors='replace')`
-5. **Result:** 6,819 → 39,007 body texts (14.6% → 83.6%) in ~19 hours
+5. **Result:** 6,819 → 39,007 body texts (14.6% → 83.6%) in ~19 hours. Subsequent crawls brought the corpus to 103,470 docs / ~94,000 with body text (91%) by 2026-03-15.
 
 **Code changes applied to `crawlers/gkmlpt.py`:**
 - Browser UA for Guangdong Province (`SITES_NEEDING_BROWSER_UA`)
@@ -302,15 +319,13 @@ The gkmlpt body text backfill ran overnight on March 1-2. Key events:
 
 Full crawl log: `docs/log/crawl-log-mar-1.md`
 
-### Remaining to reach ~90%+
+### Remaining gaps (at 91% coverage)
 
-1. **NDRC body text** — `python3 -m crawlers.ndrc` (500 docs, ~15 min). Crawler built, never fetched pages.
-2. **State Council body text** — `python3 -m crawlers.gov` (985 docs, ~30 min). Crawler built, only 20/1005 have body.
-3. **Dev & Reform re-try** — `python3 -m crawlers.gkmlpt --backfill-bodies --site fgw` (1,434 still missing, DNS issues during overnight run)
-4. **Citation re-extraction** — `python3 scripts/extract_citations.py --force`
-5. **Guangdong Province** — `python3 -m crawlers.gkmlpt --site gd` (new corpus, unknown size)
+1. **Dev & Reform re-try** — `python3 -m crawlers.gkmlpt --backfill-bodies --site fgw` (1,434 still missing, DNS issues during overnight run)
+2. **Citation re-extraction** — `python3 scripts/extract_citations.py --force`
+3. **Shantou** — only 49 docs, partial crawl needs completion
 
-The ~5,500 external URLs (WeChat, Xinhua, CCTV, etc.) will never have body text — they represent the hard ceiling at ~88%.
+The ~5,500 external URLs (WeChat, Xinhua, CCTV, etc.) will never have body text — they represent the hard ceiling at ~95% for the original Shenzhen sites. With the expanded multi-city corpus, overall coverage is 91%.
 
 ---
 

@@ -1,0 +1,911 @@
+19:25:04 [INFO] --- Section: 发展改革委令 (fzggwl) ---
+19:25:05 [INFO]   9 listing pages
+19:25:14 [INFO]   Found 217 document links
+19:25:36 [INFO]   Progress: 20/217 stored, 20 bodies
+19:25:59 [INFO]   Progress: 40/217 stored, 40 bodies
+19:26:22 [INFO]   Progress: 60/217 stored, 60 bodies
+19:26:44 [INFO]   Progress: 80/217 stored, 80 bodies
+19:27:13 [INFO]   Progress: 100/217 stored, 100 bodies
+19:27:34 [INFO]   Progress: 120/217 stored, 120 bodies
+19:27:57 [INFO]   Progress: 140/217 stored, 140 bodies
+19:28:29 [INFO]   Progress: 160/217 stored, 160 bodies
+19:28:52 [INFO]   Progress: 180/217 stored, 180 bodies
+19:29:16 [INFO]   Progress: 200/217 stored, 200 bodies
+19:29:36 [INFO]   Done: 217 documents stored, 217 bodies fetched
+19:29:37 [INFO] --- Section: 规范性文件 (ghxwj) ---
+19:29:37 [INFO]   8 listing pages
+19:29:45 [INFO]   Found 193 document links
+19:30:10 [INFO]   Progress: 20/193 stored, 20 bodies
+19:30:32 [INFO]   Progress: 40/193 stored, 40 bodies
+19:30:53 [INFO]   Progress: 60/193 stored, 60 bodies
+19:31:22 [INFO]   Progress: 80/193 stored, 80 bodies
+19:31:49 [INFO]   Progress: 100/193 stored, 100 bodies
+19:32:18 [INFO]   Progress: 120/193 stored, 120 bodies
+19:32:42 [INFO]   Progress: 140/193 stored, 140 bodies
+19:33:08 [INFO]   Progress: 160/193 stored, 160 bodies
+19:33:31 [INFO]   Progress: 180/193 stored, 180 bodies
+19:33:47 [INFO]   Done: 193 documents stored, 193 bodies fetched
+19:33:48 [INFO] --- Section: 规划文本 (ghwb) ---
+19:33:48 [INFO]   9 listing pages
+19:33:57 [INFO]   Found 207 document links
+19:34:20 [INFO]   Progress: 20/207 stored, 20 bodies
+19:34:43 [INFO]   Progress: 40/207 stored, 40 bodies
+19:35:10 [INFO]   Progress: 60/207 stored, 60 bodies
+19:35:33 [INFO]   Progress: 80/207 stored, 80 bodies
+19:35:56 [INFO]   Progress: 100/207 stored, 100 bodies
+19:36:26 [INFO]   Progress: 120/207 stored, 120 bodies
+19:36:54 [INFO]   Progress: 140/207 stored, 140 bodies
+19:37:16 [INFO]   Progress: 160/207 stored, 160 bodies
+19:37:40 [INFO]   Progress: 180/207 stored, 180 bodies
+19:38:07 [INFO]   Progress: 200/207 stored, 200 bodies
+19:38:16 [INFO]   Done: 207 documents stored, 207 bodies fetched
+19:38:17 [INFO] --- Section: 公告 (gg) ---
+19:38:17 [INFO]   20 listing pages
+19:38:37 [INFO]   Found 500 document links
+19:39:00 [INFO]   Progress: 20/500 stored, 20 bodies
+19:39:23 [INFO]   Progress: 40/500 stored, 40 bodies
+19:39:46 [INFO]   Progress: 60/500 stored, 60 bodies
+19:40:12 [INFO]   Progress: 80/500 stored, 80 bodies
+19:40:35 [INFO]   Progress: 100/500 stored, 100 bodies
+19:40:58 [INFO]   Progress: 120/500 stored, 120 bodies
+19:41:21 [INFO]   Progress: 140/500 stored, 140 bodies
+19:41:45 [INFO]   Progress: 160/500 stored, 160 bodies
+19:42:10 [INFO]   Progress: 180/500 stored, 180 bodies
+19:42:34 [INFO]   Progress: 200/500 stored, 200 bodies
+19:42:56 [INFO]   Progress: 220/500 stored, 220 bodies
+19:43:20 [INFO]   Progress: 240/500 stored, 240 bodies
+19:43:42 [INFO]   Progress: 260/500 stored, 260 bodies
+19:44:04 [INFO]   Progress: 280/500 stored, 280 bodies
+19:44:26 [INFO]   Progress: 300/500 stored, 300 bodies
+19:44:49 [INFO]   Progress: 320/500 stored, 320 bodies
+19:45:11 [INFO]   Progress: 340/500 stored, 340 bodies
+19:45:35 [INFO]   Progress: 360/500 stored, 360 bodies
+19:45:59 [INFO]   Progress: 380/500 stored, 380 bodies
+19:46:21 [INFO]   Progress: 400/500 stored, 400 bodies
+19:46:42 [INFO]   Progress: 420/500 stored, 420 bodies
+19:47:03 [INFO]   Progress: 440/500 stored, 440 bodies
+19:47:26 [INFO]   Progress: 460/500 stored, 460 bodies
+19:47:48 [INFO]   Progress: 480/500 stored, 480 bodies
+19:48:10 [INFO]   Progress: 500/500 stored, 500 bodies
+19:48:10 [INFO]   Done: 500 documents stored, 500 bodies fetched
+19:48:11 [INFO] --- Section: 通知 (tz) ---
+19:48:11 [INFO]   20 listing pages
+19:48:32 [INFO]   Found 500 document links
+19:48:56 [INFO]   Progress: 20/500 stored, 20 bodies
+19:49:22 [INFO]   Progress: 40/500 stored, 40 bodies
+19:49:46 [INFO]   Progress: 60/500 stored, 60 bodies
+19:50:13 [INFO]   Progress: 80/500 stored, 80 bodies
+19:50:36 [INFO]   Progress: 100/500 stored, 100 bodies
+19:51:00 [INFO]   Progress: 120/500 stored, 120 bodies
+19:51:30 [INFO]   Progress: 140/500 stored, 140 bodies
+19:51:54 [INFO]   Progress: 160/500 stored, 160 bodies
+19:52:18 [INFO]   Progress: 180/500 stored, 180 bodies
+19:52:40 [INFO]   Progress: 200/500 stored, 200 bodies
+19:53:02 [INFO]   Progress: 220/500 stored, 220 bodies
+19:53:24 [INFO]   Progress: 240/500 stored, 240 bodies
+19:53:46 [INFO]   Progress: 260/500 stored, 260 bodies
+19:54:08 [INFO]   Progress: 280/500 stored, 280 bodies
+19:54:29 [INFO]   Progress: 300/500 stored, 300 bodies
+19:54:52 [INFO]   Progress: 320/500 stored, 320 bodies
+19:55:15 [INFO]   Progress: 340/500 stored, 340 bodies
+19:55:38 [INFO]   Progress: 360/500 stored, 360 bodies
+19:56:02 [INFO]   Progress: 380/500 stored, 380 bodies
+19:56:34 [INFO]   Progress: 400/500 stored, 400 bodies
+19:56:58 [INFO]   Progress: 420/500 stored, 420 bodies
+19:57:21 [INFO]   Progress: 440/500 stored, 440 bodies
+19:57:44 [INFO]   Progress: 460/500 stored, 460 bodies
+19:58:09 [INFO]   Progress: 480/500 stored, 480 bodies
+19:58:34 [INFO]   Progress: 500/500 stored, 500 bodies
+19:58:34 [INFO]   Done: 500 documents stored, 500 bodies fetched
+19:58:34 [INFO] === NDRC total: 1617 documents ===
+
+=== Database Statistics ===
+
+[central   ] National Development and Reform Commission
+  Documents: 1617, With body: 896
+  Last crawled: 2026-03-03T00:25:04.118591+00:00
+
+[central   ] State Council
+  Documents: 1005, With body: 20
+  Last crawled: 2026-03-01T18:20:56.748232+00:00
+
+[department] Audit Bureau
+  Documents: 470, With body: 417
+  Last crawled: 2026-02-25T03:06:44.740807+00:00
+
+[department] Civil Affairs Bureau
+  Documents: 5015, With body: 4447
+  Last crawled: 2026-02-15T19:31:43.141858+00:00
+
+[department] Commerce Bureau
+  Documents: 2889, With body: 2530
+  Last crawled: 2026-02-15T19:37:59.494415+00:00
+
+[department] Development & Reform Commission
+  Documents: 2552, With body: 1118
+  Last crawled: 2026-02-15T18:49:02.524556+00:00
+
+[department] Education Bureau
+  Documents: 1999, With body: 1878
+  Last crawled: 2026-02-15T19:41:31.003518+00:00
+
+[department] Emergency Management Bureau
+  Documents: 1996, With body: 1816
+  Last crawled: 2026-02-15T19:42:56.511100+00:00
+
+[department] Health Commission
+  Documents: 1238, With body: 1172
+  Last crawled: 2026-02-15T19:40:13.192595+00:00
+
+[department] Housing & Construction Bureau
+  Documents: 2353, With body: 2081
+  Last crawled: 2026-02-15T18:51:05.387854+00:00
+
+[department] Human Resources & Social Security
+  Documents: 3236, With body: 2802
+  Last crawled: 2026-02-15T19:29:00.011322+00:00
+
+[department] Justice Bureau
+  Documents: 2019, With body: 1753
+  Last crawled: 2026-02-15T19:34:34.753831+00:00
+
+[department] Public Security Bureau
+  Documents: 5010, With body: 4930
+  Last crawled: 2026-02-15T19:45:53.655052+00:00
+
+[department] S&T Innovation Bureau
+  Documents: 2710, With body: 1658
+  Last crawled: 2026-02-15T18:45:31.692268+00:00
+
+[department] Transport Bureau
+  Documents: 2843, With body: 2543
+  Last crawled: 2026-02-15T19:35:57.873018+00:00
+
+[district  ] Futian District
+  Documents: 214, With body: 111
+  Last crawled: 2026-02-15T19:49:28.673369+00:00
+
+[district  ] Guangming District
+  Documents: 905, With body: 804
+  Last crawled: 2026-02-15T18:54:00.973858+00:00
+
+[district  ] Longhua District
+  Documents: 6134, With body: 5906
+  Last crawled: 2026-02-15T19:51:13.586142+00:00
+
+[district  ] Luohu District
+  Documents: 759, With body: 705
+  Last crawled: 2026-02-15T19:49:52.099643+00:00
+
+[district  ] Nanshan District
+  Documents: 309, With body: 203
+  Last crawled: 2026-02-15T19:48:22.565577+00:00
+
+[district  ] Pingshan District
+  Documents: 1636, With body: 1269
+  Last crawled: 2026-02-15T18:42:19.032771+00:00
+
+[municipal ] Shenzhen Main Portal
+  Documents: 844, With body: 844
+  Last crawled: 2026-02-15T18:15:21.051821+00:00
+
+Total documents across all sites: 47753
+========================================
+=== State Council full crawl ===
+========================================
+20:08:03 [INFO] Fetching document list from https://www.gov.cn/zhengce/zuixin/ZUIXINZHENGCE.json
+20:08:04 [INFO]   Found 1017 documents in JSON feed
+20:08:32 [INFO]   Progress: 40/1017 stored, 20 bodies
+20:08:55 [INFO]   Progress: 60/1017 stored, 40 bodies
+20:09:18 [INFO]   Progress: 80/1017 stored, 60 bodies
+20:09:42 [INFO]   Progress: 100/1017 stored, 80 bodies
+20:10:12 [INFO]   Progress: 120/1017 stored, 100 bodies
+20:10:35 [INFO]   Progress: 140/1017 stored, 120 bodies
+20:10:57 [INFO]   Progress: 160/1017 stored, 140 bodies
+20:11:19 [INFO]   Progress: 180/1017 stored, 160 bodies
+20:11:40 [INFO]   Progress: 200/1017 stored, 180 bodies
+20:12:02 [INFO]   Progress: 220/1017 stored, 200 bodies
+20:12:26 [INFO]   Progress: 240/1017 stored, 220 bodies
+20:12:50 [INFO]   Progress: 260/1017 stored, 240 bodies
+20:13:23 [INFO]   Progress: 280/1017 stored, 260 bodies
+20:13:45 [INFO]   Progress: 300/1017 stored, 280 bodies
+20:14:10 [INFO]   Progress: 320/1017 stored, 300 bodies
+20:14:33 [INFO]   Progress: 340/1017 stored, 320 bodies
+20:14:55 [INFO]   Progress: 360/1017 stored, 340 bodies
+20:15:20 [INFO]   Progress: 380/1017 stored, 360 bodies
+20:15:43 [INFO]   Progress: 400/1017 stored, 380 bodies
+20:16:17 [INFO]   Progress: 420/1017 stored, 400 bodies
+20:16:42 [INFO]   Progress: 440/1017 stored, 420 bodies
+20:17:06 [INFO]   Progress: 460/1017 stored, 440 bodies
+20:17:32 [INFO]   Progress: 480/1017 stored, 460 bodies
+20:17:56 [INFO]   Progress: 500/1017 stored, 480 bodies
+20:18:21 [INFO]   Progress: 520/1017 stored, 500 bodies
+20:18:47 [INFO]   Progress: 540/1017 stored, 520 bodies
+20:19:11 [INFO]   Progress: 560/1017 stored, 540 bodies
+20:19:36 [INFO]   Progress: 580/1017 stored, 560 bodies
+20:20:00 [INFO]   Progress: 600/1017 stored, 580 bodies
+20:20:25 [INFO]   Progress: 620/1017 stored, 600 bodies
+20:20:48 [INFO]   Progress: 640/1017 stored, 620 bodies
+20:21:14 [INFO]   Progress: 660/1017 stored, 640 bodies
+20:21:39 [INFO]   Progress: 680/1017 stored, 660 bodies
+20:22:02 [INFO]   Progress: 700/1017 stored, 680 bodies
+20:22:28 [INFO]   Progress: 720/1017 stored, 700 bodies
+20:22:52 [INFO]   Progress: 740/1017 stored, 720 bodies
+20:23:18 [INFO]   Progress: 760/1017 stored, 740 bodies
+20:23:43 [INFO]   Progress: 780/1017 stored, 760 bodies
+20:24:09 [INFO]   Progress: 800/1017 stored, 780 bodies
+20:24:34 [INFO]   Progress: 820/1017 stored, 800 bodies
+20:24:58 [INFO]   Progress: 840/1017 stored, 820 bodies
+20:25:32 [INFO]   Progress: 860/1017 stored, 840 bodies
+20:25:55 [INFO]   Progress: 880/1017 stored, 860 bodies
+20:26:21 [INFO]   Progress: 900/1017 stored, 880 bodies
+20:26:45 [INFO]   Progress: 920/1017 stored, 900 bodies
+20:27:11 [INFO]   Progress: 940/1017 stored, 920 bodies
+20:27:36 [INFO]   Progress: 960/1017 stored, 940 bodies
+20:28:00 [INFO]   Progress: 980/1017 stored, 960 bodies
+20:28:27 [INFO]   Progress: 1000/1017 stored, 980 bodies
+20:28:47 [INFO] === State Council total: 1017 documents, 997 bodies ===
+
+=== Database Statistics ===
+
+[central   ] National Development and Reform Commission
+  Documents: 1617, With body: 896
+  Last crawled: 2026-03-03T00:25:04.118591+00:00
+
+[central   ] State Council
+  Documents: 1005, With body: 1005
+  Last crawled: 2026-03-03T01:08:03.065997+00:00
+
+[department] Audit Bureau
+  Documents: 470, With body: 417
+  Last crawled: 2026-02-25T03:06:44.740807+00:00
+
+[department] Civil Affairs Bureau
+  Documents: 5015, With body: 4447
+  Last crawled: 2026-02-15T19:31:43.141858+00:00
+
+[department] Commerce Bureau
+  Documents: 2889, With body: 2530
+  Last crawled: 2026-02-15T19:37:59.494415+00:00
+
+[department] Development & Reform Commission
+  Documents: 2552, With body: 1118
+  Last crawled: 2026-02-15T18:49:02.524556+00:00
+
+[department] Education Bureau
+  Documents: 1999, With body: 1878
+  Last crawled: 2026-02-15T19:41:31.003518+00:00
+
+[department] Emergency Management Bureau
+  Documents: 1996, With body: 1816
+  Last crawled: 2026-02-15T19:42:56.511100+00:00
+
+[department] Health Commission
+  Documents: 1238, With body: 1172
+  Last crawled: 2026-02-15T19:40:13.192595+00:00
+
+[department] Housing & Construction Bureau
+  Documents: 2353, With body: 2081
+  Last crawled: 2026-02-15T18:51:05.387854+00:00
+
+[department] Human Resources & Social Security
+  Documents: 3236, With body: 2802
+  Last crawled: 2026-02-15T19:29:00.011322+00:00
+
+[department] Justice Bureau
+  Documents: 2019, With body: 1753
+  Last crawled: 2026-02-15T19:34:34.753831+00:00
+
+[department] Public Security Bureau
+  Documents: 5010, With body: 4930
+  Last crawled: 2026-02-15T19:45:53.655052+00:00
+
+[department] S&T Innovation Bureau
+  Documents: 2710, With body: 1658
+  Last crawled: 2026-02-15T18:45:31.692268+00:00
+
+[department] Transport Bureau
+  Documents: 2843, With body: 2543
+  Last crawled: 2026-02-15T19:35:57.873018+00:00
+
+[district  ] Futian District
+  Documents: 214, With body: 115
+  Last crawled: 2026-02-15T19:49:28.673369+00:00
+
+[district  ] Guangming District
+  Documents: 905, With body: 804
+  Last crawled: 2026-02-15T18:54:00.973858+00:00
+
+[district  ] Longhua District
+  Documents: 6134, With body: 5906
+  Last crawled: 2026-02-15T19:51:13.586142+00:00
+
+[district  ] Luohu District
+  Documents: 759, With body: 705
+  Last crawled: 2026-02-15T19:49:52.099643+00:00
+
+[district  ] Nanshan District
+  Documents: 309, With body: 204
+  Last crawled: 2026-02-15T19:48:22.565577+00:00
+
+[district  ] Pingshan District
+  Documents: 1636, With body: 1276
+  Last crawled: 2026-02-15T18:42:19.032771+00:00
+
+[municipal ] Shenzhen Main Portal
+  Documents: 844, With body: 844
+  Last crawled: 2026-02-15T18:15:21.051821+00:00
+
+Total documents across all sites: 47753
+
+========================================
+=== Guangdong Province metadata discovery ===
+========================================
+20:28:51 [INFO] === Crawling Guangdong Province (http://www.gd.gov.cn) ===
+20:28:51 [INFO] Discovering site config: http://www.gd.gov.cn/gkmlpt/index
+20:28:57 [INFO]   SID=2, 13 top-level categories
+20:28:57 [INFO] Found 43 leaf categories
+20:29:18 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/2688?page=1&sid=2: timed out
+20:29:19 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/2688?page=1&sid=2: [Errno 54] Connection reset by peer
+20:29:24 [INFO]   [2688] 政府信息公开指南: 1 documents
+20:29:41 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/2?page=1&sid=2: [Errno 54] Connection reset by peer
+20:29:43 [INFO]   [2] 领导分工: 1 documents
+20:29:48 [INFO]   [3] 政府机构: 0 documents
+20:29:55 [INFO]   [4] 机构职能: 5 documents
+20:29:57 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/4?page=2&sid=2: [Errno 54] Connection reset by peer
+20:29:59 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/4?page=2&sid=2: [Errno 54] Connection reset by peer
+20:30:23 [WARNING]   API error for category 4 page 2: timed out
+20:30:44 [INFO]   [43] 政务动态: 9623 documents
+20:30:45 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/43?page=2&sid=2: [Errno 54] Connection reset by peer
+20:30:58 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/43?page=3&sid=2: [Errno 54] Connection reset by peer
+20:31:35 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/43?page=4&sid=2: [Errno 54] Connection reset by peer
+20:32:25 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/43?page=8&sid=2: [Errno 54] Connection reset by peer
+20:33:13 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/43?page=11&sid=2: [Errno 54] Connection reset by peer
+20:33:15 [WARNING]   API error for category 43 page 11: HTTP Error 404: Not Found
+20:37:26 [INFO]   Progress: 50 docs stored, 50 bodies fetched
+20:40:29 [INFO]   Progress: 100 docs stored, 100 bodies fetched
+20:43:23 [INFO]   Progress: 150 docs stored, 150 bodies fetched
+20:46:24 [INFO]   Progress: 200 docs stored, 200 bodies fetched
+20:49:21 [INFO]   Progress: 250 docs stored, 250 bodies fetched
+20:52:19 [INFO]   Progress: 300 docs stored, 300 bodies fetched
+20:55:13 [INFO]   Progress: 350 docs stored, 350 bodies fetched
+20:57:59 [INFO]   Progress: 400 docs stored, 400 bodies fetched
+21:00:43 [INFO]   Progress: 450 docs stored, 450 bodies fetched
+21:03:27 [INFO]   Progress: 500 docs stored, 500 bodies fetched
+21:06:08 [INFO]   Progress: 550 docs stored, 550 bodies fetched
+21:08:55 [INFO]   Progress: 600 docs stored, 600 bodies fetched
+21:11:36 [INFO]   Progress: 650 docs stored, 650 bodies fetched
+21:14:20 [INFO]   Progress: 700 docs stored, 700 bodies fetched
+21:17:01 [INFO]   Progress: 750 docs stored, 750 bodies fetched
+21:19:42 [INFO]   Progress: 800 docs stored, 800 bodies fetched
+21:22:27 [INFO]   Progress: 850 docs stored, 850 bodies fetched
+21:25:13 [INFO]   Progress: 900 docs stored, 900 bodies fetched
+21:28:02 [INFO]   Progress: 950 docs stored, 950 bodies fetched
+21:29:03 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/6?page=1&sid=2: [Errno 54] Connection reset by peer
+21:29:05 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/6?page=1&sid=2: [Errno 54] Connection reset by peer
+21:29:07 [WARNING]   API error for category 6 page 1: [Errno 54] Connection reset by peer
+21:29:09 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/7?page=1&sid=2: [Errno 54] Connection reset by peer
+21:29:14 [INFO]   [7] 规范性文件: 3549 documents
+21:29:15 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/7?page=2&sid=2: [Errno 54] Connection reset by peer
+21:29:16 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/7?page=2&sid=2: [Errno 54] Connection reset by peer
+21:29:23 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/7?page=3&sid=2: [Errno 54] Connection reset by peer
+21:29:25 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/7?page=3&sid=2: [Errno 54] Connection reset by peer
+21:29:28 [WARNING]   API error for category 7 page 3: [Errno 54] Connection reset by peer
+21:31:21 [INFO]   Progress: 1000 docs stored, 1000 bodies fetched
+21:34:21 [INFO]   Progress: 1050 docs stored, 1050 bodies fetched
+21:37:33 [INFO]   Progress: 1100 docs stored, 1100 bodies fetched
+21:40:35 [INFO]   Progress: 1150 docs stored, 1150 bodies fetched
+21:41:46 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/8?page=1&sid=2: [Errno 54] Connection reset by peer
+21:41:50 [INFO]   [8] 其他文件: 1202 documents
+21:41:51 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/8?page=2&sid=2: [Errno 54] Connection reset by peer
+21:41:53 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/8?page=2&sid=2: [Errno 54] Connection reset by peer
+21:41:56 [WARNING]   API error for category 8 page 2: [Errno 54] Connection reset by peer
+21:43:37 [INFO]   Progress: 1200 docs stored, 1200 bodies fetched
+21:46:27 [INFO]   Progress: 1250 docs stored, 1250 bodies fetched
+21:47:35 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/10?page=1&sid=2: [Errno 54] Connection reset by peer
+21:47:36 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/10?page=1&sid=2: [Errno 54] Connection reset by peer
+21:47:39 [WARNING]   API error for category 10 page 1: [Errno 54] Connection reset by peer
+21:47:40 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/11?page=1&sid=2: [Errno 54] Connection reset by peer
+21:47:42 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/11?page=1&sid=2: [Errno 54] Connection reset by peer
+21:47:44 [WARNING]   API error for category 11 page 1: [Errno 54] Connection reset by peer
+21:47:45 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/12?page=1&sid=2: [Errno 54] Connection reset by peer
+21:47:47 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/12?page=1&sid=2: [Errno 54] Connection reset by peer
+21:47:49 [WARNING]   API error for category 12 page 1: [Errno 54] Connection reset by peer
+21:47:50 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/13?page=1&sid=2: [Errno 54] Connection reset by peer
+21:47:55 [INFO]   [13] 通告: 50 documents
+21:47:56 [WARNING]   API error for category 13 page 2: HTTP Error 404: Not Found
+21:49:01 [INFO]   Progress: 1300 docs stored, 1289 bodies fetched
+21:49:55 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/14?page=1&sid=2: [Errno 54] Connection reset by peer
+21:49:57 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/14?page=1&sid=2: [Errno 54] Connection reset by peer
+21:49:59 [WARNING]   API error for category 14 page 1: [Errno 54] Connection reset by peer
+21:50:00 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/15?page=1&sid=2: [Errno 54] Connection reset by peer
+21:50:02 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/15?page=1&sid=2: [Errno 54] Connection reset by peer
+21:50:04 [WARNING]   API error for category 15 page 1: [Errno 54] Connection reset by peer
+21:50:06 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/16?page=1&sid=2: [Errno 54] Connection reset by peer
+21:50:07 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/16?page=1&sid=2: [Errno 54] Connection reset by peer
+21:50:10 [WARNING]   API error for category 16 page 1: [Errno 54] Connection reset by peer
+21:50:14 [INFO]   [18] 意见: 344 documents
+21:50:15 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/18?page=2&sid=2: [Errno 54] Connection reset by peer
+21:50:22 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/18?page=3&sid=2: [Errno 54] Connection reset by peer
+21:50:28 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/18?page=4&sid=2: [Errno 54] Connection reset by peer
+21:50:32 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/18?page=5&sid=2: [Errno 54] Connection reset by peer
+21:50:34 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/18?page=5&sid=2: [Errno 54] Connection reset by peer
+21:50:37 [WARNING]   API error for category 18 page 5: HTTP Error 404: Not Found
+21:51:47 [INFO]   Progress: 1350 docs stored, 1322 bodies fetched
+21:55:00 [INFO]   Progress: 1400 docs stored, 1372 bodies fetched
+21:58:12 [INFO]   Progress: 1450 docs stored, 1422 bodies fetched
+22:01:21 [INFO]   Progress: 1500 docs stored, 1472 bodies fetched
+22:04:25 [INFO]   Progress: 1550 docs stored, 1522 bodies fetched
+22:07:21 [INFO]   Progress: 1600 docs stored, 1572 bodies fetched
+22:10:28 [INFO]   Progress: 1650 docs stored, 1622 bodies fetched
+22:10:50 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/19?page=1&sid=2: [Errno 54] Connection reset by peer
+22:10:52 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/19?page=1&sid=2: [Errno 54] Connection reset by peer
+22:10:54 [WARNING]   API error for category 19 page 1: [Errno 54] Connection reset by peer
+22:10:55 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/22?page=1&sid=2: [Errno 54] Connection reset by peer
+22:11:00 [INFO]   [22] 综合政务: 813 documents
+22:11:01 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/22?page=2&sid=2: [Errno 54] Connection reset by peer
+22:11:02 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/22?page=2&sid=2: [Errno 54] Connection reset by peer
+22:11:05 [WARNING]   API error for category 22 page 2: [Errno 54] Connection reset by peer
+22:12:56 [INFO]   Progress: 1700 docs stored, 1659 bodies fetched
+22:14:46 [INFO]   Progress: 1750 docs stored, 1690 bodies fetched
+22:15:08 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/23?page=1&sid=2: [Errno 54] Connection reset by peer
+22:15:09 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/23?page=1&sid=2: [Errno 54] Connection reset by peer
+22:15:12 [WARNING]   API error for category 23 page 1: [Errno 54] Connection reset by peer
+22:15:13 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/24?page=1&sid=2: [Errno 54] Connection reset by peer
+22:15:18 [INFO]   [24] 财政、金融、审计: 209 documents
+22:15:19 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/24?page=2&sid=2: [Errno 54] Connection reset by peer
+22:15:21 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/24?page=2&sid=2: [Errno 54] Connection reset by peer
+22:15:23 [WARNING]   API error for category 24 page 2: [Errno 54] Connection reset by peer
+22:17:15 [INFO]   Progress: 1800 docs stored, 1725 bodies fetched
+22:19:41 [INFO]   Progress: 1850 docs stored, 1764 bodies fetched
+22:19:51 [INFO]   [25] 国土资源、能源: 195 documents
+22:19:56 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/25?page=3&sid=2: [Errno 54] Connection reset by peer
+22:19:58 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/25?page=3&sid=2: [Errno 54] Connection reset by peer
+22:20:01 [WARNING]   API error for category 25 page 3: HTTP Error 404: Not Found
+22:22:04 [INFO]   Progress: 1900 docs stored, 1803 bodies fetched
+22:24:53 [INFO]   Progress: 1950 docs stored, 1852 bodies fetched
+22:29:28 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/26?page=1&sid=2: [Errno 54] Connection reset by peer
+22:29:34 [INFO]   [26] 农业、林业、水利: 433 documents
+22:29:35 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/26?page=2&sid=2: [Errno 54] Connection reset by peer
+22:29:36 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/26?page=2&sid=2: [Errno 54] Connection reset by peer
+22:29:43 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/26?page=3&sid=2: [Errno 54] Connection reset by peer
+22:29:45 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/26?page=3&sid=2: [Errno 54] Connection reset by peer
+22:29:47 [WARNING]   API error for category 26 page 3: [Errno 54] Connection reset by peer
+22:32:30 [INFO]   Progress: 2150 docs stored, 1975 bodies fetched
+22:37:30 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/27?page=1&sid=2: [Errno 54] Connection reset by peer
+22:37:31 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/27?page=1&sid=2: [Errno 54] Connection reset by peer
+22:37:34 [WARNING]   API error for category 27 page 1: [Errno 54] Connection reset by peer
+22:37:35 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/28?page=1&sid=2: [Errno 54] Connection reset by peer
+22:37:40 [INFO]   [28] 商贸、海关、旅游: 179 documents
+22:37:41 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/28?page=2&sid=2: [Errno 54] Connection reset by peer
+22:37:43 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/28?page=2&sid=2: [Errno 54] Connection reset by peer
+22:37:45 [WARNING]   API error for category 28 page 2: [Errno 54] Connection reset by peer
+22:42:30 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/29?page=1&sid=2: [Errno 54] Connection reset by peer
+22:42:32 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/29?page=1&sid=2: [Errno 54] Connection reset by peer
+22:42:37 [INFO]   [29] 市场监管、安全生产监管: 169 documents
+22:42:42 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/29?page=3&sid=2: [Errno 54] Connection reset by peer
+22:42:44 [WARNING]   API error for category 29 page 3: HTTP Error 404: Not Found
+22:47:12 [INFO]   Progress: 2450 docs stored, 2216 bodies fetched
+22:50:13 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/30?page=1&sid=2: [Errno 54] Connection reset by peer
+22:50:15 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/30?page=1&sid=2: [Errno 54] Connection reset by peer
+22:50:17 [WARNING]   API error for category 30 page 1: [Errno 54] Connection reset by peer
+22:50:18 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/31?page=1&sid=2: [Errno 54] Connection reset by peer
+22:50:20 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/31?page=1&sid=2: [Errno 54] Connection reset by peer
+22:50:22 [WARNING]   API error for category 31 page 1: [Errno 54] Connection reset by peer
+22:50:26 [INFO]   [32] 文化、广电、新闻出版: 127 documents
+22:50:27 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/32?page=2&sid=2: [Errno 54] Connection reset by peer
+22:50:29 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/32?page=2&sid=2: [Errno 54] Connection reset by peer
+22:50:35 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/32?page=3&sid=2: [Errno 54] Connection reset by peer
+22:50:36 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/32?page=3&sid=2: [Errno 54] Connection reset by peer
+22:50:39 [WARNING]   API error for category 32 page 3: [Errno 54] Connection reset by peer
+22:52:23 [INFO]   Progress: 2550 docs stored, 2298 bodies fetched
+22:54:54 [INFO]   Progress: 2600 docs stored, 2343 bodies fetched
+22:56:44 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/33?page=1&sid=2: [Errno 54] Connection reset by peer
+22:56:46 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/33?page=1&sid=2: [Errno 54] Connection reset by peer
+22:56:48 [WARNING]   API error for category 33 page 1: [Errno 54] Connection reset by peer
+22:56:50 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/35?page=1&sid=2: [Errno 54] Connection reset by peer
+22:56:51 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/35?page=1&sid=2: [Errno 54] Connection reset by peer
+22:56:54 [WARNING]   API error for category 35 page 1: [Errno 54] Connection reset by peer
+22:56:58 [INFO]   [36] 公安、安全、司法: 145 documents
+22:56:59 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/36?page=2&sid=2: [Errno 54] Connection reset by peer
+22:57:00 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/36?page=2&sid=2: [Errno 54] Connection reset by peer
+22:57:03 [WARNING]   API error for category 36 page 2: [Errno 54] Connection reset by peer
+22:57:55 [INFO]   Progress: 2650 docs stored, 2387 bodies fetched
+23:00:14 [INFO]   Progress: 2700 docs stored, 2424 bodies fetched
+23:01:55 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/37?page=1&sid=2: [Errno 54] Connection reset by peer
+23:01:57 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/37?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:00 [WARNING]   API error for category 37 page 1: [Errno 54] Connection reset by peer
+23:02:01 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/40?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:02 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/40?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:05 [WARNING]   API error for category 40 page 1: [Errno 54] Connection reset by peer
+23:02:06 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/41?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:07 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/41?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:10 [WARNING]   API error for category 41 page 1: [Errno 54] Connection reset by peer
+23:02:11 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/44?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:13 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/44?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:15 [WARNING]   API error for category 44 page 1: [Errno 54] Connection reset by peer
+23:02:17 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/45?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:18 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/45?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:21 [WARNING]   API error for category 45 page 1: [Errno 54] Connection reset by peer
+23:02:22 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/4208?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:23 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/4208?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:26 [WARNING]   API error for category 4208 page 1: [Errno 54] Connection reset by peer
+23:02:27 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/4209?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:29 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/4209?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:31 [WARNING]   API error for category 4209 page 1: [Errno 54] Connection reset by peer
+23:02:32 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/3492?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:34 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/3492?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:36 [WARNING]   API error for category 3492 page 1: [Errno 54] Connection reset by peer
+23:02:37 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/3493?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:39 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/3493?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:42 [WARNING]   API error for category 3493 page 1: [Errno 54] Connection reset by peer
+23:02:43 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/4074?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:44 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/4074?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:47 [WARNING]   API error for category 4074 page 1: [Errno 54] Connection reset by peer
+23:02:48 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/4168?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:49 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/4168?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:52 [WARNING]   API error for category 4168 page 1: [Errno 54] Connection reset by peer
+23:02:53 [WARNING]   Retry 1/3 for http://www.gd.gov.cn/gkmlpt/api/all/4169?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:55 [WARNING]   Retry 2/3 for http://www.gd.gov.cn/gkmlpt/api/all/4169?page=1&sid=2: [Errno 54] Connection reset by peer
+23:02:57 [WARNING]   API error for category 4169 page 1: [Errno 54] Connection reset by peer
+23:02:58 [INFO] === Done: Guangdong Province — 2731 documents, 2452 bodies ===
+
+=== Database Statistics ===
+
+[central   ] National Development and Reform Commission
+  Documents: 1617, With body: 896
+  Last crawled: 2026-03-03T00:25:04.118591+00:00
+
+[central   ] State Council
+  Documents: 1005, With body: 1005
+  Last crawled: 2026-03-03T01:08:03.065997+00:00
+
+[department] Audit Bureau
+  Documents: 470, With body: 417
+  Last crawled: 2026-02-25T03:06:44.740807+00:00
+
+[department] Civil Affairs Bureau
+  Documents: 5015, With body: 4447
+  Last crawled: 2026-02-15T19:31:43.141858+00:00
+
+[department] Commerce Bureau
+  Documents: 2889, With body: 2530
+  Last crawled: 2026-02-15T19:37:59.494415+00:00
+
+[department] Development & Reform Commission
+  Documents: 2552, With body: 1118
+  Last crawled: 2026-02-15T18:49:02.524556+00:00
+
+[department] Education Bureau
+  Documents: 1999, With body: 1878
+  Last crawled: 2026-02-15T19:41:31.003518+00:00
+
+[department] Emergency Management Bureau
+  Documents: 1996, With body: 1816
+  Last crawled: 2026-02-15T19:42:56.511100+00:00
+
+[department] Health Commission
+  Documents: 1238, With body: 1172
+  Last crawled: 2026-02-15T19:40:13.192595+00:00
+
+[department] Housing & Construction Bureau
+  Documents: 2353, With body: 2081
+  Last crawled: 2026-02-15T18:51:05.387854+00:00
+
+[department] Human Resources & Social Security
+  Documents: 3236, With body: 2802
+  Last crawled: 2026-02-15T19:29:00.011322+00:00
+
+[department] Justice Bureau
+  Documents: 2019, With body: 1753
+  Last crawled: 2026-02-15T19:34:34.753831+00:00
+
+[department] Public Security Bureau
+  Documents: 5010, With body: 4930
+  Last crawled: 2026-02-15T19:45:53.655052+00:00
+
+[department] S&T Innovation Bureau
+  Documents: 2710, With body: 1658
+  Last crawled: 2026-02-15T18:45:31.692268+00:00
+
+[department] Transport Bureau
+  Documents: 2843, With body: 2543
+  Last crawled: 2026-02-15T19:35:57.873018+00:00
+
+[district  ] Futian District
+  Documents: 214, With body: 115
+  Last crawled: 2026-02-15T19:49:28.673369+00:00
+
+[district  ] Guangming District
+  Documents: 905, With body: 804
+  Last crawled: 2026-02-15T18:54:00.973858+00:00
+
+[district  ] Longhua District
+  Documents: 6134, With body: 5906
+  Last crawled: 2026-02-15T19:51:13.586142+00:00
+
+[district  ] Luohu District
+  Documents: 759, With body: 705
+  Last crawled: 2026-02-15T19:49:52.099643+00:00
+
+[district  ] Nanshan District
+  Documents: 309, With body: 204
+  Last crawled: 2026-02-15T19:48:22.565577+00:00
+
+[district  ] Pingshan District
+  Documents: 1636, With body: 1276
+  Last crawled: 2026-02-15T18:42:19.032771+00:00
+
+[municipal ] Shenzhen Main Portal
+  Documents: 844, With body: 844
+  Last crawled: 2026-02-15T18:15:21.051821+00:00
+
+[provincial] Guangdong Province
+  Documents: 2448, With body: 2439
+  Last crawled: 2026-03-03T01:28:57.720991+00:00
+
+Total documents across all sites: 50201
+
+========================================
+=== Dev & Reform retry (DNS failures) ===
+========================================
+23:02:59 [INFO] Backfilling body text for 400 documents (delay=0.5s)
+23:02:59 [INFO]   fgw: 400 docs need body text
+23:05:51 [WARNING]   Retry 1/3 for http://fgw.sz.gov.cn/gkmlpt/content/8/8993/post_8993867.html: timed out
+23:10:01 [WARNING]   Retry 2/3 for http://fgw.sz.gov.cn/gkmlpt/content/8/8993/post_8993867.html: timed out
+23:10:24 [WARNING]   Failed to fetch http://fgw.sz.gov.cn/gkmlpt/content/8/8993/post_8993867.html: timed out
+23:10:52 [INFO]   Backfill: 20/400 (0 ok) | 0.0 docs/s | ETA: 150m
+23:11:35 [INFO]   Backfill: 40/400 (0 ok) | 0.1 docs/s | ETA: 77m
+23:12:07 [INFO]   Backfill: 60/400 (0 ok) | 0.1 docs/s | ETA: 52m
+23:12:57 [WARNING]   Retry 1/3 for http://fgw.sz.gov.cn/gkmlpt/content/9/9779/post_9779640.html: timed out
+23:13:31 [INFO]   Backfill: 80/400 (0 ok) | 0.1 docs/s | ETA: 42m
+23:14:18 [INFO]   Backfill: 100/400 (0 ok) | 0.1 docs/s | ETA: 34m
+23:15:03 [INFO]   Backfill: 120/400 (0 ok) | 0.2 docs/s | ETA: 28m
+23:15:31 [INFO]   Backfill: 140/400 (0 ok) | 0.2 docs/s | ETA: 23m
+23:16:02 [INFO]   Backfill: 160/400 (0 ok) | 0.2 docs/s | ETA: 20m
+23:17:33 [INFO]   Backfill: 180/400 (0 ok) | 0.2 docs/s | ETA: 18m
+23:18:01 [INFO]   Backfill: 200/400 (0 ok) | 0.2 docs/s | ETA: 15m
+23:18:29 [INFO]   Backfill: 220/400 (0 ok) | 0.2 docs/s | ETA: 13m
+23:19:01 [INFO]   Backfill: 240/400 (0 ok) | 0.2 docs/s | ETA: 11m
+23:19:31 [INFO]   Backfill: 260/400 (0 ok) | 0.3 docs/s | ETA: 9m
+23:20:01 [INFO]   Backfill: 280/400 (0 ok) | 0.3 docs/s | ETA: 7m
+23:20:31 [INFO]   Backfill: 300/400 (0 ok) | 0.3 docs/s | ETA: 6m
+23:20:59 [INFO]   Backfill: 320/400 (0 ok) | 0.3 docs/s | ETA: 5m
+23:21:44 [INFO]   Backfill: 340/400 (0 ok) | 0.3 docs/s | ETA: 3m
+23:22:42 [WARNING]   Retry 1/3 for http://drc.gd.gov.cn/gkmlpt/content/4/4764/post_4764906.html#876: [Errno 54] Connection reset by peer
+23:22:43 [WARNING]   Retry 2/3 for http://drc.gd.gov.cn/gkmlpt/content/4/4764/post_4764906.html#876: [Errno 54] Connection reset by peer
+23:22:46 [WARNING]   Failed to fetch http://drc.gd.gov.cn/gkmlpt/content/4/4764/post_4764906.html#876: [Errno 54] Connection reset by peer
+23:22:47 [INFO]   Backfill: 360/400 (2 ok) | 0.3 docs/s | ETA: 2m
+23:23:18 [INFO]   Backfill: 380/400 (2 ok) | 0.3 docs/s | ETA: 1m
+23:24:03 [INFO]   Backfill: 400/400 (2 ok) | 0.3 docs/s | ETA: 0m
+23:24:03 [INFO] Backfill complete: 2/400 bodies fetched
+
+=== Database Statistics ===
+
+[central   ] National Development and Reform Commission
+  Documents: 1617, With body: 896
+  Last crawled: 2026-03-03T00:25:04.118591+00:00
+
+[central   ] State Council
+  Documents: 1005, With body: 1005
+  Last crawled: 2026-03-03T01:08:03.065997+00:00
+
+[department] Audit Bureau
+  Documents: 470, With body: 417
+  Last crawled: 2026-02-25T03:06:44.740807+00:00
+
+[department] Civil Affairs Bureau
+  Documents: 5015, With body: 4447
+  Last crawled: 2026-02-15T19:31:43.141858+00:00
+
+[department] Commerce Bureau
+  Documents: 2889, With body: 2530
+  Last crawled: 2026-02-15T19:37:59.494415+00:00
+
+[department] Development & Reform Commission
+  Documents: 2552, With body: 1120
+  Last crawled: 2026-02-15T18:49:02.524556+00:00
+
+[department] Education Bureau
+  Documents: 1999, With body: 1878
+  Last crawled: 2026-02-15T19:41:31.003518+00:00
+
+[department] Emergency Management Bureau
+  Documents: 1996, With body: 1816
+  Last crawled: 2026-02-15T19:42:56.511100+00:00
+
+[department] Health Commission
+  Documents: 1238, With body: 1172
+  Last crawled: 2026-02-15T19:40:13.192595+00:00
+
+[department] Housing & Construction Bureau
+  Documents: 2353, With body: 2081
+  Last crawled: 2026-02-15T18:51:05.387854+00:00
+
+[department] Human Resources & Social Security
+  Documents: 3236, With body: 2802
+  Last crawled: 2026-02-15T19:29:00.011322+00:00
+
+[department] Justice Bureau
+  Documents: 2019, With body: 1753
+  Last crawled: 2026-02-15T19:34:34.753831+00:00
+
+[department] Public Security Bureau
+  Documents: 5010, With body: 4930
+  Last crawled: 2026-02-15T19:45:53.655052+00:00
+
+[department] S&T Innovation Bureau
+  Documents: 2710, With body: 1658
+  Last crawled: 2026-02-15T18:45:31.692268+00:00
+
+[department] Transport Bureau
+  Documents: 2843, With body: 2543
+  Last crawled: 2026-02-15T19:35:57.873018+00:00
+
+[district  ] Futian District
+  Documents: 214, With body: 115
+  Last crawled: 2026-02-15T19:49:28.673369+00:00
+
+[district  ] Guangming District
+  Documents: 905, With body: 804
+  Last crawled: 2026-02-15T18:54:00.973858+00:00
+
+[district  ] Longhua District
+  Documents: 6134, With body: 5906
+  Last crawled: 2026-02-15T19:51:13.586142+00:00
+
+[district  ] Luohu District
+  Documents: 759, With body: 705
+  Last crawled: 2026-02-15T19:49:52.099643+00:00
+
+[district  ] Nanshan District
+  Documents: 309, With body: 204
+  Last crawled: 2026-02-15T19:48:22.565577+00:00
+
+[district  ] Pingshan District
+  Documents: 1636, With body: 1276
+  Last crawled: 2026-02-15T18:42:19.032771+00:00
+
+[municipal ] Shenzhen Main Portal
+  Documents: 844, With body: 844
+  Last crawled: 2026-02-15T18:15:21.051821+00:00
+
+[provincial] Guangdong Province
+  Documents: 2448, With body: 2439
+  Last crawled: 2026-03-03T01:28:57.720991+00:00
+
+Total documents across all sites: 50201
+
+========================================
+=== Citation re-extraction ===
+========================================
+Rebuilt citations table
+Lookup tables: 6283 doc numbers, 44504 titles, 23 sites
+Documents with body text: 43341
+
+Extracted 54540 citations in 123.4s:
+  Formal (文号): 13099 (2527 resolved)
+  Named  (《》): 41441 (12848 resolved)
+  Total resolved: 15375/54540
+
+  Cross-level citations: 12110
+
+  Citation flow:
+    municipal → unknown: 14255
+    municipal → municipal: 11979
+    district → district: 4616
+    district → unknown: 4340
+    municipal → provincial: 3506
+    municipal → central: 3112
+    provincial → unknown: 2334
+    district → municipal: 2269
+    provincial → provincial: 1726
+    central → central: 1627
+    central → unknown: 1553
+    provincial → central: 1340
+    district → provincial: 830
+    district → central: 827
+    municipal → district: 154
+
+Saved 54540 citations to database
+
+========================================
+=== Final stats ===
+========================================
+
+=== Database Statistics ===
+
+[central   ] National Development and Reform Commission
+  Documents: 1617, With body: 896
+  Last crawled: 2026-03-03T00:25:04.118591+00:00
+
+[central   ] State Council
+  Documents: 1005, With body: 1005
+  Last crawled: 2026-03-03T01:08:03.065997+00:00
+
+[department] Audit Bureau
+  Documents: 470, With body: 417
+  Last crawled: 2026-02-25T03:06:44.740807+00:00
+
+[department] Civil Affairs Bureau
+  Documents: 5015, With body: 4447
+  Last crawled: 2026-02-15T19:31:43.141858+00:00
+
+[department] Commerce Bureau
+  Documents: 2889, With body: 2530
+  Last crawled: 2026-02-15T19:37:59.494415+00:00
+
+[department] Development & Reform Commission
+  Documents: 2552, With body: 1120
+  Last crawled: 2026-02-15T18:49:02.524556+00:00
+
+[department] Education Bureau
+  Documents: 1999, With body: 1878
+  Last crawled: 2026-02-15T19:41:31.003518+00:00
+
+[department] Emergency Management Bureau
+  Documents: 1996, With body: 1816
+  Last crawled: 2026-02-15T19:42:56.511100+00:00
+
+[department] Health Commission
+  Documents: 1238, With body: 1172
+  Last crawled: 2026-02-15T19:40:13.192595+00:00
+
+[department] Housing & Construction Bureau
+  Documents: 2353, With body: 2081
+  Last crawled: 2026-02-15T18:51:05.387854+00:00
+
+[department] Human Resources & Social Security
+  Documents: 3236, With body: 2802
+  Last crawled: 2026-02-15T19:29:00.011322+00:00
+
+[department] Justice Bureau
+  Documents: 2019, With body: 1753
+  Last crawled: 2026-02-15T19:34:34.753831+00:00
+
+[department] Public Security Bureau
+  Documents: 5010, With body: 4930
+  Last crawled: 2026-02-15T19:45:53.655052+00:00
+
+[department] S&T Innovation Bureau
+  Documents: 2710, With body: 1658
+  Last crawled: 2026-02-15T18:45:31.692268+00:00
+
+[department] Transport Bureau
+  Documents: 2843, With body: 2543
+  Last crawled: 2026-02-15T19:35:57.873018+00:00
+
+[district  ] Futian District
+  Documents: 214, With body: 115
+  Last crawled: 2026-02-15T19:49:28.673369+00:00
+
+[district  ] Guangming District
+  Documents: 905, With body: 804
+  Last crawled: 2026-02-15T18:54:00.973858+00:00
+
+[district  ] Longhua District
+  Documents: 6134, With body: 5906
+  Last crawled: 2026-02-15T19:51:13.586142+00:00
+
+[district  ] Luohu District
+  Documents: 759, With body: 705
+  Last crawled: 2026-02-15T19:49:52.099643+00:00
+
+[district  ] Nanshan District
+  Documents: 309, With body: 204
+  Last crawled: 2026-02-15T19:48:22.565577+00:00
+
+[district  ] Pingshan District
+  Documents: 1636, With body: 1276
+  Last crawled: 2026-02-15T18:42:19.032771+00:00
+
+[municipal ] Shenzhen Main Portal
+  Documents: 844, With body: 844
+  Last crawled: 2026-02-15T18:15:21.051821+00:00
+
+[provincial] Guangdong Province
+  Documents: 2448, With body: 2439
+  Last crawled: 2026-03-03T01:28:57.720991+00:00
+
+Total documents across all sites: 50201
+ALL DONE

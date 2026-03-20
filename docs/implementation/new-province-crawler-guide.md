@@ -298,26 +298,29 @@ via JS, you have two options:
 
 ## Implemented Crawlers
 
-| Crawler | Platform | Sites | Docs |
-|---------|----------|-------|------|
-| `crawlers/gkmlpt.py` | Guangdong gkmlpt | 37+ sites (Shenzhen + 16 GD cities + districts + departments + province) | ~96k |
-| `crawlers/ndrc.py` | NDRC static HTML | 1 | 1,617 |
-| `crawlers/gov.py` | State Council | 1 | 1,005 |
-| `crawlers/mof.py` | Ministry of Finance | 1 | 919 |
-| `crawlers/mee.py` | Ministry of Ecology & Environment | 1 | 563 |
+| Crawler | Platform | Sites | Docs | Body % |
+|---------|----------|-------|------|--------|
+| `crawlers/gkmlpt.py` | Guangdong gkmlpt | 42 sites | ~96k | 91% |
+| `crawlers/ndrc.py` | NDRC static HTML | 1 | 1,617 | 95% |
+| `crawlers/gov.py` | State Council | 1 | 1,005 | 90% |
+| `crawlers/mof.py` | Ministry of Finance | 1 | 919 | 93% |
+| `crawlers/mee.py` | Ministry of Ecology & Environment | 1 | 563 | 88% |
+| `crawlers/beijing.py` | Beijing custom CMS | 5 sections | 1,781 | 99% |
+| `crawlers/shanghai.py` | Shanghai year-archives | 6 sections | 3,830 | 99% |
+| `crawlers/jiangsu.py` | Jiangsu jpage API | 1 section | 1,041 | 0% (needs body fix) |
 
-## Target Sites for Expansion (Planned — not yet built)
+## Province Crawlers — Status
 
-| Province | URL | Priority | Status | Notes |
-|----------|-----|----------|--------|-------|
-| Zhejiang | www.zj.gov.cn | High | **Planned** | Static HTML, createPageHTML pagination, div#zoom body |
-| Shanghai | www.shanghai.gov.cn | High | **Planned** | Static HTML, /nrclj/ paths, div.Article_content body |
-| Beijing | www.beijing.gov.cn | High | **Planned** | Static HTML, /zhengce/ paths, div#mainText body |
-| Jiangsu | www.jiangsu.gov.cn | Medium | **Planned** | Static HTML, /art/jszfxxgk/ paths |
-| Sichuan | www.sc.gov.cn | Medium | **Planned** | Static HTML, /10462/xxgk/ paths, .shtml detail pages |
-| Shandong | www.shandong.gov.cn | Medium | **Planned** | Static HTML, /art/sdzwgk/ paths |
+| Province | Crawler | Status | Docs | Notes |
+|----------|---------|--------|------|-------|
+| Beijing | `crawlers/beijing.py` | **Working** | 1,781 | 3 HTML template patterns, client-side pagination |
+| Shanghai | `crawlers/shanghai.py` | **Working** | 3,830 | Year-based archives, jQuery pagination |
+| Jiangsu | `crawlers/jiangsu.py` | **Partial** | 1,041 | jpage API works; body extraction needs debugging; 3/4 sections need template fix |
+| Zhejiang | `crawlers/zhejiang.py` | **Blocked** | 0 | Unreachable from US |
+| Sichuan | `crawlers/sichuan.py` | **Blocked** | 0 | Unreachable from US |
+| Shandong | `crawlers/shandong.py` | **Blocked** | 0 | SSL handshake failure |
 
-*Note: Draft crawler files exist locally for some of these but are not committed or tested.*
+*Beijing + Shanghai docs are in `documents_new.db`. Merge into main DB with `python3 scripts/merge_db.py documents_new.db`.*
 
 ## Checklist
 

@@ -12,7 +12,9 @@ crawlers/
 ├── base.py          # Shared: init_db, fetch, store_document, save_raw_html
 ├── gkmlpt.py        # Guangdong gkmlpt platform (existing crawler.py logic)
 ├── ndrc.py          # NDRC static HTML crawler
-└── gov.py           # State Council TRS CMS crawler
+├── gov.py           # State Council TRS CMS crawler
+├── mof.py           # Ministry of Finance crawler
+└── mee.py           # Ministry of Ecology and Environment crawler
 ```
 
 All crawlers write to the same `documents.db`. The `site_key` and `admin_level` fields distinguish sources. Web app works unchanged.
@@ -50,3 +52,12 @@ All crawlers write to the same `documents.db`. The `site_key` and `admin_level` 
 - Smoke test: 1,003 docs indexed (metadata only)
 
 **Current state:** 46,633 total documents (45,130 gkmlpt + 500 NDRC + 1,003 State Council). Body text not yet fetched for central sites — run full crawl when ready.
+
+### 2026-03-15 (updated)
+
+**New ministry crawlers added:** Extended central government coverage beyond the original NDRC + State Council pair:
+
+- `crawlers/mof.py` — Ministry of Finance (MOF): 919 documents indexed
+- `crawlers/mee.py` — Ministry of Ecology and Environment (MEE): 563 documents indexed
+
+**Current state:** 103,470 total documents. The gkmlpt local-government corpus has grown substantially via provincial expansion, and the four central-government crawlers (NDRC, State Council, MOF, MEE) broaden ministry-level coverage.

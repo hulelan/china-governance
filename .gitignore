@@ -20,3 +20,4 @@ random/
 # Docker volumes
 caddy_data/
 caddy_config/
+docs/.DS_Store
