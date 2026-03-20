@@ -1,0 +1,142 @@
+Tier 4 Province Crawlers - Implementation Log
+===============================================
+Updated: 2026-03-18
+
+== BEIJING (crawlers/beijing.py, site_key: bj) ==
+
+Status: COMPLETE - 1,781 docs, 1,761 with body (98.9%) in documents_new.db
+Next step: merge into documents.db via scripts/merge_db.py
+
+Sections and counts (list-only verified):
+  szfwj  (市政府文件):         320 docs  - client-side pagination, .default_news li
+  bgtwj  (市政府办公厅文件):    303 docs  - client-side pagination, .default_news li
+  gfxwj  (规范性文件):          998 docs  - client-side pagination, .default_news li
+  szfgz  (市政府规章):          135 docs  - server-side pagination (9 pages), card layout
+  zcjd   (政策解读):             25 docs  - server-side pagination, standard list
+
+Key discoveries:
+  1. Beijing uses THREE different HTML templates across sections:
+     - .default_news li with <b class="u_time"> for dates (szfwj, bgtwj)
+     - .default_news li with <span> for dates (gfxwj)
+     - p.c-bt-t / p.c-bt-c card layout for regulations (szfgz)
+  2. Client-side pagination: JS does `var $list = $('.default_news li')` then
+     `data.slice()` to paginate. ALL data is in the HTML. No API needed.
+  3. createPageHTML(191, 13, 0, "index", "html") uses (records, pages, current)
+     format - arg 2 is page count, NOT arg 1.
+  4. SEO dummy entry with empty <i class="flag"></i> must be filtered out.
+     Real entries have <i class="flag">是</i>.
+
+Bugs fixed:
+  - createPageHTML arg parsing: captured totalRecords (191) instead of totalPages (13)
+  - WebFetch AI said <div class="c-bt-t"> but actual HTML uses <p class="c-bt-t">
+  - Catastrophic regex backtracking on 1000-item page: extracted .default_news
+    container first to reduce search space before running DOTALL patterns
+  - SEO dummy entry filtered by checking flag content
+
+Full crawl kicked off at 2026-03-17 with body fetching.
+
+== JIANGSU (crawlers/jiangsu.py, site_key: js) ==
+
+Status: PARTIAL - 1,041 docs listed, 0 with body (body extraction needs debugging)
+DB: documents_new.db
+Note: Body-fetch crawl ran but extracted 0 bodies. Likely needs _extract_body
+  selector fixes for Jiangsu's HTML template. Only zcwj section (1/4) parses listings.
+
+Sections (column IDs for jpage API):
+  zcwj   (最新文件):     col84242  (~5184 docs per totalRecord)
+  zcjd   (政策解读):     col84725
+  xxgk   (政府信息公开): col84239
+  szfgb  (省政府公报):   col81677
+
+Architecture:
+  - Uses jpage jQuery plugin with /module/web/jpage/dataproxy.jsp
+  - First page: /col/col{id}/index.html (server-rendered)
+  - Subsequent pages: dataproxy.jsp?startrecord=N&endrecord=M&columnid=ID
+  - Doc URLs: /art/YYYY/M/D/art_{cat_id}_{art_id}.html
+
+Fixed bugs:
+  - jpage dataproxy.jsp returns XML with CDATA-wrapped HTML fragments.
+    Added _extract_jpage_records() to extract CDATA content before parsing.
+  - Dates in jpage responses have whitespace/newlines splitting them:
+    "2026-\n01-\n23". Fixed regex to capture year/month/day separately
+    with \s* between components.
+  - Removed </li> requirement from end of pattern (a <span class="jds">
+    block sits between the date span and </li>).
+  - zcwj section: 3,049 docs from 50 pages (totalRecord was 5184 but
+    we get ~60 items per jpage response, not the configured 20)
+
+== SHANGHAI (crawlers/shanghai.py, site_key: sh) ==
+
+Status: COMPLETE - 3,830 docs, 3,826 with body (99.9%) in documents_new.db
+Base URL: https://www.shanghai.gov.cn
+
+Sections (6 total, all working):
+  nw39220  (沪府文件):    368 docs (14 year archives, 2013-2026)
+  nw2407   (沪府令):      501 docs (24 year archives, 2003-2025)
+  nw11407  (沪府发):    1,136 docs (23 year archives, 2003-2025)
+  nw11408  (沪府办发):  1,039 docs (24 year archives, 2003-2026; 2025 broken on site)
+  nw39221  (沪府办):      592 docs (14 year archives, 2013-2026)
+  nw42944  (沪府规):      194 docs (9 year archives, 2018-2026)
+
+Architecture:
+  - Section index: /{section_id}/index.html
+  - Year archives: scraped dynamically (inconsistent URL prefixes across years)
+  - Pagination: jQuery plugin, totalPage:N, index.html / index_N.html
+  - Doc URLs: /nw12344/YYYYMMDD/{uuid}.html
+  - Body: div.Article_content
+  - Dates in <span class="time">YYYY-MM-DD</span> (not plain text)
+  - HTML comments contain duplicate entries — stripped before parsing
+
+Fixed bugs:
+  - Year-archive links have nested tags (<a><h4>2024年</h4></a>),
+    not direct text. Fixed regex to use .*? with DOTALL.
+  - Dates are in <span class="time">, not plain text after </a>.
+    Research agent reported wrong structure.
+  - Commented-out duplicates (<!-- ... -->) caused double-counting.
+    Added comment stripping before parsing.
+
+== SICHUAN (crawlers/sichuan.py, site_key: sc) ==
+
+Status: BLOCKED - site unreachable from US
+
+Sections (discovered via Google):
+  zfwj   (政府文件):   /10462/c103041/newzfwj.shtml
+  gfxwj  (规范性文件): /10462/c102914/xzgfxwjk.shtml
+  zcwjk  (政策文件库): /10462/c108704/scszkwjkn.shtml
+  zcwj   (政策文件):   /10462/c111441/list_ft.shtml
+
+Issue: Connection timeouts from US. Needs Chinese IP or proxy.
+
+== SHANDONG (crawlers/shandong.py, site_key: sd) ==
+
+Status: BLOCKED - SSL handshake failure
+
+Sections (column IDs for /col/ pattern):
+  zcwj       (政策文件):             col107851
+  szfwj      (省政府文件):           col310952
+  szfbgtwj   (省政府及办公厅文件):   col320658
+
+Issue: SSL handshake fails even over HTTP (WebFetch upgrades to HTTPS).
+Switched base URL to http:// but still can't connect. Needs direct HTTP access.
+
+== ZHEJIANG (crawlers/zhejiang.py, site_key: zj) ==
+
+Status: BLOCKED - site unreachable from US
+
+Sections: 5 sections defined but using placeholder art IDs.
+Issue: HTTP 405 errors. Site likely needs different URL scheme.
+Needs manual recon from Chinese IP.
+
+== INFRASTRUCTURE ==
+
+Separate DB workflow (to avoid SQLite write lock contention):
+  1. Crawlers accept --db flag to write to alternate database
+  2. scripts/merge_db.py merges source DB into target (default: documents.db)
+  3. Handles sites (upsert), categories (ID remap), documents (URL dedup)
+  4. Does NOT merge citations, subsidy_items, document_changes
+
+gkmlpt.py additions:
+  - szba (Bao'an District)
+  - dongguan (Dongguan)
+  - foshan (Foshan)
+  Total SITES: 42
