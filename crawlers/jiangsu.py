@@ -249,10 +249,12 @@ def _extract_body(html: str) -> str:
     4. div.TRS_Editor (TRS CMS)
     """
     content = ""
+    # Jiangsu uses div.artile_zw (note typo) as the main content container.
+    # It contains scripts, styles, a metadata table, and the body text.
     for pattern in [
-        r'<div[^>]*class="[^"]*\barticle-body\b[^"]*"[^>]*>(.*?)</div>\s*(?:<div|</div>)',
-        r'<div[^>]*class="[^"]*\bcon_text\b[^"]*"[^>]*>(.*?)</div>\s*(?:<div|</div>)',
-        r'<div[^>]*id=["\']zoom["\'][^>]*>(.*?)</div>\s*(?:<div|</div>)',
+        r'<div[^>]*class="[^"]*\bartile_zw\b[^"]*"[^>]*>(.*?)</div>\s*(?:<div[^>]*class="[^"]*\bfenxiang\b|<div[^>]*class="[^"]*\bright\b)',
+        r'<div[^>]*class="[^"]*\barticle\b[^"]*"[^>]*>(.*?)</div>\s*</div>',
+        r'<div[^>]*id=["\']zoom["\'][^>]*>(.*?)</div>',
         r'<div[^>]*class="[^"]*\bTRS_Editor\b[^"]*"[^>]*>(.*?)</div>',
     ]:
         m = re.search(pattern, html, re.DOTALL)
@@ -263,6 +265,10 @@ def _extract_body(html: str) -> str:
     if not content:
         return ""
 
+    # Strip scripts, styles, and metadata table before extracting text
+    content = re.sub(r"<script[^>]*>.*?</script>", "", content, flags=re.DOTALL)
+    content = re.sub(r"<style[^>]*>.*?</style>", "", content, flags=re.DOTALL)
+    content = re.sub(r"<table[^>]*class=\"xxgk_table\".*?</table>", "", content, flags=re.DOTALL)
     content = re.sub(r"<br\s*/?\s*>", "\n", content)
     content = re.sub(r"</p>", "\n", content)
     text = re.sub(r"<[^>]+>", "", content)
