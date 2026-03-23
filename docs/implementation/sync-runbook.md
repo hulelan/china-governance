@@ -21,7 +21,7 @@ curl -s "https://china-governance-production.up.railway.app/api/v1/stats" | pyth
 
 ## Adding New Sites (new crawlers, new site_keys)
 
-The incremental sync **only inserts docs for sites that already exist in Postgres**. New site_keys require a full rebuild.
+The incremental sync handles new sites — it uses `INSERT ... ON CONFLICT DO NOTHING` for sites, categories, and documents. Use `--drop` only if the schema has changed (new columns added to the CREATE TABLE in `sqlite_to_postgres.py`).
 
 ```bash
 # 1. Crawl to a separate DB to avoid lock contention
@@ -31,13 +31,15 @@ python3 -m crawlers.beijing --db documents_new.db
 python3 scripts/merge_db.py documents_new.db --dry-run   # preview first
 python3 scripts/merge_db.py documents_new.db              # merge
 
-# 3. Full rebuild to production (required for new sites)
+# 3. Sync to production (incremental works for new sites)
 DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
-  python3 scripts/sqlite_to_postgres.py --drop
+  python3 scripts/sqlite_to_postgres.py
 
 # 4. Verify
 curl -s "https://china-governance-production.up.railway.app/api/v1/stats" | python3 -m json.tool
 ```
+
+**When to use `--drop`:** Only when the Postgres schema needs to change (e.g., new columns added to the CREATE TABLE in `sqlite_to_postgres.py`). It drops all tables and re-inserts everything from SQLite.
 
 ## Pitfalls We've Hit
 
@@ -51,10 +53,10 @@ curl -s "https://china-governance-production.up.railway.app/api/v1/stats" | pyth
 
 **Recovery:** Just re-run the failed command after the other finishes.
 
-### 2. Incremental sync doesn't push new sites
-**Cause:** `sqlite_to_postgres.py` (without `--drop`) only inserts docs for site_keys already in Postgres.
+### 2. Incremental sync doesn't update existing docs
+**Cause:** `sqlite_to_postgres.py` uses `ON CONFLICT DO NOTHING` — it inserts new rows but won't update body text or metadata for docs already in Postgres.
 
-**Fix:** Use `--drop` for a full rebuild whenever you've added new site_keys. This drops all Postgres tables and re-inserts everything from SQLite.
+**Fix:** Use `--drop` for a full rebuild when you need to push updated body text for existing docs (e.g., after PDF extraction or body backfill). New sites and new docs work fine with incremental.
 
 ### 3. Body extraction returns 0 for all docs
 **Cause:** The CSS selector for the body container doesn't match the site's HTML.
