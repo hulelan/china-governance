@@ -166,6 +166,93 @@ SITES = {
         "base_url": "http://www.jiangmen.gov.cn",
         "admin_level": "municipal",
     },
+    "zhongshan": {
+        "name": "Zhongshan",
+        "base_url": "http://www.zs.gov.cn",
+        "admin_level": "municipal",
+    },
+    "shantou": {
+        "name": "Shantou",
+        "base_url": "http://www.shantou.gov.cn",
+        "admin_level": "municipal",
+    },
+    "zhaoqing": {
+        "name": "Zhaoqing",
+        "base_url": "http://www.zhaoqing.gov.cn",
+        "admin_level": "municipal",
+    },
+    "shaoguan": {
+        "name": "Shaoguan",
+        "base_url": "http://www.sg.gov.cn",
+        "admin_level": "municipal",
+    },
+    "heyuan": {
+        "name": "Heyuan",
+        "base_url": "http://www.heyuan.gov.cn",
+        "admin_level": "municipal",
+    },
+    "shanwei": {
+        "name": "Shanwei",
+        "base_url": "http://www.shanwei.gov.cn",
+        "admin_level": "municipal",
+    },
+    "yangjiang": {
+        "name": "Yangjiang",
+        "base_url": "http://www.yangjiang.gov.cn",
+        "admin_level": "municipal",
+    },
+    "zhanjiang": {
+        "name": "Zhanjiang",
+        "base_url": "http://www.zhanjiang.gov.cn",
+        "admin_level": "municipal",
+    },
+    "chaozhou": {
+        "name": "Chaozhou",
+        "base_url": "http://www.chaozhou.gov.cn",
+        "admin_level": "municipal",
+    },
+    "jieyang": {
+        "name": "Jieyang",
+        "base_url": "http://www.jieyang.gov.cn",
+        "admin_level": "municipal",
+    },
+    "yunfu": {
+        "name": "Yunfu",
+        "base_url": "http://www.yunfu.gov.cn",
+        "admin_level": "municipal",
+    },
+    # More Shenzhen districts
+    "szyantian": {
+        "name": "Yantian District",
+        "base_url": "http://www.yantian.gov.cn",
+        "admin_level": "district",
+    },
+    "szlg": {
+        "name": "Longgang District",
+        "base_url": "http://www.lg.gov.cn",
+        "admin_level": "district",
+    },
+    "szdp": {
+        "name": "Dapeng New District",
+        "base_url": "http://www.dpxq.gov.cn",
+        "admin_level": "district",
+    },
+    "szba": {
+        "name": "Bao'an District",
+        "base_url": "http://www.baoan.gov.cn",
+        "admin_level": "district",
+    },
+    # Remaining Guangdong municipal
+    "dongguan": {
+        "name": "Dongguan",
+        "base_url": "http://www.dg.gov.cn",
+        "admin_level": "municipal",
+    },
+    "foshan": {
+        "name": "Foshan",
+        "base_url": "http://www.foshan.gov.cn",
+        "admin_level": "municipal",
+    },
 }
 
 
