@@ -4,96 +4,108 @@
 
 ## Summary
 
-The four target sections on `sz.gov.cn` use the **NFCMS CMS** (not gkmlpt). They cannot be crawled via the existing gkmlpt API — a new HTML scraping crawler is needed, following the `crawlers/mof.py` pattern.
+The four target sections on `sz.gov.cn` use the **NFCMS CMS** (not gkmlpt). A new HTML scraping crawler is needed, following the `crawlers/ndrc.py` pattern. Web search confirmed the article URL pattern is `post_{ID}.html` (not `mpost_`), and the sections contain content dating back to at least 2020.
 
-Network access to `sz.gov.cn` is currently **blocked from the cloud environment** ("Host not allowed" — sandbox restriction). All probing must be done locally or from a machine with access to Chinese government sites.
+Network access to `sz.gov.cn` is **blocked from the cloud sandbox** ("Host not allowed"), but the crawlers work fine locally. The listing page HTML structure still needs local probing to confirm pagination details.
 
 ## Target URLs
 
-| Section | URL | Content Type |
-|---------|-----|-------------|
-| 投资动态 (Investment News) | `http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/` | FDI news, project signings |
-| 统计数据 (Statistics) | `http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tjsj/` | Economic data releases |
-| 投资指南 (Investment Guide) | `http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzzn/` | Sector guides, incentives |
-| 营商环境 (Business Env) | `http://www.sz.gov.cn/cn/zjsz/yshj/` | Regulatory reform updates |
+| Section | URL | Content Type | Status |
+|---------|-----|-------------|--------|
+| 投资动态 (Investment News) | `/cn/zjsz/fwts_1_3/tzdt_1/` | FDI news, project signings | Confirmed via search — articles indexed by Google |
+| 统计数据 (Statistics) | `/cn/zjsz/fwts_1_3/tjsj/` | Economic data releases | Exists but stats bureau (`tjj.sz.gov.cn`) is the better source |
+| 投资指南 (Investment Guide) | `/cn/zjsz/fwts_1_3/tzzn/` | Sector guides, incentives | Not indexed by search engines — may have few/no articles |
+| 营商环境 (Business Env) | `/cn/zjsz/yshj/` | Regulatory reform updates | Mostly on `hrss.sz.gov.cn` and `drc.sz.gov.cn` subdomains |
 
 ## Key Findings
 
-### 1. CMS is NFCMS, NOT gkmlpt
+### 1. Confirmed article URL pattern: `post_{ID}.html`
+
+Web search returned real indexed article URLs. The pattern is **`post_`** (NOT `mpost_` as seen in older scratchpad notes):
+
+```
+http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/content/post_12402125.html  (2025-09)
+http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/content/post_11988134.html  (2025-02)
+http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/content/post_9984966.html   (2022-07)
+http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/content/post_8803965.html   (2021-05)
+http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/content/post_8358187.html   (2020-12)
+http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/content/post_7967584.html   (2020-08)
+http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/content/post_7881397.html   (2020-07)
+```
+
+The IDs are monotonically increasing and span years, suggesting hundreds of articles.
+
+### 2. CMS is NFCMS, NOT gkmlpt
 
 The crawler scratchpad (2026-02-15) documents this clearly:
 
 > Main portal content pages use a DIFFERENT CMS from gkmlpt. [...] Uses NFCMS CMS (not gkmlpt). Metadata in `<meta>` tags: ArticleTitle, PubDate, ContentSource, ArticleId. Content in `div.news_cont_d_wrap`.
 
-The existing gkmlpt API (`/gkmlpt/api/all/{cat_id}?page={page}&sid={sid}`) only covers the 政府信息公开 (government information disclosure) section. The investment/news portal is a completely separate CMS.
+The existing gkmlpt API only covers 政府信息公开. The investment portal is a completely separate CMS.
 
-### 2. Known NFCMS page structure (from scratchpad)
+### 3. NFCMS article page structure (known from prior probing)
 
-Individual article pages (`mpost_*.html`) have been probed previously:
 - **Meta tags**: `ArticleTitle`, `PubDate`, `ContentSource`, `ArticleId`
 - **Body text**: `div.news_cont_d_wrap`
 - **CMS identifiers**: `NFCMS_SITE_ID=755001`, `NFCMS_POST_ID={id}`
-- The existing gkmlpt body extractor already handles this as a fallback (line 398 in `gkmlpt.py`)
+- The existing gkmlpt body extractor already handles this as a fallback (`gkmlpt.py:398`)
 
-### 3. Network access blocked from this environment
+### 4. Pagination: almost certainly `createPageHTML()` + `index_{N}.html`
 
-All attempts to fetch `sz.gov.cn` (HTTP and HTTPS) returned:
-- **HTTPS**: 403 Forbidden
-- **HTTP**: 403 with body "Host not allowed" — sandbox network restriction
-- **WebFetch tool**: 403
+NFCMS sites universally use this pattern (confirmed by NDRC, MOF, and general NFCMS documentation):
+- Page 1: `index.html`
+- Page 2+: `index_{N}.html`
+- Total pages from: `createPageHTML(totalPages, currentIdx, "index", "html")`
 
-This is NOT the site blocking us — it's the cloud sandbox. The crawlers work fine when run locally (confirmed by the existing 45K+ Shenzhen documents in the corpus).
+This matches the NDRC crawler (`crawlers/ndrc.py`) exactly.
 
-### 4. HTTP required (not HTTPS)
+### 5. 营商环境 and 统计数据 are better sourced elsewhere
 
-From the scratchpad: "HTTP works, HTTPS fails." All existing `SITES` entries in `gkmlpt.py` use `http://` base URLs. The new crawler should also use HTTP.
+Web search revealed:
+- **营商环境** content is primarily on department subdomains (`hrss.sz.gov.cn/ztfw/yshj/`, `drc.sz.gov.cn/ztxx/yshj/`), not the main portal
+- **统计数据** is primarily on the statistics bureau (`tjj.sz.gov.cn/tjsj/`), which has its own dedicated site with statistical bulletins, analysis reports, and data releases
 
-## What Needs to Be Done Locally
+**Recommendation**: Focus `sz_invest` crawler on **投资动态 (tzdt)** first — it has the most content on the main portal. Consider dedicated crawlers for `tjj.sz.gov.cn` and `hrss.sz.gov.cn` later.
 
-Since the pages can't be probed from this environment, the following must be done **locally** (from a machine that can reach Chinese gov sites):
+### 6. Network access blocked from cloud sandbox
 
-### Step 1: Probe listing pages
+"Host not allowed" — all `.gov.cn` domains are blocked in this environment. The crawlers work fine locally (confirmed by 45K+ existing Shenzhen documents).
+
+### 7. HTTP required (not HTTPS)
+
+From the scratchpad: "HTTP works, HTTPS fails." All existing `SITES` entries in `gkmlpt.py` use `http://` base URLs.
+
+## What Needs Local Probing
+
+The only remaining unknown is the **listing page HTML structure**. Run locally:
+
 ```bash
-# Fetch and save each listing page
+# Fetch the listing page
 curl -s -o /tmp/tzdt.html "http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/"
-curl -s -o /tmp/tjsj.html "http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tjsj/"
-curl -s -o /tmp/tzzn.html "http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzzn/"
-curl -s -o /tmp/yshj.html "http://www.sz.gov.cn/cn/zjsz/yshj/"
+
+# Check for createPageHTML pagination
+grep -o 'createPageHTML([^)]*' /tmp/tzdt.html
+
+# Check list item structure
+grep -B1 -A2 '<li>' /tmp/tzdt.html | head -30
+
+# Check if JSON API exists
+curl -s -o /dev/null -w "%{http_code}" "http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/index.json"
 ```
 
-For each page, determine:
-1. **List structure**: `<ul><li>` vs `<div>` vs `<table>`? Look for repeating article items.
-2. **Link pattern**: `<a href="...">` — are they relative (`content/mpost_12345.html`) or absolute?
-3. **Pagination**: Look for `createPageHTML()` (like NDRC/MOF) or `?page=N` params or `index_N.htm` pattern.
-4. **Total count**: Is total page count in HTML or JS variable?
-
-### Step 2: Probe article pages
-```bash
-# Pick an article link from step 1 and fetch it
-curl -s -o /tmp/article.html "http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/content/mpost_XXXXXX.html"
-```
-
-Verify:
-- `<meta name="ArticleTitle">` present
-- `<meta name="PubDate">` present
-- `div.news_cont_d_wrap` contains body text
-- Any additional metadata (author, source, keywords)
-
-### Step 3: Check for JSON/API endpoints
-```bash
-# Check if there's a JSON feed (like State Council has)
-curl -s "http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/index.json"
-# Check for XHR-style API
-curl -s "http://www.sz.gov.cn/cn/zjsz/fwts_1_3/tzdt_1/list.json"
-```
+Key questions to answer:
+1. Exact `<li>` HTML structure (href, title, date span format)
+2. Total page count from `createPageHTML()`
+3. Whether listing page uses `index.html` or bare directory `/`
 
 ## Recommended Crawler Architecture
 
-Based on existing patterns (MOF/MEE template):
+Based on the NDRC crawler pattern (which handles the same NFCMS `createPageHTML` pagination):
 
 ```python
-# crawlers/sz_invest.py — follows crawlers/mof.py pattern
+# crawlers/sz_invest.py — follows crawlers/ndrc.py pattern
 
+SITE_KEY = "sz_invest"
 SITE_CFG = {
     "name": "Shenzhen Investment Portal",
     "base_url": "http://www.sz.gov.cn",
@@ -102,29 +114,64 @@ SITE_CFG = {
 
 SECTIONS = {
     "tzdt": {"path": "/cn/zjsz/fwts_1_3/tzdt_1/", "name": "投资动态"},
-    "tjsj": {"path": "/cn/zjsz/fwts_1_3/tjsj/",   "name": "统计数据"},
-    "tzzn": {"path": "/cn/zjsz/fwts_1_3/tzzn/",    "name": "投资指南"},
-    "yshj": {"path": "/cn/zjsz/yshj/",              "name": "营商环境"},
+    # Add more sections after confirming they have content:
+    # "tzzn": {"path": "/cn/zjsz/fwts_1_3/tzzn/", "name": "投资指南"},
 }
-
-# Pagination: likely index.htm / index_{N}.htm (same as MOF/NDRC)
-# Listing parse: regex for <li><a href>...<span>date</span></li>
-# Body extract: div.news_cont_d_wrap (already handled in gkmlpt.py:398)
-# Meta extract: <meta> tags (ArticleTitle, PubDate, ContentSource)
-# site_key: "sz_invest"
 ```
 
-Key implementation notes:
-- Reuse `base.py` utilities (`fetch`, `store_document`, `init_db`, etc.)
-- The body extractor in `gkmlpt.py:398` already handles `div.news_cont_d_wrap` — extract this into a shared utility or duplicate in the new crawler
-- Use `next_id(conn)` since these pages won't have gkmlpt numeric IDs
-- Browser UA may be needed (add to `SITES_NEEDING_BROWSER_UA` equivalent)
+**Pagination** (copy from `ndrc.py`):
+```python
+def _section_url(base_path: str, page: int = 0) -> str:
+    if page == 0:
+        return f"http://www.sz.gov.cn{base_path}index.html"
+    return f"http://www.sz.gov.cn{base_path}index_{page}.html"
 
-## Open Questions (to resolve during local probing)
+def _get_total_pages(html: str) -> int:
+    m = re.search(r"createPageHTML\((\d+),", html)
+    return int(m.group(1)) if m else 1
+```
 
-1. **Pagination style**: Does it use `createPageHTML()` like MOF/NDRC, or something else?
-2. **Listing HTML format**: What's the exact `<li>` / `<div>` structure for article lists?
-3. **Content volume**: How many articles are in each section? (affects crawl time estimate)
-4. **Date range**: How far back do articles go?
-5. **Attachments**: Do investment news articles include PDF/DOC attachments?
-6. **Same table or separate?**: Investment content is more news/editorial — should it go in the main `documents` table with a distinct `site_key`, or warrant a separate table?
+**Listing parse** (adapt regex after local probing confirms `<li>` structure):
+```python
+def _parse_listing(html: str, base_url: str) -> list[dict]:
+    items = []
+    for m in re.finditer(
+        r'<li>\s*<a\s+href="([^"]+)"[^>]*>([^<]+)</a>'
+        r'.*?<span[^>]*>(\d{4}-\d{2}-\d{2})</span>\s*</li>',
+        html, re.DOTALL,
+    ):
+        href, title, date_str = m.group(1), m.group(2), m.group(3)
+        items.append({"url": urljoin(base_url, href), "title": title.strip(), "date_str": date_str})
+    return items
+```
+
+**Body/meta extraction** (reuse from NDRC/gkmlpt):
+```python
+def _extract_body(html: str) -> str:
+    # div.news_cont_d_wrap (same as gkmlpt.py:398 fallback)
+    m = re.search(r'<div\s+class="news_cont_d_wrap">(.*?)</div>\s*</div>', html, re.DOTALL)
+    ...
+
+def _extract_meta(html: str) -> dict:
+    # Same <meta> tag extraction as ndrc.py
+    meta = {}
+    for name in ("ArticleTitle", "PubDate", "ContentSource", "Keywords"):
+        m = re.search(rf'<meta\s+name="{name}"\s+content="([^"]*)"', html)
+        if m: meta[name] = m.group(1).strip()
+    return meta
+```
+
+**Storage**: Use `store_document()` from `base.py` with `site_key="sz_invest"`, `next_id()` for IDs.
+
+## Implementation Estimate
+
+- **Effort**: ~1-2 hours (mostly copy-paste from `ndrc.py` + adapt listing regex after local probe)
+- **Content volume**: Estimated 200-500 articles in 投资动态 (based on date range 2020-2025 and ~7 articles found in search)
+- **Dependencies**: One local `curl` command to confirm listing page structure
+
+## Open Questions
+
+1. **Listing HTML format**: What's the exact `<li>` structure? (must probe locally)
+2. **Content volume**: How many total pages? (from `createPageHTML(N, ...)`)
+3. **Same table or separate?**: Recommend same `documents` table with `site_key="sz_invest"` — keeps the web app working without changes
+4. **Recurring crawls?**: These are news articles updated regularly. Consider adding to `--sync` workflow.
