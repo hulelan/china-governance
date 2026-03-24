@@ -1,0 +1,10 @@
+[Unit]
+Description=Run China Governance crawl pipeline daily at 6am UTC
+
+[Timer]
+OnCalendar=*-*-* 06:00:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

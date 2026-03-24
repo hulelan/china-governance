@@ -1,0 +1,17 @@
+[Unit]
+Description=China Governance Daily Crawl Pipeline
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/china-governance
+Environment=PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=DATABASE_URL=postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway
+ExecStart=/bin/bash /root/china-governance/scripts/run_all_crawls.sh
+StandardOutput=append:/root/china-governance/logs/daily-crawl.log
+StandardError=append:/root/china-governance/logs/daily-crawl.log
+TimeoutStartSec=7200
+
+[Install]
+WantedBy=multi-user.target
