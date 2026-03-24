@@ -5,9 +5,10 @@ exploring 50k+ Chinese government documents across five administrative levels.
 
 Routes:
     /                   Homepage with corpus overview
-    /browse             Filterable document listing
-    /document/{id}      Document detail with citations
-    /search             Full-text search
+    /inbox              Date-grouped document feed (calendar view)
+    /browse             Filterable document listing (date range + facets)
+    /document/{id}      Document detail with citations and mini network graph
+    /search             Full-text search with date range filtering
     /network            D3.js citation network visualization
     /dashboard          Charts and corpus statistics
     /chain/{topic}      Cross-level policy chain explorer

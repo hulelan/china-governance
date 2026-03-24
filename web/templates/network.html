@@ -8,10 +8,10 @@
     <div class="flex gap-3" style="height: calc(100vh - 80px);">
         <!-- Controls -->
         <div class="w-56 flex-shrink-0 space-y-2">
-            <div class="bg-gray-900 border border-gray-800 rounded p-2 text-xs" x-data="{site: '', minDeg: 2}">
+            <div class="bg-gray-900 border border-gray-800 rounded p-2 text-xs" x-data="{site: '', minDeg: 2, dateStart: '', dateEnd: ''}">
                 <div class="font-semibold text-gray-400 uppercase tracking-wider mb-2">Filters</div>
                 <label class="text-gray-500 block mb-1">Site</label>
-                <select x-model="site" @change="updateNetwork(site, minDeg)"
+                <select x-model="site" @change="updateNetwork(site, minDeg, dateStart, dateEnd)"
                         class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white mb-2">
                     <option value="">All sites</option>
                     {% for s in sites %}
@@ -19,9 +19,14 @@
                     {% endfor %}
                 </select>
                 <label class="text-gray-500 block mb-1">Min citations</label>
-                <input type="range" x-model="minDeg" min="1" max="10" @input="updateNetwork(site, minDeg)"
+                <input type="range" x-model="minDeg" min="1" max="10" @input="updateNetwork(site, minDeg, dateStart, dateEnd)"
                        class="w-full">
                 <span class="text-gray-400" x-text="minDeg"></span>
+                <label class="text-gray-500 block mb-1 mt-2">Date range</label>
+                <input type="date" x-model="dateStart" @change="updateNetwork(site, minDeg, dateStart, dateEnd)"
+                       class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white mb-1" style="color-scheme:dark">
+                <input type="date" x-model="dateEnd" @change="updateNetwork(site, minDeg, dateStart, dateEnd)"
+                       class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white" style="color-scheme:dark">
             </div>
 
             <div class="bg-gray-900 border border-gray-800 rounded p-2 text-xs">
@@ -66,11 +71,14 @@ function initGraph() {
     // Zoom
     svg.call(d3.zoom().scaleExtent([0.1, 8]).on('zoom', (e) => g.attr('transform', e.transform)));
 
-    updateNetwork('', 2);
+    updateNetwork('', 2, '', '');
 }
 
-async function updateNetwork(site, minDeg) {
-    const url = `/api/v1/network?min_degree=${minDeg}` + (site ? `&site=${site}` : '');
+async function updateNetwork(site, minDeg, dateStart, dateEnd) {
+    let url = `/api/v1/network?min_degree=${minDeg}`;
+    if (site) url += `&site=${site}`;
+    if (dateStart) url += `&date_start=${dateStart}`;
+    if (dateEnd) url += `&date_end=${dateEnd}`;
     const data = await fetch(url).then(r => r.json());
 
     g.selectAll('*').remove();
