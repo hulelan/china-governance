@@ -3,9 +3,11 @@
 Usage:
     # Set DATABASE_URL to your Railway Postgres connection string
     export DATABASE_URL="postgresql://user:pass@host:port/dbname"
+
+    # Incremental sync (default) — only inserts new docs, skips existing
     python3 scripts/sqlite_to_postgres.py
 
-    # Rebuild from scratch (drops all tables first)
+    # Rebuild from scratch (drops all tables first) — slow, use sparingly
     python3 scripts/sqlite_to_postgres.py --drop
 """
 import argparse
@@ -72,7 +74,14 @@ CREATE TABLE IF NOT EXISTS documents (
     raw_html_path TEXT,
     crawl_timestamp TEXT NOT NULL,
     raw_html_sha256 TEXT DEFAULT '',
-    title_en TEXT DEFAULT ''
+    title_en TEXT DEFAULT '',
+    summary_en TEXT DEFAULT '',
+    category TEXT DEFAULT '',
+    importance TEXT DEFAULT '',
+    policy_area TEXT DEFAULT '',
+    topics TEXT DEFAULT '',
+    classification_model TEXT DEFAULT '',
+    classified_at TEXT DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS citations (
@@ -94,6 +103,8 @@ CREATE INDEX IF NOT EXISTS idx_documents_category_id ON documents(category_id);
 CREATE INDEX IF NOT EXISTS idx_citations_source_id ON citations(source_id);
 CREATE INDEX IF NOT EXISTS idx_citations_target_id ON citations(target_id);
 CREATE INDEX IF NOT EXISTS idx_categories_site_key ON categories(site_key);
+CREATE INDEX IF NOT EXISTS idx_documents_importance ON documents(importance);
+CREATE INDEX IF NOT EXISTS idx_documents_category_class ON documents(category);
 
 -- Trigram indexes for ILIKE search performance
 CREATE INDEX IF NOT EXISTS idx_documents_title_trgm ON documents USING gin (title gin_trgm_ops);
@@ -158,6 +169,23 @@ def migrate(database_url: str, drop: bool = False):
     pg_cur.execute(SCHEMA)
     pg_conn.commit()
 
+    if not drop:
+        # Ensure Postgres has all columns that SQLite has (handles schema drift)
+        pg_cur.execute("""
+            SELECT column_name FROM information_schema.columns
+            WHERE table_name = 'documents'
+        """)
+        pg_cols = {row[0] for row in pg_cur.fetchall()}
+        sqlite_cols = sqlite_conn.execute("PRAGMA table_info(documents)").fetchall()
+        for col_info in sqlite_cols:
+            col_name = col_info[1]
+            if col_name not in pg_cols:
+                col_type = col_info[2] or "TEXT"
+                default = f" DEFAULT {col_info[4]}" if col_info[4] is not None else " DEFAULT ''"
+                print(f"  Adding missing column to Postgres: {col_name} {col_type}{default}")
+                pg_cur.execute(f"ALTER TABLE documents ADD COLUMN {col_name} {col_type}{default}")
+        pg_conn.commit()
+
     # --- Sites ---
     print("[migrate] Migrating sites...")
     rows = sqlite_conn.execute("SELECT * FROM sites").fetchall()
@@ -191,16 +219,20 @@ def migrate(database_url: str, drop: bool = False):
     cursor = sqlite_conn.execute("SELECT * FROM documents")
     cols = [desc[0] for desc in cursor.description]
     col_names = ", ".join(cols)
-    placeholders = ", ".join(["%s"] * len(cols))
-    insert_sql = f"INSERT INTO documents ({col_names}) VALUES ({placeholders}) ON CONFLICT DO NOTHING"
+    # Use execute_values for much faster bulk inserts (multi-row VALUES)
+    template = "(" + ", ".join(["%s"] * len(cols)) + ")"
+    insert_sql = f"INSERT INTO documents ({col_names}) VALUES %s ON CONFLICT DO NOTHING"
 
-    batch_size = 1000
+    batch_size = 500
     total = 0
     while True:
         batch = cursor.fetchmany(batch_size)
         if not batch:
             break
-        pg_cur.executemany(insert_sql, [tuple(r) for r in batch])
+        psycopg2.extras.execute_values(
+            pg_cur, insert_sql, [tuple(r) for r in batch],
+            template=template, page_size=batch_size
+        )
         pg_conn.commit()
         total += len(batch)
         print(f"  {total:,} documents...", end="\r")

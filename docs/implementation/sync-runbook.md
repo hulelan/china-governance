@@ -39,7 +39,7 @@ DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.pro
 curl -s "https://china-governance-production.up.railway.app/api/v1/stats" | python3 -m json.tool
 ```
 
-**When to use `--drop`:** Only when the Postgres schema needs to change (e.g., new columns added to the CREATE TABLE in `sqlite_to_postgres.py`). It drops all tables and re-inserts everything from SQLite.
+**When to use `--drop`:** Rarely needed. The incremental sync now auto-adds missing columns via ALTER TABLE. Use `--drop` only when you need to push updated data for existing docs (e.g., body text backfill) or to fix a corrupted Postgres state.
 
 ## Pitfalls We've Hit
 
@@ -86,11 +86,59 @@ Then update `_extract_body()` in the crawler with the correct selector.
 
 **Fix:** Always verify with `repr()` of raw HTML from `crawlers.base.fetch()`, not from WebFetch summaries.
 
+## Classifying New Documents
+
+After crawling new docs, classify them with DeepSeek API to add English titles, summaries, importance, categories, and topics. Then push to Postgres.
+
+```bash
+# 1. Set API key (get one at https://platform.deepseek.com)
+export DEEPSEEK_API_KEY="sk-..."
+
+# 2. Dry run — check output quality on a few docs
+python3 scripts/classify_documents.py --dry-run --limit 5
+
+# 3. Run classification (resumable — skips already-classified docs)
+#    Concurrency 2 is the safe max to avoid DeepSeek rate limit issues.
+#    Concurrency 5 is faster but may hit empty-response errors.
+python3 scripts/classify_documents.py --concurrency 2
+
+# 4. Push classifications to Postgres (no full rebuild needed)
+DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
+  python3 scripts/sync_classifications.py
+
+# 5. Verify
+curl -s "https://china-governance-production.up.railway.app/api/v1/stats" | python3 -m json.tool
+```
+
+### What it extracts per document
+| Field | Description |
+|-------|-------------|
+| `title_en` | English translation of the title |
+| `summary_en` | 1-2 sentence English summary |
+| `importance` | `high` / `medium` / `low` — see rubric in `docs/implementation/classification-plan.md` |
+| `category` | One of: `major_policy`, `regulation`, `normative`, `budget`, `personnel`, `administrative`, `report`, `subsidy`, `other` |
+| `policy_area` | Chinese topic label (e.g., "人工智能") |
+| `topics` | JSON array of English topic tags |
+
+### Cost & speed
+- **DeepSeek API**: ~$0.49 per 1,000 docs, ~0.5 docs/sec at concurrency 2
+- **~1.4% of docs** will fail (DeepSeek content filter) — acceptable loss
+- Full corpus (110k docs) costs ~$50 and takes ~6 hours
+- Script is resumable — safe to interrupt and restart
+
+### sync_classifications.py details
+1. ALTER TABLEs to add any missing classification columns
+2. Batch-UPDATEs classification fields for existing docs (temp table + bulk UPDATE)
+3. Syncs sites/categories (ON CONFLICT DO NOTHING)
+4. INSERTs any new docs not yet in Postgres
+5. Verifies final counts
+
+Much faster than `--drop` since it only touches classification columns, not the full document payload.
+
 ## Checklist
 
 Before syncing to production:
 - [ ] Crawl/extraction completed without errors
 - [ ] `python3 -m crawlers.gkmlpt --stats` shows expected counts
 - [ ] No other process is writing to documents.db
-- [ ] If new site_keys were added, use `--drop` (not incremental)
 - [ ] After sync, verify with the `/api/v1/stats` endpoint
