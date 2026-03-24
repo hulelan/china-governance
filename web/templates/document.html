@@ -44,11 +44,11 @@
                         </div>
                         {% endif %}
                     </div>
-                    {% if doc.topics %}
+                    {% if doc.topics and doc.topics != '[]' %}
                     <div>
                         <span class="text-gray-500">Topics</span><br>
-                        {% for topic in doc.topics|replace('[', '')|replace(']', '')|replace('"', '')|split(',') %}
-                        <span class="inline-block bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-[10px] mr-1">{{ topic|trim }}</span>
+                        {% for topic in doc.topics | fromjson %}
+                        <span class="inline-block bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-[10px] mr-1">{{ topic }}</span>
                         {% endfor %}
                     </div>
                     {% endif %}

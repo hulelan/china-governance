@@ -32,6 +32,7 @@ from web.services.chain import get_chain, TOPIC_KEYWORDS
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
+templates.env.filters["fromjson"] = lambda s: json.loads(s) if s else []
 
 
 @router.get("/", response_class=HTMLResponse)
