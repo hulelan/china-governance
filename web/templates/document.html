@@ -1,10 +1,61 @@
 {% extends "base.html" %}
 {% block title %}{{ doc.title[:60] }} — CNGOV{% endblock %}
+{% block head %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
     <div class="grid grid-cols-3 gap-4">
         <!-- Left: metadata + citations (1 col) -->
         <div class="space-y-3">
+            <!-- Classification -->
+            {% if doc.importance %}
+            <div class="bg-gray-900 border border-gray-800 rounded">
+                <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                    <span>Classification</span>
+                    {% if doc.importance == 'high' %}<span class="text-red-400 text-[10px] font-bold uppercase tracking-widest">● High</span>
+                    {% elif doc.importance == 'medium' %}<span class="text-yellow-500 text-[10px] font-bold uppercase tracking-widest">● Medium</span>
+                    {% else %}<span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest">● Low</span>{% endif %}
+                </div>
+                <div class="p-2 text-xs space-y-2">
+                    {% if doc.title_en %}
+                    <div>
+                        <span class="text-gray-500">English Title</span><br>
+                        <span class="text-white">{{ doc.title_en }}</span>
+                    </div>
+                    {% endif %}
+                    {% if doc.summary_en %}
+                    <div>
+                        <span class="text-gray-500">Summary</span><br>
+                        <span class="text-gray-300">{{ doc.summary_en }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex gap-3">
+                        {% if doc.category %}
+                        <div>
+                            <span class="text-gray-500">Category</span><br>
+                            <span class="text-blue-400">{{ doc.category }}</span>
+                        </div>
+                        {% endif %}
+                        {% if doc.policy_area %}
+                        <div>
+                            <span class="text-gray-500">Policy Area</span><br>
+                            <span class="text-gray-300">{{ doc.policy_area }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if doc.topics %}
+                    <div>
+                        <span class="text-gray-500">Topics</span><br>
+                        {% for topic in doc.topics|replace('[', '')|replace(']', '')|replace('"', '')|split(',') %}
+                        <span class="inline-block bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-[10px] mr-1">{{ topic|trim }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Metadata -->
             <div class="bg-gray-900 border border-gray-800 rounded">
                 <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Metadata</div>
@@ -33,7 +84,7 @@
                     </tr>
                     {% if doc.classify_main_name %}
                     <tr class="border-b border-gray-800/50">
-                        <td class="text-gray-500">Category</td>
+                        <td class="text-gray-500">CMS Category</td>
                         <td>{{ doc.classify_main_name }}</td>
                     </tr>
                     {% endif %}
@@ -128,6 +179,19 @@
                 </div>
             </div>
             {% endif %}
+
+            <!-- Citation Network -->
+            {% if cites or cited_by %}
+            <div class="bg-gray-900 border border-gray-800 rounded">
+                <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider flex justify-between items-center">
+                    <span>Citation Network</span>
+                    <a href="/network" class="text-[10px] text-gray-600 hover:text-gray-400 no-underline">Full network →</a>
+                </div>
+                <div style="height: 320px;" class="relative">
+                    <svg id="mini-network" width="100%" height="100%"></svg>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Right: body text (2 cols) -->
@@ -150,4 +214,84 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+{% if cites or cited_by %}
+<script>
+const COLORS = {central:'#ef4444', provincial:'#f97316', municipal:'#3b82f6', district:'#22c55e', unknown:'#6b7280'};
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const svg = d3.select('#mini-network');
+    if (!svg.node()) return;
+    const {width, height} = svg.node().getBoundingClientRect();
+    const g = svg.append('g');
+
+    svg.call(d3.zoom().scaleExtent([0.3, 5]).on('zoom', (e) => g.attr('transform', e.transform)));
+
+    const data = await fetch('/api/v1/documents/{{ doc.id }}/network').then(r => r.json());
+    if (!data.nodes.length) {
+        g.append('text').attr('x', width/2).attr('y', height/2)
+         .attr('text-anchor', 'middle').attr('fill', '#6b7280').attr('font-size', 11)
+         .text('No citation data');
+        return;
+    }
+
+    const sim = d3.forceSimulation(data.nodes)
+        .force('link', d3.forceLink(data.edges).id(d => d.id).distance(60))
+        .force('charge', d3.forceManyBody().strength(-150))
+        .force('center', d3.forceCenter(width/2, height/2))
+        .force('collision', d3.forceCollide().radius(12));
+
+    // Edges with arrows
+    g.append('defs').append('marker')
+        .attr('id', 'arrow').attr('viewBox', '0 0 10 10')
+        .attr('refX', 18).attr('refY', 5)
+        .attr('markerWidth', 5).attr('markerHeight', 5)
+        .attr('orient', 'auto')
+        .append('path').attr('d', 'M0,0 L10,5 L0,10 Z').attr('fill', '#4b5563');
+
+    const link = g.append('g').selectAll('line')
+        .data(data.edges).join('line')
+        .attr('stroke', '#374151').attr('stroke-width', 0.8)
+        .attr('marker-end', 'url(#arrow)');
+
+    const node = g.append('g').selectAll('circle')
+        .data(data.nodes).join('circle')
+        .attr('r', d => d.center ? 8 : 5)
+        .attr('fill', d => COLORS[d.level] || COLORS.unknown)
+        .attr('stroke', d => d.center ? '#fbbf24' : '#1f2937')
+        .attr('stroke-width', d => d.center ? 2 : 1)
+        .attr('cursor', 'pointer')
+        .call(d3.drag()
+            .on('start', (e,d) => { if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+            .on('drag', (e,d) => { d.fx=e.x; d.fy=e.y; })
+            .on('end', (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+    node.append('title').text(d => `${d.id}${d.title ? ': ' + d.title : ''}`);
+
+    node.on('click', (e, d) => {
+        if (d.doc_id && !d.center) {
+            window.location.href = '/document/' + d.doc_id;
+        }
+    });
+
+    const labels = g.append('g').selectAll('text')
+        .data(data.nodes).join('text')
+        .text(d => {
+            const lbl = d.id;
+            return lbl.length > 18 ? lbl.slice(0, 18) + '…' : lbl;
+        })
+        .attr('font-size', d => d.center ? 9 : 7)
+        .attr('fill', d => d.center ? '#fbbf24' : '#9ca3af')
+        .attr('dx', d => d.center ? 10 : 7).attr('dy', 3);
+
+    sim.on('tick', () => {
+        link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+            .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+        node.attr('cx',d=>d.x).attr('cy',d=>d.y);
+        labels.attr('x',d=>d.x).attr('y',d=>d.y);
+    });
+});
+</script>
+{% endif %}
 {% endblock %}

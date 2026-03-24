@@ -4,7 +4,20 @@ Provides async functions for querying the documents, sites, and categories
 tables.  Used by both the HTML page routes and the JSON API.
 """
 import re
+from datetime import datetime, timezone, timedelta
 from collections import Counter, defaultdict
+
+CST = timezone(timedelta(hours=8))
+
+
+def date_str_to_timestamp(date_str: str) -> int:
+    """Convert 'YYYY-MM-DD' to Unix timestamp at midnight CST (UTC+8).
+
+    This matches how date_written is stored in the database — each value
+    represents midnight China Standard Time for that date.
+    """
+    dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=CST)
+    return int(dt.timestamp())
 
 # Reuse patterns from analyze.py
 REF_PATTERN = re.compile(
@@ -42,8 +55,14 @@ def get_admin_level(doc_number: str) -> str:
 
 
 async def get_documents(db, site_key=None, category=None, year=None,
-                        has_docnum=None, page=1, per_page=50):
-    """Paginated document listing with optional filters. Returns (rows, total)."""
+                        has_docnum=None, page=1, per_page=50,
+                        date_start=None, date_end=None,
+                        importance=None):
+    """Paginated document listing with optional filters. Returns (rows, total).
+
+    date_start/date_end are Unix timestamps (ints). When provided they
+    take precedence over the year filter.
+    """
     where = ["1=1"]
     params = []
     param_idx = 0
@@ -56,10 +75,17 @@ async def get_documents(db, site_key=None, category=None, year=None,
         param_idx += 1
         where.append(f"d.classify_main_name = ${param_idx}")
         params.append(category)
-    if year:
-        from datetime import datetime
-        start = int(datetime(int(year), 1, 1).timestamp())
-        end = int(datetime(int(year) + 1, 1, 1).timestamp())
+    if date_start is not None:
+        param_idx += 1
+        where.append(f"d.date_written >= ${param_idx}")
+        params.append(date_start)
+        if date_end is not None:
+            param_idx += 1
+            where.append(f"d.date_written < ${param_idx}")
+            params.append(date_end)
+    elif year:
+        start = date_str_to_timestamp(f"{int(year)}-01-01")
+        end = date_str_to_timestamp(f"{int(year) + 1}-01-01")
         param_idx += 1
         where.append(f"d.date_written >= ${param_idx}")
         params.append(start)
@@ -68,6 +94,10 @@ async def get_documents(db, site_key=None, category=None, year=None,
         params.append(end)
     if has_docnum:
         where.append("d.document_number != ''")
+    if importance:
+        param_idx += 1
+        where.append(f"d.importance = ${param_idx}")
+        params.append(importance)
 
     where_sql = " AND ".join(where)
     offset = (page - 1) * per_page
@@ -84,7 +114,8 @@ async def get_documents(db, site_key=None, category=None, year=None,
     rows = await db.fetch(
         f"""SELECT d.id, d.title, d.document_number, d.publisher,
                    d.date_written, d.date_published, d.site_key,
-                   d.classify_main_name, (COALESCE(d.body_text_cn, '') != '') as has_body
+                   d.classify_main_name, (COALESCE(d.body_text_cn, '') != '') as has_body,
+                   d.title_en, d.importance, d.category, d.summary_en
             FROM documents d
             WHERE {where_sql}
             ORDER BY d.date_written DESC
@@ -227,39 +258,56 @@ def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
     return cut + "…"
 
 
-async def search_documents(db, query: str, page: int = 1, per_page: int = 50):
+async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
+                           date_start: int = None, date_end: int = None):
     """LIKE-based search across title, doc number, keywords, abstract, and body. Returns (results, total)."""
     offset = (page - 1) * per_page
     search_pattern = f"%{query}%"
 
+    date_clause = ""
+    date_params = []
+    next_idx = 2  # $1 is search_pattern
+    if date_start is not None:
+        date_clause += f" AND d.date_written >= ${next_idx}"
+        date_params.append(date_start)
+        next_idx += 1
+    if date_end is not None:
+        date_clause += f" AND d.date_written < ${next_idx}"
+        date_params.append(date_end)
+        next_idx += 1
+
+    limit_idx = next_idx
+    offset_idx = next_idx + 1
+
     rows = await db.fetch(
-        """SELECT d.id, d.title, d.document_number, d.publisher,
+        f"""SELECT d.id, d.title, d.document_number, d.publisher,
                   d.date_written, d.site_key, d.classify_main_name,
+                  d.title_en, d.importance, d.category,
                   CASE
                     WHEN d.title LIKE $1 THEN d.title
                     WHEN d.abstract LIKE $1 THEN d.abstract
                     ELSE SUBSTR(d.body_text_cn, 1, 200)
                   END as snippet
            FROM documents d
-           WHERE d.title LIKE $1
+           WHERE (d.title LIKE $1
               OR d.document_number LIKE $1
               OR d.keywords LIKE $1
               OR d.abstract LIKE $1
-              OR d.body_text_cn LIKE $1
+              OR d.body_text_cn LIKE $1)
+              {date_clause}
            ORDER BY
              CASE WHEN d.title LIKE $1 THEN 0
                   WHEN d.document_number LIKE $1 THEN 1
                   WHEN d.keywords LIKE $1 THEN 2
                   ELSE 3 END,
              d.date_written DESC
-           LIMIT $2 OFFSET $3""",
-        search_pattern, per_page, offset
+           LIMIT ${limit_idx} OFFSET ${offset_idx}""",
+        search_pattern, *date_params, per_page, offset
     )
 
     results = []
     for r in rows:
         d = dict(r)
-        # Add <mark> tags around the query in the snippet
         raw = d.get("snippet") or ""
         if query and raw:
             raw = raw.replace(query, f"<mark>{query}</mark>")
@@ -267,12 +315,85 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50):
         results.append(d)
 
     total = await db.fetchval(
-        """SELECT COUNT(*) FROM documents d
-           WHERE d.title LIKE $1
+        f"""SELECT COUNT(*) FROM documents d
+           WHERE (d.title LIKE $1
               OR d.document_number LIKE $1
               OR d.keywords LIKE $1
               OR d.abstract LIKE $1
-              OR d.body_text_cn LIKE $1""",
-        search_pattern
+              OR d.body_text_cn LIKE $1)
+              {date_clause}""",
+        search_pattern, *date_params
     )
     return results, total or 0
+
+
+async def get_citation_neighborhood(db, doc_id: int):
+    """Return nodes + edges for the 1-hop citation graph around a document.
+
+    Used by the mini network graph on the document detail page.
+    Returns the same {nodes, edges} shape as /api/v1/network.
+    """
+    doc = await db.fetchrow(
+        "SELECT id, title, document_number, site_key FROM documents WHERE id = $1",
+        doc_id,
+    )
+    if not doc:
+        return {"nodes": [], "edges": []}
+
+    # Forward citations (this doc cites)
+    fwd = await db.fetch(
+        """SELECT c.target_ref, c.target_id, c.target_level,
+                  d.title as target_title, d.site_key as target_site
+           FROM citations c
+           LEFT JOIN documents d ON d.id = c.target_id
+           WHERE c.source_id = $1""",
+        doc_id,
+    )
+    # Reverse citations (docs that cite this one)
+    rev = await db.fetch(
+        """SELECT c.source_id, c.source_level,
+                  d.title as source_title, d.document_number as source_docnum,
+                  d.site_key as source_site
+           FROM citations c
+           JOIN documents d ON d.id = c.source_id
+           WHERE c.target_id = $1""",
+        doc_id,
+    )
+
+    nodes_map = {}
+    edges = []
+
+    # Center node
+    center_label = doc["document_number"] or f"doc-{doc_id}"
+    center_level = get_admin_level(doc["document_number"]) if doc["document_number"] else "unknown"
+    nodes_map[center_label] = {
+        "id": center_label, "label": center_label,
+        "title": doc["title"], "level": center_level,
+        "citations": len(rev), "doc_id": doc["id"], "center": True,
+    }
+
+    # Forward refs
+    for r in fwd:
+        ref = r["target_ref"]
+        if ref not in nodes_map:
+            nodes_map[ref] = {
+                "id": ref, "label": ref,
+                "title": r["target_title"] or "",
+                "level": r["target_level"] or "unknown",
+                "citations": 0, "doc_id": r["target_id"], "center": False,
+            }
+        edges.append({"source": center_label, "target": ref})
+
+    # Reverse refs
+    for r in rev:
+        label = r["source_docnum"] or f"doc-{r['source_id']}"
+        if label not in nodes_map:
+            nodes_map[label] = {
+                "id": label, "label": label,
+                "title": r["source_title"] or "",
+                "level": r["source_level"] or "unknown",
+                "citations": 0, "doc_id": r["source_id"], "center": False,
+            }
+        edges.append({"source": label, "target": center_label})
+
+    return {"nodes": list(nodes_map.values()), "edges": edges}

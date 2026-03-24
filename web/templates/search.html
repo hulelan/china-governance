@@ -5,7 +5,16 @@
     <form action="/search" method="get" class="mb-4">
         <input type="text" name="q" value="{{ q }}" autofocus
                placeholder="Search by title, body text, document number, keyword..."
-               class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none">
+               class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none mb-2">
+        <div class="flex gap-2 items-center text-xs">
+            <label class="text-gray-500">From:</label>
+            <input type="date" name="date_start" value="{{ date_start }}"
+                   class="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs text-white" style="color-scheme:dark">
+            <label class="text-gray-500">To:</label>
+            <input type="date" name="date_end" value="{{ date_end }}"
+                   class="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs text-white" style="color-scheme:dark">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs">Search</button>
+        </div>
     </form>
 
     {% if q %}
@@ -16,15 +25,26 @@
         {% for doc in results %}
             <tr class="border-b border-gray-800/50">
                 <td class="py-2">
-                    <a href="/document/{{ doc.id }}" class="text-sm">{{ doc.title }}</a>
-                    {% if doc.document_number %}
-                    <span class="mono text-amber-400 ml-2">{{ doc.document_number }}</span>
-                    {% endif %}
-                    <br>
-                    <span class="text-gray-500">{{ doc.publisher }} &middot; {{ doc.site_key }}</span>
-                    {% if doc.snippet %}
-                    <br><span class="text-gray-400">{{ doc.snippet|safe }}</span>
-                    {% endif %}
+                    <div class="flex items-start gap-2">
+                        {% if doc.importance == 'high' %}<span class="text-red-400 mt-1" title="High importance">●</span>
+                        {% elif doc.importance == 'medium' %}<span class="text-yellow-500 mt-1" title="Medium importance">●</span>
+                        {% elif doc.importance == 'low' %}<span class="text-gray-600 mt-1" title="Low importance">●</span>{% endif %}
+                        <div>
+                            <a href="/document/{{ doc.id }}" class="text-sm">{{ doc.title }}</a>
+                            {% if doc.document_number %}
+                            <span class="mono text-amber-400 ml-2">{{ doc.document_number }}</span>
+                            {% endif %}
+                            {% if doc.title_en %}
+                            <br><span class="text-gray-500 text-[11px]">{{ doc.title_en }}</span>
+                            {% endif %}
+                            <br>
+                            <span class="text-gray-500">{{ doc.publisher }} &middot; {{ doc.site_key }}</span>
+                            {% if doc.category %}<span class="text-blue-400/60 ml-1">{{ doc.category }}</span>{% endif %}
+                            {% if doc.snippet %}
+                            <br><span class="text-gray-400">{{ doc.snippet|safe }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </td>
             </tr>
         {% endfor %}
@@ -34,11 +54,11 @@
     {% if total > 50 %}
     <div class="flex items-center gap-2 mt-2 text-xs">
         {% if page > 1 %}
-        <a href="/search?q={{ q }}&page={{ page - 1 }}" class="px-2 py-1 bg-gray-800 rounded">Prev</a>
+        <a href="/search?q={{ q }}&page={{ page - 1 }}{% if date_start %}&date_start={{ date_start }}{% endif %}{% if date_end %}&date_end={{ date_end }}{% endif %}" class="px-2 py-1 bg-gray-800 rounded">Prev</a>
         {% endif %}
         <span class="text-gray-500">Page {{ page }}</span>
         {% if page * 50 < total %}
-        <a href="/search?q={{ q }}&page={{ page + 1 }}" class="px-2 py-1 bg-gray-800 rounded">Next</a>
+        <a href="/search?q={{ q }}&page={{ page + 1 }}{% if date_start %}&date_start={{ date_start }}{% endif %}{% if date_end %}&date_end={{ date_end }}{% endif %}" class="px-2 py-1 bg-gray-800 rounded">Next</a>
         {% endif %}
     </div>
     {% endif %}

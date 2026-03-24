@@ -16,8 +16,10 @@ from fastapi.templating import Jinja2Templates
 from web.services.documents import (
     get_documents, get_document, get_document_citations,
     get_sites, get_stats, get_categories, search_documents,
+    get_citation_neighborhood, date_str_to_timestamp,
     REF_PATTERN, get_admin_level,
 )
+from web.services.inbox import get_inbox_dates, get_documents_for_date
 from web.services.subsidies import (
     get_subsidy_stats, get_subsidy_by_district, get_subsidy_by_sector,
     get_subsidy_timeline, get_top_subsidy_programs, get_top_subsidy_documents,
@@ -49,18 +51,26 @@ async def browse(
     request: Request,
     site: str = "", category: str = "", year: str = "",
     has_docnum: str = "", page: int = 1,
+    date_start: str = "", date_end: str = "",
+    importance: str = "",
 ):
-    """Paginated document browser with filters for site, category, year, and doc-number presence."""
+    """Paginated document browser with filters for site, category, year, date range, importance, and doc-number presence."""
     db = request.app.state.db
+    ds = date_str_to_timestamp(date_start) if date_start else None
+    de = date_str_to_timestamp(date_end) if date_end else None
     documents, total = await get_documents(
         db, site_key=site or None, category=category or None,
         year=year or None, has_docnum=bool(has_docnum), page=page,
+        date_start=ds, date_end=de, importance=importance or None,
     )
     sites = await get_sites(db)
     categories = await get_categories(db)
 
-    # Build pagination query string (without page)
-    filters = {"site": site, "category": category, "year": year, "has_docnum": has_docnum}
+    filters = {
+        "site": site, "category": category, "year": year,
+        "has_docnum": has_docnum, "date_start": date_start, "date_end": date_end,
+        "importance": importance,
+    }
     pagination_qs = urlencode({k: v for k, v in filters.items() if v})
 
     return templates.TemplateResponse("browse.html", {
@@ -98,18 +108,22 @@ async def compare(request: Request, doc_id: int):
 
 
 @router.get("/search", response_class=HTMLResponse)
-async def search_page(request: Request, q: str = "", page: int = 1):
-    """Full-text search page with highlighted snippets and pagination."""
+async def search_page(request: Request, q: str = "", page: int = 1,
+                      date_start: str = "", date_end: str = ""):
+    """Full-text search page with highlighted snippets, pagination, and optional date range."""
     db = request.app.state.db
+    ds = date_str_to_timestamp(date_start) if date_start else None
+    de = date_str_to_timestamp(date_end) if date_end else None
     results, total = [], 0
     if q:
         try:
-            results, total = await search_documents(db, q, page)
+            results, total = await search_documents(db, q, page, date_start=ds, date_end=de)
         except Exception:
             results, total = [], 0
     return templates.TemplateResponse("search.html", {
         "request": request, "q": q, "results": results, "total": total,
-        "page": page, "stats": await get_stats(db),
+        "page": page, "date_start": date_start, "date_end": date_end,
+        "stats": await get_stats(db),
     })
 
 
@@ -250,6 +264,24 @@ async def analysis_subsidies(request: Request):
         "top_programs": top_programs,
         "top_docs": top_docs,
         "central_linkage": central_linkage,
+    })
+
+
+@router.get("/inbox", response_class=HTMLResponse)
+async def inbox(request: Request, site: str = "", admin_level: str = ""):
+    """Temporal inbox showing documents grouped by date — 'what's new' view."""
+    db = request.app.state.db
+    dates = await get_inbox_dates(db, site_key=site or None, admin_level=admin_level or None)
+    sites = await get_sites(db)
+    # Pre-load documents for the most recent 7 dates
+    for d in dates[:7]:
+        d["documents"] = [dict(r) for r in await get_documents_for_date(
+            db, d["date_ts"], site_key=site or None, admin_level=admin_level or None
+        )]
+    return templates.TemplateResponse("inbox.html", {
+        "request": request, "dates": dates, "sites": sites,
+        "filters": {"site": site, "admin_level": admin_level},
+        "stats": await get_stats(db),
     })
 
 

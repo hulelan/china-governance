@@ -39,6 +39,24 @@
                 </div>
 
                 <div class="p-2 border-b border-gray-800">
+                    <label class="text-gray-500 block mb-1">Date range</label>
+                    <input type="date" name="date_start" value="{{ filters.date_start }}"
+                           class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white mb-1" style="color-scheme:dark">
+                    <input type="date" name="date_end" value="{{ filters.date_end }}"
+                           class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white" style="color-scheme:dark">
+                </div>
+
+                <div class="p-2 border-b border-gray-800">
+                    <label class="text-gray-500 block mb-1">Importance</label>
+                    <select name="importance" class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white">
+                        <option value="">All</option>
+                        <option value="high" {{ 'selected' if filters.importance == 'high' }}>🔴 High</option>
+                        <option value="medium" {{ 'selected' if filters.importance == 'medium' }}>🟡 Medium</option>
+                        <option value="low" {{ 'selected' if filters.importance == 'low' }}>⚪ Low</option>
+                    </select>
+                </div>
+
+                <div class="p-2 border-b border-gray-800">
                     <label class="flex items-center gap-2 text-gray-400">
                         <input type="checkbox" name="has_docnum" value="1" {{ 'checked' if filters.has_docnum }} class="rounded bg-gray-800 border-gray-600">
                         Has 文号 only
@@ -61,23 +79,24 @@
             <table class="w-full dense-table text-xs bg-gray-900 border border-gray-800 rounded">
                 <thead>
                     <tr class="text-gray-500 border-b border-gray-800">
+                        <th class="w-4"></th>
                         <th class="text-left">Title</th>
                         <th class="text-left w-36">文号</th>
                         <th class="text-left w-28">Site</th>
                         <th class="text-left w-24">Date</th>
-                        <th class="w-6">B</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for doc in documents %}
                     <tr class="border-b border-gray-800/50">
-                        <td class="max-w-md truncate">
-                            <a href="/document/{{ doc.id }}">{{ doc.title }}</a>
+                        <td class="text-center">{% if doc.importance == 'high' %}<span class="text-red-400" title="High importance">●</span>{% elif doc.importance == 'medium' %}<span class="text-yellow-500" title="Medium importance">●</span>{% elif doc.importance == 'low' %}<span class="text-gray-600" title="Low importance">●</span>{% endif %}</td>
+                        <td class="max-w-md">
+                            <a href="/document/{{ doc.id }}" class="block truncate">{{ doc.title }}</a>
+                            {% if doc.title_en %}<div class="text-[11px] text-gray-500 truncate">{{ doc.title_en }}</div>{% endif %}
                         </td>
                         <td class="mono text-amber-400 truncate">{{ doc.document_number or '' }}</td>
                         <td class="text-gray-500 truncate">{{ doc.site_key }}</td>
                         <td class="mono text-gray-500">{{ doc.date_published[:10] if doc.date_published else '' }}</td>
-                        <td class="text-center">{% if doc.has_body %}<span class="text-green-500">*</span>{% endif %}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

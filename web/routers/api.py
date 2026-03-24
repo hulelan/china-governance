@@ -7,8 +7,10 @@ from fastapi import APIRouter, Request, Query
 from web.services.documents import (
     get_documents, get_document, get_document_citations,
     get_sites, get_stats, search_documents, get_categories,
+    get_citation_neighborhood, date_str_to_timestamp,
     REF_PATTERN, get_admin_level,
 )
+from web.services.inbox import get_inbox_dates, get_documents_for_date
 
 router = APIRouter()
 
@@ -18,10 +20,15 @@ async def api_documents(
     request: Request,
     site: str = None, category: str = None, year: int = None,
     has_docnum: bool = None, page: int = 1, per_page: int = 50,
+    date_start: str = None, date_end: str = None,
+    importance: str = None,
 ):
-    """Paginated document listing with optional filters by site, category, year, and doc-number presence."""
+    """Paginated document listing with optional filters by site, category, year, date range, importance, and doc-number presence."""
     db = request.app.state.db
-    rows, total = await get_documents(db, site, category, year, has_docnum, page, per_page)
+    ds = date_str_to_timestamp(date_start) if date_start else None
+    de = date_str_to_timestamp(date_end) if date_end else None
+    rows, total = await get_documents(db, site, category, year, has_docnum, page, per_page,
+                                      date_start=ds, date_end=de, importance=importance)
     return {"documents": [dict(r) for r in rows], "total": total, "page": page}
 
 
@@ -43,13 +50,23 @@ async def api_citations(request: Request, doc_id: int):
     return {"cites": cites, "cited_by": cited_by}
 
 
+@router.get("/documents/{doc_id}/network")
+async def api_doc_network(request: Request, doc_id: int):
+    """1-hop citation neighborhood graph for a single document (nodes + edges for D3.js)."""
+    db = request.app.state.db
+    return await get_citation_neighborhood(db, doc_id)
+
+
 @router.get("/search")
-async def api_search(request: Request, q: str = "", page: int = 1):
+async def api_search(request: Request, q: str = "", page: int = 1,
+                     date_start: str = None, date_end: str = None):
     """Full-text search across title, document_number, keywords, abstract, and body."""
     if not q:
         return {"results": [], "total": 0}
     db = request.app.state.db
-    rows, total = await search_documents(db, q, page)
+    ds = date_str_to_timestamp(date_start) if date_start else None
+    de = date_str_to_timestamp(date_end) if date_end else None
+    rows, total = await search_documents(db, q, page, date_start=ds, date_end=de)
     return {"results": [dict(r) for r in rows], "total": total, "page": page}
 
 
@@ -76,21 +93,47 @@ async def api_categories(request: Request):
     return {"categories": [dict(r) for r in rows]}
 
 
-@router.get("/network")
-async def api_network(request: Request, site: str = None, min_degree: int = 2):
-    """Citation network as nodes + edges for D3.js."""
+@router.get("/inbox")
+async def api_inbox(request: Request, site: str = None, admin_level: str = None,
+                    date: int = None):
+    """Inbox data: date groups with counts, or documents for a specific date."""
     db = request.app.state.db
+    if date:
+        docs = await get_documents_for_date(db, date, site_key=site, admin_level=admin_level)
+        return {"documents": [dict(r) for r in docs]}
+    dates = await get_inbox_dates(db, site_key=site, admin_level=admin_level)
+    return {"dates": dates}
 
+
+@router.get("/network")
+async def api_network(request: Request, site: str = None, min_degree: int = 2,
+                      date_start: str = None, date_end: str = None):
+    """Citation network as nodes + edges for D3.js, with optional date range filter."""
+    db = request.app.state.db
+    ds = date_str_to_timestamp(date_start) if date_start else None
+    de = date_str_to_timestamp(date_end) if date_end else None
+
+    where = ["body_text_cn != ''"]
+    params = []
+    idx = 0
     if site:
-        rows = await db.fetch(
-            "SELECT id, title, document_number, site_key, body_text_cn, publisher "
-            "FROM documents WHERE body_text_cn != '' AND site_key = $1", site
-        )
-    else:
-        rows = await db.fetch(
-            "SELECT id, title, document_number, site_key, body_text_cn, publisher "
-            "FROM documents WHERE body_text_cn != ''"
-        )
+        idx += 1
+        where.append(f"site_key = ${idx}")
+        params.append(site)
+    if ds is not None:
+        idx += 1
+        where.append(f"date_written >= ${idx}")
+        params.append(ds)
+    if de is not None:
+        idx += 1
+        where.append(f"date_written < ${idx}")
+        params.append(de)
+
+    where_sql = " AND ".join(where)
+    rows = await db.fetch(
+        f"SELECT id, title, document_number, site_key, body_text_cn, publisher "
+        f"FROM documents WHERE {where_sql}", *params
+    )
 
     # Build known docs lookup
     all_docs = await db.fetch(
