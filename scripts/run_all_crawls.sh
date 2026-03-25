@@ -41,6 +41,12 @@ echo ""
 echo ">>> gkmlpt: Incremental sync (all sites)"
 python3 -m crawlers.gkmlpt --sync || echo "  [WARN] gkmlpt sync failed, continuing..."
 
+# --- Shenzhen (non-gkmlpt) ---
+
+echo ""
+echo ">>> Shenzhen Investment Portal"
+python3 -m crawlers.sz_invest || echo "  [WARN] sz_invest failed, continuing..."
+
 # --- Provinces ---
 
 echo ""
