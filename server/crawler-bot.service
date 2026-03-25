@@ -6,8 +6,8 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=/root/china-governance
-Environment=TELEGRAM_BOT_TOKEN=8240400300:AAFFE_6Aa7N70N4EmTvM7dKn9DKHjoOPcZ8
-Environment=TELEGRAM_USER_ID=PLACEHOLDER
+EnvironmentFile=/root/china-governance/.env
+# .env must contain: TELEGRAM_BOT_TOKEN=... and TELEGRAM_USER_ID=...
 Environment=ANTHROPIC_API_KEY=PLACEHOLDER
 Environment=PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/usr/bin/python3 /root/china-governance/server/crawler_bot.py

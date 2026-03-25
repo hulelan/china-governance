@@ -1,33 +1,28 @@
-node_modules/
+
 __pycache__/
+.env
 *.pyc
-
-# Database (too large for git — 134 MB)
-documents.db
-documents.db-shm
-documents.db-wal
-
 # Archived HTML files (large, regenerable via crawler)
-raw_html/
-
+# Database (too large for git — 134 MB)
+# Docker volumes
 # Exported data (regenerable)
-citation_edges.csv
-document_nodes.csv
-
+# Log files
+# Personal/scratch files
 # Temp/scratch databases
+caddy_config/
+caddy_data/
+citation_edges.csv
+docs/.DS_Store
+document_nodes.csv
 documents_ministries.db
 documents_new.db
 documents_new.db-shm
 documents_new.db-wal
-
-# Log files
+documents.db
+documents.db-shm
+documents.db-wal
 log/
 logs.*.json
-
-# Personal/scratch files
+node_modules/
 random/
-
-# Docker volumes
-caddy_data/
-caddy_config/
-docs/.DS_Store
+raw_html/
