@@ -1,0 +1,18 @@
+[Unit]
+Description=China Governance Crawler Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/china-governance
+Environment=TELEGRAM_BOT_TOKEN=8240400300:AAFFE_6Aa7N70N4EmTvM7dKn9DKHjoOPcZ8
+Environment=TELEGRAM_USER_ID=PLACEHOLDER
+Environment=ANTHROPIC_API_KEY=PLACEHOLDER
+Environment=PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/usr/bin/python3 /root/china-governance/server/crawler_bot.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
