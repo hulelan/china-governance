@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(curl:*)",
+      "Bash(sqlite3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(pip install:*)",
+      "Bash(ps:*)",
+      "Bash(git:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(du:*)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Bash(sleep:*)",
+      "Bash(chmod:*)",
+      "Bash(mkdir:*)",
+      "Bash(lsof:*)",
+      "Bash(dig:*)",
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(brew install:*)",
+      "Bash(DATABASE_URL:*)",
+      "Bash(DEEPSEEK_API_KEY:*)",
+      "Bash(SQLITE_PATH:*)",
+      "Bash(bash:*)",
+      "Bash(rm -f:*)",
+      "Bash(while:*)",
+      "Bash(launchctl:*)",
+      "WebFetch",
+      "WebSearch",
+      "Skill(update-config)"
+    ],
+    "ask": [
+      "Bash(kill:*)",
+      "Bash(rm -rf:*)"
+    ]
+  }
+}
