@@ -221,6 +221,9 @@ def main():
     if not TELEGRAM_BOT_TOKEN:
         print("Set TELEGRAM_BOT_TOKEN env var")
         return
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        print("Set ANTHROPIC_API_KEY env var")
+        return
 
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start_command))

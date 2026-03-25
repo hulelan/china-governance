@@ -7,8 +7,7 @@ Type=simple
 User=root
 WorkingDirectory=/root/china-governance
 EnvironmentFile=/root/china-governance/.env
-# .env must contain: TELEGRAM_BOT_TOKEN=... and TELEGRAM_USER_ID=...
-Environment=ANTHROPIC_API_KEY=PLACEHOLDER
+# .env must contain: TELEGRAM_BOT_TOKEN=..., TELEGRAM_USER_ID=..., and ANTHROPIC_API_KEY=...
 Environment=PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/usr/bin/python3 /root/china-governance/server/crawler_bot.py
 Restart=always
