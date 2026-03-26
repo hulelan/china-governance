@@ -107,6 +107,11 @@ IMPORTANT:
 - If the site uses a pattern you haven't seen, check if it's similar to jpage (jiangsu.py) or gkmlpt
 - DO NOT modify any existing files except to create the new crawler
 
+IMPORTANT CONSTRAINTS:
+- Do NOT use the Agent tool or spawn subagents — work directly yourself
+- Do NOT spend more than 5 minutes on recon — if the site structure isn't clear after 3 fetches, make your best guess and note it in the docstring
+- If a section returns 0 results, move on — don't debug endlessly
+
 After creating and testing, report back with:
 - Number of documents found per section
 - Any sections that failed and why
@@ -233,7 +238,7 @@ async def handle_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"--max-turns 30 "
         f"--output-format json"
     )
-    code, raw_output = run_cmd(claude_cmd, timeout=600)
+    code, raw_output = run_cmd(claude_cmd, timeout=1200)
 
     # Parse JSON output — extract the final text result and full transcript
     output = raw_output
