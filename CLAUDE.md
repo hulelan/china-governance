@@ -6,10 +6,12 @@ Chinese government document corpus + web app. Crawls policy documents from centr
 
 ## Current Corpus (March 2026)
 
-- **110,122 documents**, 42+ sites, 92% body text coverage
-- Shenzhen (municipal + 9 districts + 13 departments), Guangdong Province, 16 other Guangdong cities
+- **111,653 documents**, 44 sites, 92% body text coverage
+- **110k+ classified** with English titles, summaries, importance, categories, topics (via DeepSeek API)
+- Shenzhen (municipal + 9 districts + 13 departments + investment portal), Guangdong Province, 16 other Guangdong cities
 - Central: State Council, NDRC, MOF, MEE
 - Provinces: Beijing (1,781), Shanghai (3,830), Jiangsu (1,041)
+- Non-gkmlpt content: Shenzhen investment news, DRC overseas investment, Longgang AI/robotics
 - All stored in local `documents.db` (SQLite, ~1GB)
 
 ## Key Commands
@@ -30,6 +32,17 @@ python3 -m crawlers.mee                         # Ministry of Ecology & Environm
 python3 -m crawlers.beijing                     # Beijing (5 sections)
 python3 -m crawlers.shanghai                    # Shanghai (6 sections, year archives)
 python3 -m crawlers.jiangsu                     # Jiangsu (jpage API)
+
+python3 -m crawlers.sz_invest                   # Shenzhen non-gkmlpt (investment news, DRC, Longgang AI)
+python3 -m crawlers.sz_invest --section fgw_xwdt  # DRC news only
+python3 -m crawlers.sz_invest --section lg_ai     # Longgang AI/robotics only
+```
+
+### Classification (DeepSeek API)
+```bash
+export DEEPSEEK_API_KEY="sk-..."
+python3 scripts/classify_documents.py --dry-run --limit 5   # Test
+python3 scripts/classify_documents.py --concurrency 2       # Full run (~$0.50/1k docs)
 ```
 
 ### PDF Attachment Extraction
@@ -57,7 +70,11 @@ uvicorn web.app:app --reload --port 8000        # Start local dev server
 DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
   python3 scripts/sqlite_to_postgres.py
 
-# Full rebuild (slow — drops all tables, re-inserts everything. Use when adding new sites or schema changes.)
+# Push classifications + new docs (no full rebuild needed)
+DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
+  python3 scripts/sync_classifications.py
+
+# Full rebuild (slow — drops all tables, re-inserts everything. Rarely needed.)
 DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
   python3 scripts/sqlite_to_postgres.py --drop
 
@@ -75,8 +92,9 @@ Production: Railway Postgres ← web app (FastAPI + Jinja2 + D3.js)
 
 - **Local SQLite** is the source of truth. Crawlers write here.
 - **Railway Postgres** is the production mirror. The live website reads from this.
-- Sync is manual via `sqlite_to_postgres.py --drop` (full replace, not incremental).
+- Sync is manual: `sync_classifications.py` for classification updates + new docs, `sqlite_to_postgres.py --drop` for full rebuild.
 - Web app uses `DATABASE_URL` env var for Postgres, falls back to local SQLite.
+- Documents are classified via DeepSeek API (`scripts/classify_documents.py`) — adds English title, summary, category, importance, topics to each doc.
 
 ## SQLite Concurrency Rules
 

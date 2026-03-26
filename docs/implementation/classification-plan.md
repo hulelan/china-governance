@@ -1,6 +1,6 @@
 # LLM Document Classification Pipeline
 
-*Designed 2026-03-17. Uses DeepSeek V3.2 API to enrich 103k Chinese government documents with English metadata for Western analysts.*
+*Designed 2026-03-17, IMPLEMENTED 2026-03-24. Uses DeepSeek V3.2 API to enrich documents with English metadata. 110k+ docs classified (~$35 total). Script: `scripts/classify_documents.py`, sync: `scripts/sync_classifications.py`.*
 
 ## Goal
 

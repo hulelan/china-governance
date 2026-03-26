@@ -33,17 +33,19 @@ Backed by a verified, archived corpus with direct links to original government s
 
 ---
 
-## What We Have Now (updated 2026-03-15)
+## What We Have Now (updated 2026-03-25)
 
-- **103,470 documents** from 37+ government sites across 4 administrative levels
+- **111,653 documents** from 44 government sites across 4 administrative levels
   - **Central (4):** State Council, NDRC, Ministry of Finance (MOF), Ministry of Ecology & Environment (MEE)
-  - **Provincial (1):** Guangdong Province
+  - **Provincial (4):** Guangdong Province, Beijing, Shanghai, Jiangsu
   - **Municipal (17):** Shenzhen + Guangzhou, Zhuhai, Huizhou, Jiangmen, Zhongshan, Shantou, Zhaoqing, Shaoguan, Heyuan, Shanwei, Yangjiang, Zhanjiang, Chaozhou, Jieyang, Yunfu, Dongguan
   - **District (9):** Shenzhen districts (Futian, Nanshan, Luohu, Longhua, Pingshan, Guangming, Yantian, Longgang, Dapeng)
   - **Department (13):** Shenzhen bureaus (S&T, Housing, Commerce, Transport, etc.)
-- **~94,000 documents with body text** (91% coverage, up from 15% in February)
-- **14,834+ citation edges** extracted via regex (formal 文号 + named 《》 references)
-- **Working web app** with 11 pages: browse, inbox, search, document detail (with mini citation network), citation network (D3.js), dashboard, policy chains (6 topics), AI analysis write-up, subsidy analysis, side-by-side comparison, change tracker
+  - **Non-gkmlpt (1):** Shenzhen investment portal (investment news, DRC overseas investment, Longgang AI/robotics)
+- **~103,000 documents with body text** (92% coverage)
+- **110,035 documents classified** with English titles, summaries, importance, categories, topics (via DeepSeek API, ~$35 total)
+- **159,170 citation edges** extracted via regex (formal 文号 + named 《》 references)
+- **Working web app** with importance filtering, English titles, classification panels: browse, inbox, search, document detail (with classification + mini citation network), citation network (D3.js), dashboard, policy chains (6 topics), side-by-side comparison, change tracker
 - **JSON API** under `/api/v1/` with 9 endpoints
 - **Citation hierarchy classified** by administrative level (central/provincial/municipal/district)
 - **Verification infrastructure**: SHA-256 hashes, direct links to originals, side-by-side comparison

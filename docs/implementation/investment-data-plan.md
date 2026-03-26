@@ -1,6 +1,6 @@
 # Investment & Economic Data Expansion
 
-*Created 2026-03-24. Expand corpus beyond policy documents to include investment intelligence, economic statistics, and promotional content from government portals.*
+*Created 2026-03-24. PARTIALLY IMPLEMENTED — `crawlers/sz_invest.py` now crawls 10 sections across sz.gov.cn, fgw.sz.gov.cn, and lg.gov.cn (~1,500 docs). Remaining: other cities, MOFCOM, NBS.*
 
 ## Motivation
 
