@@ -9,6 +9,23 @@ from collections import Counter, defaultdict
 
 CST = timezone(timedelta(hours=8))
 
+# Chinese brackets/quotes that users commonly omit when typing search queries
+_CN_PUNCT_CHARS = '\u201c\u201d\u2018\u2019\u300a\u300b\uff08\uff09\u3010\u3011\u3014\u3015'
+_CN_PUNCT_RE = re.compile(f'[{re.escape(_CN_PUNCT_CHARS)}]')
+
+
+def _strip_cn_punct(text: str) -> str:
+    """Strip Chinese quotation marks and brackets for normalized search."""
+    return _CN_PUNCT_RE.sub('', text)
+
+
+def _norm(col: str) -> str:
+    """Wrap a column with regexp_replace to strip Chinese punctuation.
+
+    Returns Postgres SQL; _pg_to_sqlite converts it for SQLite.
+    """
+    return f"regexp_replace({col}, '[{_CN_PUNCT_CHARS}]', '', 'g')"
+
 
 def date_str_to_timestamp(date_str: str) -> int:
     """Convert 'YYYY-MM-DD' to Unix timestamp at midnight CST (UTC+8).
@@ -57,15 +74,24 @@ def get_admin_level(doc_number: str) -> str:
 async def get_documents(db, site_key=None, category=None, year=None,
                         has_docnum=None, page=1, per_page=50,
                         date_start=None, date_end=None,
-                        importance=None):
+                        importance=None, source_type=None):
     """Paginated document listing with optional filters. Returns (rows, total).
 
     date_start/date_end are Unix timestamps (ints). When provided they
     take precedence over the year filter.
+    source_type: 'government' excludes media, 'media' shows only media.
     """
     where = ["1=1"]
     params = []
     param_idx = 0
+    # Join with sites needed when filtering by source_type
+    join_sites = ""
+    if source_type == "government":
+        join_sites = "JOIN sites s ON s.site_key = d.site_key"
+        where.append("s.admin_level != 'media'")
+    elif source_type == "media":
+        join_sites = "JOIN sites s ON s.site_key = d.site_key"
+        where.append("s.admin_level = 'media'")
 
     if site_key:
         param_idx += 1
@@ -103,7 +129,7 @@ async def get_documents(db, site_key=None, category=None, year=None,
     offset = (page - 1) * per_page
 
     total = await db.fetchval(
-        f"SELECT COUNT(*) FROM documents d WHERE {where_sql}", *params
+        f"SELECT COUNT(*) FROM documents d {join_sites} WHERE {where_sql}", *params
     )
 
     param_idx += 1
@@ -116,7 +142,7 @@ async def get_documents(db, site_key=None, category=None, year=None,
                    d.date_written, d.date_published, d.site_key,
                    d.classify_main_name, (COALESCE(d.body_text_cn, '') != '') as has_body,
                    d.title_en, d.importance, d.category, d.summary_en
-            FROM documents d
+            FROM documents d {join_sites}
             WHERE {where_sql}
             ORDER BY d.date_written DESC
             LIMIT ${limit_idx} OFFSET ${offset_idx}""",
@@ -262,7 +288,14 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
                            date_start: int = None, date_end: int = None):
     """LIKE-based search across title, doc number, keywords, abstract, and body. Returns (results, total)."""
     offset = (page - 1) * per_page
-    search_pattern = f"%{query}%"
+    clean_query = _strip_cn_punct(query)
+    search_pattern = f"%{clean_query}%"
+
+    # Normalized column expressions (strip Chinese quotes/brackets for fuzzy matching)
+    nt = _norm('d.title')
+    nk = _norm('d.keywords')
+    na = _norm('d.abstract')
+    nb = _norm('d.body_text_cn')
 
     date_clause = ""
     date_params = []
@@ -284,21 +317,21 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
                   d.date_written, d.site_key, d.classify_main_name,
                   d.title_en, d.importance, d.category,
                   CASE
-                    WHEN d.title LIKE $1 THEN d.title
-                    WHEN d.abstract LIKE $1 THEN d.abstract
+                    WHEN {nt} LIKE $1 THEN d.title
+                    WHEN {na} LIKE $1 THEN d.abstract
                     ELSE SUBSTR(d.body_text_cn, 1, 200)
                   END as snippet
            FROM documents d
-           WHERE (d.title LIKE $1
+           WHERE ({nt} LIKE $1
               OR d.document_number LIKE $1
-              OR d.keywords LIKE $1
-              OR d.abstract LIKE $1
-              OR d.body_text_cn LIKE $1)
+              OR {nk} LIKE $1
+              OR {na} LIKE $1
+              OR {nb} LIKE $1)
               {date_clause}
            ORDER BY
-             CASE WHEN d.title LIKE $1 THEN 0
+             CASE WHEN {nt} LIKE $1 THEN 0
                   WHEN d.document_number LIKE $1 THEN 1
-                  WHEN d.keywords LIKE $1 THEN 2
+                  WHEN {nk} LIKE $1 THEN 2
                   ELSE 3 END,
              d.date_written DESC
            LIMIT ${limit_idx} OFFSET ${offset_idx}""",
@@ -309,18 +342,21 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
     for r in rows:
         d = dict(r)
         raw = d.get("snippet") or ""
-        if query and raw:
-            raw = raw.replace(query, f"<mark>{query}</mark>")
+        if raw:
+            if query in raw:
+                raw = raw.replace(query, f"<mark>{query}</mark>")
+            elif clean_query in raw:
+                raw = raw.replace(clean_query, f"<mark>{clean_query}</mark>")
         d["snippet"] = _truncate_snippet(raw)
         results.append(d)
 
     total = await db.fetchval(
         f"""SELECT COUNT(*) FROM documents d
-           WHERE (d.title LIKE $1
+           WHERE ({nt} LIKE $1
               OR d.document_number LIKE $1
-              OR d.keywords LIKE $1
-              OR d.abstract LIKE $1
-              OR d.body_text_cn LIKE $1)
+              OR {nk} LIKE $1
+              OR {na} LIKE $1
+              OR {nb} LIKE $1)
               {date_clause}""",
         search_pattern, *date_params
     )

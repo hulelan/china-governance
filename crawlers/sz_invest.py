@@ -69,6 +69,34 @@ SECTIONS = {
         "list_type": "fgw",       # <a> with span.zyzp-text, span.zyzp-time
         "body_selector": "articleBox",
     },
+    "fgw_fwzx": {
+        "name": "海外投资服务中心",
+        "base_url": "https://fgw.sz.gov.cn",
+        "path": "/ztzl/qtztzl/szscjmyjjfzzhfwpt/hwtz/fwzx/",
+        "list_type": "fgw",
+        "body_selector": "articleBox",
+    },
+    "fgw_xsfx": {
+        "name": "海外投资形势分析",
+        "base_url": "https://fgw.sz.gov.cn",
+        "path": "/ztzl/qtztzl/szscjmyjjfzzhfwpt/hwtz/xsfx/",
+        "list_type": "fgw",
+        "body_selector": "articleBox",
+    },
+    "fgw_sjal": {
+        "name": "海外投资实际案例",
+        "base_url": "https://fgw.sz.gov.cn",
+        "path": "/ztzl/qtztzl/szscjmyjjfzzhfwpt/hwtz/sjal/",
+        "list_type": "fgw",
+        "body_selector": "articleBox",
+    },
+    "fgw_zczc": {
+        "name": "海外投资政策支持",
+        "base_url": "https://fgw.sz.gov.cn",
+        "path": "/ztzl/qtztzl/szscjmyjjfzzhfwpt/hwtz/ggfw/zczc/",
+        "list_type": "fgw",
+        "body_selector": "articleBox",
+    },
     # --- lg.gov.cn: Longgang AI/robotics department ---
     "lg_ai": {
         "name": "龙岗AI与机器人动态",
@@ -146,10 +174,13 @@ def _parse_sz(html: str) -> list[dict]:
 
 
 def _parse_fgw(html: str) -> list[dict]:
-    """fgw.sz.gov.cn: <a> with span.zyzp-text + span.zyzp-time."""
+    """fgw.sz.gov.cn: <a> with span.zyzp-text + span.zyzp-time.
+
+    Links may have rel="noopener noreferrer" before or after href.
+    """
     items = []
     for m in re.finditer(
-        r'<a\s+href="([^"]*content/post_\d+\.html)"[^>]*title="([^"]*)"[^>]*>\s*'
+        r'<a\s+[^>]*href="([^"]*content/post_\d+\.html)"[^>]*title="([^"]*)"[^>]*>\s*'
         r'<span\s+class="zyzp-text">[^<]*</span>\s*'
         r'<span\s+class="zyzp-time">(\d{4}-\d{2}-\d{2})</span>',
         html, re.DOTALL,
@@ -159,12 +190,11 @@ def _parse_fgw(html: str) -> list[dict]:
 
 
 def _parse_lg(html: str) -> list[dict]:
-    """lg.gov.cn: <li> with <a href title> and <span> date."""
+    """lg.gov.cn: <li><a class="_recurl" href="URL">TITLE</a><span>DATE</span></li>."""
     items = []
     for m in re.finditer(
-        r'<li[^>]*>\s*<a\s+href="([^"]*content/post_\d+\.html)"\s+title="([^"]*)"[^>]*>'
-        r'.*?<span[^>]*>(\d{4}-\d{2}-\d{2})</span>\s*</li>',
-        html, re.DOTALL,
+        r'<li><a[^>]*href="([^"]*content/post_\d+\.html)"[^>]*>([^<]+)</a><span>(\d{4}-\d{2}-\d{2})</span></li>',
+        html,
     ):
         items.append({"url": m.group(1), "title": m.group(2).strip(), "date_str": m.group(3)})
     return items

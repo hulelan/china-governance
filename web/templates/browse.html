@@ -9,6 +9,15 @@
                 <div class="px-3 py-2 border-b border-gray-800 font-semibold text-gray-400 uppercase tracking-wider">Filters</div>
 
                 <div class="p-2 border-b border-gray-800">
+                    <label class="text-gray-500 block mb-1">Source</label>
+                    <select name="source_type" class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white">
+                        <option value="">All sources</option>
+                        <option value="government" {{ 'selected' if filters.source_type == 'government' }}>Government</option>
+                        <option value="media" {{ 'selected' if filters.source_type == 'media' }}>Media</option>
+                    </select>
+                </div>
+
+                <div class="p-2 border-b border-gray-800">
                     <label class="text-gray-500 block mb-1">Site</label>
                     <select name="site" class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white">
                         <option value="">All sites</option>

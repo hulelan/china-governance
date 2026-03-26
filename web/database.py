@@ -79,6 +79,21 @@ def _pg_to_sqlite(query: str, args: tuple) -> tuple:
     """
     import re
 
+    # Convert regexp_replace(col, '[chars]', '', 'g') → nested replace() calls
+    def _regexp_replace_to_sqlite(match):
+        col = match.group(1)
+        chars = match.group(2)
+        result = col
+        for ch in chars:
+            result = f"replace({result}, '{ch}', '')"
+        return result
+
+    query = re.sub(
+        r"regexp_replace\(([^,]+),\s*'\[([^\]]+)\]',\s*'',\s*'g'\)",
+        _regexp_replace_to_sqlite,
+        query
+    )
+
     # Convert Postgres date functions to SQLite (always, regardless of placeholders)
     query = query.replace(
         "EXTRACT(YEAR FROM to_timestamp(date_written))::int",

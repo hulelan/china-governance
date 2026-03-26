@@ -19,6 +19,24 @@ DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.pro
 curl -s "https://china-governance-production.up.railway.app/api/v1/stats" | python3 -m json.tool
 ```
 
+## Media Sources (LatePost)
+
+LatePost articles are crawled from 163.com (NetEase). They use `admin_level = "media"` in the sites table, which separates them from government documents on the website via the Source filter.
+
+```bash
+# 1. Crawl LatePost (incremental — skips already-crawled articles)
+python3 -m crawlers.latepost
+
+# 2. List available articles without fetching
+python3 -m crawlers.latepost --list-only
+
+# 3. Sync to production
+DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
+  python3 scripts/sqlite_to_postgres.py
+```
+
+**Limitations:** The 163.com channel page only shows ~85 recent articles (no pagination API). Run regularly to capture new articles. The crawler is fully incremental — re-running skips articles already in the database.
+
 ## Adding New Sites (new crawlers, new site_keys)
 
 The incremental sync handles new sites — it uses `INSERT ... ON CONFLICT DO NOTHING` for sites, categories, and documents. Use `--drop` only if the schema has changed (new columns added to the CREATE TABLE in `sqlite_to_postgres.py`).

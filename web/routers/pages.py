@@ -53,9 +53,9 @@ async def browse(
     site: str = "", category: str = "", year: str = "",
     has_docnum: str = "", page: int = 1,
     date_start: str = "", date_end: str = "",
-    importance: str = "",
+    importance: str = "", source_type: str = "",
 ):
-    """Paginated document browser with filters for site, category, year, date range, importance, and doc-number presence."""
+    """Paginated document browser with filters for site, category, year, date range, importance, source type, and doc-number presence."""
     db = request.app.state.db
     ds = date_str_to_timestamp(date_start) if date_start else None
     de = date_str_to_timestamp(date_end) if date_end else None
@@ -63,6 +63,7 @@ async def browse(
         db, site_key=site or None, category=category or None,
         year=year or None, has_docnum=bool(has_docnum), page=page,
         date_start=ds, date_end=de, importance=importance or None,
+        source_type=source_type or None,
     )
     sites = await get_sites(db)
     categories = await get_categories(db)
@@ -70,7 +71,7 @@ async def browse(
     filters = {
         "site": site, "category": category, "year": year,
         "has_docnum": has_docnum, "date_start": date_start, "date_end": date_end,
-        "importance": importance,
+        "importance": importance, "source_type": source_type,
     }
     pagination_qs = urlencode({k: v for k, v in filters.items() if v})
 
