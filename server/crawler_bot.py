@@ -11,7 +11,7 @@ Send a URL like "crawl https://www.fujian.gov.cn/zwgk/" and the bot will:
 Runs on Singapore droplet (can reach Chinese gov sites).
 
 Usage:
-    TELEGRAM_BOT_TOKEN=... ANTHROPIC_API_KEY=... python3 server/crawler_bot.py
+    TELEGRAM_BOT_TOKEN=... python3 server/crawler_bot.py
 """
 
 import asyncio
@@ -221,10 +221,6 @@ def main():
     if not TELEGRAM_BOT_TOKEN:
         print("Set TELEGRAM_BOT_TOKEN env var")
         return
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("Set ANTHROPIC_API_KEY env var")
-        return
-
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("crawl", handle_crawl))
