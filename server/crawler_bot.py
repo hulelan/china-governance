@@ -15,11 +15,13 @@ Usage:
 """
 
 import asyncio
+import json
 import logging
 import os
 import subprocess
 import re
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 from telegram import Update
@@ -112,6 +114,88 @@ After creating and testing, report back with:
 """
 
 
+def _format_transcript(data: dict, site_key: str) -> str:
+    """Format Claude CLI JSON output into a readable transcript."""
+    lines = [f"=== Crawler Generation Transcript: {site_key} ==="]
+    lines.append(f"Timestamp: {datetime.utcnow().isoformat()}")
+    lines.append("")
+
+    # Handle different JSON output structures
+    messages = data.get("messages", [])
+    if not messages and "result" in data:
+        # Simple format — just result text
+        lines.append("--- Result ---")
+        lines.append(data["result"])
+        return "\n".join(lines)
+
+    for msg in messages:
+        role = msg.get("role", "unknown")
+        if role == "user":
+            lines.append(f"--- User ---")
+            content = msg.get("content", "")
+            if isinstance(content, str):
+                lines.append(content[:500] + ("..." if len(content) > 500 else ""))
+            elif isinstance(content, list):
+                for block in content:
+                    if isinstance(block, dict) and block.get("type") == "text":
+                        text = block["text"]
+                        lines.append(text[:500] + ("..." if len(text) > 500 else ""))
+        elif role == "assistant":
+            lines.append(f"--- Assistant ---")
+            content = msg.get("content", "")
+            if isinstance(content, str):
+                lines.append(content)
+            elif isinstance(content, list):
+                for block in content:
+                    if isinstance(block, dict):
+                        if block.get("type") == "text":
+                            lines.append(block["text"])
+                        elif block.get("type") == "tool_use":
+                            tool = block.get("name", "unknown")
+                            inp = json.dumps(block.get("input", {}), ensure_ascii=False)
+                            if len(inp) > 200:
+                                inp = inp[:200] + "..."
+                            lines.append(f"  [Tool: {tool}] {inp}")
+        elif role == "tool":
+            lines.append(f"--- Tool Result ---")
+            content = msg.get("content", "")
+            if isinstance(content, str):
+                if len(content) > 500:
+                    lines.append(content[:500] + "...")
+                else:
+                    lines.append(content)
+            elif isinstance(content, list):
+                for block in content:
+                    if isinstance(block, dict) and block.get("type") == "text":
+                        text = block["text"]
+                        if len(text) > 500:
+                            lines.append(text[:500] + "...")
+                        else:
+                            lines.append(text)
+        lines.append("")
+
+    # Add final result
+    if "result" in data:
+        lines.append("--- Final Result ---")
+        lines.append(data["result"])
+
+    return "\n".join(lines)
+
+
+async def _send_transcript(update: Update, transcript_path: Path):
+    """Send transcript as a document attachment."""
+    try:
+        if transcript_path.exists() and transcript_path.stat().st_size > 0:
+            with open(transcript_path, "rb") as f:
+                await update.message.reply_document(
+                    document=f,
+                    filename=transcript_path.name,
+                    caption="Full Claude conversation transcript",
+                )
+    except Exception as e:
+        log.warning(f"Failed to send transcript: {e}")
+
+
 async def handle_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle a crawl request."""
     if ALLOWED_USER_ID and update.effective_user.id != ALLOWED_USER_ID:
@@ -139,15 +223,37 @@ async def handle_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Run Claude to generate the crawler
     prompt = build_claude_prompt(url, site_key)
+    log.info(f"Running Claude for {site_key}...")
+
+    # Use --output-format json to capture full transcript
     claude_cmd = (
         f"claude -p {repr(prompt)} "
         f"--allowedTools 'Read,Write,Edit,Bash,Glob,Grep,WebFetch' "
         f"--model sonnet "
-        f"--max-turns 30"
+        f"--max-turns 30 "
+        f"--output-format json"
     )
+    code, raw_output = run_cmd(claude_cmd, timeout=600)
 
-    log.info(f"Running Claude for {site_key}...")
-    code, output = run_cmd(claude_cmd, timeout=600)
+    # Parse JSON output — extract the final text result and full transcript
+    output = raw_output
+    transcript_text = ""
+    try:
+        data = json.loads(raw_output)
+        # The JSON output has a "result" field with the final text
+        output = data.get("result", raw_output)
+        # Build a readable transcript from the messages
+        transcript_text = _format_transcript(data, site_key)
+    except (json.JSONDecodeError, KeyError):
+        # Fall back to raw output if not valid JSON
+        transcript_text = raw_output
+
+    # Save transcript to file
+    transcript_dir = REPO_DIR / "logs" / "bot-transcripts"
+    transcript_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+    transcript_path = transcript_dir / f"{site_key}-{timestamp}.txt"
+    transcript_path.write_text(transcript_text or output, encoding="utf-8")
 
     # Check if crawler was created
     crawler_path = REPO_DIR / "crawlers" / f"{site_key}.py"
@@ -156,6 +262,8 @@ async def handle_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Failed to generate crawler for {site_key}.\n\n"
             f"Output (last 500 chars):\n{output[-500:]}"
         )
+        # Still send transcript
+        await _send_transcript(update, transcript_path)
         return
 
     # Try to push to a branch
@@ -167,7 +275,6 @@ async def handle_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
     run_cmd("git checkout main")
 
     # Summarize results
-    # Extract doc counts from output
     lines = output.split("\n")
     result_lines = [l for l in lines if any(kw in l for kw in ["docs", "Found", "documents", "items", "stored"])]
 
@@ -184,11 +291,13 @@ async def handle_crawl(update: Update, context: ContextTypes.DEFAULT_TYPE):
     summary += f"  git fetch && git checkout {branch}\n"
     summary += f"  python3 -m crawlers.{site_key} --list-only\n"
 
-    # Truncate if too long for Telegram
     if len(summary) > 4000:
         summary = summary[:4000] + "..."
 
     await update.message.reply_text(summary)
+
+    # Send transcript as a document
+    await _send_transcript(update, transcript_path)
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
