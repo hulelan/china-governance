@@ -58,16 +58,29 @@ cd /root/china-governance && source .venv/bin/activate && source .env
 - Bao'an district — gkmlpt endpoint unreachable
 - These fail from Mac too, not a Singapore issue
 
+## Multiple Ingest Sources & De-duplication
+
+Both the Mac and the droplet can crawl and sync to the same Railway Postgres independently. This is safe because:
+
+- **Document IDs are deterministic** — generated from the source URL, so the same document crawled from Mac and droplet gets the same ID.
+- **Postgres sync uses `INSERT ... ON CONFLICT DO NOTHING`** — if a doc already exists (same ID), the second insert is silently skipped.
+- **Classification UPDATEs are idempotent** — `sync_classifications.py` does a bulk UPDATE via temp table. If both sources classify the same doc, the second update overwrites with identical data.
+- **No risk of duplicates** — you can safely run both Mac and droplet daily. Whichever syncs first writes the doc; the other's insert is a no-op.
+
+The only scenario that needs care: if you **modify** the same doc's body text differently on Mac vs. droplet (e.g., different PDF extraction). In practice this doesn't happen since both run the same crawlers from the same git repo.
+
 ## Development Workflow
 
 ```
-Your Mac (development):
-  1. Write/test new crawlers locally
-  2. git push to main
+Your Mac (7 AM ET, launchd):
+  1. Crawl all 44 sites → classify → sync to Postgres
+  2. Covers 3 sites unreachable from Singapore (gd, huizhou, yangjiang)
 
-Droplet (production):
-  3. Daily cron does git pull → crawl → classify → sync to Postgres
-  4. Website auto-updates
+Droplet (6 AM SGT, cron):
+  3. Crawl 41/44 sites → classify → sync to Postgres
+  4. First to run each day (SGT is 12-13 hours ahead of ET)
+
+Both send Telegram reports after each run.
 ```
 
 ### Moving local crawl results to droplet
