@@ -119,15 +119,49 @@ These are the most important missing pieces for understanding the AI governance 
 
 ---
 
-## Recommended Implementation Order
+## Execution Status (updated 2026-03-28)
 
-**Phase 1 (immediate):** MIIT, CAC, MOST — three missing central ministries essential for AI governance coverage. Standard government sites; use existing `mee.py` / `mof.py` patterns.
+### Phase 1: Central Ministries — BUILT, PARTIALLY CRAWLED
 
-**Phase 2 (next sprint):** 36Kr, Phoenix/风声 — media sources for the private sector and intellectual commentary layers. Build on the LatePost crawler pattern.
+| Source | Crawler | Docs | Bodies | Technique | Notes |
+|--------|---------|------|--------|-----------|-------|
+| **CAC** | `crawlers/cac.py` | 747 | 738 (98.8%) | JSON API (`POST /cms/JsonList`) | **Complete.** Best result — full text of AI model filings, data governance regs. |
+| **MOST** | `crawlers/most.py` | 1,495 | 499 (33%) | Static HTML, TRS CMS `div#Zoom` | gfxwj section done (498/500). tztg/kjbgz body extraction hangs from US — re-run from droplet. |
+| **MIIT** | `crawlers/miit.py` | 40 | 12 | Elasticsearch API (`search-front-server/api/search/info`) | API lists 2,621 docs but is flaky with timeouts from US. Needs droplet re-run. |
 
-**Phase 3 (following):** Zhejiang, Anhui/Hefei — geographic expansion to other major AI provinces. Assess whether their sites use gkmlpt or need custom crawlers.
+### Phase 2: Media Sources — BUILT, CRAWLED
 
-**Phase 4 (as needed):** NPC, CAICT, SASAC, DRC — specialized sources for legislative, think tank, and SOE perspectives.
+| Source | Crawler | Docs | Bodies | Technique | Notes |
+|--------|---------|------|--------|-----------|-------|
+| **LatePost** | `crawlers/latepost.py` | 85 | 85 (100%) | HTML scraping of 163.com channel page | Complete. ~85 recent articles. Channel page shows latest only. |
+| **36Kr** | `crawlers/36kr.py` | 10 | 10 (100%) | RSS feed (`36kr.com/feed`) + `window.initialState` | Complete. RSS has ~10-30 items. Run daily for incremental. |
+| **Phoenix/风声** | `crawlers/ifeng.py` | 6 | 6 (100%) | HTML scraping of ifeng.com | Built & working. Column ID `14-35083` targets military not 风声 policy commentary — needs correct section ID. |
+
+### Phase 3: Provinces — RESEARCHED, NOT BUILT
+
+| Source | Findings |
+|--------|----------|
+| **Zhejiang** | Main site (www.zj.gov.cn) **geo-blocked from US**. Department subdomains (fzggw.zj.gov.cn, kjt.zj.gov.cn) **accessible**. Uses JCMS with API at `/api-gateway/jpaas-publish-server/front/page/build/unit`. Returns rendered HTML, not JSON. Category tree via `tagId=组配分类子栏目`. Estimated 20-40k docs across departments. |
+| **Anhui** | Fully **geo-blocked** (QAX Cloud WAF, `reason:GeoBL`). Custom CMS with AJAX API (`POST /site/label/8888`). Rich metadata tables. Needs China-based IP. |
+| **Hefei** | Fully **geo-blocked**. Same CMS as Anhui (shared platform). DNS doesn't resolve outside China. |
+
+### Phase 4: Specialized — PARTIALLY RESEARCHED
+
+| Source | Findings |
+|--------|----------|
+| **NPC** | Unreachable from US (connection timeout). Needs droplet. |
+| **SASAC** | Unreachable from US (connection timeout). Needs droplet. |
+| **DRC** | Reachable (200). GBK-encoded. No crawler built yet. |
+| **CAICT** | Returns 412 "Precondition Failed." Needs specific headers or is blocked. |
+
+### What to do next
+
+1. **Run MIIT and MOST from the droplet** — the MIIT API and MOST body fetch both suffer from US→China network issues. This alone would add ~2,600 MIIT + ~1,000 MOST body texts.
+2. **Fix 风声 column ID** — find the correct ifeng.com section ID for domestic policy commentary (not military).
+3. **Build Zhejiang department crawler** — JCMS API is documented. Start with fzggw (~1,140 docs) and kjt (~5,700 docs).
+4. **Set up daily cron for media crawlers** — 36Kr and LatePost should run daily on the droplet.
+5. **Explore geo-blocked sites from droplet** — Anhui, Hefei, NPC, SASAC.
+6. **Build DRC crawler** — reachable, GBK-encoded, straightforward.
 
 ---
 
