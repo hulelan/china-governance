@@ -150,6 +150,35 @@ LOW=$(sqlite3 documents.db "SELECT COUNT(*) FROM documents WHERE importance = 'l
 # Get per-site new doc counts (top 5 sites with most new docs today)
 TOP_SITES=$(sqlite3 documents.db "SELECT site_key || ': ' || COUNT(*) FROM documents WHERE date(crawl_timestamp) = date('now') GROUP BY site_key ORDER BY COUNT(*) DESC LIMIT 5" 2>/dev/null || echo "")
 
+# Get sample new docs with links (up to 10, prioritize high importance)
+SAMPLE_DOCS=$(sqlite3 documents.db "
+    SELECT id, title_en, title, importance, url FROM documents
+    WHERE date(crawl_timestamp) = date('now')
+    ORDER BY
+        CASE importance WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
+        date_written DESC
+    LIMIT 10
+" 2>/dev/null || echo "")
+
+# Format sample docs with links
+SAMPLE_LINES=""
+if [ -n "$SAMPLE_DOCS" ]; then
+    while IFS='|' read -r doc_id title_en title importance url; do
+        # Use English title if available, else Chinese (truncated)
+        display_title="${title_en:-${title}}"
+        display_title="${display_title:0:60}"
+        # Importance emoji
+        case "$importance" in
+            high)   imp="🔴" ;;
+            medium) imp="🟡" ;;
+            *)      imp="⚪" ;;
+        esac
+        SAMPLE_LINES="${SAMPLE_LINES}${imp} [${display_title}](https://www.chinagovernance.com/document/${doc_id})
+   ↳ [source](${url})
+"
+    done <<< "$SAMPLE_DOCS"
+fi
+
 REPORT="📋 *Daily Sync Report* ($HOST)
 ━━━━━━━━━━━━━━━━━━
 ⏱ *Duration:* $((ELAPSED / 60))m $((ELAPSED % 60))s
@@ -169,10 +198,12 @@ $(echo -e "$CRAWL_RESULTS")
 • 🔴 High: $HIGH | 🟡 Medium: $MEDIUM | ⚪ Low: $LOW
 $([ -n "$TOP_SITES" ] && echo "
 📍 *Top sites today:*
-$TOP_SITES")$([ -n "$CRAWL_ERRORS" ] && echo "
+$TOP_SITES")$([ -n "$SAMPLE_LINES" ] && echo "
+📄 *New docs:*
+$SAMPLE_LINES")$([ -n "$CRAWL_ERRORS" ] && echo "
 ❗ *Errors:*
 $(echo -e "$CRAWL_ERRORS")")
-📄 Log: $LOG"
+📁 Log: $LOG"
 
 send_telegram "$REPORT"
 log "=== Daily sync complete ==="
