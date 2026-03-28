@@ -3,12 +3,19 @@
 import json
 import logging
 import re
+import socket
 import sqlite3
 import time
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Force IPv4 — many .gov.cn sites are unreachable over IPv6 from overseas servers
+_orig_getaddrinfo = socket.getaddrinfo
+def _ipv4_getaddrinfo(*args, **kwargs):
+    return _orig_getaddrinfo(*args, family=socket.AF_INET, **kwargs)
+socket.getaddrinfo = _ipv4_getaddrinfo
 
 DB_PATH = Path(__file__).parent.parent / "documents.db"
 RAW_HTML_DIR = Path(__file__).parent.parent / "raw_html"
