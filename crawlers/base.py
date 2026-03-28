@@ -13,8 +13,8 @@ from pathlib import Path
 
 # Force IPv4 — many .gov.cn sites are unreachable over IPv6 from overseas servers
 _orig_getaddrinfo = socket.getaddrinfo
-def _ipv4_getaddrinfo(*args, **kwargs):
-    return _orig_getaddrinfo(*args, family=socket.AF_INET, **kwargs)
+def _ipv4_getaddrinfo(host, port, family=0, *args, **kwargs):
+    return _orig_getaddrinfo(host, port, socket.AF_INET, *args, **kwargs)
 socket.getaddrinfo = _ipv4_getaddrinfo
 
 DB_PATH = Path(__file__).parent.parent / "documents.db"
