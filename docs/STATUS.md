@@ -150,9 +150,10 @@
 | Task | Priority | Notes |
 |------|----------|-------|
 | Classify ~12,300 new docs | High | Droplet auto-classifies on next cron (~$6). Or set DEEPSEEK_API_KEY locally |
-| Fix classification prompt | High | 3 biases: media=always low, explainers=overrated, district promo=overrated |
-| Add `doc_type` field | Medium | policy / explainer / media_report / personnel / procurement |
-| Add `references` extraction | Medium | LLM extracts policy names from media (regex misses informal refs) |
+| ~~Fix classification prompt~~ | **Done** | v2 prompt: doc_type + policy_significance + references. Eval: 94%/88% accuracy |
+| ~~Add `doc_type` field~~ | **Done** | 10 types: original_policy, relay_notice, explainer, media_exclusive, etc. |
+| ~~Add `references` extraction~~ | **Done** | LLM extracts policy names/doc numbers into references_json |
+| Re-classify all 125k docs with v2 | In progress | ~$55, running on droplet |
 | Bidirectional citation chain | Medium | Currently outbound-only; inbound citations would enrich AI chain |
 | Build eval set + iterate prompt | Medium | 25-item eval set built, test before re-classifying |
 
@@ -161,8 +162,8 @@
 | Item | Value |
 |------|-------|
 | Model | DeepSeek API |
-| Classified | ~109,000 docs |
-| Unclassified | ~16,000 (new crawlers: MOFCOM, SAMR, Xinhua, Chongqing, Wuhan, NDA, Tsinghua) |
+| Classified (v1 prompt) | ~109,000 docs |
+| Classified (v2 prompt) | Re-classifying all 125k (in progress) |
 | Cost | ~$0.50/1k docs |
 | Concurrency | Keep at 2 (DeepSeek silently rate-limits with empty responses at higher) |
 | Command | `python3 scripts/classify_documents.py --concurrency 2` |
