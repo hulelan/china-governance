@@ -34,49 +34,54 @@ from pathlib import Path
 
 DB_PATH = Path(__file__).parent.parent / "documents.db"
 
-PROMPT = """You are classifying Chinese government documents for a Western analyst research database.
+PROMPT = """You are classifying Chinese government and policy documents for a Western analyst research database.
 Given the document below, output a JSON object with these fields:
 
 - title_en: English translation of the title (concise, formal government style)
 - summary_en: 1-2 sentence English summary of what this document does or requires
-- category: one of [major_policy, regulation, normative, budget, personnel, administrative, report, subsidy, other]
+- doc_type: the type of document — see guide below
+- policy_significance: how important is the UNDERLYING POLICY OR TOPIC (not this document itself) — one of [high, medium, low]
 - topics: array of 1-3 English topic tags (e.g. "artificial intelligence", "housing", "environmental protection")
-- importance: one of [high, medium, low] — see detailed rubric below
 - policy_area: short Chinese topic label (e.g. "人工智能", "住房保障", "环境保护")
+- references: array of Chinese policy names or document numbers referenced in the text (e.g. ["关于深入实施'人工智能+'行动的意见", "国发〔2025〕11号"]). Empty array if none found.
 
-## Importance rubric (this is the most critical field):
+## doc_type — what IS this document?
 
-HIGH — Documents a Western policy analyst would flag as significant:
-  - New policy frameworks, action plans, development plans (行动方案, 发展规划)
-    Example: "国务院办公厅关于上市公司独立董事制度改革的意见"
-    Example: "深圳市人民政府办公厅关于印发深圳市扶持个体工商户高质量发展若干措施的通知"
-  - Major regulatory changes (法规, 规章, 实施意见 from provincial+ level)
-    Example: "关于加快发展我省服务业的实施意见"
-  - Large funding allocations, subsidy programs, government guidance funds
-  - Industry standards or rules with broad economic impact
-  - State Council opinions (国务院意见) or central ministry directives
+- original_policy: The authoritative text of a policy, regulation, opinion, plan, or directive (意见, 通知, 办法, 规划, 方案, 条例, 规章, 若干措施). This is the PRIMARY source. IMPORTANT: "印发《X》的通知" (notice issuing X) IS the original — it's the government publishing X for the first time, not relaying it.
+- relay_notice: A notice that FORWARDS a policy from a DIFFERENT (usually higher-level) body (转发...的通知). The key test: did the issuer write the policy, or just pass it along? If the title says "转发XX省/XX部关于...", it's a relay.
+- interpretation: An official government explanation of a policy's rationale or implementation details (政策解读, 解读). Published by the issuing agency or designated experts.
+- explainer: A visual or simplified summary of a policy (图解, 一图读懂, 秒懂, 速览, 政策图解). Derivative — the original policy exists separately.
+- media_exclusive: Journalism that reveals non-public information or provides first-of-kind industry data (独家, exclusive reports, first disclosures of deals/products/data).
+- media_coverage: General news reporting, conference recaps, event coverage, opinion pieces, or industry overviews.
+- research: Academic papers, think tank reports, white papers, data reports.
+- personnel: Appointment or removal notices (任免, 职务任免).
+- procurement: Bidding announcements, procurement results, public name lists, license transfers.
+- other: Anything that doesn't fit above (speeches, meeting minutes, event notices, photo galleries).
 
-MEDIUM — Useful context but not headline-worthy:
-  - Implementation notices that relay higher-level policy (转发...的通知)
-    Example: "汕尾市人民政府转发广东省人民政府关于印发...实施意见的通知"
-  - District/department-level regulatory details (管理办法, 实施细则)
-    Example: "深圳市行政决策责任追究办法"
-  - Budget and fiscal reports (预算, 决算)
-    Example: "2022年度深圳市人民政府办公厅部门决算"
-  - Normative documents with limited scope
-  - Spatial planning approvals (规划批复)
+## policy_significance — how important is the TOPIC/POLICY being discussed?
 
-LOW — Routine or procedural, minimal analytical value:
-  - Personnel appointments/removals (任免)
-    Example: "揭阳市人民政府关于陈洁珊同志任职的通知"
-  - Meeting notices, work conferences
-    Example: "市安委办召开全市安全生产治本攻坚三年行动信息系统业务培训工作会议"
-  - Internal bidding results, procurement notices
-    Example: "深圳市人力资源和社会保障局内部招标结果公示"
-  - News-style articles about leader activities
-    Example: "温湛滨调研新冠疫苗接种工作"
-  - Public notices (taxi license transfers, traffic diversions, name lists)
-    Example: "深圳市出租汽车营运牌照转让登记公告"
+This is about the underlying subject matter, NOT about this particular document. An infographic (图解) about an important AI policy still has HIGH policy_significance — the policy matters, even though this document is just a summary.
+
+HIGH:
+  - National-level policy frameworks or strategies (e.g., AI+ action plan, data governance, dual carbon)
+  - Major regulatory changes affecting broad industries
+  - Significant funding programs (billions of yuan)
+  - Technology export controls, trade restrictions
+  - Topics with international implications
+
+MEDIUM:
+  - Provincial or city-level implementation of national policy
+  - Sector-specific regulations (single industry, limited geography)
+  - Standard budgetary or fiscal matters
+  - Routine regulatory updates to existing frameworks
+
+LOW:
+  - Internal administrative procedures
+  - Individual personnel decisions
+  - Procurement and bidding
+  - Local event notices, traffic diversions, name lists
+  - Topics with no broader policy implications
+  - Note: a leader speech ABOUT an important topic (e.g., AI) still has the policy_significance of that topic. The doc_type (media_coverage) already captures that it's a speech, not a policy.
 
 Document title: {title}
 Document number: {doc_number}
@@ -86,6 +91,14 @@ Body excerpt (Chinese): {body_excerpt}
 
 Output ONLY valid JSON, no explanation."""
 
+VALID_DOC_TYPES = {
+    "original_policy", "relay_notice", "interpretation", "explainer",
+    "media_exclusive", "media_coverage", "research", "personnel",
+    "procurement", "other",
+}
+VALID_SIGNIFICANCE = {"high", "medium", "low"}
+
+# Legacy fields kept for backward compatibility
 VALID_CATEGORIES = {
     "major_policy", "regulation", "normative", "budget",
     "personnel", "administrative", "report", "subsidy", "other",
@@ -211,11 +224,13 @@ def _parse_response(raw: str) -> dict | None:
         else:
             return None
 
-    # Validate and normalize
-    if result.get("category") not in VALID_CATEGORIES:
-        result["category"] = "other"
-    if result.get("importance") not in VALID_IMPORTANCE:
-        result["importance"] = "medium"
+    # Validate and normalize new v2 fields
+    if result.get("doc_type") not in VALID_DOC_TYPES:
+        result["doc_type"] = "other"
+    if result.get("policy_significance") not in VALID_SIGNIFICANCE:
+        result["policy_significance"] = "medium"
+    if not isinstance(result.get("references"), list):
+        result["references"] = []
     if not isinstance(result.get("topics"), list):
         result["topics"] = []
     if not isinstance(result.get("title_en"), str):
@@ -224,6 +239,17 @@ def _parse_response(raw: str) -> dict | None:
         result["summary_en"] = ""
     if not isinstance(result.get("policy_area"), str):
         result["policy_area"] = ""
+
+    # Derive legacy fields from v2 for backward compatibility
+    type_to_category = {
+        "original_policy": "major_policy", "relay_notice": "normative",
+        "interpretation": "report", "explainer": "report",
+        "media_exclusive": "report", "media_coverage": "report",
+        "research": "report", "personnel": "personnel",
+        "procurement": "administrative",
+    }
+    result["category"] = type_to_category.get(result["doc_type"], "other")
+    result["importance"] = result["policy_significance"]
 
     return result
 
@@ -239,6 +265,10 @@ def ensure_columns(conn):
         "topics": "TEXT DEFAULT ''",
         "classification_model": "TEXT DEFAULT ''",
         "classified_at": "TEXT DEFAULT ''",
+        # v2 fields
+        "doc_type": "TEXT DEFAULT ''",
+        "policy_significance": "TEXT DEFAULT ''",
+        "references_json": "TEXT DEFAULT ''",
     }
     for col, typedef in new_cols.items():
         if col not in existing:
@@ -257,6 +287,9 @@ def save_result(conn, doc_id: int, result: dict, model: str):
             importance = ?,
             policy_area = ?,
             topics = ?,
+            doc_type = ?,
+            policy_significance = ?,
+            references_json = ?,
             classification_model = ?,
             classified_at = datetime('now')
         WHERE id = ?""",
@@ -267,6 +300,9 @@ def save_result(conn, doc_id: int, result: dict, model: str):
             result.get("importance", "medium"),
             result.get("policy_area", ""),
             json.dumps(result.get("topics", []), ensure_ascii=False),
+            result.get("doc_type", "other"),
+            result.get("policy_significance", "medium"),
+            json.dumps(result.get("references", []), ensure_ascii=False),
             model,
             doc_id,
         ),
@@ -381,12 +417,13 @@ def main():
             if result:
                 if args.dry_run:
                     print(f"\n  [{doc['id']}] {doc['title'][:60]}")
-                    print(f"    title_en:    {result.get('title_en', '')}")
-                    print(f"    summary_en:  {result.get('summary_en', '')}")
-                    print(f"    category:    {result.get('category', '')}")
-                    print(f"    importance:  {result.get('importance', '')}")
-                    print(f"    topics:      {result.get('topics', [])}")
-                    print(f"    policy_area: {result.get('policy_area', '')}")
+                    print(f"    title_en:           {result.get('title_en', '')}")
+                    print(f"    summary_en:         {result.get('summary_en', '')}")
+                    print(f"    doc_type:           {result.get('doc_type', '')}")
+                    print(f"    policy_significance:{result.get('policy_significance', '')}")
+                    print(f"    topics:             {result.get('topics', [])}")
+                    print(f"    policy_area:        {result.get('policy_area', '')}")
+                    print(f"    references:         {result.get('references', [])}")
                 else:
                     save_result(conn, doc["id"], result, args.model)
                     if processed % 10 == 0:
