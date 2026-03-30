@@ -128,34 +128,55 @@
 |----------|------|---------|------|--------|-------|
 | tsinghua_aiig | Tsinghua AIIG | `crawlers/tsinghua_aiig.py` | 57 | 43 | AI governance think tank, 14 WeChat links (no body) |
 
-## Not Yet Built / Geo-Blocked
+## Recent Completions (2026-03-29/30)
 
-| Source | Reachable? | Priority | Notes |
-|--------|-----------|----------|-------|
-| SAMR (www.samr.gov.cn) | Yes | **Built** | `crawlers/samr.py` — 6 sections, jpaas CMS |
-| Xinhua (www.news.cn) | Yes | **Built** | `crawlers/xinhua.py` — 4 sections, JSON feeds |
-| MOE (www.moe.gov.cn) | Yes | Medium | AI in education policies |
-| PBoC (www.pbc.gov.cn) | Yes | Medium | Fintech/AI regulation |
-| TC260 (www.tc260.org.cn) | Yes | Medium | AI cybersecurity standards (AJAX API) |
-| CAICT (www.caict.ac.cn) | 412 from US | High | Critical AI think tank — needs droplet |
-| SASAC (www.sasac.gov.cn) | Timeout | Medium-High | Central enterprise AI+ initiative — needs droplet |
-| NPC law DB (flk.npc.gov.cn) | Yes (SPA) | Medium | AI Law draft when published |
-| Chengdu (www.chengdu.gov.cn) | No (DNS) | Medium | Major AI city — geo-blocked |
-| Anhui (www.ah.gov.cn) | No (WAF) | Medium | iFlytek hub — geo-blocked |
-| Sichuan (www.sc.gov.cn) | Partial | Low-Medium | Site structure changed, needs re-research |
-| Tianjin (www.tj.gov.cn) | No (403) | Low | Blocked from US |
+- Classification v2 prompt: doc_type (10 types) + policy_significance + references_json. Eval: 94%/88%
+- URL dedup: partial unique index on url, prevents cross-machine duplicates
+- Automated pipeline: both Mac + droplet push to Postgres independently, git auto-pull, 30-min timeouts
+- 11 new crawlers: ifeng fix, Zhejiang, NDA, Tsinghua AIIG, Chongqing, Wuhan, MOFCOM, SAMR, Xinhua
+- Daily manifests (9MB CSV) for data loss detection, body text backfill script
+- AI Chain expanded: 287 → 384+ docs (added 算力, 大模型, 生成式, 自动驾驶, 智能网联)
+- Paragraph breaks fixed on document pages
 
-## Backlog — Classification & Chain Improvements
+## Backlog — What To Do Next
 
+### In Progress
+| Task | Status | Notes |
+|------|--------|-------|
+| Re-classify all 125k docs with v2 prompt | Running on local Mac | ~$55, ~5 days at concurrency 2. New fields: doc_type, policy_significance, references_json |
+| Verify droplet cron | Waiting for next run (6 AM UTC) | First run with new code: git pull, timeouts, 7 new crawlers, auto-sync |
+
+### Website
 | Task | Priority | Notes |
 |------|----------|-------|
-| Classify ~12,300 new docs | High | Droplet auto-classifies on next cron (~$6). Or set DEEPSEEK_API_KEY locally |
-| ~~Fix classification prompt~~ | **Done** | v2 prompt: doc_type + policy_significance + references. Eval: 94%/88% accuracy |
-| ~~Add `doc_type` field~~ | **Done** | 10 types: original_policy, relay_notice, explainer, media_exclusive, etc. |
-| ~~Add `references` extraction~~ | **Done** | LLM extracts policy names/doc numbers into references_json |
-| Re-classify all 125k docs with v2 | In progress | ~$55, running on droplet |
-| Bidirectional citation chain | Medium | Currently outbound-only; inbound citations would enrich AI chain |
-| Build eval set + iterate prompt | Medium | 25-item eval set built, test before re-classifying |
+| Redesign: white bg, serif text, looser density | High | Move from dark terminal aesthetic to research publication style |
+| Surface doc_type + policy_significance in browse/search | Medium | Replace old importance/category filters with new v2 fields |
+| Show references_json on document pages | Medium | Clickable links to referenced policies |
+
+### Data Quality
+| Task | Priority | Notes |
+|------|----------|-------|
+| Bidirectional citation chain | Medium | Currently outbound-only; add inbound to show "which docs implement this policy?" |
+| Use references_json to supplement regex citations | Medium | LLM-extracted refs catch informal references regex misses (especially from media) |
+| SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj. Run on droplet |
+| Xinhua fortune + politics_read | Low | ~1,250 more docs. Run on droplet |
+
+### Source Expansion — Reachable
+| Task | Priority | Notes |
+|------|----------|-------|
+| MOE (www.moe.gov.cn) | Medium | AI in education policies |
+| PBoC (www.pbc.gov.cn) | Medium | Fintech/AI regulation |
+| TC260 (www.tc260.org.cn) | Medium | AI cybersecurity standards (AJAX API) |
+| CSRC (www.csrc.gov.cn) | Low | Capital market fintech pilots |
+
+### Source Expansion — Needs Droplet/China IP
+| Task | Priority | Notes |
+|------|----------|-------|
+| CAICT (www.caict.ac.cn) | High | Critical AI think tank, annual governance blue paper. 412 from US |
+| SASAC (www.sasac.gov.cn) | Medium-High | Central enterprise AI+ initiative. Timeout from US |
+| Chengdu (www.chengdu.gov.cn) | Medium | Major AI city, 100M yuan annual computing vouchers. DNS timeout |
+| Anhui (www.ah.gov.cn) | Medium | iFlytek hub, 1,078+ AI enterprises. WAF blocked |
+| NPC law DB (flk.npc.gov.cn) | Medium | AI Law draft when published. SPA needs API reverse-engineering |
 
 ## Classification
 
