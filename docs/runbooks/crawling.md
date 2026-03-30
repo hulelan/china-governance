@@ -161,6 +161,35 @@ All crawlers support `--stats`, `--list-only`, `--db <path>` flags.
 - **Scope:** ~57 items. WeChat-linked items (governance watch) store metadata only.
 - **admin_level:** `research` (not government).
 
+### SAMR (`crawlers/samr.py`)
+
+- **Technique:** jpaas CMS API (same as MOFCOM). `api-gateway/jpaas-publish-server/front/page/build/unit` with `pageId` per section.
+- **Sections:** zjwj (总局文件, ~2,072), zcjd (政策解读, ~472), xw_zj/xw_sj/xw_df (news, ~12,452), xw_mtjj (媒体聚焦, ~2,465)
+- **Known issue:** Connection resets from US on some pages — retries handle it. Consider running from droplet for full crawls.
+
+### MOFCOM (`crawlers/mofcom.py`)
+
+- **Technique:** Main site uses jpaas CMS API. Export control subdomain (`exportcontrol.mofcom.gov.cn`) uses separate JSON API (`getColumnList`).
+- **Sections:** zcfb (政策发布, ~2,291), ec_gndt/ec_gjdt/ec_zcfg/ec_gfgd/ec_cjwt (export control, ~671)
+- **AI relevance:** Export control sections cover AI chip restrictions, technology transfer.
+
+### Xinhua (`crawlers/xinhua.py`)
+
+- **Technique:** Static JSON datasource feeds (`ds_{id}.json`), up to 1,000 articles per feed. Body from HTML detail pages.
+- **Sections:** tech (~1,000), fortune (~1,000), politics_docs (~251), politics_read (~253)
+- **Note:** JSON feeds have no pagination — each returns the full recent article list. Run regularly for incremental capture.
+
+## Patterns and Learnings
+
+### Common CMS platforms
+- **jpaas** (MOFCOM, SAMR): `api-gateway/jpaas-publish-server/front/page/build/unit` with `webId`, `pageId`, `tplSetId`. Paginated HTML fragments.
+- **TRS CMS** (MOST, Chongqing, Wuhan): Static HTML, `createPageHTML()` JS pagination, body in `div.trs_editor_view`.
+- **JCMS** (Zhejiang depts): API at `/api-gateway/jpaas-publish-server`, but pagination broken from US (returns page 1 regardless).
+- **Standard gov CMS** (Beijing, Shanghai, Jiangsu): Static HTML with `index_N.html` pagination.
+
+### argparse gotcha
+The `--section` flag uses `choices=list(SECTIONS.keys())` with single value. Passing `--section A --section B` silently overwrites A with B. Run sections separately if you need multiple specific sections.
+
 ## Common Issues
 
 ### Database locked

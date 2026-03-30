@@ -6,9 +6,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 121,331 |
-| With body text | 110,820 (91.3%) |
-| Total sites | 57 |
+| Total documents | 123,054+ |
+| With body text | 112,375 (91.3%) |
+| Total sites | 59 |
 | Classified (English title/summary/category) | ~109,000 |
 | Unclassified | ~12,300 (new crawlers) |
 
@@ -17,7 +17,7 @@
 | Component | State |
 |-----------|-------|
 | Website | Live at chinagovernance.com (Railway) |
-| Database | PostgreSQL on Railway (synced 2026-03-30, 121,331 docs) |
+| Database | PostgreSQL on Railway (synced 2026-03-30, 123,054 docs) |
 | Local DB | SQLite `documents.db` (~1GB, source of truth) |
 | Local → Production gap | 0 (fully synced 2026-03-30) |
 
@@ -45,6 +45,7 @@
 | miit | MIIT (工信部) | `crawlers/miit.py` | 40 | 12 | API flaky from US, re-run from droplet |
 | nda | National Data Administration | `crawlers/nda.py` | 34 | 34 | 100% AI/data relevance |
 | mofcom | Ministry of Commerce | `crawlers/mofcom.py` | 2,948 | 2,756 | Export control + trade policy, 6 sections |
+| samr | SAMR (市场监管总局) | `crawlers/samr.py` | ~2,544 | TBD | 6 sections (policy + news + media focus). zjwj still crawling |
 
 ### gkmlpt Sites (Guangdong — `crawlers/gkmlpt.py`)
 
@@ -119,6 +120,7 @@
 | latepost | LatePost (晚点) | `crawlers/latepost.py` | 85 | 85 | 163.com channel page, ~85 recent articles |
 | 36kr | 36Kr (36氪) | `crawlers/36kr.py` | 10 | 10 | RSS feed, ~10-30 items per fetch |
 | ifeng | Phoenix/风声 | `crawlers/ifeng.py` | 100 | 100 | ishare API (account 7408), 10 pages of articles |
+| xinhua | Xinhua (新华社) | `crawlers/xinhua.py` | 1,251 | 1,243 | JSON datasource feeds — tech + politics sections |
 
 ## Crawlers — Research
 
@@ -130,8 +132,8 @@
 
 | Source | Reachable? | Priority | Notes |
 |--------|-----------|----------|-------|
-| SAMR (www.samr.gov.cn) | Yes | High | AI product safety + national standards. URL structure needs discovery |
-| Xinhua (www.news.cn) | Yes | High | State news agency, tech/policy section |
+| SAMR (www.samr.gov.cn) | Yes | **Built** | `crawlers/samr.py` — 6 sections, jpaas CMS |
+| Xinhua (www.news.cn) | Yes | **Built** | `crawlers/xinhua.py` — 4 sections, JSON feeds |
 | MOE (www.moe.gov.cn) | Yes | Medium | AI in education policies |
 | PBoC (www.pbc.gov.cn) | Yes | Medium | Fintech/AI regulation |
 | TC260 (www.tc260.org.cn) | Yes | Medium | AI cybersecurity standards (AJAX API) |
@@ -160,7 +162,7 @@
 |------|-------|
 | Model | DeepSeek API |
 | Classified | ~109,000 docs |
-| Unclassified | ~12,300 (new crawlers: MOFCOM, Chongqing, Wuhan, NDA, Tsinghua, etc.) |
+| Unclassified | ~14,000 (new crawlers: MOFCOM, SAMR, Xinhua, Chongqing, Wuhan, NDA, Tsinghua) |
 | Cost | ~$0.50/1k docs |
 | Concurrency | Keep at 2 (DeepSeek silently rate-limits with empty responses at higher) |
 | Command | `python3 scripts/classify_documents.py --concurrency 2` |
