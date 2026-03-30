@@ -32,6 +32,8 @@ python3 -m crawlers.mee                         # Ministry of Ecology & Environm
 python3 -m crawlers.beijing                     # Beijing (5 sections)
 python3 -m crawlers.shanghai                    # Shanghai (6 sections, year archives)
 python3 -m crawlers.jiangsu                     # Jiangsu (jpage API)
+python3 -m crawlers.zhejiang                    # Zhejiang (dept subdomains, IPv6)
+python3 -m crawlers.zhejiang --dept fzggw       # One department only
 
 python3 -m crawlers.sz_invest                   # Shenzhen non-gkmlpt (investment news, DRC, Longgang AI)
 python3 -m crawlers.sz_invest --section fgw_xwdt  # DRC news only
@@ -66,13 +68,16 @@ uvicorn web.app:app --reload --port 8000        # Start local dev server
 
 ### Deploy to Production
 ```bash
+# Normally handled automatically by daily_sync.sh on both Mac and droplet.
+# Manual commands if needed:
+
 # Incremental sync (fast — only inserts new docs, skips existing)
 DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
   python3 scripts/sqlite_to_postgres.py
 
-# Push classifications + new docs (no full rebuild needed)
+# Backfill body text for docs synced before bodies were fetched
 DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
-  python3 scripts/sync_classifications.py
+  python3 scripts/backfill_bodies.py
 
 # Full rebuild (slow — drops all tables, re-inserts everything. Rarely needed.)
 DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \

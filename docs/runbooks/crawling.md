@@ -24,6 +24,9 @@ python3 -m crawlers.miit                          # Ministry of Industry & IT
 python3 -m crawlers.beijing                       # Beijing
 python3 -m crawlers.shanghai                      # Shanghai
 python3 -m crawlers.jiangsu                       # Jiangsu
+python3 -m crawlers.zhejiang                      # Zhejiang (dept subdomains)
+python3 -m crawlers.zhejiang --dept fzggw         # One department only
+python3 -m crawlers.zhejiang --list-depts         # Show all departments
 
 # Non-gkmlpt Shenzhen
 python3 -m crawlers.sz_invest                     # Investment news, DRC, Longgang AI
@@ -118,8 +121,15 @@ All crawlers support `--stats`, `--list-only`, `--db <path>` flags.
 
 ### Phoenix/风声 (`crawlers/ifeng.py`)
 
-- **Technique:** Scrapes ifeng.com channel page for article URLs. Body from CSS-module hashed classes (`index_text_*`).
-- **TODO:** Column ID `14-35083` targets military articles. Need correct ID for 风声 domestic policy commentary.
+- **Technique:** ishare API (`shankapi.ifeng.com/season/ishare/getShareListData/7408/doc/{page}/...`). JSONP response with `base62Id` for article URLs. Body from CSS-module hashed classes (`index_text_*`).
+- **Scope:** ~100 articles across 10 API pages. Run regularly for incremental capture.
+
+### Zhejiang Departments (`crawlers/zhejiang.py`)
+
+- **Technique:** Static HTML listing pages + JCMS API. Department subdomains (fzggw, kjt, jxt, sft, sthjt) accessible from US over IPv6.
+- **Departments:** fzggw (发改委), kjt (科技厅), jxt (教育厅), sft (司法厅), sthjt (生态环境厅)
+- **Known limitation:** JCMS API pagination returns page 1 from US regardless of `pageNo`. Full corpus (~5,600 docs) requires Chinese IP. From US, captures ~226 docs (page 1 of each section).
+- **IPv6:** These sites are IPv6-only from the US. The crawler calls `allow_ipv6("zj.gov.cn")` to bypass the default IPv4 restriction.
 
 ## Common Issues
 
@@ -135,6 +145,38 @@ All crawlers support `--stats`, `--list-only`, `--db <path>` flags.
 **Cause:** US→China network latency.
 **Fix:** Run from the droplet (Singapore, lower latency to .gov.cn sites).
 
+### Duplicate documents from multiple machines
+**Cause:** `next_id()` generates MAX(id)+1 locally, so Mac and droplet can assign different IDs to the same document.
+**Fix:** A partial unique index on `url` (`WHERE url != ''`) prevents duplicates. `store_document()` catches the `IntegrityError` and silently skips. The Postgres schema has the same unique index. Safe to run the same crawler from multiple machines.
+
 ### Geo-blocked sites
 Sites behind WAF (Zhejiang main, Anhui, Hefei) or with DNS that doesn't resolve outside China.
 **Fix:** Run from a China-adjacent or China-based IP. The Singapore droplet works for some but not all.
+
+## Production Pipeline
+
+Both the Mac and the Singapore droplet run `scripts/daily_sync.sh` on a schedule. Each crawls what it can reach and pushes directly to Railway Postgres. No manual merge needed.
+
+### How it works
+1. **Droplet** (daily cron, 6 AM UTC): Runs `git pull`, crawls all universal sites + droplet-only sites (miit, most, zhejiang), classifies, pushes to Postgres.
+2. **Mac** (launchd, 7:03 AM ET): Crawls all universal sites + Mac-only sites (gd, huizhou, yangjiang), classifies, pushes to Postgres.
+3. **Dedup:** URL uniqueness index in both SQLite and Postgres prevents duplicates. `ON CONFLICT DO NOTHING` skips existing docs.
+4. **Postgres is source of truth.** Local SQLite files are caches for crawling.
+
+### Location constraints
+| Crawler | Mac (US) | Droplet (SG) |
+|---------|----------|-------------|
+| miit, most, zhejiang | Timeout/partial | Works |
+| gkmlpt (gd, huizhou, yangjiang) | Works | Connection reset |
+| Everything else | Works | Works |
+
+### Safety net
+- **Daily manifest** (`backups/manifest_YYYYMMDD.csv`): Lightweight snapshot of every doc's id, url, site_key, and body length (~9MB). Compared against yesterday's — if doc count drops, a warning appears in the log and Telegram report. Kept for 14 days.
+- **Body text backfill** (`scripts/backfill_bodies.py`): Runs after every Postgres sync. Pushes body text for docs that were originally synced before bodies were fetched.
+- **Post-sync verification**: Compares local SQLite count vs Postgres count. Warns on mismatch.
+- **Recovery**: Every doc has a URL — if data is lost, re-crawl from the manifest. No need for full DB backups.
+
+### Adding a new crawler
+1. Write the crawler module
+2. Add a `run_crawler` line to `daily_sync.sh` (in the universal, Mac-only, or droplet-only section)
+3. `git push` — the droplet auto-pulls before each cron run

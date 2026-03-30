@@ -43,8 +43,13 @@ BROWSER_UA = (
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 )
 
-# 风声 column listing page
-CHANNEL_URL = "https://news.ifeng.com/shanklist/14-35083-/"
+# 风声 uses ifeng's "大风号" media account system (account ID 7408).
+# The API returns JSONP with ~10 articles per page.
+FENGSHENG_API = (
+    "https://shankapi.ifeng.com/season/ishare/getShareListData"
+    "/7408/doc/{page}/ifengnewsh5/getListData"
+)
+MAX_PAGES = 10  # ~100 articles total
 
 
 def _parse_date(date_str: str) -> int:
@@ -57,15 +62,44 @@ def _parse_date(date_str: str) -> int:
         return 0
 
 
-def _discover_articles(html: str) -> list[dict]:
-    """Extract article URLs from the channel page."""
-    urls = re.findall(r'"(https?://news\.ifeng\.com/c/\w+)"', html)
+def _discover_articles() -> list[dict]:
+    """Fetch article URLs from the 风声 ishare API (paginated JSONP)."""
+    import json as _json
     seen = set()
     articles = []
-    for url in urls:
-        if url not in seen:
-            seen.add(url)
-            articles.append({"url": url})
+    for page in range(1, MAX_PAGES + 1):
+        url = FENGSHENG_API.format(page=page)
+        try:
+            raw = fetch(url, headers={"User-Agent": BROWSER_UA})
+        except Exception as e:
+            log.warning(f"  API page {page} failed: {e}")
+            break
+        # Strip JSONP wrapper: getListData({...})
+        m = re.search(r'getListData\((.+)\)\s*$', raw, re.DOTALL)
+        if not m:
+            log.warning(f"  Page {page}: unexpected JSONP format")
+            break
+        try:
+            data = _json.loads(m.group(1))
+        except _json.JSONDecodeError:
+            log.warning(f"  Page {page}: invalid JSON")
+            break
+        items = data.get("data", [])
+        if not items:
+            break
+        for item in items:
+            base62 = item.get("base62Id", "")
+            if not base62 or base62 in seen:
+                continue
+            seen.add(base62)
+            article_url = f"https://news.ifeng.com/c/{base62}"
+            articles.append({
+                "url": article_url,
+                "title": item.get("title", ""),
+                "date": item.get("newsTime", "")[:10],
+            })
+        log.info(f"  API page {page}: {len(items)} items")
+        time.sleep(REQUEST_DELAY)
     return articles
 
 
@@ -145,14 +179,8 @@ def crawl(conn, list_only: bool = False):
     """Crawl Phoenix/风声 articles."""
     store_site(conn, SITE_KEY, SITE_CFG)
 
-    log.info("Fetching 风声 channel page...")
-    try:
-        html = fetch(CHANNEL_URL, headers={"User-Agent": BROWSER_UA})
-    except Exception as e:
-        log.error(f"Failed to fetch channel page: {e}")
-        return 0
-
-    articles = _discover_articles(html)
+    log.info("Fetching 风声 articles via ishare API...")
+    articles = _discover_articles()
     log.info(f"Found {len(articles)} articles on channel page")
 
     if list_only:

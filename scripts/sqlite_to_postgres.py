@@ -169,6 +169,46 @@ def migrate(database_url: str, drop: bool = False):
     pg_cur.execute(SCHEMA)
     pg_conn.commit()
 
+    # URL uniqueness index — created separately because existing dups must be
+    # cleaned up first (the main schema would fail atomically otherwise).
+    try:
+        pg_cur.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_url "
+            "ON documents(url) WHERE url != ''"
+        )
+        pg_conn.commit()
+    except Exception:
+        pg_conn.rollback()
+        print("[migrate] Deduplicating URLs before creating unique index...")
+        # Identify duplicate IDs to remove (keep row with most body text, or lowest id)
+        dup_ids_query = """
+            SELECT d.id FROM documents d
+            INNER JOIN (
+                SELECT url, MAX(LENGTH(COALESCE(body_text_cn, ''))) AS max_len
+                FROM documents WHERE url != '' GROUP BY url HAVING COUNT(*) > 1
+            ) dups ON d.url = dups.url
+            WHERE LENGTH(COALESCE(d.body_text_cn, '')) < dups.max_len
+               OR (LENGTH(COALESCE(d.body_text_cn, '')) = dups.max_len
+                   AND d.id NOT IN (
+                       SELECT MIN(id) FROM documents WHERE url != '' GROUP BY url
+                   ))
+        """
+        # Clean up child tables first (FK constraints)
+        for child_table, col in [("document_changes", "document_id"),
+                                  ("subsidy_items", "document_id"),
+                                  ("citations", "source_id")]:
+            pg_cur.execute(f"DELETE FROM {child_table} WHERE {col} IN ({dup_ids_query})")
+            if pg_cur.rowcount:
+                print(f"  Removed {pg_cur.rowcount} orphaned rows from {child_table}")
+        pg_cur.execute(f"DELETE FROM documents WHERE id IN ({dup_ids_query})")
+        removed = pg_cur.rowcount
+        print(f"  Removed {removed} duplicate documents from Postgres")
+        pg_cur.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_url "
+            "ON documents(url) WHERE url != ''"
+        )
+        pg_conn.commit()
+
     if not drop:
         # Ensure Postgres has all columns that SQLite has (handles schema drift)
         pg_cur.execute("""

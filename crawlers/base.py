@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import re
 import socket
 import sqlite3
@@ -11,11 +12,31 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Force IPv4 — many .gov.cn sites are unreachable over IPv6 from overseas servers
+# Force IPv4 — many .gov.cn sites are unreachable over IPv6 from overseas servers.
+# Exception: some sites (e.g., *.zj.gov.cn) are IPv6-only from the US and need
+# the original getaddrinfo.  Crawlers that need IPv6 can call allow_ipv6().
 _orig_getaddrinfo = socket.getaddrinfo
-def _ipv4_getaddrinfo(host, port, family=0, *args, **kwargs):
+
+# Hosts that should bypass the IPv4 restriction (checked by suffix).
+_IPV6_HOSTS: set[str] = set()
+
+def _smart_getaddrinfo(host, port, family=0, *args, **kwargs):
+    # If the host matches an IPv6-allowed suffix, use the original resolver
+    if isinstance(host, str):
+        for suffix in _IPV6_HOSTS:
+            if host == suffix or host.endswith("." + suffix):
+                return _orig_getaddrinfo(host, port, family, *args, **kwargs)
     return _orig_getaddrinfo(host, port, socket.AF_INET, *args, **kwargs)
-socket.getaddrinfo = _ipv4_getaddrinfo
+
+socket.getaddrinfo = _smart_getaddrinfo
+
+
+def allow_ipv6(*hosts: str):
+    """Allow IPv6 resolution for the given host suffixes.
+
+    Example: allow_ipv6("zj.gov.cn") lets *.zj.gov.cn resolve via IPv6.
+    """
+    _IPV6_HOSTS.update(hosts)
 
 DB_PATH = Path(__file__).parent.parent / "documents.db"
 RAW_HTML_DIR = Path(__file__).parent.parent / "raw_html"
@@ -142,6 +163,41 @@ def init_db(db_path: Path = None) -> sqlite3.Connection:
         CREATE INDEX IF NOT EXISTS idx_doc_changes_detected ON document_changes(detected_at);
         CREATE INDEX IF NOT EXISTS idx_doc_changes_run ON document_changes(sync_run_id);
     """)
+
+    # URL uniqueness index — created separately because existing dups must be
+    # cleaned up first (executescript would fail atomically).
+    try:
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_url "
+            "ON documents(url) WHERE url != ''"
+        )
+    except sqlite3.IntegrityError:
+        # Duplicate URLs exist — remove them, keeping the row with the most body text.
+        # Temporarily disable FK checks so child rows (citations etc.) don't block.
+        log.info("Deduplicating URLs before creating unique index...")
+        conn.execute("PRAGMA foreign_keys=OFF")
+        conn.execute("""
+            DELETE FROM documents WHERE id IN (
+                SELECT d.id FROM documents d
+                INNER JOIN (
+                    SELECT url, MAX(LENGTH(COALESCE(body_text_cn, ''))) AS max_len
+                    FROM documents WHERE url != '' GROUP BY url HAVING COUNT(*) > 1
+                ) dups ON d.url = dups.url
+                WHERE LENGTH(COALESCE(d.body_text_cn, '')) < dups.max_len
+                   OR (LENGTH(COALESCE(d.body_text_cn, '')) = dups.max_len
+                       AND d.id NOT IN (
+                           SELECT MIN(id) FROM documents WHERE url != '' GROUP BY url
+                       ))
+            )
+        """)
+        removed = conn.execute("SELECT changes()").fetchone()[0]
+        log.info(f"  Removed {removed} duplicate documents")
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_url "
+            "ON documents(url) WHERE url != ''"
+        )
+        conn.execute("PRAGMA foreign_keys=ON")
+
     conn.commit()
     return conn
 
@@ -210,19 +266,23 @@ def store_document(conn: sqlite3.Connection, site_key: str, doc: dict):
 
     `doc` must have at minimum: id, title.
     All other fields are optional and default to empty/zero.
+    Uses ON CONFLICT(id) for id-based dedup, then catches URL uniqueness
+    violations to prevent duplicates when crawling from multiple machines.
     """
-    conn.execute(
-        """INSERT INTO documents (
-            id, site_key, category_id, title, document_number, identifier,
-            publisher, keywords, date_written, date_published, display_publish_time,
-            abstract, body_text_cn, classify_main_name, classify_genre_name,
-            classify_theme_name, url, post_url, is_expired, is_abolished,
-            attachments_json, relation, raw_html_path, crawl_timestamp
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(id) DO UPDATE SET
-            body_text_cn=CASE WHEN excluded.body_text_cn != '' THEN excluded.body_text_cn ELSE documents.body_text_cn END,
-            raw_html_path=CASE WHEN excluded.raw_html_path != '' THEN excluded.raw_html_path ELSE documents.raw_html_path END,
-            crawl_timestamp=excluded.crawl_timestamp""",
+    import sqlite3 as _sqlite3
+    try:
+        conn.execute(
+            """INSERT INTO documents (
+                id, site_key, category_id, title, document_number, identifier,
+                publisher, keywords, date_written, date_published, display_publish_time,
+                abstract, body_text_cn, classify_main_name, classify_genre_name,
+                classify_theme_name, url, post_url, is_expired, is_abolished,
+                attachments_json, relation, raw_html_path, crawl_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                body_text_cn=CASE WHEN excluded.body_text_cn != '' THEN excluded.body_text_cn ELSE documents.body_text_cn END,
+                raw_html_path=CASE WHEN excluded.raw_html_path != '' THEN excluded.raw_html_path ELSE documents.raw_html_path END,
+                crawl_timestamp=excluded.crawl_timestamp""",
         (
             doc["id"],
             site_key,
@@ -250,10 +310,15 @@ def store_document(conn: sqlite3.Connection, site_key: str, doc: dict):
             datetime.now(timezone.utc).isoformat(),
         ),
     )
+    except _sqlite3.IntegrityError:
+        # URL already exists (duplicate from another machine) — skip silently
+        pass
 
 
 def save_raw_html(site_key: str, doc_id, html: str) -> str:
     """Save raw HTML to filesystem. Returns relative path."""
+    if os.environ.get("SKIP_RAW_HTML"):
+        return ""
     site_dir = RAW_HTML_DIR / site_key
     site_dir.mkdir(parents=True, exist_ok=True)
     path = site_dir / f"{doc_id}.html"

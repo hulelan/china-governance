@@ -1,24 +1,26 @@
 # Project Status
 
-*Last updated: 2026-03-28*
+*Last updated: 2026-03-29*
 
 ## Corpus Summary
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 114,230 |
-| With body text | 104,318 (91.3%) |
-| Total sites | 48 |
+| Total documents | 112,923 |
+| With body text | 104,463 (92.5%) |
+| Total sites | 52 |
 | Classified (English title/summary/category) | ~110,000 |
+
+Note: Total dropped from 114,230 → 112,923 after URL dedup removed ~1,477 duplicate rows.
 
 ## Production
 
 | Component | State |
 |-----------|-------|
 | Website | Live at chinagovernance.com (Railway) |
-| Database | PostgreSQL on Railway (last synced 2026-03-27, 111,938 docs) |
+| Database | PostgreSQL on Railway (synced 2026-03-29, 112,923 docs) |
 | Local DB | SQLite `documents.db` (~1GB, source of truth) |
-| Local → Production gap | ~2,300 docs (new crawlers not yet synced) |
+| Local → Production gap | 0 (fully synced) |
 
 ## Droplet (Singapore, DigitalOcean)
 
@@ -27,7 +29,9 @@
 | IP | 152.42.184.25 |
 | Spec | 1 vCPU, 1GB RAM, 25GB disk |
 | Daily cron | 6 AM SGT: gkmlpt --sync, sz_invest |
-| TODO | Add MIIT, MOST, 36kr, latepost to daily cron |
+| Auto-sync | `daily_sync.sh` pushes to Postgres after each crawl run |
+| Auto-pull | `git pull` runs before each cron — new crawlers deploy automatically |
+| Raw HTML | Disabled via `SKIP_RAW_HTML=1` to save disk |
 
 ## Crawlers — Government
 
@@ -97,6 +101,7 @@
 | bj | Beijing Municipality | `crawlers/beijing.py` | 1,781 | 1,761 | — |
 | sh | Shanghai Municipality | `crawlers/shanghai.py` | 3,830 | 3,826 | — |
 | js | Jiangsu Province | `crawlers/jiangsu.py` | 1,041 | 1,041 | — |
+| zj | Zhejiang Province (Depts) | `crawlers/zhejiang.py` | ~226 | TBD | Page 1 only from US; full pagination needs Chinese IP |
 
 ### Non-gkmlpt Shenzhen
 
@@ -110,13 +115,13 @@
 |----------|------|---------|------|--------|-------|
 | latepost | LatePost (晚点) | `crawlers/latepost.py` | 85 | 85 | 163.com channel page, ~85 recent articles |
 | 36kr | 36Kr (36氪) | `crawlers/36kr.py` | 10 | 10 | RSS feed, ~10-30 items per fetch |
-| ifeng | Phoenix/风声 | `crawlers/ifeng.py` | 6 | 6 | Column ID needs fix (targets military, not 风声 policy commentary) |
+| ifeng | Phoenix/风声 | `crawlers/ifeng.py` | 100 | 100 | ishare API (account 7408), 10 pages of articles |
 
 ## Not Yet Built / Geo-Blocked
 
 | Source | Reachable from US? | Reachable from droplet? | Research done? | Notes |
 |--------|-------------------|------------------------|----------------|-------|
-| Zhejiang (www.zj.gov.cn) | No (WAF blocked) | Likely yes | Yes — JCMS API documented | Dept subdomains (fzggw, kjt) work from US |
+| Zhejiang (www.zj.gov.cn) | Dept subdomains only | Likely yes | Yes — crawler built | `crawlers/zhejiang.py` — 5 depts (fzggw, kjt, jxt, sft, sthjt), page 1 from US |
 | Anhui (www.ah.gov.cn) | No (QAX GeoBL) | Unknown | Yes — AJAX API documented | Custom CMS, POST /site/label/8888 |
 | Hefei (www.hefei.gov.cn) | No (DNS fail) | Unknown | Partial | Same CMS as Anhui likely |
 | NPC (www.npc.gov.cn) | No (timeout) | Unknown | No | — |

@@ -26,3 +26,4 @@ logs.*.json
 node_modules/
 random/
 raw_html/
+backups/

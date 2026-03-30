@@ -24,16 +24,53 @@ START_TIME=$(date +%s)
 
 log() { echo "[$(date +%H:%M:%S)] $1" | tee -a "$LOG"; }
 
+# Auto-update code on remote servers (not on dev Mac)
+if [ "$HOST" != "MacBookPro-298" ]; then
+    git pull --ff-only >> "$LOG" 2>&1 || echo "[$(date +%H:%M:%S)] git pull failed, continuing" >> "$LOG"
+fi
+
 send_telegram() {
     if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_USER_ID:-}" ]; then
         local msg="$1"
-        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+        # Try Markdown first, fall back to plain text if parsing fails
+        local result
+        result=$(curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=${TELEGRAM_USER_ID}" \
             -d "text=${msg}" \
-            -d "parse_mode=Markdown" \
-            > /dev/null 2>&1 || true
+            -d "parse_mode=Markdown" 2>&1)
+        if echo "$result" | grep -q '"ok":false'; then
+            # Markdown failed (underscores, unmatched asterisks, etc.) — send as plain text
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                -d "chat_id=${TELEGRAM_USER_ID}" \
+                -d "text=${msg}" \
+                > /dev/null 2>&1 || true
+        fi
     fi
 }
+
+# --- Pre-flight: Save manifest + check for regressions ---
+BACKUP_DIR="backups"
+mkdir -p "$BACKUP_DIR"
+MANIFEST="$BACKUP_DIR/manifest_$(date +%Y%m%d).csv"
+PREV_MANIFEST=$(ls -t "$BACKUP_DIR"/manifest_*.csv 2>/dev/null | head -1)
+if [ ! -f "$MANIFEST" ]; then
+    # Lightweight manifest: id, url, site_key, body_length (~1MB for 116k docs)
+    sqlite3 -csv documents.db \
+        "SELECT id, url, site_key, LENGTH(COALESCE(body_text_cn,'')) FROM documents ORDER BY id" \
+        > "$MANIFEST" 2>/dev/null
+    log "Manifest: $MANIFEST ($(wc -l < "$MANIFEST") docs)"
+    # Compare against previous manifest
+    if [ -n "$PREV_MANIFEST" ] && [ "$PREV_MANIFEST" != "$MANIFEST" ]; then
+        PREV_COUNT=$(wc -l < "$PREV_MANIFEST")
+        CURR_COUNT=$(wc -l < "$MANIFEST")
+        if [ "$CURR_COUNT" -lt "$PREV_COUNT" ]; then
+            LOST=$((PREV_COUNT - CURR_COUNT))
+            log "  WARNING: $LOST documents disappeared since $(basename "$PREV_MANIFEST")"
+        fi
+    fi
+    # Keep last 14 days of manifests (tiny files)
+    find "$BACKUP_DIR" -name "manifest_*.csv" -mtime +14 -delete 2>/dev/null || true
+fi
 
 # Snapshot doc count before crawl
 DOC_COUNT_BEFORE=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
@@ -48,21 +85,28 @@ CRAWL_ERRORS=""
 CRAWL_OK=0
 CRAWL_FAIL=0
 
+CRAWLER_TIMEOUT=1800  # 30 minutes per crawler (prevents pipeline stalls)
+
 run_crawler() {
     local name="$1"
     shift
     local before=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
     log "  Crawling $name..."
-    if "$@" >> "$LOG" 2>&1; then
+    if timeout "$CRAWLER_TIMEOUT" "$@" >> "$LOG" 2>&1; then
         local after=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
         local new=$((after - before))
         CRAWL_RESULTS="${CRAWL_RESULTS}✅ ${name}: +${new} docs\n"
         CRAWL_OK=$((CRAWL_OK + 1))
     else
+        local exit_code=$?
         local after=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
         local new=$((after - before))
-        CRAWL_RESULTS="${CRAWL_RESULTS}⚠️ ${name}: +${new} docs (errors)\n"
-        CRAWL_ERRORS="${CRAWL_ERRORS}${name}: $(tail -5 "$LOG" | grep -i 'error\|fail' | head -2)\n"
+        if [ "$exit_code" -eq 124 ]; then
+            CRAWL_RESULTS="${CRAWL_RESULTS}⏰ ${name}: +${new} docs (timeout after ${CRAWLER_TIMEOUT}s)\n"
+        else
+            CRAWL_RESULTS="${CRAWL_RESULTS}⚠️ ${name}: +${new} docs (errors)\n"
+        fi
+        CRAWL_ERRORS="${CRAWL_ERRORS}${name}: $(tail -5 "$LOG" | grep -i 'error\|fail\|timeout' | head -2)\n"
         CRAWL_FAIL=$((CRAWL_FAIL + 1))
     fi
 }
@@ -81,6 +125,24 @@ for crawler in beijing shanghai jiangsu; do
 done
 
 run_crawler "sz_invest (9 sections)" python3 -m crawlers.sz_invest
+
+# Media / tech news crawlers
+for crawler in 36kr latepost ifeng; do
+    run_crawler "$crawler" python3 -m crawlers.$crawler
+done
+
+# Location-specific crawlers
+if [ "$HOST" = "MacBookPro-298" ]; then
+    # These gkmlpt sites are unreachable from the Singapore droplet
+    for site in gd huizhou yangjiang; do
+        run_crawler "gkmlpt ($site)" python3 -m crawlers.gkmlpt --site $site
+    done
+else
+    # These APIs timeout from the US
+    for crawler in miit most zhejiang; do
+        run_crawler "$crawler" python3 -m crawlers.$crawler
+    done
+fi
 
 DOC_COUNT_AFTER_CRAWL=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
 NEW_DOCS=$((DOC_COUNT_AFTER_CRAWL - DOC_COUNT_BEFORE))
@@ -131,11 +193,34 @@ PG_SYNCED=false
 PG_DOC_COUNT=0
 if [ -n "${DATABASE_URL:-}" ]; then
     log "Phase 3: Syncing to Postgres..."
-    SYNC_OUTPUT=$(python3 scripts/sync_classifications.py 2>&1 | tee -a "$LOG")
-    PG_DOC_COUNT=$(echo "$SYNC_OUTPUT" | grep 'documents:' | grep -o '[0-9,]*' | tr -d ',' || echo "?")
+    # Push new docs
+    SYNC_OUTPUT=$(python3 scripts/sqlite_to_postgres.py 2>&1 | tee -a "$LOG")
+    # Backfill body text for docs that were synced before bodies were fetched
+    python3 scripts/backfill_bodies.py >> "$LOG" 2>&1 || true
+    # Verify: compare local vs Postgres doc counts
+    LOCAL_COUNT=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
+    PG_DOC_COUNT=$(python3 -c "
+import psycopg2, os
+c = psycopg2.connect(os.environ['DATABASE_URL'])
+r = c.cursor()
+r.execute('SELECT COUNT(*) FROM documents')
+print(r.fetchone()[0])
+c.close()
+" 2>/dev/null || echo "?")
+    if [ "$LOCAL_COUNT" != "$PG_DOC_COUNT" ]; then
+        log "  WARNING: Local ($LOCAL_COUNT) != Postgres ($PG_DOC_COUNT)"
+    else
+        log "  Verified: $PG_DOC_COUNT docs in Postgres (matches local)"
+    fi
     PG_SYNCED=true
 else
     log "Phase 3: SKIPPED (no DATABASE_URL)"
+fi
+
+# Weekly VACUUM to reclaim space (droplet only, Sundays)
+if [ "$(date +%u)" = "7" ] && [ "$HOST" != "MacBookPro-298" ]; then
+    log "Weekly VACUUM..."
+    sqlite3 documents.db "VACUUM;" >> "$LOG" 2>&1 || true
 fi
 
 # --- Phase 4: Generate report ---
