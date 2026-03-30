@@ -6,21 +6,20 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 112,923 |
-| With body text | 104,463 (92.5%) |
-| Total sites | 52 |
-| Classified (English title/summary/category) | ~110,000 |
-
-Note: Total dropped from 114,230 → 112,923 after URL dedup removed ~1,477 duplicate rows.
+| Total documents | 121,331 |
+| With body text | 110,820 (91.3%) |
+| Total sites | 57 |
+| Classified (English title/summary/category) | ~109,000 |
+| Unclassified | ~12,300 (new crawlers) |
 
 ## Production
 
 | Component | State |
 |-----------|-------|
 | Website | Live at chinagovernance.com (Railway) |
-| Database | PostgreSQL on Railway (synced 2026-03-29, 112,923 docs) |
+| Database | PostgreSQL on Railway (synced 2026-03-30, 121,331 docs) |
 | Local DB | SQLite `documents.db` (~1GB, source of truth) |
-| Local → Production gap | 0 (fully synced) |
+| Local → Production gap | 0 (fully synced 2026-03-30) |
 
 ## Droplet (Singapore, DigitalOcean)
 
@@ -45,6 +44,7 @@ Note: Total dropped from 114,230 → 112,923 after URL dedup removed ~1,477 dupl
 | most | MOST (科技部) | `crawlers/most.py` | 1,495 | 499 | tztg/kjbgz body extraction needs droplet re-run |
 | miit | MIIT (工信部) | `crawlers/miit.py` | 40 | 12 | API flaky from US, re-run from droplet |
 | nda | National Data Administration | `crawlers/nda.py` | 34 | 34 | 100% AI/data relevance |
+| mofcom | Ministry of Commerce | `crawlers/mofcom.py` | 2,948 | 2,756 | Export control + trade policy, 6 sections |
 
 ### gkmlpt Sites (Guangdong — `crawlers/gkmlpt.py`)
 
@@ -103,8 +103,8 @@ Note: Total dropped from 114,230 → 112,923 after URL dedup removed ~1,477 dupl
 | sh | Shanghai Municipality | `crawlers/shanghai.py` | 3,830 | 3,826 | — |
 | js | Jiangsu Province | `crawlers/jiangsu.py` | 1,041 | 1,041 | — |
 | zj | Zhejiang Province (Depts) | `crawlers/zhejiang.py` | ~226 | TBD | Page 1 only from US; full pagination needs Chinese IP |
-| cq | Chongqing Municipality | `crawlers/chongqing.py` | ~697 | TBD | 3 sections (normative docs + regulations) |
-| wuhan | Wuhan Municipality | `crawlers/wuhan.py` | ~999 | TBD | 5 sections (normative docs + AI portal) |
+| cq | Chongqing Municipality | `crawlers/chongqing.py` | 697 | 697 | 3 sections (normative docs + regulations) |
+| wuhan | Wuhan Municipality | `crawlers/wuhan.py` | 999 | 956 | 5 sections incl. AI industry portal |
 
 ### Non-gkmlpt Shenzhen
 
@@ -145,8 +145,8 @@ Note: Total dropped from 114,230 → 112,923 after URL dedup removed ~1,477 dupl
 | Item | Value |
 |------|-------|
 | Model | DeepSeek API |
-| Classified | ~110,000 docs |
-| Unclassified | ~4,000 (new crawls) |
+| Classified | ~109,000 docs |
+| Unclassified | ~12,300 (new crawlers: MOFCOM, Chongqing, Wuhan, NDA, Tsinghua, etc.) |
 | Cost | ~$0.50/1k docs |
 | Concurrency | Keep at 2 (DeepSeek silently rate-limits with empty responses at higher) |
 | Command | `python3 scripts/classify_documents.py --concurrency 2` |
