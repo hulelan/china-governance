@@ -19,6 +19,7 @@ python3 -m crawlers.mee                           # Ministry of Ecology & Enviro
 python3 -m crawlers.most                          # Ministry of Science & Technology
 python3 -m crawlers.cac                           # Cyberspace Administration of China
 python3 -m crawlers.miit                          # Ministry of Industry & IT
+python3 -m crawlers.nda                           # National Data Administration
 
 # Provinces
 python3 -m crawlers.beijing                       # Beijing
@@ -27,6 +28,11 @@ python3 -m crawlers.jiangsu                       # Jiangsu
 python3 -m crawlers.zhejiang                      # Zhejiang (dept subdomains)
 python3 -m crawlers.zhejiang --dept fzggw         # One department only
 python3 -m crawlers.zhejiang --list-depts         # Show all departments
+python3 -m crawlers.chongqing                     # Chongqing (3 sections)
+python3 -m crawlers.wuhan                         # Wuhan (5 sections + AI portal)
+
+# Research institutions
+python3 -m crawlers.tsinghua_aiig                 # Tsinghua AI Governance Institute
 
 # Non-gkmlpt Shenzhen
 python3 -m crawlers.sz_invest                     # Investment news, DRC, Longgang AI
@@ -130,6 +136,30 @@ All crawlers support `--stats`, `--list-only`, `--db <path>` flags.
 - **Departments:** fzggw (发改委), kjt (科技厅), jxt (教育厅), sft (司法厅), sthjt (生态环境厅)
 - **Known limitation:** JCMS API pagination returns page 1 from US regardless of `pageNo`. Full corpus (~5,600 docs) requires Chinese IP. From US, captures ~226 docs (page 1 of each section).
 - **IPv6:** These sites are IPv6-only from the US. The crawler calls `allow_ipv6("zj.gov.cn")` to bypass the default IPv4 restriction.
+
+### NDA (`crawlers/nda.py`)
+
+- **Technique:** Static HTML listing pages at `/sjj/zwgk/zcfb/list/index_pc_N.html`. JS pagination with `totalData` variable.
+- **Scope:** 34 policy documents — every one is about AI and data governance.
+- **Body:** `div.article`, document numbers extracted from body text.
+
+### Chongqing (`crawlers/chongqing.py`)
+
+- **Technique:** Static HTML with TRS CMS. Two listing formats: table rows (`zcwjk-list-c`) for normative docs, anchor links (`listpc-item`) for regulations.
+- **Sections:** szfbgt (市政府办公厅文件), szf (市政府文件), zfgz (政府规章)
+- **Scope:** ~697 documents across 3 sections.
+
+### Wuhan (`crawlers/wuhan.py`)
+
+- **Technique:** Mixed — main sections use JS `document.writeln()` rendering, AI portal uses standard HTML. Body in `div.trs_editor_view`.
+- **Sections:** gfxwj (规范性文件), szfwj (市政府文件), ai_zcwj/ai_gzdt/ai_gzcg (AI产业专栏)
+- **Scope:** ~999 documents. Has a dedicated AI industry portal at `/ztzl/25zt/rgzncy/`.
+
+### Tsinghua AIIG (`crawlers/tsinghua_aiig.py`)
+
+- **Technique:** University CMS, static HTML. 5 sections: annual reports, research reports, monographs, academic papers, governance watch.
+- **Scope:** ~57 items. WeChat-linked items (governance watch) store metadata only.
+- **admin_level:** `research` (not government).
 
 ## Common Issues
 

@@ -34,6 +34,10 @@ python3 -m crawlers.shanghai                    # Shanghai (6 sections, year arc
 python3 -m crawlers.jiangsu                     # Jiangsu (jpage API)
 python3 -m crawlers.zhejiang                    # Zhejiang (dept subdomains, IPv6)
 python3 -m crawlers.zhejiang --dept fzggw       # One department only
+python3 -m crawlers.chongqing                   # Chongqing (3 sections, 697 docs)
+python3 -m crawlers.wuhan                       # Wuhan (5 sections + AI portal)
+python3 -m crawlers.nda                         # National Data Administration (34 docs)
+python3 -m crawlers.tsinghua_aiig               # Tsinghua AI Governance Institute
 
 python3 -m crawlers.sz_invest                   # Shenzhen non-gkmlpt (investment news, DRC, Longgang AI)
 python3 -m crawlers.sz_invest --section fgw_xwdt  # DRC news only

@@ -44,6 +44,7 @@ Note: Total dropped from 114,230 → 112,923 after URL dedup removed ~1,477 dupl
 | cac | CAC (网信办) | `crawlers/cac.py` | 747 | 738 | — |
 | most | MOST (科技部) | `crawlers/most.py` | 1,495 | 499 | tztg/kjbgz body extraction needs droplet re-run |
 | miit | MIIT (工信部) | `crawlers/miit.py` | 40 | 12 | API flaky from US, re-run from droplet |
+| nda | National Data Administration | `crawlers/nda.py` | 34 | 34 | 100% AI/data relevance |
 
 ### gkmlpt Sites (Guangdong — `crawlers/gkmlpt.py`)
 
@@ -102,6 +103,8 @@ Note: Total dropped from 114,230 → 112,923 after URL dedup removed ~1,477 dupl
 | sh | Shanghai Municipality | `crawlers/shanghai.py` | 3,830 | 3,826 | — |
 | js | Jiangsu Province | `crawlers/jiangsu.py` | 1,041 | 1,041 | — |
 | zj | Zhejiang Province (Depts) | `crawlers/zhejiang.py` | ~226 | TBD | Page 1 only from US; full pagination needs Chinese IP |
+| cq | Chongqing Municipality | `crawlers/chongqing.py` | ~697 | TBD | 3 sections (normative docs + regulations) |
+| wuhan | Wuhan Municipality | `crawlers/wuhan.py` | ~999 | TBD | 5 sections (normative docs + AI portal) |
 
 ### Non-gkmlpt Shenzhen
 
@@ -116,6 +119,12 @@ Note: Total dropped from 114,230 → 112,923 after URL dedup removed ~1,477 dupl
 | latepost | LatePost (晚点) | `crawlers/latepost.py` | 85 | 85 | 163.com channel page, ~85 recent articles |
 | 36kr | 36Kr (36氪) | `crawlers/36kr.py` | 10 | 10 | RSS feed, ~10-30 items per fetch |
 | ifeng | Phoenix/风声 | `crawlers/ifeng.py` | 100 | 100 | ishare API (account 7408), 10 pages of articles |
+
+## Crawlers — Research
+
+| Site Key | Name | Crawler | Docs | Bodies | Notes |
+|----------|------|---------|------|--------|-------|
+| tsinghua_aiig | Tsinghua AIIG | `crawlers/tsinghua_aiig.py` | 57 | 43 | AI governance think tank, 14 WeChat links (no body) |
 
 ## Not Yet Built / Geo-Blocked
 
