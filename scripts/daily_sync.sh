@@ -116,7 +116,7 @@ log "Phase 1: Crawling..."
 
 run_crawler "gkmlpt (40+ sites)" python3 -m crawlers.gkmlpt --sync
 
-for crawler in gov ndrc mof mee cac nda; do
+for crawler in gov ndrc mof mee cac nda samr; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
@@ -130,7 +130,7 @@ run_crawler "tsinghua_aiig" python3 -m crawlers.tsinghua_aiig
 run_crawler "sz_invest (9 sections)" python3 -m crawlers.sz_invest
 
 # Media / tech news crawlers
-for crawler in 36kr latepost ifeng; do
+for crawler in 36kr latepost ifeng xinhua; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
