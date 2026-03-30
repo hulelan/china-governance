@@ -6,8 +6,8 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 123,054+ |
-| With body text | 112,375 (91.3%) |
+| Total documents | 125,126 |
+| With body text | ~114,400 (91.4%) |
 | Total sites | 59 |
 | Classified (English title/summary/category) | ~109,000 |
 | Unclassified | ~12,300 (new crawlers) |
@@ -17,7 +17,7 @@
 | Component | State |
 |-----------|-------|
 | Website | Live at chinagovernance.com (Railway) |
-| Database | PostgreSQL on Railway (synced 2026-03-30, 123,054 docs) |
+| Database | PostgreSQL on Railway (synced 2026-03-30, 125,126 docs) |
 | Local DB | SQLite `documents.db` (~1GB, source of truth) |
 | Local → Production gap | 0 (fully synced 2026-03-30) |
 
@@ -45,7 +45,7 @@
 | miit | MIIT (工信部) | `crawlers/miit.py` | 40 | 12 | API flaky from US, re-run from droplet |
 | nda | National Data Administration | `crawlers/nda.py` | 34 | 34 | 100% AI/data relevance |
 | mofcom | Ministry of Commerce | `crawlers/mofcom.py` | 2,948 | 2,756 | Export control + trade policy, 6 sections |
-| samr | SAMR (市场监管总局) | `crawlers/samr.py` | ~2,544 | TBD | 6 sections (policy + news + media focus). zjwj still crawling |
+| samr | SAMR (市场监管总局) | `crawlers/samr.py` | 2,544 | 2,356 | 6 sections (policy + news + media focus) |
 
 ### gkmlpt Sites (Guangdong — `crawlers/gkmlpt.py`)
 
@@ -162,7 +162,7 @@
 |------|-------|
 | Model | DeepSeek API |
 | Classified | ~109,000 docs |
-| Unclassified | ~14,000 (new crawlers: MOFCOM, SAMR, Xinhua, Chongqing, Wuhan, NDA, Tsinghua) |
+| Unclassified | ~16,000 (new crawlers: MOFCOM, SAMR, Xinhua, Chongqing, Wuhan, NDA, Tsinghua) |
 | Cost | ~$0.50/1k docs |
 | Concurrency | Keep at 2 (DeepSeek silently rate-limits with empty responses at higher) |
 | Command | `python3 scripts/classify_documents.py --concurrency 2` |
