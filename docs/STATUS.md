@@ -128,17 +128,31 @@
 
 ## Not Yet Built / Geo-Blocked
 
-| Source | Reachable from US? | Reachable from droplet? | Research done? | Notes |
-|--------|-------------------|------------------------|----------------|-------|
-| Zhejiang (www.zj.gov.cn) | Dept subdomains only | Likely yes | Yes — crawler built | `crawlers/zhejiang.py` — 5 depts (fzggw, kjt, jxt, sft, sthjt), page 1 from US |
-| Anhui (www.ah.gov.cn) | No (QAX GeoBL) | Unknown | Yes — AJAX API documented | Custom CMS, POST /site/label/8888 |
-| Hefei (www.hefei.gov.cn) | No (DNS fail) | Unknown | Partial | Same CMS as Anhui likely |
-| NPC (www.npc.gov.cn) | No (timeout) | Unknown | No | — |
-| SASAC (www.sasac.gov.cn) | No (timeout) | Unknown | No | — |
-| DRC (www.drc.gov.cn) | Yes | Yes | Partial | GBK encoded, no crawler built |
-| CAICT (www.caict.ac.cn) | 412 error | Unknown | No | Needs specific headers |
-| Caixin (www.caixin.com) | Yes | Yes | No | Paywalled |
-| Yicai (www.yicai.com) | Yes | Yes | No | — |
+| Source | Reachable? | Priority | Notes |
+|--------|-----------|----------|-------|
+| SAMR (www.samr.gov.cn) | Yes | High | AI product safety + national standards. URL structure needs discovery |
+| Xinhua (www.news.cn) | Yes | High | State news agency, tech/policy section |
+| MOE (www.moe.gov.cn) | Yes | Medium | AI in education policies |
+| PBoC (www.pbc.gov.cn) | Yes | Medium | Fintech/AI regulation |
+| TC260 (www.tc260.org.cn) | Yes | Medium | AI cybersecurity standards (AJAX API) |
+| CAICT (www.caict.ac.cn) | 412 from US | High | Critical AI think tank — needs droplet |
+| SASAC (www.sasac.gov.cn) | Timeout | Medium-High | Central enterprise AI+ initiative — needs droplet |
+| NPC law DB (flk.npc.gov.cn) | Yes (SPA) | Medium | AI Law draft when published |
+| Chengdu (www.chengdu.gov.cn) | No (DNS) | Medium | Major AI city — geo-blocked |
+| Anhui (www.ah.gov.cn) | No (WAF) | Medium | iFlytek hub — geo-blocked |
+| Sichuan (www.sc.gov.cn) | Partial | Low-Medium | Site structure changed, needs re-research |
+| Tianjin (www.tj.gov.cn) | No (403) | Low | Blocked from US |
+
+## Backlog — Classification & Chain Improvements
+
+| Task | Priority | Notes |
+|------|----------|-------|
+| Classify ~12,300 new docs | High | Droplet auto-classifies on next cron (~$6). Or set DEEPSEEK_API_KEY locally |
+| Fix classification prompt | High | 3 biases: media=always low, explainers=overrated, district promo=overrated |
+| Add `doc_type` field | Medium | policy / explainer / media_report / personnel / procurement |
+| Add `references` extraction | Medium | LLM extracts policy names from media (regex misses informal refs) |
+| Bidirectional citation chain | Medium | Currently outbound-only; inbound citations would enrich AI chain |
+| Build eval set + iterate prompt | Medium | 25-item eval set built, test before re-classifying |
 
 ## Classification
 
