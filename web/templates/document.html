@@ -205,7 +205,7 @@
                 </div>
                 <div class="p-4 text-sm leading-relaxed max-h-[80vh] overflow-y-auto">
                     {% if doc.body_text_cn %}
-                        <div class="whitespace-pre-wrap">{{ doc.body_text_cn }}</div>
+                        <div class="leading-7">{{ doc.body_text_cn|e|replace('\n', '<br>\n')|safe }}</div>
                     {% else %}
                         <div class="text-gray-600 italic">Body text not yet extracted. <a href="{{ doc.url }}" target="_blank">View on original site</a></div>
                     {% endif %}
