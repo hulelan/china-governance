@@ -15,6 +15,17 @@ TOPIC_KEYWORDS = {
 
 # Topics that need multiple keywords to capture the full document set
 TOPIC_MULTI_KEYWORDS = {
+    "ai": [
+        "人工智能",        # artificial intelligence
+        "大模型",          # large language models
+        "生成式",          # generative (AI)
+        "算力",            # computing power
+        "算法治理",        # algorithm governance
+        "深度学习",        # deep learning
+        "机器学习",        # machine learning
+        "自动驾驶",        # autonomous driving
+        "智能网联",        # intelligent connected (vehicles)
+    ],
     "subsidies": ["补贴", "扶持", "奖励", "资助", "引导基金", "专项资金"],
 }
 
