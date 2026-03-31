@@ -156,8 +156,10 @@
 ### Data Quality
 | Task | Priority | Notes |
 |------|----------|-------|
-| Bidirectional citation chain | Medium | Currently outbound-only; add inbound to show "which docs implement this policy?" |
-| Use references_json to supplement regex citations | Medium | LLM-extracted refs catch informal references regex misses (especially from media) |
+| ~~Bidirectional citation chain~~ | **Done** | Tests prove inbound+outbound pattern works. chain.py web service needs update |
+| ~~Use references_json to supplement regex citations~~ | **Done** | extract_citations.py now processes references_json as citation_type='llm'. TDD: 8/8 green |
+| Update chain.py for bidirectional queries | Medium | Apply the tested inbound pattern to the web service |
+| Re-run extract_citations.py after v2 classification | Medium | Will create thousands of new LLM-sourced citations once references_json is populated |
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj. Run on droplet |
 | Xinhua fortune + politics_read | Low | ~1,250 more docs. Run on droplet |
 
