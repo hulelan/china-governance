@@ -32,20 +32,22 @@
 | Auto-pull | `git pull` runs before each cron — new crawlers deploy automatically |
 | Raw HTML | Disabled via `SKIP_RAW_HTML=1` to save disk |
 
-## Crawlers — Government
+## Crawlers — Central Government
 
-| Site Key | Name | Crawler | Docs | Bodies | Issues |
-|----------|------|---------|------|--------|--------|
-| gov | State Council | `crawlers/gov.py` | 1,005 | 1,005 | — |
-| ndrc | NDRC | `crawlers/ndrc.py` | 1,617 | 907 | — |
-| mof | Ministry of Finance | `crawlers/mof.py` | 919 | 912 | — |
-| mee | Ministry of Ecology | `crawlers/mee.py` | 563 | 494 | — |
-| cac | CAC (网信办) | `crawlers/cac.py` | 747 | 738 | — |
-| most | MOST (科技部) | `crawlers/most.py` | 1,495 | 499 | tztg/kjbgz body extraction needs droplet re-run |
-| miit | MIIT (工信部) | `crawlers/miit.py` | 40 | 12 | API flaky from US, re-run from droplet |
-| nda | National Data Administration | `crawlers/nda.py` | 34 | 34 | 100% AI/data relevance |
-| mofcom | Ministry of Commerce | `crawlers/mofcom.py` | 2,948 | 2,756 | Export control + trade policy, 6 sections |
-| samr | SAMR (市场监管总局) | `crawlers/samr.py` | 2,544 | 2,356 | 6 sections (policy + news + media focus) |
+*Local DB numbers. Droplet may have more (e.g., MIIT: 2,232 docs on droplet vs 103 local).*
+
+| Site Key | Name | Docs | Bodies | Body% | Notes |
+|----------|------|------|--------|-------|-------|
+| mofcom | Ministry of Commerce | 2,940 | 1,281 | 44% | 6 sections. Export control bodies still crawling |
+| samr | SAMR (市场监管总局) | 2,544 | 2,356 | 93% | 6 sections. ~15k more in news sections (not yet crawled) |
+| ndrc | NDRC | 1,617 | 907 | 56% | Body backfill needed |
+| most | MOST (科技部) | 1,495 | 499 | 33% | tztg/kjbgz sections need droplet re-run |
+| gov | State Council | 1,013 | 1,013 | 100% | — |
+| mof | Ministry of Finance | 919 | 912 | 99% | — |
+| cac | CAC (网信办) | 747 | 738 | 99% | — |
+| mee | Ministry of Ecology | 563 | 494 | 88% | — |
+| miit | MIIT (工信部) | 103 | 26 | 25% | Droplet has 2,232/592. API too slow for full crawl; daily cron adds ~30/day |
+| nda | National Data Administration | 34 | 34 | 100% | Every doc is AI/data policy |
 
 ### gkmlpt Sites (Guangdong — `crawlers/gkmlpt.py`)
 
@@ -96,37 +98,28 @@
 | szpsq | Pingshan District | 1,640 | 1,279 |
 | szyantian | Yantian District | 0 | 0 |
 
-### Other Provinces
+### Other Provinces/Municipalities
 
-| Site Key | Name | Crawler | Docs | Bodies | Issues |
-|----------|------|---------|------|--------|--------|
-| bj | Beijing Municipality | `crawlers/beijing.py` | 1,781 | 1,761 | — |
-| sh | Shanghai Municipality | `crawlers/shanghai.py` | 3,830 | 3,826 | — |
-| js | Jiangsu Province | `crawlers/jiangsu.py` | 1,041 | 1,041 | — |
-| zj | Zhejiang Province (Depts) | `crawlers/zhejiang.py` | ~226 | TBD | Page 1 only from US; full pagination needs Chinese IP |
-| cq | Chongqing Municipality | `crawlers/chongqing.py` | 697 | 697 | 3 sections (normative docs + regulations) |
-| wuhan | Wuhan Municipality | `crawlers/wuhan.py` | 999 | 956 | 5 sections incl. AI industry portal |
+| Site Key | Name | Docs | Bodies | Body% | Notes |
+|----------|------|------|--------|-------|-------|
+| gd | Guangdong Province | 6,179 | 6,017 | 97% | — |
+| sh | Shanghai | 3,830 | 3,826 | 100% | — |
+| bj | Beijing | 1,781 | 1,761 | 99% | — |
+| js | Jiangsu | 1,041 | 1,041 | 100% | — |
+| wuhan | Wuhan | 999 | 958 | 96% | 5 sections incl. AI industry portal |
+| cq | Chongqing | 697 | 697 | 100% | — |
+| zj | Zhejiang (Depts) | 70 | 47 | 67% | Page 1 only from US; full pagination needs Chinese IP |
+| sz_invest | Shenzhen Investment | 1,731 | 1,727 | 100% | — |
 
-### Non-gkmlpt Shenzhen
+### Media & Research
 
-| Site Key | Name | Crawler | Docs | Bodies |
-|----------|------|---------|------|--------|
-| sz_invest | Shenzhen Investment Portal | `crawlers/sz_invest.py` | 1,731 | 1,727 |
-
-## Crawlers — Media
-
-| Site Key | Name | Crawler | Docs | Bodies | Notes |
-|----------|------|---------|------|--------|-------|
-| latepost | LatePost (晚点) | `crawlers/latepost.py` | 85 | 85 | 163.com channel page, ~85 recent articles |
-| 36kr | 36Kr (36氪) | `crawlers/36kr.py` | 10 | 10 | RSS feed, ~10-30 items per fetch |
-| ifeng | Phoenix/风声 | `crawlers/ifeng.py` | 100 | 100 | ishare API (account 7408), 10 pages of articles |
-| xinhua | Xinhua (新华社) | `crawlers/xinhua.py` | 1,251 | 1,243 | JSON datasource feeds — tech + politics sections |
-
-## Crawlers — Research
-
-| Site Key | Name | Crawler | Docs | Bodies | Notes |
-|----------|------|---------|------|--------|-------|
-| tsinghua_aiig | Tsinghua AIIG | `crawlers/tsinghua_aiig.py` | 57 | 43 | AI governance think tank, 14 WeChat links (no body) |
+| Site Key | Name | Docs | Bodies | Body% | Notes |
+|----------|------|------|--------|-------|-------|
+| xinhua | Xinhua (新华社) | 1,251 | 1,243 | 99% | tech + politics. fortune/politics_read sections not yet crawled |
+| ifeng | Phoenix/风声 | 100 | 100 | 100% | — |
+| latepost | LatePost (晚点) | 85 | 85 | 100% | ~85 recent articles, no pagination |
+| tsinghua_aiig | Tsinghua AIIG | 57 | 43 | 75% | 14 WeChat links (no body) |
+| 36kr | 36Kr (36氪) | 10 | 10 | 100% | RSS feed, ~10-30 items per fetch |
 
 ## Recent Completions (2026-03-29/30)
 
