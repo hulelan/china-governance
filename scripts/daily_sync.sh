@@ -120,7 +120,7 @@ for crawler in gov ndrc mof mee cac nda samr; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
-for crawler in beijing shanghai jiangsu chongqing wuhan; do
+for crawler in beijing shanghai jiangsu chongqing wuhan suzhou; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
@@ -130,7 +130,7 @@ run_crawler "tsinghua_aiig" python3 -m crawlers.tsinghua_aiig
 run_crawler "sz_invest (9 sections)" python3 -m crawlers.sz_invest
 
 # Media / tech news crawlers
-for crawler in 36kr latepost ifeng xinhua; do
+for crawler in 36kr latepost ifeng xinhua people; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
@@ -142,7 +142,7 @@ if [ "$HOST" = "MacBookPro-298" ]; then
     done
 else
     # These APIs timeout from the US
-    for crawler in miit most zhejiang; do
+    for crawler in miit most zhejiang hangzhou; do
         run_crawler "$crawler" python3 -m crawlers.$crawler
     done
 fi
