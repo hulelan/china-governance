@@ -65,20 +65,22 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
 
     print(f"Lookup tables: {len(docnum_to_id)} doc numbers, {len(title_to_doc)} titles, {len(site_levels)} sites")
 
-    # --- Fetch all documents with body text ---
+    # --- Fetch all documents with body text OR references_json ---
     docs = conn.execute(
-        """SELECT id, site_key, title, document_number, body_text_cn
+        """SELECT id, site_key, title, document_number, body_text_cn, references_json
            FROM documents
-           WHERE body_text_cn IS NOT NULL AND LENGTH(body_text_cn) > 20"""
+           WHERE (body_text_cn IS NOT NULL AND LENGTH(body_text_cn) > 20)
+              OR (references_json IS NOT NULL AND references_json != '' AND references_json != '[]')"""
     ).fetchall()
-    print(f"Documents with body text: {len(docs)}")
+    print(f"Documents with body text or references: {len(docs)}")
 
     # --- Extract citations ---
     citations = []  # list of (source_id, target_ref, target_id, citation_type, source_level, target_level)
     stats = Counter()
 
-    for doc_id, site_key, title, doc_number, body in docs:
+    for doc_id, site_key, title, doc_number, body, refs_json in docs:
         source_level = get_source_level(doc_number, site_levels.get(site_key, ""))
+        body = body or ""
 
         # Formal 文号 citations
         formal_refs = REF_PATTERN.findall(body)
@@ -122,13 +124,51 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
             if target_id:
                 stats["named_resolved"] += 1
 
+        # LLM-extracted references (from references_json column)
+        if refs_json and refs_json not in ('', '[]'):
+            try:
+                import json as _json
+                llm_refs = _json.loads(refs_json)
+            except (ValueError, TypeError):
+                llm_refs = []
+            for ref_name in llm_refs:
+                if not isinstance(ref_name, str) or len(ref_name) < 4:
+                    continue
+                # Self-reference check: skip only if ref is essentially the same as the title.
+                # Don't skip when the ref is PART of the title (common for explainers:
+                # "一图读懂《X》" references X, which is a substring of the title but NOT self)
+                if ref_name == title or title == ref_name:
+                    continue
+                # Skip if already found by regex
+                if ref_name in seen_formal or ref_name in seen_named:
+                    continue
+
+                # Try to resolve to corpus by title match
+                target_id = None
+                for db_title, (db_id, db_site_key) in title_to_doc.items():
+                    if len(db_title) >= 8 and (ref_name in db_title or db_title in ref_name):
+                        target_id = db_id
+                        break
+
+                # Also try matching against document numbers
+                if not target_id and ref_name in docnum_to_id:
+                    target_id = docnum_to_id[ref_name]
+
+                target_level = classify_named_ref_level(ref_name)
+                citations.append((doc_id, ref_name, target_id, "llm", source_level, target_level))
+                stats["llm"] += 1
+                if target_id:
+                    stats["llm_resolved"] += 1
+
     elapsed = time.time() - t0
 
     # --- Report ---
     print(f"\nExtracted {len(citations)} citations in {elapsed:.1f}s:")
     print(f"  Formal (文号): {stats['formal']} ({stats['formal_resolved']} resolved)")
     print(f"  Named  (《》): {stats['named']} ({stats['named_resolved']} resolved)")
-    print(f"  Total resolved: {stats['formal_resolved'] + stats['named_resolved']}/{len(citations)}")
+    print(f"  LLM  (refs):   {stats['llm']} ({stats['llm_resolved']} resolved)")
+    total_resolved = stats['formal_resolved'] + stats['named_resolved'] + stats['llm_resolved']
+    print(f"  Total resolved: {total_resolved}/{len(citations)}")
 
     # Level breakdown
     level_counts = Counter()
