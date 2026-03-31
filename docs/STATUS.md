@@ -136,8 +136,10 @@
 ### In Progress
 | Task | Status | Notes |
 |------|--------|-------|
-| Re-classify all 125k docs with v2 prompt | Running on local Mac | ~$55, ~5 days at concurrency 2. New fields: doc_type, policy_significance, references_json |
-| Verify droplet cron | Waiting for next run (6 AM UTC) | First run with new code: git pull, timeouts, 7 new crawlers, auto-sync |
+| Re-classify all 125k docs with v2 prompt | Running on Mac (23k/125k done) | ~$55, ~4 days remaining. New fields: doc_type, policy_significance, references_json |
+| Citation extraction | **Done** | 227,516 citations (was 159k). 14,265 new LLM-sourced, 6,927 resolved |
+| People's Daily + Suzhou crawl | Running to temp DBs | ~5,300 new docs, merge when done |
+| Verify droplet cron | Waiting for 6 AM UTC tomorrow | First run with all 14 new crawlers, auto-sync |
 
 ### Website
 | Task | Priority | Notes |
@@ -153,7 +155,7 @@
 | ~~Use references_json to supplement regex citations~~ | **Done** | extract_citations.py now processes references_json as citation_type='llm' |
 | Translate high-significance docs to English | High | Full body translation for original_policy + policy_significance=high docs. DeepSeek or dedicated translation API |
 | Update chain.py for bidirectional queries | Medium | Apply the tested inbound pattern to the web service |
-| Re-run extract_citations.py | In progress | Running now; will re-run again after v2 classification completes all 125k |
+| ~~Re-run extract_citations.py~~ | **Done** | 227,516 citations (was 159k). 14,265 LLM-sourced, 6,927 resolved. Re-run after classification finishes |
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj. Run on droplet |
 | Xinhua fortune + politics_read | Low | ~1,250 more docs. Run on droplet |
 
@@ -162,7 +164,7 @@
 |------|----------|-------|
 | ~~Basic domain scanner~~ | **Done** | Checks ~50 gov.cn domains for reachability + AI terms. Found 8 new sources |
 | Web search discovery | High | Use Baidu/Google for `site:gov.cn 人工智能 政策` to find domains we don't know about |
-| Citation-gap discovery | High | Find unresolved citations → identify which sites host the missing policies → prioritize crawling |
+| ~~Citation-gap discovery~~ | **Done** | `discover_citation_gaps.py` — 111k unresolved refs. Top gaps: Guangzhou (3,415), Zhongshan (3,082), NPC laws (1,922) |
 | Periodic discovery runs | Medium | Run discover_sources.py in daily pipeline to detect new AI content on known sites |
 
 ### Source Expansion — Discovered via `scripts/discover_sources.py`
@@ -170,15 +172,15 @@
 **Reachable from US, AI content detected:**
 | Site | Level | AI Hits | Priority | Notes |
 |------|-------|---------|----------|-------|
-| Heilongjiang (www.hlj.gov.cn) | Province | 10 | High | Strong AI content signal |
-| Suzhou (www.suzhou.gov.cn) | Municipal | 10 | High | Major tech/manufacturing city |
-| Hangzhou (www.hangzhou.gov.cn) | Municipal | 4 | High | Alibaba HQ, AI hub |
+| Heilongjiang (www.hlj.gov.cn) | Province | 10 | High | Strong AI content signal. Not yet built |
+| ~~Suzhou (www.suzhou.gov.cn)~~ | Municipal | 10 | **Built** | `crawlers/suzhou.py` — JSON API, 4,831 docs. Crawling to temp DB |
+| ~~Hangzhou (www.hangzhou.gov.cn)~~ | Municipal | 4 | **Built** | `crawlers/hangzhou.py` — JCMS, page 1 from US, droplet-only for full |
 | CAS (www.cas.cn) | Central | 2 | Medium | Chinese Academy of Sciences |
 | Jiangxi (www.jx.gov.cn) | Province | 2 | Low | |
 | Jinan (www.jinan.gov.cn) | Municipal | 2 | Low | Shandong capital |
 | Shandong (www.shandong.gov.cn) | Province | 2 | Low | |
 | SASAC (www.sasac.gov.cn) | Central | 1 | Medium-High | Now reachable (was timing out) |
-| People's Daily (www.people.com.cn) | Media | — | High | 人民日报 — official CPC newspaper, major policy signal source |
+| ~~People's Daily (www.people.com.cn)~~ | Media | — | **Built** | `crawlers/people.py` — 17 editorial sections. Crawling to temp DB |
 
 **Reachable, not yet scanned for AI:**
 MOE, PBoC, TC260, CSRC, NBS, Sichuan, Nanjing, Ningbo, Qingdao, Wuxi, Xi'an, Xiamen, Zhengzhou + others (33 total reachable)
