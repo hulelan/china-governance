@@ -184,6 +184,7 @@
 | Jinan (www.jinan.gov.cn) | Municipal | 2 | Low | Shandong capital |
 | Shandong (www.shandong.gov.cn) | Province | 2 | Low | |
 | SASAC (www.sasac.gov.cn) | Central | 1 | Medium-High | Now reachable (was timing out) |
+| People's Daily (www.people.com.cn) | Media | — | High | 人民日报 — official CPC newspaper, major policy signal source |
 
 **Reachable, not yet scanned for AI:**
 MOE, PBoC, TC260, CSRC, NBS, Sichuan, Nanjing, Ningbo, Qingdao, Wuxi, Xi'an, Xiamen, Zhengzhou + others (33 total reachable)
