@@ -187,8 +187,18 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
         print("\n[DRY RUN — nothing saved]")
         return
 
-    # --- Save ---
-    conn.execute("DELETE FROM citations")  # clear before re-insert
+    # --- Save (with retry for busy DB) ---
+    for save_attempt in range(5):
+        try:
+            conn.execute("DELETE FROM citations")
+            break
+        except sqlite3.OperationalError:
+            wait = (save_attempt + 1) * 10
+            print(f"  DB locked, retrying in {wait}s (attempt {save_attempt + 1}/5)...")
+            time.sleep(wait)
+    else:
+        print("ERROR: Could not acquire write lock after 5 attempts")
+        return
     conn.executemany(
         """INSERT OR REPLACE INTO citations
            (source_id, target_ref, target_id, citation_type, source_level, target_level)
