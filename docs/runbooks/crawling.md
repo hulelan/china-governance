@@ -187,6 +187,20 @@ All crawlers support `--stats`, `--list-only`, `--db <path>` flags.
 - **JCMS** (Zhejiang depts): API at `/api-gateway/jpaas-publish-server`, but pagination broken from US (returns page 1 regardless).
 - **Standard gov CMS** (Beijing, Shanghai, Jiangsu): Static HTML with `index_N.html` pagination.
 
+### Media/news crawlers: coverage depth
+
+Media crawlers only capture **recent articles** — there's no deep archive. The daily cron accumulates history over time, but we'll never have articles from before we started crawling unless archive pages exist.
+
+| Source | Depth per run | Bottleneck | Expand history? |
+|--------|--------------|------------|----------------|
+| People's Daily | ~60-80 articles/section (~6 months) | Listing pagination (2 pages default, use `--pages N` for more) | Yes — some sections have 10+ pages |
+| Xinhua | ~1,000/section (~4-5 months) | JSON feed capped at 1,000 items | No — hard cap |
+| LatePost | ~85 articles (~3 months) | Single channel page, no pagination | No |
+| 36Kr | ~10-30 articles (~1 week) | RSS feed, latest only | No |
+| ifeng/风声 | ~100 articles (~6 months) | 10 API pages max | Could increase MAX_PAGES |
+
+**Government crawlers** are different — they have full pagination and capture the complete corpus. Media crawlers are "catch what's current and run regularly."
+
 ### argparse gotcha
 The `--section` flag uses `choices=list(SECTIONS.keys())` with single value. Passing `--section A --section B` silently overwrites A with B. Run sections separately if you need multiple specific sections.
 
