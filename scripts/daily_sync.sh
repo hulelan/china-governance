@@ -120,7 +120,7 @@ for crawler in gov ndrc mof mee cac nda samr; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
-for crawler in beijing shanghai jiangsu chongqing wuhan suzhou; do
+for crawler in beijing shanghai jiangsu chongqing wuhan suzhou heilongjiang; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
