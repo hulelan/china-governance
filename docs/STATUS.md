@@ -151,6 +151,7 @@
 |------|----------|-------|
 | ~~Bidirectional citation chain~~ | **Done** | Tests prove inbound+outbound pattern works (TDD: 8/8 green) |
 | ~~Use references_json to supplement regex citations~~ | **Done** | extract_citations.py now processes references_json as citation_type='llm' |
+| Translate high-significance docs to English | High | Full body translation for original_policy + policy_significance=high docs. DeepSeek or dedicated translation API |
 | Update chain.py for bidirectional queries | Medium | Apply the tested inbound pattern to the web service |
 | Re-run extract_citations.py | In progress | Running now; will re-run again after v2 classification completes all 125k |
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj. Run on droplet |
