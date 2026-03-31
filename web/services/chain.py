@@ -92,8 +92,8 @@ async def get_chain(db, keyword: str, topic: str = None):
             "admin_level": level,
         })
 
-    # Get citations FROM these source documents
-    citation_rows = await db.fetch(
+    # --- Outbound: citations FROM keyword-matching docs ---
+    outbound_rows = await db.fetch(
         """SELECT c.target_ref, c.target_id, c.citation_type, c.target_level,
                    c.source_id,
                    d.title as target_title, d.site_key as target_site_key,
@@ -104,10 +104,41 @@ async def get_chain(db, keyword: str, topic: str = None):
         source_ids
     )
 
+    # --- Inbound: docs that CITE keyword-matching docs ---
+    inbound_rows = await db.fetch(
+        """SELECT c.source_id, d.title, d.document_number, d.site_key,
+                  d.date_published, d.publisher, s.admin_level
+           FROM citations c
+           JOIN documents d ON d.id = c.source_id
+           JOIN sites s ON s.site_key = d.site_key
+           WHERE c.target_id = ANY($1::int[])
+             AND c.source_id != ALL($1::int[])""",
+        source_ids
+    )
+
+    # Add inbound docs to source_docs_by_level (they implement/reference the topic)
+    inbound_ids = set()
+    for r in inbound_rows:
+        doc_id = r["source_id"]
+        if doc_id in inbound_ids:
+            continue
+        inbound_ids.add(doc_id)
+        level = level_map.get(r["admin_level"], r["admin_level"]) or "unknown"
+        source_docs_by_level[level].append({
+            "id": doc_id,
+            "title": r["title"],
+            "document_number": r["document_number"],
+            "site_key": r["site_key"],
+            "date_published": r["date_published"],
+            "publisher": r["publisher"],
+            "admin_level": level,
+            "inbound": True,  # flag: this doc cites a keyword doc, not matching keyword itself
+        })
+
     # Group referenced policies by target_ref, counting citations
     ref_counts = Counter()
     ref_info = {}
-    for r in citation_rows:
+    for r in outbound_rows:
         ref = r["target_ref"]
         ref_counts[ref] += 1
         if ref not in ref_info:
@@ -139,15 +170,18 @@ async def get_chain(db, keyword: str, topic: str = None):
         hierarchy[level] = [p for p in referenced_policies if p["level"] == level]
 
     # Stats
-    formal_count = sum(1 for r in citation_rows if r["citation_type"] == "formal")
-    named_count = sum(1 for r in citation_rows if r["citation_type"] == "named")
+    formal_count = sum(1 for r in outbound_rows if r["citation_type"] == "formal")
+    named_count = sum(1 for r in outbound_rows if r["citation_type"] == "named")
+    llm_count = sum(1 for r in outbound_rows if r["citation_type"] == "llm")
 
     return {
         "topic": keyword,
         "stats": {
             "source_documents": len(source_ids),
+            "inbound_documents": len(inbound_ids),
             "formal_citations": formal_count,
             "named_citations": named_count,
+            "llm_citations": llm_count,
             "unique_referenced_policies": len(referenced_policies),
         },
         "hierarchy": hierarchy,
