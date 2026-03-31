@@ -156,12 +156,20 @@
 ### Data Quality
 | Task | Priority | Notes |
 |------|----------|-------|
-| ~~Bidirectional citation chain~~ | **Done** | Tests prove inbound+outbound pattern works. chain.py web service needs update |
-| ~~Use references_json to supplement regex citations~~ | **Done** | extract_citations.py now processes references_json as citation_type='llm'. TDD: 8/8 green |
+| ~~Bidirectional citation chain~~ | **Done** | Tests prove inbound+outbound pattern works (TDD: 8/8 green) |
+| ~~Use references_json to supplement regex citations~~ | **Done** | extract_citations.py now processes references_json as citation_type='llm' |
 | Update chain.py for bidirectional queries | Medium | Apply the tested inbound pattern to the web service |
-| Re-run extract_citations.py after v2 classification | Medium | Will create thousands of new LLM-sourced citations once references_json is populated |
+| Re-run extract_citations.py | In progress | Running now; will re-run again after v2 classification completes all 125k |
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj. Run on droplet |
 | Xinhua fortune + politics_read | Low | ~1,250 more docs. Run on droplet |
+
+### Source Discovery (`scripts/discover_sources.py`)
+| Task | Priority | Notes |
+|------|----------|-------|
+| ~~Basic domain scanner~~ | **Done** | Checks ~50 gov.cn domains for reachability + AI terms. Found 8 new sources |
+| Web search discovery | High | Use Baidu/Google for `site:gov.cn 人工智能 政策` to find domains we don't know about |
+| Citation-gap discovery | High | Find unresolved citations → identify which sites host the missing policies → prioritize crawling |
+| Periodic discovery runs | Medium | Run discover_sources.py in daily pipeline to detect new AI content on known sites |
 
 ### Source Expansion — Discovered via `scripts/discover_sources.py`
 
