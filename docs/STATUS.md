@@ -163,22 +163,27 @@
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj. Run on droplet |
 | Xinhua fortune + politics_read | Low | ~1,250 more docs. Run on droplet |
 
-### Source Expansion — Reachable
-| Task | Priority | Notes |
-|------|----------|-------|
-| MOE (www.moe.gov.cn) | Medium | AI in education policies |
-| PBoC (www.pbc.gov.cn) | Medium | Fintech/AI regulation |
-| TC260 (www.tc260.org.cn) | Medium | AI cybersecurity standards (AJAX API) |
-| CSRC (www.csrc.gov.cn) | Low | Capital market fintech pilots |
+### Source Expansion — Discovered via `scripts/discover_sources.py`
 
-### Source Expansion — Needs Droplet/China IP
-| Task | Priority | Notes |
-|------|----------|-------|
-| CAICT (www.caict.ac.cn) | High | Critical AI think tank, annual governance blue paper. 412 from US |
-| SASAC (www.sasac.gov.cn) | Medium-High | Central enterprise AI+ initiative. Timeout from US |
-| Chengdu (www.chengdu.gov.cn) | Medium | Major AI city, 100M yuan annual computing vouchers. DNS timeout |
-| Anhui (www.ah.gov.cn) | Medium | iFlytek hub, 1,078+ AI enterprises. WAF blocked |
-| NPC law DB (flk.npc.gov.cn) | Medium | AI Law draft when published. SPA needs API reverse-engineering |
+**Reachable from US, AI content detected:**
+| Site | Level | AI Hits | Priority | Notes |
+|------|-------|---------|----------|-------|
+| Heilongjiang (www.hlj.gov.cn) | Province | 10 | High | Strong AI content signal |
+| Suzhou (www.suzhou.gov.cn) | Municipal | 10 | High | Major tech/manufacturing city |
+| Hangzhou (www.hangzhou.gov.cn) | Municipal | 4 | High | Alibaba HQ, AI hub |
+| CAS (www.cas.cn) | Central | 2 | Medium | Chinese Academy of Sciences |
+| Jiangxi (www.jx.gov.cn) | Province | 2 | Low | |
+| Jinan (www.jinan.gov.cn) | Municipal | 2 | Low | Shandong capital |
+| Shandong (www.shandong.gov.cn) | Province | 2 | Low | |
+| SASAC (www.sasac.gov.cn) | Central | 1 | Medium-High | Now reachable (was timing out) |
+
+**Reachable, not yet scanned for AI:**
+MOE, PBoC, TC260, CSRC, NBS, Sichuan, Nanjing, Ningbo, Qingdao, Wuxi, Xi'an, Xiamen, Zhengzhou + others (33 total reachable)
+
+**Unreachable from US (19 sites):**
+Anhui, Chengdu, Hebei, Henan, Hubei, Gansu, Guangxi, Inner Mongolia, Tianjin, Xinjiang, Changsha, Hefei + others
+
+**Discovery tool:** `python3 scripts/discover_sources.py --quick` (reachability) or without flag (deep scan with AI term search)
 
 ## Classification
 
