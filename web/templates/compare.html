@@ -1,50 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Compare: {{ doc.title[:40] }} — CNGOV{% endblock %}
+{% block title %}Compare: {{ doc.title[:40] }} — ChinaGovernance{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <div class="flex items-center justify-between mb-2 text-xs">
+    <div class="flex items-center justify-between mb-3 text-sm">
         <div>
             <a href="/document/{{ doc.id }}">&larr; Back to document</a>
-            <span class="text-gray-500 ml-2">{{ doc.title[:80] }}</span>
+            <span class="text-gray-400 ml-2">{{ doc.title[:80] }}</span>
         </div>
         {% if doc.url %}
-        <a href="{{ doc.url }}" target="_blank" class="text-gray-400 hover:text-white">Open original site &rarr;</a>
+        <a href="{{ doc.url }}" target="_blank" class="text-gray-400 hover:text-gray-700">Open original site &rarr;</a>
         {% endif %}
     </div>
 
     {% if doc.raw_html_sha256 %}
-    <div class="text-xs text-gray-500 mb-2 mono">
+    <div class="text-xs text-gray-400 mb-3 mono">
         SHA-256: {{ doc.raw_html_sha256 }}
     </div>
     {% endif %}
 
-    <div class="grid grid-cols-2 gap-2" style="height: calc(100vh - 120px);">
-        <!-- Left: our extracted text -->
-        <div class="bg-gray-900 border border-gray-800 rounded flex flex-col">
-            <div class="px-3 py-1.5 border-b border-gray-800 text-xs font-semibold text-gray-400 bg-gray-900">
-                Extracted Text
-            </div>
-            <div class="p-3 text-sm overflow-y-auto flex-1 leading-relaxed">
+    <div class="grid grid-cols-2 gap-4" style="height: calc(100vh - 140px);">
+        <div class="card flex flex-col">
+            <div class="card-header">Extracted Text</div>
+            <div class="p-4 text-sm overflow-y-auto flex-1 leading-relaxed">
                 {% if doc.body_text_cn %}
-                <div class="whitespace-pre-wrap">{{ doc.body_text_cn }}</div>
+                <div class="whitespace-pre-wrap font-zh text-gray-800">{{ doc.body_text_cn }}</div>
                 {% else %}
-                <div class="text-gray-600 italic">No body text extracted</div>
+                <div class="text-gray-400 italic">No body text extracted</div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Right: archived raw HTML -->
-        <div class="bg-gray-900 border border-gray-800 rounded flex flex-col">
-            <div class="px-3 py-1.5 border-b border-gray-800 text-xs font-semibold text-gray-400 bg-gray-900">
-                Archived Raw HTML
-            </div>
+        <div class="card flex flex-col">
+            <div class="card-header">Archived Raw HTML</div>
             {% if doc.raw_html_path %}
             <iframe src="/raw_html/{{ doc.site_key }}/{{ doc.id }}.html"
                     sandbox="allow-same-origin"
-                    class="flex-1 bg-white rounded-b"
+                    class="flex-1 bg-white rounded-b-lg"
                     style="min-height: 0;"></iframe>
             {% else %}
-            <div class="p-3 text-gray-600 italic text-sm">
+            <div class="p-4 text-gray-400 italic text-sm">
                 No archived HTML available for this document.
                 {% if doc.url %}
                 <br><a href="{{ doc.url }}" target="_blank">View on original government site</a>

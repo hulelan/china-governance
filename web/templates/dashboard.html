@@ -1,60 +1,62 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — CNGOV{% endblock %}
+{% block title %}Dashboard — ChinaGovernance{% endblock %}
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 {% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <div class="grid grid-cols-3 gap-3">
+    <h1 class="font-serif text-xl text-gray-900 mb-5">Dashboard</h1>
+
+    <div class="grid grid-cols-3 gap-5">
         <!-- Timeline chart -->
-        <div class="bg-gray-900 border border-gray-800 rounded">
-            <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Documents by Year</div>
-            <div class="p-3" style="height:250px;">
+        <div class="card">
+            <div class="card-header">Documents by Year</div>
+            <div class="p-4" style="height:260px;">
                 <canvas id="timeline-chart"></canvas>
             </div>
         </div>
 
         <!-- Citation hierarchy -->
-        <div class="bg-gray-900 border border-gray-800 rounded">
-            <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Citation Hierarchy</div>
-            <div class="p-3" style="height:250px;">
+        <div class="card">
+            <div class="card-header">Citation Hierarchy</div>
+            <div class="p-4" style="height:260px;">
                 <canvas id="hierarchy-chart"></canvas>
             </div>
         </div>
 
         <!-- Coverage by site -->
-        <div class="bg-gray-900 border border-gray-800 rounded">
-            <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Body Text Coverage</div>
-            <div class="p-3" style="height:250px;">
+        <div class="card">
+            <div class="card-header">Body Text Coverage</div>
+            <div class="p-4" style="height:260px;">
                 <canvas id="coverage-chart"></canvas>
             </div>
         </div>
 
         <!-- Top cited documents -->
-        <div class="col-span-2 bg-gray-900 border border-gray-800 rounded">
-            <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Top Cited Documents</div>
-            <table class="w-full dense-table text-xs">
+        <div class="col-span-2 card overflow-hidden">
+            <div class="card-header">Top Cited Documents</div>
+            <table class="data-table">
                 <thead>
-                    <tr class="text-gray-500 border-b border-gray-800">
-                        <th class="text-left">#</th>
-                        <th class="text-left">Document Number</th>
-                        <th class="text-left">Level</th>
+                    <tr>
+                        <th>#</th>
+                        <th>Document Number</th>
+                        <th>Level</th>
                         <th class="text-right">Citations</th>
-                        <th class="text-left">Title (if resolved)</th>
+                        <th>Title (if resolved)</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for ref in top_cited %}
-                    <tr class="border-b border-gray-800/50">
-                        <td class="text-gray-600">{{ loop.index }}</td>
-                        <td class="mono level-{{ ref.level }}">{{ ref.docnum }}</td>
+                    <tr>
+                        <td class="text-gray-400 text-xs">{{ loop.index }}</td>
+                        <td class="mono level-{{ ref.level }} text-sm">{{ ref.docnum }}</td>
                         <td><span class="badge badge-{{ ref.level }}">{{ ref.level }}</span></td>
-                        <td class="text-right mono">{{ ref.count }}</td>
-                        <td class="text-gray-400 truncate max-w-xs">
+                        <td class="text-right mono font-medium">{{ ref.count }}</td>
+                        <td class="text-gray-500 truncate max-w-xs text-sm">
                             {% if ref.resolved %}
                             <a href="/document/{{ ref.resolved_id }}">{{ ref.title[:60] }}</a>
                             {% else %}
-                            <span class="text-gray-600">—</span>
+                            <span class="text-gray-300">&mdash;</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -64,28 +66,30 @@
         </div>
 
         <!-- Site coverage table -->
-        <div class="bg-gray-900 border border-gray-800 rounded">
-            <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sites</div>
-            <table class="w-full dense-table text-xs">
+        <div class="card overflow-hidden">
+            <div class="card-header">Sites</div>
+            <div class="max-h-[400px] overflow-y-auto">
+            <table class="data-table">
                 <thead>
-                    <tr class="text-gray-500 border-b border-gray-800">
-                        <th class="text-left">Site</th>
+                    <tr>
+                        <th>Site</th>
                         <th class="text-right">Docs</th>
-                        <th class="text-right">%Body</th>
+                        <th class="text-right">Body %</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for s in sites %}
-                    <tr class="border-b border-gray-800/50">
+                    <tr>
                         <td><a href="/browse?site={{ s.site_key }}">{{ s.name[:25] }}</a></td>
-                        <td class="text-right mono">{{ "{:,}".format(s.doc_count) }}</td>
-                        <td class="text-right mono {{ 'text-green-400' if s.body_count / s.doc_count > 0.5 else 'text-gray-500' if s.doc_count > 0 else '' }}">
+                        <td class="text-right mono text-gray-500">{{ "{:,}".format(s.doc_count) }}</td>
+                        <td class="text-right mono {{ 'text-green-600' if s.body_count / s.doc_count > 0.8 else 'text-amber-600' if s.body_count / s.doc_count > 0.5 else 'text-gray-400' if s.doc_count > 0 else '' }}">
                             {% if s.doc_count > 0 %}{{ "{:.0f}%".format(s.body_count / s.doc_count * 100) }}{% endif %}
                         </td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>
@@ -93,44 +97,41 @@
 {% block scripts %}
 <script>
 const chartDefaults = {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-    scales:{x:{ticks:{color:'#6b7280',font:{size:10}},grid:{color:'#1f2937'}},
-            y:{ticks:{color:'#6b7280',font:{size:10}},grid:{color:'#1f2937'}}}};
+    scales:{x:{ticks:{color:'#9ca3af',font:{size:10}},grid:{color:'#f3f4f6'}},
+            y:{ticks:{color:'#9ca3af',font:{size:10}},grid:{color:'#f3f4f6'}}}};
 
-// Timeline
 new Chart(document.getElementById('timeline-chart'), {
     type: 'bar',
     data: {
         labels: {{ timeline_labels|tojson }},
-        datasets: [{data: {{ timeline_data|tojson }}, backgroundColor: '#3b82f6'}]
+        datasets: [{data: {{ timeline_data|tojson }}, backgroundColor: '#3b82f6', borderRadius: 3}]
     },
     options: chartDefaults
 });
 
-// Citation hierarchy
 new Chart(document.getElementById('hierarchy-chart'), {
     type: 'doughnut',
     data: {
         labels: {{ hierarchy_labels|tojson }},
         datasets: [{
             data: {{ hierarchy_data|tojson }},
-            backgroundColor: ['#ef4444','#f97316','#3b82f6','#22c55e','#6b7280']
+            backgroundColor: ['#dc2626','#ea580c','#2563eb','#16a34a','#9ca3af']
         }]
     },
     options: {responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{position:'right',labels:{color:'#9ca3af',font:{size:10}}}}}
+        plugins:{legend:{position:'right',labels:{color:'#6b7280',font:{size:11},padding:12}}}}
 });
 
-// Coverage
 new Chart(document.getElementById('coverage-chart'), {
     type: 'bar',
     data: {
         labels: {{ coverage_labels|tojson }},
         datasets: [
-            {label:'With body', data: {{ coverage_body|tojson }}, backgroundColor:'#22c55e'},
-            {label:'No body', data: {{ coverage_no_body|tojson }}, backgroundColor:'#374151'}
+            {label:'With body', data: {{ coverage_body|tojson }}, backgroundColor:'#16a34a', borderRadius: 3},
+            {label:'No body', data: {{ coverage_no_body|tojson }}, backgroundColor:'#e5e7eb', borderRadius: 3}
         ]
     },
-    options: {...chartDefaults, plugins:{legend:{display:true,labels:{color:'#9ca3af',font:{size:10}}}},
+    options: {...chartDefaults, plugins:{legend:{display:true,labels:{color:'#6b7280',font:{size:11}}}},
         scales:{...chartDefaults.scales, x:{...chartDefaults.scales.x, stacked:true}, y:{...chartDefaults.scales.y, stacked:true}}}
 });
 </script>

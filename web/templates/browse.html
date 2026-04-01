@@ -1,25 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Browse — CNGOV{% endblock %}
+{% block title %}Browse — ChinaGovernance{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <div class="flex gap-4">
+    <div class="flex gap-6">
         <!-- Filter sidebar -->
         <div class="w-56 flex-shrink-0">
-            <form method="get" action="/browse" class="bg-gray-900 border border-gray-800 rounded text-xs">
-                <div class="px-3 py-2 border-b border-gray-800 font-semibold text-gray-400 uppercase tracking-wider">Filters</div>
+            <form method="get" action="/browse" class="card text-sm">
+                <div class="card-header">Filters</div>
 
-                <div class="p-2 border-b border-gray-800">
-                    <label class="text-gray-500 block mb-1">Source</label>
-                    <select name="source_type" class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white">
+                <div class="p-3 border-b border-gray-100">
+                    <label class="text-gray-400 text-xs block mb-1">Source</label>
+                    <select name="source_type" class="w-full text-sm">
                         <option value="">All sources</option>
                         <option value="government" {{ 'selected' if filters.source_type == 'government' }}>Government</option>
                         <option value="media" {{ 'selected' if filters.source_type == 'media' }}>Media</option>
                     </select>
                 </div>
 
-                <div class="p-2 border-b border-gray-800">
-                    <label class="text-gray-500 block mb-1">Site</label>
-                    <select name="site" class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white">
+                <div class="p-3 border-b border-gray-100">
+                    <label class="text-gray-400 text-xs block mb-1">Site</label>
+                    <select name="site" class="w-full text-sm">
                         <option value="">All sites</option>
                         {% for s in sites %}
                         <option value="{{ s.site_key }}" {{ 'selected' if filters.site == s.site_key }}>{{ s.name }} ({{ "{:,}".format(s.doc_count) }})</option>
@@ -27,9 +27,9 @@
                     </select>
                 </div>
 
-                <div class="p-2 border-b border-gray-800">
-                    <label class="text-gray-500 block mb-1">Category</label>
-                    <select name="category" class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white">
+                <div class="p-3 border-b border-gray-100">
+                    <label class="text-gray-400 text-xs block mb-1">Category</label>
+                    <select name="category" class="w-full text-sm">
                         <option value="">All categories</option>
                         {% for cat in categories %}
                         <option value="{{ cat.classify_main_name }}" {{ 'selected' if filters.category == cat.classify_main_name }}>{{ cat.classify_main_name }}</option>
@@ -37,9 +37,9 @@
                     </select>
                 </div>
 
-                <div class="p-2 border-b border-gray-800">
-                    <label class="text-gray-500 block mb-1">Year</label>
-                    <select name="year" class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white">
+                <div class="p-3 border-b border-gray-100">
+                    <label class="text-gray-400 text-xs block mb-1">Year</label>
+                    <select name="year" class="w-full text-sm">
                         <option value="">All years</option>
                         {% for y in range(2026, 2014, -1) %}
                         <option value="{{ y }}" {{ 'selected' if filters.year == y|string }}>{{ y }}</option>
@@ -47,86 +47,88 @@
                     </select>
                 </div>
 
-                <div class="p-2 border-b border-gray-800">
-                    <label class="text-gray-500 block mb-1">Date range</label>
+                <div class="p-3 border-b border-gray-100">
+                    <label class="text-gray-400 text-xs block mb-1">Date range</label>
                     <input type="date" name="date_start" value="{{ filters.date_start }}"
-                           class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white mb-1" style="color-scheme:dark">
+                           class="w-full text-sm mb-1">
                     <input type="date" name="date_end" value="{{ filters.date_end }}"
-                           class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white" style="color-scheme:dark">
+                           class="w-full text-sm">
                 </div>
 
-                <div class="p-2 border-b border-gray-800">
-                    <label class="text-gray-500 block mb-1">Importance</label>
-                    <select name="importance" class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white">
+                <div class="p-3 border-b border-gray-100">
+                    <label class="text-gray-400 text-xs block mb-1">Importance</label>
+                    <select name="importance" class="w-full text-sm">
                         <option value="">All</option>
-                        <option value="high" {{ 'selected' if filters.importance == 'high' }}>🔴 High</option>
-                        <option value="medium" {{ 'selected' if filters.importance == 'medium' }}>🟡 Medium</option>
-                        <option value="low" {{ 'selected' if filters.importance == 'low' }}>⚪ Low</option>
+                        <option value="high" {{ 'selected' if filters.importance == 'high' }}>High</option>
+                        <option value="medium" {{ 'selected' if filters.importance == 'medium' }}>Medium</option>
+                        <option value="low" {{ 'selected' if filters.importance == 'low' }}>Low</option>
                     </select>
                 </div>
 
-                <div class="p-2 border-b border-gray-800">
-                    <label class="flex items-center gap-2 text-gray-400">
-                        <input type="checkbox" name="has_docnum" value="1" {{ 'checked' if filters.has_docnum }} class="rounded bg-gray-800 border-gray-600">
+                <div class="p-3 border-b border-gray-100">
+                    <label class="flex items-center gap-2 text-gray-600 text-sm">
+                        <input type="checkbox" name="has_docnum" value="1" {{ 'checked' if filters.has_docnum }} class="rounded border-gray-300">
                         Has 文号 only
                     </label>
                 </div>
 
-                <div class="p-2">
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs">Apply</button>
+                <div class="p-3">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium">Apply</button>
                 </div>
             </form>
         </div>
 
         <!-- Results -->
         <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between mb-2 text-xs text-gray-500">
+            <div class="flex items-center justify-between mb-3 text-sm text-gray-500">
                 <span>{{ "{:,}".format(total) }} documents{% if filters.site or filters.category or filters.year %} (filtered){% endif %}</span>
                 <span>Page {{ page }} of {{ ((total - 1) // 50 + 1) }}</span>
             </div>
 
-            <table class="w-full dense-table text-xs bg-gray-900 border border-gray-800 rounded">
+            <div class="card overflow-hidden">
+            <table class="data-table">
                 <thead>
-                    <tr class="text-gray-500 border-b border-gray-800">
+                    <tr>
                         <th class="w-4"></th>
-                        <th class="text-left">Title</th>
-                        <th class="text-left w-36">文号</th>
-                        <th class="text-left w-28">Site</th>
-                        <th class="text-left w-24">Date</th>
+                        <th>Title</th>
+                        <th class="w-36">文号</th>
+                        <th class="w-28">Site</th>
+                        <th class="w-24">Date</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for doc in documents %}
-                    <tr class="border-b border-gray-800/50">
-                        <td class="text-center">{% if doc.importance == 'high' %}<span class="text-red-400" title="High importance">●</span>{% elif doc.importance == 'medium' %}<span class="text-yellow-500" title="Medium importance">●</span>{% elif doc.importance == 'low' %}<span class="text-gray-600" title="Low importance">●</span>{% endif %}</td>
+                    <tr>
+                        <td class="text-center">{% if doc.importance == 'high' %}<span class="text-red-500" title="High">&#9679;</span>{% elif doc.importance == 'medium' %}<span class="text-amber-500" title="Medium">&#9679;</span>{% endif %}</td>
                         <td class="max-w-md">
                             <a href="/document/{{ doc.id }}" class="block truncate">{{ doc.title }}</a>
-                            {% if doc.title_en %}<div class="text-[11px] text-gray-500 truncate">{{ doc.title_en }}</div>{% endif %}
+                            {% if doc.title_en %}<div class="text-xs text-gray-400 truncate">{{ doc.title_en }}</div>{% endif %}
                         </td>
-                        <td class="mono text-amber-400 truncate">{{ doc.document_number or '' }}</td>
-                        <td class="text-gray-500 truncate">{{ doc.site_key }}</td>
-                        <td class="mono text-gray-500">{{ doc.date_published[:10] if doc.date_published else '' }}</td>
+                        <td class="mono text-red-700 truncate text-xs">{{ doc.document_number or '' }}</td>
+                        <td class="text-gray-400 truncate text-xs">{{ doc.site_key }}</td>
+                        <td class="mono text-gray-400 text-xs">{{ doc.date_published[:10] if doc.date_published else '' }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            </div>
 
             <!-- Pagination -->
-            <div class="flex items-center gap-2 mt-2 text-xs">
+            <div class="flex items-center gap-2 mt-3 text-sm">
                 {% if page > 1 %}
-                <a href="/browse?{{ pagination_qs }}&page={{ page - 1 }}" class="px-2 py-1 bg-gray-800 rounded hover:bg-gray-700">Prev</a>
+                <a href="/browse?{{ pagination_qs }}&page={{ page - 1 }}" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 no-underline text-gray-600">Prev</a>
                 {% endif %}
                 {% set total_pages = ((total - 1) // 50 + 1) %}
                 {% for p in range(1, total_pages + 1) %}
                     {% if p <= 5 or p > total_pages - 3 or (p >= page - 2 and p <= page + 2) %}
                 <a href="/browse?{{ pagination_qs }}&page={{ p }}"
-                   class="px-2 py-1 rounded {{ 'bg-blue-600 text-white' if p == page else 'bg-gray-800 hover:bg-gray-700' }}">{{ p }}</a>
+                   class="px-3 py-1.5 rounded-lg no-underline {{ 'bg-blue-600 text-white' if p == page else 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-600' }}">{{ p }}</a>
                     {% elif p == 6 or p == total_pages - 3 %}
-                <span class="text-gray-600">...</span>
+                <span class="text-gray-400">...</span>
                     {% endif %}
                 {% endfor %}
                 {% if page < total_pages %}
-                <a href="/browse?{{ pagination_qs }}&page={{ page + 1 }}" class="px-2 py-1 bg-gray-800 rounded hover:bg-gray-700">Next</a>
+                <a href="/browse?{{ pagination_qs }}&page={{ page + 1 }}" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 no-underline text-gray-600">Next</a>
                 {% endif %}
             </div>
         </div>

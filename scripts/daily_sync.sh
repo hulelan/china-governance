@@ -16,6 +16,31 @@ cd "$(dirname "$0")/.."
 # Load environment
 source .env 2>/dev/null || true
 
+# macOS doesn't have `timeout` — use gtimeout (from brew coreutils) or a bash fallback
+if ! command -v timeout &>/dev/null; then
+    if command -v gtimeout &>/dev/null; then
+        timeout() { gtimeout "$@"; }
+    else
+        # Pure bash fallback: run command with a background watchdog
+        timeout() {
+            local duration="$1"; shift
+            "$@" &
+            local pid=$!
+            ( sleep "$duration" && kill "$pid" 2>/dev/null ) &
+            local watchdog=$!
+            wait "$pid" 2>/dev/null
+            local ret=$?
+            kill "$watchdog" 2>/dev/null
+            wait "$watchdog" 2>/dev/null
+            # Return 124 (like GNU timeout) if the process was killed
+            if [ $ret -ne 0 ] && ! kill -0 "$pid" 2>/dev/null; then
+                return 124
+            fi
+            return $ret
+        }
+    fi
+fi
+
 LOGDIR="logs"
 mkdir -p "$LOGDIR"
 LOG="$LOGDIR/daily-$(date +%Y%m%d-%H%M).log"
@@ -25,7 +50,7 @@ START_TIME=$(date +%s)
 log() { echo "[$(date +%H:%M:%S)] $1" | tee -a "$LOG"; }
 
 # Auto-update code on remote servers (not on dev Mac)
-if [ "$HOST" != "MacBookPro-298" ]; then
+if [ "$HOST" != "MacBookPro-313" ]; then
     git pull --ff-only >> "$LOG" 2>&1 || echo "[$(date +%H:%M:%S)] git pull failed, continuing" >> "$LOG"
 fi
 
@@ -116,7 +141,7 @@ log "Phase 1: Crawling..."
 
 run_crawler "gkmlpt (40+ sites)" python3 -m crawlers.gkmlpt --sync
 
-for crawler in gov ndrc mof mee cac nda samr; do
+for crawler in gov ndrc mof mee cac nda samr mofcom; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
@@ -135,13 +160,17 @@ for crawler in 36kr latepost ifeng xinhua people; do
 done
 
 # Location-specific crawlers
-if [ "$HOST" = "MacBookPro-298" ]; then
+if [ "$HOST" = "MacBookPro-313" ]; then
     # These gkmlpt sites are unreachable from the Singapore droplet
     for site in gd huizhou yangjiang; do
         run_crawler "gkmlpt ($site)" python3 -m crawlers.gkmlpt --site $site
     done
+    # These are slow/partial from US but still fetch some data (droplet assumed down)
+    for crawler in miit most zhejiang hangzhou; do
+        run_crawler "$crawler" python3 -m crawlers.$crawler
+    done
 else
-    # These APIs timeout from the US
+    # Droplet: these APIs work well from Singapore
     for crawler in miit most zhejiang hangzhou; do
         run_crawler "$crawler" python3 -m crawlers.$crawler
     done
@@ -221,7 +250,7 @@ else
 fi
 
 # Weekly VACUUM to reclaim space (droplet only, Sundays)
-if [ "$(date +%u)" = "7" ] && [ "$HOST" != "MacBookPro-298" ]; then
+if [ "$(date +%u)" = "7" ] && [ "$HOST" != "MacBookPro-313" ]; then
     log "Weekly VACUUM..."
     sqlite3 documents.db "VACUUM;" >> "$LOG" 2>&1 || true
 fi

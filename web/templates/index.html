@@ -1,45 +1,52 @@
 {% extends "base.html" %}
-{% block title %}CNGOV — Shenzhen Government Document Corpus{% endblock %}
+{% block title %}ChinaGovernance — Chinese Government Document Corpus{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <!-- Header stats row -->
-    <div class="grid grid-cols-5 gap-3 mb-4">
-        <div class="bg-gray-900 border border-gray-800 rounded p-3">
-            <div class="text-2xl font-bold text-white">{{ "{:,}".format(stats.total) }}</div>
-            <div class="text-gray-500 text-xs">Total Documents</div>
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="font-serif text-2xl text-gray-900 mb-1">Chinese Government Document Corpus</h1>
+        <p class="text-gray-500 text-sm">Policy documents from central ministries through provincial and municipal governments to district implementation.</p>
+    </div>
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-5 gap-4 mb-6">
+        <div class="card px-4 py-3">
+            <div class="text-2xl font-bold text-gray-900">{{ "{:,}".format(stats.total) }}</div>
+            <div class="text-gray-400 text-xs mt-0.5">Documents</div>
         </div>
-        <div class="bg-gray-900 border border-gray-800 rounded p-3">
-            <div class="text-2xl font-bold text-white">{{ stats.site_count }}</div>
-            <div class="text-gray-500 text-xs">Government Sites</div>
+        <div class="card px-4 py-3">
+            <div class="text-2xl font-bold text-gray-900">{{ stats.site_count }}</div>
+            <div class="text-gray-400 text-xs mt-0.5">Government Sites</div>
         </div>
-        <div class="bg-gray-900 border border-gray-800 rounded p-3">
-            <div class="text-2xl font-bold text-white">{{ "{:,}".format(stats.with_docnum) }}</div>
-            <div class="text-gray-500 text-xs">With Document Number</div>
+        <div class="card px-4 py-3">
+            <div class="text-2xl font-bold text-gray-900">{{ "{:,}".format(stats.with_docnum) }}</div>
+            <div class="text-gray-400 text-xs mt-0.5">With Document Number</div>
         </div>
-        <div class="bg-gray-900 border border-gray-800 rounded p-3">
-            <div class="text-2xl font-bold text-white">{{ "{:,}".format(stats.with_body) }}</div>
-            <div class="text-gray-500 text-xs">With Body Text</div>
+        <div class="card px-4 py-3">
+            <div class="text-2xl font-bold text-gray-900">{{ "{:,}".format(stats.with_body) }}</div>
+            <div class="text-gray-400 text-xs mt-0.5">With Body Text</div>
         </div>
-        <div class="bg-gray-900 border border-gray-800 rounded p-3">
-            <div class="text-2xl font-bold text-amber-400">{{ "{:.0f}%".format(stats.with_body / stats.total * 100) }}</div>
-            <div class="text-gray-500 text-xs">Text Coverage</div>
+        <div class="card px-4 py-3">
+            <div class="text-2xl font-bold text-brand">{{ "{:.0f}%".format(stats.with_body / stats.total * 100) }}</div>
+            <div class="text-gray-400 text-xs mt-0.5">Text Coverage</div>
         </div>
     </div>
 
     <!-- Search -->
-    <form action="/search" method="get" class="mb-4">
-        <input type="text" name="q" placeholder="Search documents... (Chinese or document numbers)"
-               class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none">
+    <form action="/search" method="get" class="mb-6">
+        <input type="text" name="q" placeholder="Search documents... (Chinese titles, document numbers, keywords)"
+               class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
     </form>
 
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid grid-cols-3 gap-6">
         <!-- Sites panel -->
-        <div class="bg-gray-900 border border-gray-800 rounded">
-            <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sites ({{ sites|length }})</div>
-            <table class="w-full dense-table text-xs">
+        <div class="card">
+            <div class="card-header">Sites ({{ sites|length }})</div>
+            <div class="max-h-[600px] overflow-y-auto">
+            <table class="data-table">
                 <thead>
-                    <tr class="text-gray-500 border-b border-gray-800">
-                        <th class="text-left">Site</th>
+                    <tr>
+                        <th>Site</th>
                         <th class="text-right">Docs</th>
                         <th class="text-right">Body</th>
                         <th class="text-right">文号</th>
@@ -47,53 +54,56 @@
                 </thead>
                 <tbody>
                 {% for site in sites %}
-                    <tr class="border-b border-gray-800/50">
+                    <tr>
                         <td>
                             <span class="badge badge-{{ site.admin_level }}">{{ site.admin_level[:4] }}</span>
                             <a href="/browse?site={{ site.site_key }}">{{ site.name }}</a>
                         </td>
-                        <td class="text-right mono">{{ "{:,}".format(site.doc_count) }}</td>
-                        <td class="text-right mono">{{ "{:,}".format(site.body_count) }}</td>
-                        <td class="text-right mono">{{ "{:,}".format(site.docnum_count) }}</td>
+                        <td class="text-right mono text-gray-500">{{ "{:,}".format(site.doc_count) }}</td>
+                        <td class="text-right mono text-gray-500">{{ "{:,}".format(site.body_count) }}</td>
+                        <td class="text-right mono text-gray-400">{{ "{:,}".format(site.docnum_count) }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Timeline panel -->
-        <div class="bg-gray-900 border border-gray-800 rounded">
-            <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Publication Timeline</div>
-            <div class="p-3">
+        <div class="card">
+            <div class="card-header">Publication Timeline</div>
+            <div class="p-4">
                 {% set max_count = stats.by_year|map(attribute='count')|max %}
                 {% for yr in stats.by_year %}
-                <div class="flex items-center gap-2 mb-0.5">
-                    <span class="mono text-gray-500 w-10">{{ yr.year }}</span>
-                    <div class="flex-1 bg-gray-800 rounded-sm h-3.5">
-                        <div class="bg-blue-600 h-3.5 rounded-sm text-[10px] leading-[14px] px-1 text-white"
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="mono text-gray-400 w-10 text-xs">{{ yr.year }}</span>
+                    <div class="flex-1 bg-gray-100 rounded h-4">
+                        <div class="bg-blue-500 h-4 rounded text-[10px] leading-4 px-1.5 text-white font-medium"
                              style="width: {{ (yr.count / max_count * 100)|round }}%">
                             {% if yr.count / max_count > 0.15 %}{{ "{:,}".format(yr.count) }}{% endif %}
                         </div>
                     </div>
-                    <span class="mono text-gray-600 w-12 text-right">{{ "{:,}".format(yr.count) }}</span>
+                    <span class="mono text-gray-400 w-12 text-right text-xs">{{ "{:,}".format(yr.count) }}</span>
                 </div>
                 {% endfor %}
             </div>
         </div>
 
         <!-- Categories panel -->
-        <div class="bg-gray-900 border border-gray-800 rounded">
-            <div class="px-3 py-2 border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">Categories</div>
-            <table class="w-full dense-table text-xs">
+        <div class="card">
+            <div class="card-header">Categories</div>
+            <div class="max-h-[600px] overflow-y-auto">
+            <table class="data-table">
                 <tbody>
                 {% for cat in categories[:20] %}
-                    <tr class="border-b border-gray-800/50">
+                    <tr>
                         <td><a href="/browse?category={{ cat.classify_main_name }}">{{ cat.classify_main_name }}</a></td>
                         <td class="text-right mono text-gray-400">{{ "{:,}".format(cat.count) }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>

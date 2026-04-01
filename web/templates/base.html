@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-gray-950 text-gray-200">
+<html lang="en" class="bg-stone-50">
 <head>
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XQC35E381X"></script>
@@ -11,56 +11,107 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}China Governance Docs{% endblock %}</title>
+    <title>{% block title %}ChinaGovernance{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    serif: ['Georgia', 'Noto Serif', 'Times New Roman', 'serif'],
+                    sans: ['Inter', '-apple-system', 'system-ui', 'sans-serif'],
+                    zh: ['Noto Serif SC', 'Source Han Serif SC', 'SimSun', 'Georgia', 'serif'],
+                    mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+                },
+                colors: {
+                    brand: { DEFAULT: '#991b1b', light: '#dc2626' },
+                }
+            }
+        }
+    }
+    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
-        body { font-family: 'Inter', -apple-system, system-ui, sans-serif; font-size: 13px; }
+        body { font-family: 'Inter', -apple-system, system-ui, sans-serif; font-size: 14px; color: #1f2937; }
+        .font-zh { font-family: 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', Georgia, serif; }
         .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; }
-        .dense-table td, .dense-table th { padding: 3px 8px; }
-        .dense-table tr:hover { background: rgba(255,255,255,0.04); }
-        mark { background: #fbbf24; color: #000; padding: 0 2px; }
-        .level-central { color: #f87171; }
-        .level-provincial { color: #fb923c; }
-        .level-municipal { color: #60a5fa; }
-        .level-district { color: #34d399; }
+        mark { background: #fef3c7; color: #92400e; padding: 0 2px; border-radius: 2px; }
+
+        /* Table styles */
+        .data-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 600;
+            color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;
+            border-bottom: 2px solid #e5e7eb; }
+        .data-table td { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; }
+        .data-table tr:hover { background: #f9fafb; }
+
+        /* Level colors */
+        .level-central { color: #dc2626; }
+        .level-provincial { color: #ea580c; }
+        .level-municipal { color: #2563eb; }
+        .level-district { color: #16a34a; }
+        .level-department { color: #7c3aed; }
+        .level-media { color: #7c3aed; }
         .level-unknown { color: #9ca3af; }
-        .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; }
-        .badge-central { background: #991b1b; color: #fca5a5; }
-        .badge-provincial { background: #92400e; color: #fed7aa; }
-        .badge-municipal { background: #1e3a5f; color: #93c5fd; }
-        .badge-district { background: #064e3b; color: #6ee7b7; }
-        .badge-department { background: #312e81; color: #a5b4fc; }
-        .badge-media { background: #4a1d6e; color: #d8b4fe; }
-        .level-media { color: #c084fc; }
-        a { color: #60a5fa; }
-        a:hover { color: #93c5fd; text-decoration: underline; }
+        .level-research { color: #0891b2; }
+
+        /* Badges */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+        .badge-central { background: #fef2f2; color: #991b1b; }
+        .badge-provincial { background: #fff7ed; color: #9a3412; }
+        .badge-municipal { background: #eff6ff; color: #1e40af; }
+        .badge-district { background: #f0fdf4; color: #166534; }
+        .badge-department { background: #f5f3ff; color: #5b21b6; }
+        .badge-media { background: #faf5ff; color: #6b21a8; }
+        .badge-research { background: #ecfeff; color: #155e75; }
+        .badge-unknown { background: #f9fafb; color: #6b7280; }
+
+        /* Links */
+        a { color: #2563eb; text-decoration: none; }
+        a:hover { color: #1d4ed8; text-decoration: underline; }
+
+        /* Card component */
+        .card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .card-header { padding: 12px 16px; border-bottom: 1px solid #f3f4f6;
+            font-size: 11px; font-weight: 600; color: #6b7280;
+            text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Form elements */
+        select, input[type="text"], input[type="date"], input[type="search"] {
+            background: white; border: 1px solid #d1d5db; border-radius: 6px;
+            padding: 6px 10px; font-size: 13px; color: #1f2937;
+        }
+        select:focus, input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #1f2937; }
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #f3f4f6; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
     </style>
     {% block head %}{% endblock %}
 </head>
 <body class="min-h-screen">
     <!-- Nav -->
-    <nav class="bg-gray-900 border-b border-gray-800 px-4 py-1.5 flex items-center gap-6 text-xs sticky top-0 z-50">
-        <a href="/" class="font-bold text-white text-sm tracking-tight no-underline hover:no-underline">
-            <span class="text-red-500">CN</span>GOV
+    <nav class="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-8 sticky top-0 z-50">
+        <a href="/" class="font-serif text-xl font-bold text-gray-900 no-underline hover:no-underline tracking-tight">
+            <span class="text-brand">China</span>Governance
         </a>
-        <a href="/inbox" class="text-gray-400 hover:text-white no-underline">Inbox</a>
-        <a href="/browse" class="text-gray-400 hover:text-white no-underline">Browse</a>
-        <a href="/search" class="text-gray-400 hover:text-white no-underline">Search</a>
-        <a href="/network" class="text-gray-400 hover:text-white no-underline">Network</a>
-        <a href="/dashboard" class="text-gray-400 hover:text-white no-underline">Dashboard</a>
-        <a href="/chain/ai" class="text-gray-400 hover:text-white no-underline">AI Chain</a>
-        <a href="/changes" class="text-gray-400 hover:text-white no-underline">Changes</a>
-        <a href="/browse?source_type=media" class="text-purple-400 hover:text-purple-300 no-underline">Media</a>
-        <div class="ml-auto text-gray-600">
-            {{ stats.total|default(0) }} docs &middot; {{ stats.site_count|default(0) }} sites
+        <div class="flex items-center gap-6 text-sm">
+            <a href="/browse" class="text-gray-500 hover:text-gray-900 no-underline">Browse</a>
+            <a href="/search" class="text-gray-500 hover:text-gray-900 no-underline">Search</a>
+            <a href="/chain/ai" class="text-gray-500 hover:text-gray-900 no-underline">AI Chain</a>
+            <a href="/network" class="text-gray-500 hover:text-gray-900 no-underline">Network</a>
+            <a href="/dashboard" class="text-gray-500 hover:text-gray-900 no-underline">Dashboard</a>
+            <a href="/inbox" class="text-gray-500 hover:text-gray-900 no-underline">Inbox</a>
+            <a href="/changes" class="text-gray-500 hover:text-gray-900 no-underline">Changes</a>
+            <a href="/browse?source_type=media" class="text-purple-600 hover:text-purple-800 no-underline">Media</a>
+        </div>
+        <div class="ml-auto text-xs text-gray-400">
+            {{ "{:,}".format(stats.total|default(0)) }} documents &middot; {{ stats.site_count|default(0) }} sites
         </div>
     </nav>
 
-    <main class="px-4 py-3">
+    <main class="px-6 py-5">
         {% block content %}{% endblock %}
     </main>
 

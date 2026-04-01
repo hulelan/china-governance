@@ -4,14 +4,16 @@
 
 Chinese government document corpus + web app. Crawls policy documents from central (State Council, NDRC, MOF, MEE) through provincial (Guangdong) to municipal (Shenzhen + 16 other Guangdong cities) and district level. Live at [chinagovernance.com](https://www.chinagovernance.com).
 
-## Current Corpus (March 2026)
+## Current Corpus (April 2026)
 
-- **111,653 documents**, 44 sites, 92% body text coverage
-- **110k+ classified** with English titles, summaries, importance, categories, topics (via DeepSeek API)
+- **133,050 documents**, 60 sites, 91% body text coverage
+- **24k classified (v2 prompt)** with doc_type, policy_significance, references_json; ~109k have v1 fields (title_en/summary_en/importance)
 - Shenzhen (municipal + 9 districts + 13 departments + investment portal), Guangdong Province, 16 other Guangdong cities
-- Central: State Council, NDRC, MOF, MEE
-- Provinces: Beijing (1,781), Shanghai (3,830), Jiangsu (1,041)
-- Non-gkmlpt content: Shenzhen investment news, DRC overseas investment, Longgang AI/robotics
+- Central: State Council, NDRC, MOF, MEE, CAC, NDA, SAMR, MOFCOM, MIIT, MOST
+- Provinces: Beijing (1,781), Shanghai (3,830), Jiangsu (1,041), Heilongjiang (2,265), Chongqing (697), Zhejiang (70)
+- Municipalities: Wuhan (999), Suzhou (4,841), Hangzhou (new)
+- Media: Xinhua (1,251), People's Daily (818), Phoenix/风声 (100), LatePost (85), 36Kr (10), Tsinghua AIIG (57)
+- 227,516 cross-document citations (14,265 LLM-sourced)
 - All stored in local `documents.db` (SQLite, ~1GB)
 
 ## Key Commands
