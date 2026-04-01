@@ -1,23 +1,24 @@
 # Project Status
 
-*Last updated: 2026-03-29*
+*Last updated: 2026-03-31*
 
 ## Corpus Summary
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 125,126 |
-| With body text | ~114,400 (91.4%) |
-| Total sites | 59 |
-| Classified (English title/summary/category) | ~109,000 |
-| Unclassified | ~12,300 (new crawlers) |
+| Total documents | 132,685 |
+| With body text | ~121,000 (91.2%) |
+| Total sites | 62 |
+| Classified (v2 prompt) | ~24,000 (19%). Running paused — restart when ready |
+| Classified (v1 only) | ~109,000 (have title_en/summary_en but no doc_type/policy_significance) |
+| Citations | 227,516 (14,265 LLM-sourced) |
 
 ## Production
 
 | Component | State |
 |-----------|-------|
 | Website | Live at chinagovernance.com (Railway) |
-| Database | PostgreSQL on Railway (synced 2026-03-30, 125,126 docs) |
+| Database | PostgreSQL on Railway (syncing 2026-03-31) |
 | Local DB | SQLite `documents.db` (~1GB, source of truth) |
 | Local → Production gap | 0 (fully synced 2026-03-30) |
 
@@ -136,10 +137,11 @@
 ### In Progress
 | Task | Status | Notes |
 |------|--------|-------|
-| Re-classify all 125k docs with v2 prompt | Running on Mac (23k/125k done) | ~$55, ~4 days remaining. New fields: doc_type, policy_significance, references_json |
-| Citation extraction | **Done** | 227,516 citations (was 159k). 14,265 new LLM-sourced, 6,927 resolved |
-| People's Daily + Suzhou crawl | Running to temp DBs | ~5,300 new docs, merge when done |
-| Verify droplet cron | Waiting for 6 AM UTC tomorrow | First run with all 14 new crawlers, auto-sync |
+| Re-classify all docs with v2 prompt | **Paused** (24k/132k done) | Restart: `DEEPSEEK_API_KEY=... nohup python3 -u scripts/classify_documents.py --concurrency 2 > logs/classify.log 2>&1 &` |
+| ~~Citation extraction~~ | **Done** | 227,516 citations (was 159k). 14,265 LLM-sourced |
+| ~~People's Daily + Suzhou + Heilongjiang~~ | **Done** | Merged into main DB. 132,685 total docs |
+| Production sync | Syncing now | Pushing 132k docs + 227k citations to Postgres |
+| Droplet cron | Deferred | Assume droplet may be down. Will verify later |
 
 ### Website
 | Task | Priority | Notes |
