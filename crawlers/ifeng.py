@@ -1,13 +1,14 @@
 """
-Phoenix News 风声 (凤凰网评论) crawler.
+Phoenix News (凤凰网) crawler.
 
-Crawls policy commentary articles from the 风声 (Fengsheng) column on
-news.ifeng.com. Server-rendered HTML with og: meta tags.
-
-The channel page shows recent articles. Run regularly for incremental capture.
+Crawls from two sections:
+  - 风声 (Fengsheng): policy commentary from news.ifeng.com (ishare API)
+  - Tech (科技): tech news from tech.ifeng.com (HTML scrape)
 
 Usage:
-    python -m crawlers.ifeng                   # Crawl all available articles
+    python -m crawlers.ifeng                   # Crawl all sections
+    python -m crawlers.ifeng --section tech    # Tech section only
+    python -m crawlers.ifeng --section fengsheng  # 风声 only
     python -m crawlers.ifeng --stats           # Show database stats
     python -m crawlers.ifeng --list-only       # List URLs without fetching
 """
@@ -103,6 +104,24 @@ def _discover_articles() -> list[dict]:
     return articles
 
 
+def _discover_tech_articles() -> list[dict]:
+    """Scrape article links from tech.ifeng.com homepage."""
+    html = fetch("https://tech.ifeng.com/", headers={"User-Agent": BROWSER_UA})
+    if not html:
+        log.error("Failed to fetch tech.ifeng.com")
+        return []
+    links = re.findall(r'href="(https?://tech\.ifeng\.com/c/[A-Za-z0-9]+)"', html)
+    seen = set()
+    articles = []
+    for url in links:
+        if url in seen:
+            continue
+        seen.add(url)
+        articles.append({"url": url, "title": "", "date": ""})
+    log.info(f"  tech.ifeng.com: {len(articles)} article links")
+    return articles
+
+
 def _extract_article(html: str) -> dict:
     """Extract article metadata and body from an article page."""
     meta = {}
@@ -175,13 +194,18 @@ def _extract_article(html: str) -> dict:
     return meta
 
 
-def crawl(conn, list_only: bool = False):
-    """Crawl Phoenix/风声 articles."""
+def crawl(conn, list_only: bool = False, section: str = None):
+    """Crawl Phoenix News articles from 风声 and/or tech sections."""
     store_site(conn, SITE_KEY, SITE_CFG)
 
-    log.info("Fetching 风声 articles via ishare API...")
-    articles = _discover_articles()
-    log.info(f"Found {len(articles)} articles on channel page")
+    articles = []
+    if section in (None, "fengsheng"):
+        log.info("Fetching 风声 articles via ishare API...")
+        articles.extend(_discover_articles())
+    if section in (None, "tech"):
+        log.info("Fetching tech.ifeng.com articles...")
+        articles.extend(_discover_tech_articles())
+    log.info(f"Found {len(articles)} total articles")
 
     if list_only:
         for a in articles:
@@ -215,10 +239,11 @@ def crawl(conn, list_only: bool = False):
         date_str = meta.get("date_published", "")[:10]
         raw_html_path = save_raw_html(SITE_KEY, doc_id, article_html)
 
+        is_tech = "tech.ifeng.com" in url
         store_document(conn, SITE_KEY, {
             "id": doc_id,
             "title": meta["title"],
-            "publisher": "凤凰网风声",
+            "publisher": "凤凰网科技" if is_tech else "凤凰网风声",
             "keywords": meta.get("keywords", ""),
             "abstract": meta.get("abstract", ""),
             "date_written": _parse_date(date_str),
@@ -237,10 +262,12 @@ def crawl(conn, list_only: bool = False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Phoenix/风声 Crawler")
+    parser = argparse.ArgumentParser(description="Phoenix News (凤凰网) Crawler")
     parser.add_argument("--stats", action="store_true", help="Show database stats")
     parser.add_argument("--list-only", action="store_true",
                         help="List article URLs without fetching")
+    parser.add_argument("--section", type=str, choices=["fengsheng", "tech"],
+                        help="Crawl only one section (default: all)")
     parser.add_argument("--db", type=str,
                         help="Path to SQLite database (default: documents.db)")
     args = parser.parse_args()
@@ -252,7 +279,7 @@ def main():
         conn.close()
         return
 
-    crawl(conn, list_only=args.list_only)
+    crawl(conn, list_only=args.list_only, section=args.section)
     show_stats(conn)
     conn.close()
 

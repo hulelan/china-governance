@@ -255,8 +255,12 @@ def migrate(database_url: str, drop: bool = False):
         print(f"  {len(rows):,} categories")
 
     # --- Documents (batch for speed) ---
-    print("[migrate] Migrating documents...")
-    cursor = sqlite_conn.execute("SELECT * FROM documents")
+    # Only sync docs newer than what Postgres already has (true incremental)
+    pg_cur.execute("SELECT MAX(id) FROM documents")
+    pg_max_id = pg_cur.fetchone()[0] or 0
+    local_count = sqlite_conn.execute("SELECT COUNT(*) FROM documents WHERE id > ?", (pg_max_id,)).fetchone()[0]
+    print(f"[migrate] Migrating documents... (Postgres has up to id={pg_max_id:,}, {local_count:,} new)")
+    cursor = sqlite_conn.execute("SELECT * FROM documents WHERE id > ? ORDER BY id", (pg_max_id,))
     cols = [desc[0] for desc in cursor.description]
     col_names = ", ".join(cols)
     # Use execute_values for much faster bulk inserts (multi-row VALUES)
@@ -279,7 +283,11 @@ def migrate(database_url: str, drop: bool = False):
     print(f"  {total:,} documents")
 
     # --- Citations ---
-    print("[migrate] Migrating citations...")
+    pg_cur.execute("SELECT COUNT(*) FROM citations")
+    pg_citation_count = pg_cur.fetchone()[0] or 0
+    local_citation_count = sqlite_conn.execute("SELECT COUNT(*) FROM citations").fetchone()[0]
+    new_citations = local_citation_count - pg_citation_count
+    print(f"[migrate] Migrating citations... (Postgres has {pg_citation_count:,}, ~{new_citations:,} new)")
     rows = sqlite_conn.execute(
         "SELECT source_id, target_ref, target_id, citation_type, source_level, target_level FROM citations"
     ).fetchall()
@@ -331,7 +339,10 @@ def migrate(database_url: str, drop: bool = False):
     if has_changes:
         print("[migrate] Migrating document_changes...")
         rows = sqlite_conn.execute(
-            "SELECT document_id, site_key, change_type, field_name, old_value, new_value, detected_at, sync_run_id FROM document_changes"
+            """SELECT dc.document_id, dc.site_key, dc.change_type, dc.field_name,
+                      dc.old_value, dc.new_value, dc.detected_at, dc.sync_run_id
+               FROM document_changes dc
+               JOIN documents d ON d.id = dc.document_id"""
         ).fetchall()
         if rows:
             insert_sql = (
