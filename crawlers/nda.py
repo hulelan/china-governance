@@ -9,6 +9,10 @@ Every document is about AI/data governance — a small but high-value corpus.
 
 Sections crawled:
   - zcfb: 政策发布 (Policy releases)
+  - tzgg: 通知公告 (Notices & announcements)
+  - zcjd: 政策解读 (Policy interpretation)
+  - zjjd: 专家解读 (Expert interpretation)
+  - gknr: 政府信息公开目录 (Info disclosure)
 
 Usage:
     python -m crawlers.nda                    # Crawl all sections
@@ -54,6 +58,22 @@ SECTIONS = {
     "zcfb": {
         "name": "政策发布",
         "path": "/sjj/zwgk/zcfb/list/",
+    },
+    "tzgg": {
+        "name": "通知公告",
+        "path": "/sjj/zwgk/tzgg/list/",
+    },
+    "zcjd": {
+        "name": "政策解读",
+        "path": "/sjj/zwgk/zcjd/list/",
+    },
+    "zjjd": {
+        "name": "专家解读",
+        "path": "/sjj/zwgk/zjjd/list/",
+    },
+    "gknr": {
+        "name": "政府信息公开目录",
+        "path": "/sjj/xxgk/gknr/list/",
     },
 }
 
@@ -141,8 +161,8 @@ def _parse_listing(html: str) -> list[dict]:
         if not title:
             continue
 
-        # Only pick up links under /sjj/zwgk/zcfb/ (policy docs)
-        if "/zcfb/" not in href:
+        # Only pick up links under /sjj/ (skip external/navigation links)
+        if "/sjj/" not in href or "/list/" in href:
             continue
 
         # Extract date from <span>
