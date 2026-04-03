@@ -6,13 +6,13 @@ Chinese government document corpus + web app. Crawls policy documents from centr
 
 ## Current Corpus (April 2026)
 
-- **133,050 documents**, 60 sites, 91% body text coverage
+- **135,419+ documents**, 61+ sites, 91% body text coverage
 - **24k classified (v2 prompt)** with doc_type, policy_significance, references_json; ~109k have v1 fields (title_en/summary_en/importance)
 - Shenzhen (municipal + 9 districts + 13 departments + investment portal), Guangdong Province, 16 other Guangdong cities
-- Central: State Council, NDRC, MOF, MEE, CAC, NDA, SAMR, MOFCOM, MIIT, MOST
+- Central: State Council, NDRC, MOF, MEE, CAC, NDA, SIC, SAMR, MOFCOM, MIIT, MOST
 - Provinces: Beijing (1,781), Shanghai (3,830), Jiangsu (1,041), Heilongjiang (2,265), Chongqing (697), Zhejiang (70)
 - Municipalities: Wuhan (999), Suzhou (4,841), Hangzhou (new)
-- Media: Xinhua (1,251), People's Daily (818), Phoenix/风声 (100), LatePost (85), 36Kr (10), Tsinghua AIIG (57)
+- Media: Xinhua (1,504), People's Daily (1,102), Phoenix/风声 (180), LatePost (94), 36Kr (10), Tsinghua AIIG (57)
 - 227,516 cross-document citations (14,265 LLM-sourced)
 - All stored in local `documents.db` (SQLite, ~1GB)
 
@@ -38,7 +38,8 @@ python3 -m crawlers.zhejiang                    # Zhejiang (dept subdomains, IPv
 python3 -m crawlers.zhejiang --dept fzggw       # One department only
 python3 -m crawlers.chongqing                   # Chongqing (3 sections, 697 docs)
 python3 -m crawlers.wuhan                       # Wuhan (5 sections + AI portal)
-python3 -m crawlers.nda                         # National Data Administration (34 docs)
+python3 -m crawlers.nda                         # National Data Administration (5 sections, 379 docs)
+python3 -m crawlers.sic                         # State Information Center (1,117 docs)
 python3 -m crawlers.tsinghua_aiig               # Tsinghua AI Governance Institute
 
 python3 -m crawlers.sz_invest                   # Shenzhen non-gkmlpt (investment news, DRC, Longgang AI)

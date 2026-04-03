@@ -1,14 +1,14 @@
 # Project Status
 
-*Last updated: 2026-04-01*
+*Last updated: 2026-04-03*
 
 ## Corpus Summary
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 133,050 |
-| With body text | 121,304 (91.2%) |
-| Total sites | 60 |
+| Total documents | 135,419+ |
+| With body text | 123,510 (91.2%) |
+| Total sites | 61+ |
 | Classified (v2 prompt) | ~24,000 (18%). Paused — restart when ready |
 | Classified (v1 only) | ~109,000 (have title_en/summary_en but no doc_type/policy_significance) |
 | Citations | 227,516 (14,265 LLM-sourced) |
@@ -45,7 +45,8 @@
 | cac | CAC (网信办) | 747 | 738 | 99% | — |
 | mee | Ministry of Ecology | 563 | 494 | 88% | — |
 | miit | MIIT (工信部) | 103 | 26 | 25% | Slow from US (~30/day); was faster from droplet |
-| nda | National Data Administration | 34 | 34 | 100% | Every doc is AI/data policy |
+| sic | State Information Center | 1,117 | 1,117 | 100% | www.sic.gov.cn |
+| nda | National Data Administration | 379 | 379 | 100% | 5 sections. Every doc is AI/data policy |
 
 ### gkmlpt Sites (Guangdong — `crawlers/gkmlpt.py`)
 
@@ -115,10 +116,10 @@
 
 | Site Key | Name | Docs | Bodies | Body% | Notes |
 |----------|------|------|--------|-------|-------|
-| xinhua | Xinhua (新华社) | 1,251 | 1,243 | 99% | tech + politics. fortune/politics_read sections not yet crawled |
-| people | People's Daily (人民日报) | 818 | 818 | 100% | 17 editorial sections from opinion.people.com.cn |
-| ifeng | Phoenix/风声 | 100 | 100 | 100% | — |
-| latepost | LatePost (晚点) | 85 | 85 | 100% | ~85 recent articles, no pagination |
+| xinhua | Xinhua (新华社) | 1,504 | 1,496 | 99% | tech + politics. fortune/politics_read sections not yet crawled |
+| people | People's Daily (人民日报) | 1,102 | 1,102 | 100% | 17 editorial sections from opinion.people.com.cn |
+| ifeng | Phoenix/风声 | 180 | 180 | 100% | Added tech section |
+| latepost | LatePost (晚点) | 94 | 94 | 100% | ~94 recent articles, no pagination |
 | tsinghua_aiig | Tsinghua AIIG | 57 | 43 | 75% | 14 WeChat links (no body) |
 | 36kr | 36Kr (36氪) | 10 | 10 | 100% | RSS feed, ~10-30 items per fetch |
 
@@ -126,8 +127,8 @@
 
 Runs on Mac via launchd (`com.claude.china-governance-sync`) at 7:00 AM daily.
 
-**Phase 1 — Crawl (all 27 crawlers):**
-- Central: gov, ndrc, mof, mee, cac, nda, samr, mofcom
+**Phase 1 — Crawl (all 28 crawlers):**
+- Central: gov, ndrc, mof, mee, cac, nda, sic, samr, mofcom
 - Provinces: beijing, shanghai, jiangsu, chongqing, wuhan, suzhou, heilongjiang
 - Guangdong gkmlpt: 40+ sites via `--sync`, plus gd/huizhou/yangjiang individually
 - Slow-from-US: miit, most, zhejiang, hangzhou (partial data, better than nothing)
@@ -148,8 +149,12 @@ Runs on Mac via launchd (`com.claude.china-governance-sync`) at 7:00 AM daily.
 
 **30-min timeout** per crawler to prevent pipeline stalls.
 
-## Recent Completions (2026-03-29/31)
+## Recent Completions (2026-03-29 — 04-03)
 
+- SIC crawler (1,117 docs from www.sic.gov.cn)
+- NDA expanded to 5 sections (34 → 379 docs)
+- ifeng tech section added (80 articles, total now 180)
+- Incremental Postgres sync fix
 - Classification v2 prompt: doc_type (10 types) + policy_significance + references_json. Eval: 94%/88%
 - URL dedup: partial unique index on url, prevents cross-machine duplicates (also cleaned ~1,300 existing dupes)
 - Automated pipeline: Mac launchd daily at 7 AM, Telegram reports, 30-min timeouts
@@ -166,8 +171,8 @@ Runs on Mac via launchd (`com.claude.china-governance-sync`) at 7:00 AM daily.
 ### In Progress
 | Task | Status | Notes |
 |------|--------|-------|
-| Re-classify all docs with v2 prompt | **Paused** (24k/133k done) | Add `DEEPSEEK_API_KEY` to `.env` to enable in daily pipeline |
-| Daily pipeline | **Running** | Mac launchd at 7 AM. All 27 crawlers + Postgres sync |
+| Re-classify all docs with v2 prompt | **Paused** (24k/135k done) | Add `DEEPSEEK_API_KEY` to `.env` to enable in daily pipeline |
+| Daily pipeline | **Running** | Mac launchd at 7 AM. All 28 crawlers + Postgres sync |
 
 ### Website
 | Task | Priority | Notes |

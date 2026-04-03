@@ -47,10 +47,17 @@ LOG="$LOGDIR/daily-$(date +%Y%m%d-%H%M).log"
 HOST=$(hostname -s)
 START_TIME=$(date +%s)
 
+# Detect if we're on the dev Mac (vs droplet). Mac hostname is unstable (DHCP),
+# so check the OS instead.
+IS_MAC=false
+if [ "$(uname)" = "Darwin" ]; then
+    IS_MAC=true
+fi
+
 log() { echo "[$(date +%H:%M:%S)] $1" | tee -a "$LOG"; }
 
 # Auto-update code on remote servers (not on dev Mac)
-if [ "$HOST" != "MacBookPro-313" ]; then
+if [ "$IS_MAC" != "true" ]; then
     git pull --ff-only >> "$LOG" 2>&1 || echo "[$(date +%H:%M:%S)] git pull failed, continuing" >> "$LOG"
 fi
 
@@ -141,7 +148,7 @@ log "Phase 1: Crawling..."
 
 run_crawler "gkmlpt (40+ sites)" python3 -m crawlers.gkmlpt --sync
 
-for crawler in gov ndrc mof mee cac nda sic samr mofcom; do
+for crawler in gov ndrc mof mee cac nda sic samr mofcom ipc_court; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
@@ -160,7 +167,7 @@ for crawler in 36kr latepost ifeng xinhua people; do
 done
 
 # Location-specific crawlers
-if [ "$HOST" = "MacBookPro-313" ]; then
+if [ "$IS_MAC" = "true" ]; then
     # These gkmlpt sites are unreachable from the Singapore droplet
     for site in gd huizhou yangjiang; do
         run_crawler "gkmlpt ($site)" python3 -m crawlers.gkmlpt --site $site
@@ -250,7 +257,7 @@ else
 fi
 
 # Weekly VACUUM to reclaim space (droplet only, Sundays)
-if [ "$(date +%u)" = "7" ] && [ "$HOST" != "MacBookPro-313" ]; then
+if [ "$(date +%u)" = "7" ] && [ "$IS_MAC" != "true" ]; then
     log "Weekly VACUUM..."
     sqlite3 documents.db "VACUUM;" >> "$LOG" 2>&1 || true
 fi
