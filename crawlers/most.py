@@ -156,10 +156,18 @@ def _parse_table_listing(html: str, base_url: str) -> list[dict]:
 
 
 def _extract_body(html: str) -> str:
-    """Extract body text from div#Zoom (TRS CMS standard)."""
+    """Extract body text from div#Zoom or TRS_UEDITOR (TRS CMS variants)."""
     start_marker = html.find('id="Zoom"')
     if start_marker == -1:
         start_marker = html.find('id=Zoom')
+    if start_marker == -1:
+        # Newer TRS CMS uses class-based editor divs
+        start_marker = html.find('trs_editor_view')
+    if start_marker == -1:
+        start_marker = html.find('TRS_Editor')
+    if start_marker == -1:
+        # Last resort: try generic content divs
+        start_marker = html.find('class="text wide')
     if start_marker == -1:
         return ""
 
