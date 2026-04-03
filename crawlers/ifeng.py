@@ -122,6 +122,38 @@ def _discover_tech_articles() -> list[dict]:
     return articles
 
 
+# Regional channels with scrape-able article links in HTML
+REGIONAL_CHANNELS = ["hlj", "ah", "jl", "sd", "gd", "js", "hn", "hb", "cq"]
+
+
+def _discover_regional_articles() -> list[dict]:
+    """Scrape article links from ifeng regional channel homepages."""
+    articles = []
+    seen = set()
+    for region in REGIONAL_CHANNELS:
+        try:
+            html = fetch(f"https://{region}.ifeng.com/", headers={"User-Agent": BROWSER_UA})
+        except Exception as e:
+            log.warning(f"  {region}.ifeng.com: {e}")
+            continue
+        if not html:
+            continue
+        links = re.findall(
+            rf'href="(https?://{region}\.ifeng\.com/c/[A-Za-z0-9]+)"', html
+        )
+        count = 0
+        for url in links:
+            if url in seen:
+                continue
+            seen.add(url)
+            articles.append({"url": url, "title": "", "date": ""})
+            count += 1
+        if count:
+            log.info(f"  {region}.ifeng.com: {count} article links")
+        time.sleep(REQUEST_DELAY)
+    return articles
+
+
 def _extract_article(html: str) -> dict:
     """Extract article metadata and body from an article page."""
     meta = {}
@@ -195,7 +227,7 @@ def _extract_article(html: str) -> dict:
 
 
 def crawl(conn, list_only: bool = False, section: str = None):
-    """Crawl Phoenix News articles from 风声 and/or tech sections."""
+    """Crawl Phoenix News articles from 风声, tech, and regional sections."""
     store_site(conn, SITE_KEY, SITE_CFG)
 
     articles = []
@@ -205,6 +237,9 @@ def crawl(conn, list_only: bool = False, section: str = None):
     if section in (None, "tech"):
         log.info("Fetching tech.ifeng.com articles...")
         articles.extend(_discover_tech_articles())
+    if section in (None, "regional"):
+        log.info("Fetching regional channel articles...")
+        articles.extend(_discover_regional_articles())
     log.info(f"Found {len(articles)} total articles")
 
     if list_only:
@@ -239,11 +274,18 @@ def crawl(conn, list_only: bool = False, section: str = None):
         date_str = meta.get("date_published", "")[:10]
         raw_html_path = save_raw_html(SITE_KEY, doc_id, article_html)
 
-        is_tech = "tech.ifeng.com" in url
+        if "tech.ifeng.com" in url:
+            publisher = "凤凰网科技"
+        elif "news.ifeng.com" in url:
+            publisher = "凤凰网风声"
+        else:
+            # Regional: extract region code from URL
+            region_m = re.search(r'https?://(\w+)\.ifeng\.com', url)
+            publisher = f"凤凰网{region_m.group(1).upper()}" if region_m else "凤凰网"
         store_document(conn, SITE_KEY, {
             "id": doc_id,
             "title": meta["title"],
-            "publisher": "凤凰网科技" if is_tech else "凤凰网风声",
+            "publisher": publisher,
             "keywords": meta.get("keywords", ""),
             "abstract": meta.get("abstract", ""),
             "date_written": _parse_date(date_str),
@@ -266,7 +308,7 @@ def main():
     parser.add_argument("--stats", action="store_true", help="Show database stats")
     parser.add_argument("--list-only", action="store_true",
                         help="List article URLs without fetching")
-    parser.add_argument("--section", type=str, choices=["fengsheng", "tech"],
+    parser.add_argument("--section", type=str, choices=["fengsheng", "tech", "regional"],
                         help="Crawl only one section (default: all)")
     parser.add_argument("--db", type=str,
                         help="Path to SQLite database (default: documents.db)")

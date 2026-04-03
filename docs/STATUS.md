@@ -201,6 +201,9 @@ Runs on Mac via launchd (`com.claude.china-governance-sync`) at 7:00 AM daily.
 **Reachable from US, not yet built:**
 | Site | Level | AI Hits | Priority | Notes |
 |------|-------|---------|----------|-------|
+| peopleapp.com | Media | — | High | People's Daily app. Nuxt.js SPA — article SSR works, column listing needs API reverse-engineering |
+| ifeng regional (zj.ifeng.com etc.) | Media | — | Medium | Same structure as tech.ifeng.com. Zhejiang channel has AI/data commerce coverage |
+| Beijing /ywdt/gzdt/ section | Municipal | — | Medium | Work updates section not covered by current Beijing crawler |
 | CAS (www.cas.cn) | Central | 2 | Medium | Chinese Academy of Sciences |
 | SASAC (www.sasac.gov.cn) | Central | 1 | Medium-High | Now reachable (was timing out) |
 | Jiangxi (www.jx.gov.cn) | Province | 2 | Low | |
