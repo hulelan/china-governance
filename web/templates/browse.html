@@ -66,6 +66,35 @@
                 </div>
 
                 <div class="p-3 border-b border-gray-100">
+                    <label class="text-gray-400 text-xs block mb-1">Document Type</label>
+                    <select name="doc_type" class="w-full text-sm">
+                        <option value="">All types</option>
+                        {% for dt in ['regulation', 'policy_issuance', 'action_plan', 'strategy', 'subsidy', 'explainer', 'notice', 'announcement', 'consultation', 'standard', 'work_plan', 'commentary'] %}
+                        <option value="{{ dt }}" {{ 'selected' if filters.doc_type == dt }}>{{ dt|replace('_', ' ')|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="p-3 border-b border-gray-100">
+                    <label class="text-gray-400 text-xs block mb-1">AI Relevance</label>
+                    <select name="min_ai" class="w-full text-sm">
+                        <option value="">Any</option>
+                        <option value="0.5" {{ 'selected' if filters.min_ai == '0.5' }}>High (dedicated AI docs)</option>
+                        <option value="0.2" {{ 'selected' if filters.min_ai == '0.2' }}>Medium+ (substantial AI content)</option>
+                        <option value="0.01" {{ 'selected' if filters.min_ai == '0.01' }}>Any mention</option>
+                    </select>
+                </div>
+
+                <div class="p-3 border-b border-gray-100">
+                    <label class="text-gray-400 text-xs block mb-1">Sort by</label>
+                    <select name="sort" class="w-full text-sm">
+                        <option value="" {{ 'selected' if not filters.sort }}>Date (newest)</option>
+                        <option value="citation_rank" {{ 'selected' if filters.sort == 'citation_rank' }}>Most cited</option>
+                        <option value="ai_relevance" {{ 'selected' if filters.sort == 'ai_relevance' }}>AI relevance</option>
+                    </select>
+                </div>
+
+                <div class="p-3 border-b border-gray-100">
                     <label class="flex items-center gap-2 text-gray-600 text-sm">
                         <input type="checkbox" name="has_docnum" value="1" {{ 'checked' if filters.has_docnum }} class="rounded border-gray-300">
                         Has 文号 only
@@ -91,8 +120,10 @@
                     <tr>
                         <th class="w-4"></th>
                         <th>Title</th>
-                        <th class="w-36">文号</th>
+                        <th class="w-20">Type</th>
                         <th class="w-28">Site</th>
+                        <th class="w-14 text-right">AI</th>
+                        <th class="w-14 text-right">Cited</th>
                         <th class="w-24">Date</th>
                     </tr>
                 </thead>
@@ -100,12 +131,19 @@
                 {% for doc in documents %}
                     <tr>
                         <td class="text-center">{% if doc.importance == 'high' %}<span class="text-red-500" title="High">&#9679;</span>{% elif doc.importance == 'medium' %}<span class="text-amber-500" title="Medium">&#9679;</span>{% endif %}</td>
-                        <td class="max-w-md">
+                        <td class="max-w-sm">
                             <a href="/document/{{ doc.id }}" class="block truncate">{{ doc.title }}</a>
                             {% if doc.title_en %}<div class="text-xs text-gray-400 truncate">{{ doc.title_en }}</div>{% endif %}
                         </td>
-                        <td class="mono text-red-700 truncate text-xs">{{ doc.document_number or '' }}</td>
+                        <td class="text-xs text-gray-400">{{ (doc.algo_doc_type or '')|replace('_', ' ') }}</td>
                         <td class="text-gray-400 truncate text-xs">{{ doc.site_key }}</td>
+                        <td class="text-right text-xs">
+                            {% if doc.ai_relevance and doc.ai_relevance >= 0.5 %}<span class="text-red-600 font-medium">{{ "%.0f"|format(doc.ai_relevance * 100) }}</span>
+                            {% elif doc.ai_relevance and doc.ai_relevance >= 0.2 %}<span class="text-amber-600">{{ "%.0f"|format(doc.ai_relevance * 100) }}</span>
+                            {% elif doc.ai_relevance and doc.ai_relevance > 0 %}<span class="text-gray-300">{{ "%.0f"|format(doc.ai_relevance * 100) }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right mono text-xs text-gray-400">{{ "%.0f"|format(doc.citation_rank) if doc.citation_rank else '' }}</td>
                         <td class="mono text-gray-400 text-xs">{{ doc.date_published[:10] if doc.date_published else '' }}</td>
                     </tr>
                 {% endfor %}

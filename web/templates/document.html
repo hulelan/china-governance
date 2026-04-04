@@ -7,13 +7,17 @@
 <div class="max-w-7xl mx-auto">
     <!-- Header -->
     <div class="mb-5">
-        <div class="flex items-center gap-3 mb-2 text-sm">
-            {% if doc.doc_type %}
-            <span class="badge badge-{{ doc.importance or 'unknown' }}">{{ doc.doc_type }}</span>
+        <div class="flex items-center gap-2 mb-2 text-sm flex-wrap">
+            {% if doc.algo_doc_type and doc.algo_doc_type != 'other' and doc.algo_doc_type != 'unknown' %}
+            <span class="badge badge-municipal">{{ doc.algo_doc_type|replace('_', ' ') }}</span>
             {% endif %}
-            {% if doc.policy_significance %}
-            <span class="badge {% if doc.policy_significance == 'high' %}badge-central{% elif doc.policy_significance == 'medium' %}badge-provincial{% else %}badge-unknown{% endif %}">{{ doc.policy_significance }} significance</span>
-            {% elif doc.importance %}
+            {% if doc.ai_relevance and doc.ai_relevance >= 0.2 %}
+            <span class="badge {% if doc.ai_relevance >= 0.5 %}badge-central{% else %}badge-provincial{% endif %}">AI {{ "%.0f"|format(doc.ai_relevance * 100) }}%</span>
+            {% endif %}
+            {% if doc.citation_rank and doc.citation_rank >= 3 %}
+            <span class="badge badge-district">{{ "%.0f"|format(doc.citation_rank) }} citations</span>
+            {% endif %}
+            {% if doc.importance %}
             <span class="badge {% if doc.importance == 'high' %}badge-central{% elif doc.importance == 'medium' %}badge-provincial{% else %}badge-unknown{% endif %}">{{ doc.importance }}</span>
             {% endif %}
             <span class="text-gray-400 text-xs">{{ doc.date_published or '' }}</span>

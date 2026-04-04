@@ -74,7 +74,9 @@ def get_admin_level(doc_number: str) -> str:
 async def get_documents(db, site_key=None, category=None, year=None,
                         has_docnum=None, page=1, per_page=50,
                         date_start=None, date_end=None,
-                        importance=None, source_type=None):
+                        importance=None, source_type=None,
+                        doc_type=None, min_ai_relevance=None,
+                        sort_by=None):
     """Paginated document listing with optional filters. Returns (rows, total).
 
     date_start/date_end are Unix timestamps (ints). When provided they
@@ -124,6 +126,14 @@ async def get_documents(db, site_key=None, category=None, year=None,
         param_idx += 1
         where.append(f"d.importance = ${param_idx}")
         params.append(importance)
+    if doc_type:
+        param_idx += 1
+        where.append(f"d.algo_doc_type = ${param_idx}")
+        params.append(doc_type)
+    if min_ai_relevance is not None:
+        param_idx += 1
+        where.append(f"d.ai_relevance >= ${param_idx}")
+        params.append(float(min_ai_relevance))
 
     where_sql = " AND ".join(where)
     offset = (page - 1) * per_page
@@ -137,14 +147,22 @@ async def get_documents(db, site_key=None, category=None, year=None,
     param_idx += 1
     offset_idx = param_idx
 
+    # Sort order
+    order_clause = "d.date_written DESC"
+    if sort_by == "citation_rank":
+        order_clause = "d.citation_rank DESC NULLS LAST"
+    elif sort_by == "ai_relevance":
+        order_clause = "d.ai_relevance DESC NULLS LAST"
+
     rows = await db.fetch(
         f"""SELECT d.id, d.title, d.document_number, d.publisher,
                    d.date_written, d.date_published, d.site_key,
                    d.classify_main_name, (COALESCE(d.body_text_cn, '') != '') as has_body,
-                   d.title_en, d.importance, d.category, d.summary_en
+                   d.title_en, d.importance, d.category, d.summary_en,
+                   d.citation_rank, d.algo_doc_type, d.ai_relevance
             FROM documents d {join_sites}
             WHERE {where_sql}
-            ORDER BY d.date_written DESC
+            ORDER BY {order_clause}
             LIMIT ${limit_idx} OFFSET ${offset_idx}""",
         *params, per_page, offset
     )
