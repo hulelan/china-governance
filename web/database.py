@@ -135,6 +135,8 @@ async def lifespan(app):
         import aiosqlite
         conn = await aiosqlite.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
         conn.row_factory = aiosqlite.Row
+        # Limit SQLite memory usage (~32MB cache instead of unbounded)
+        await conn.execute("PRAGMA cache_size = -32000")
         app.state.db = SQLiteDB(conn)
 
     yield

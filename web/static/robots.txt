@@ -1,0 +1,7 @@
+User-agent: *
+Crawl-delay: 10
+Allow: /
+
+User-agent: Googlebot
+Crawl-delay: 10
+Allow: /
