@@ -223,7 +223,38 @@ Anhui, Chengdu, Hebei, Henan, Hubei, Gansu, Guangxi, Inner Mongolia, Tianjin, Xi
 |------|-------|
 | Model | DeepSeek API |
 | Classified (v1 prompt) | ~109,000 docs |
-| Classified (v2 prompt) | 24k/133k done (paused) |
+| Classified (v2 prompt) | 24k/135k done (paused) |
 | Cost | ~$0.50/1k docs |
 | Concurrency | Keep at 2 (DeepSeek silently rate-limits with empty responses at higher) |
 | To enable | Add `DEEPSEEK_API_KEY=sk-...` to `.env` — daily pipeline will auto-classify |
+
+## Future: ML & Interpretability
+
+Long-term ambitions for the corpus beyond crawling and classification.
+
+### Semantic Search & Embeddings
+- Generate embeddings for all 135k docs using a Chinese embedding model (BGE-M3 or similar)
+- Enable "similar documents" and meaning-based search on the website
+- Cluster documents by topic without keyword matching
+- Cost: ~$1 GPU job on Modal or RunPod. Store in SQLite or vector DB.
+- **This is the highest-impact ML project** — transforms navigation of the corpus
+
+### Fine-tune a Chinese Policy Classifier
+- Train a small model (Qwen-7B or Yi-6B) on our labeled data (24k v2-classified docs) to replace DeepSeek API
+- Would eliminate the $0.50/1k API cost and run locally
+- Need: A10 GPU for a few hours (~$5-20 on Lambda/RunPod)
+- Could also classify doc_type and ai_relevance more accurately than regex
+
+### Interpretability Over the Corpus
+- Analyze how policy language propagates from central → local (do districts copy-paste or adapt?)
+- Track evolution of key terms (人工智能, 新质生产力, 算力) over time and across admin levels
+- Identify which central policies generate the most local implementation activity
+- Map the "influence graph" — which ministries' language appears most in local docs
+
+### Compute Options
+| Provider | Use case | Cost |
+|----------|----------|------|
+| Modal | Embeddings, batch inference (serverless GPU, pay-per-second) | ~$1/job |
+| RunPod | Fine-tuning, longer GPU sessions | $0.20-0.50/hr |
+| Lambda | Serious training (H100) | $2-3/hr |
+| Google Colab | Quick experiments | Free (T4) / $10/mo (A100) |
