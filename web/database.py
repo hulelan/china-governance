@@ -139,11 +139,5 @@ async def lifespan(app):
         await conn.execute("PRAGMA cache_size = -32000")
         app.state.db = SQLiteDB(conn)
 
-    # Warm the stats cache at startup so the first user doesn't wait
-    from web.services.documents import get_stats, get_sites, get_categories
-    await get_stats(app.state.db)
-    await get_sites(app.state.db)
-    await get_categories(app.state.db)
-
     yield
     await app.state.db.close()
