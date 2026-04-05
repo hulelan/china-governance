@@ -253,15 +253,24 @@ async def get_sites(db):
     return result
 
 
+_categories_cache = {"data": None, "ts": 0}
+
 async def get_categories(db):
     """Distinct classify_main_name values with document counts, ordered by frequency."""
-    return await db.fetch("""
+    import time
+    now = time.time()
+    if _categories_cache["data"] and now - _categories_cache["ts"] < 3600:
+        return _categories_cache["data"]
+    result = await db.fetch("""
         SELECT classify_main_name, COUNT(*) as count
         FROM documents
         WHERE classify_main_name != ''
         GROUP BY classify_main_name
         ORDER BY count DESC
     """)
+    _categories_cache["data"] = result
+    _categories_cache["ts"] = now
+    return result
 
 
 _stats_cache = {"data": None, "ts": 0}
