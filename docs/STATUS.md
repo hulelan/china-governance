@@ -1,14 +1,18 @@
 # Project Status
 
-*Last updated: 2026-04-03*
+*Last updated: 2026-04-05*
 
 ## Corpus Summary
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 135,419+ |
-| With body text | 123,510 (91.2%) |
-| Total sites | 61+ |
+| Total documents | 135,480 |
+| With body text | 126,027 (93%) |
+| Total sites | 62 |
+| Algorithmic scores | All docs scored: citation_rank, algo_doc_type (19 types), ai_relevance (0-1) |
+| High AI relevance (>=0.5) | 195 docs |
+| Medium+ AI relevance (>=0.2) | 2,627 docs |
+| Docs with inbound citations | 12,102 |
 | Classified (v2 prompt) | ~24,000 (18%). Paused — restart when ready |
 | Classified (v1 only) | ~109,000 (have title_en/summary_en but no doc_type/policy_significance) |
 | Citations | 227,516 (14,265 LLM-sourced) |
@@ -17,11 +21,12 @@
 
 | Component | State |
 |-----------|-------|
-| Website | Live at chinagovernance.com (Railway) |
-| Database | PostgreSQL on Railway (synced 2026-04-01: 133,050 docs) |
+| Website | Live at chinagovernance.com (Railway). Redesigned: white/serif research theme |
+| Database | PostgreSQL on Railway (135,480 docs, scores synced 2026-04-04) |
 | Local DB | SQLite `documents.db` (~1GB, source of truth) |
-| Daily pipeline | Mac launchd at 7:00 AM: crawl → classify (if key set) → sync to Postgres |
+| Daily pipeline | Run manually: `./scripts/daily_sync.sh`. launchd blocked by macOS Full Disk Access |
 | Telegram | Reports sent after each daily sync run |
+| **Planned migration** | Replace Railway Postgres with VPS + SQLite via rsync (see backlog) |
 
 ## Droplet (Singapore, DigitalOcean) — Status Unknown
 
@@ -149,66 +154,60 @@ Runs on Mac via launchd (`com.claude.china-governance-sync`) at 7:00 AM daily.
 
 **30-min timeout** per crawler to prevent pipeline stalls.
 
-## Recent Completions (2026-03-29 — 04-03)
+## Recent Completions (2026-03-29 — 04-05)
 
-- SIC crawler (1,117 docs from www.sic.gov.cn)
-- NDA expanded to 5 sections (34 → 379 docs)
-- ifeng tech section added (80 articles, total now 180)
-- Incremental Postgres sync fix
-- Classification v2 prompt: doc_type (10 types) + policy_significance + references_json. Eval: 94%/88%
-- URL dedup: partial unique index on url, prevents cross-machine duplicates (also cleaned ~1,300 existing dupes)
-- Automated pipeline: Mac launchd daily at 7 AM, Telegram reports, 30-min timeouts
-- 14 new crawlers: ifeng fix, Zhejiang, NDA, Tsinghua AIIG, Chongqing, Wuhan, MOFCOM, SAMR, Xinhua, People's Daily, Suzhou, Hangzhou, Heilongjiang
-- Daily manifests (CSV) for data loss detection, body text backfill script
-- AI Chain expanded: 287 → 384+ docs (added 算力, 大模型, 生成式, 自动驾驶, 智能网联)
-- Bidirectional citation chain (TDD: 8/8 tests green)
-- LLM-extracted references integrated into citation extraction (227k total citations)
-- Paragraph breaks fixed on document pages
-- Mac hostname fix + timeout fallback for macOS
+- **Website redesign**: All 13 templates rewritten. White/serif research theme, flipped document layout (body left, metadata right), proper Chinese typography (line-height 1.9). Merged to main, live on production.
+- **Algorithmic document scoring**: citation_rank (PageRank-like, weighted by source level), algo_doc_type (19 types from title regex), ai_relevance (0-1 keyword density). 51 docs identified as both high-AI and frequently cited — the core AI policy reading list. Browse page supports filtering/sorting by all three.
+- **Body text backfill**: `backfill_from_html.py` re-extracted 1,703 bodies from saved raw HTML (MOST +685, NDRC +690, heyuan +229). Coverage 91% → 93%.
+- **MOST body extraction fix**: Added TRS_UEDITOR and `text wide` content div support (was only looking for `id=Zoom`).
+- **SIC crawler** (1,117 docs from www.sic.gov.cn — digital economy, informatization, e-gov, macro analysis)
+- **NDA expanded** to 5 sections (34 → 379 docs)
+- **ifeng expanded**: tech section (+80), 9 regional channels (hlj, ah, jl, sd, gd, js, hn, hb, cq)
+- **IPC Court crawler** built (ipc.court.gov.cn — Supreme Court IP Tribunal, ~5k articles, pending deep run)
+- **Incremental Postgres sync**: `sqlite_to_postgres.py` only sends docs with id > max Postgres id (was re-sending all 135k every time)
+- **Daily pipeline fixes**: hostname detection via `uname` (was hardcoded, kept changing), macOS `timeout` fallback, mofcom added to crawler list
+- **launchd issue found**: macOS blocks `/bin/bash` without Full Disk Access. Manual runs for now.
+- Classification v2 prompt, URL dedup, 14+ new crawlers, bidirectional citations, LLM citation integration (from prior sessions)
 
 ## Backlog — What To Do Next
 
-### In Progress
-| Task | Status | Notes |
-|------|--------|-------|
-| Re-classify all docs with v2 prompt | **Paused** (24k/135k done) | Add `DEEPSEEK_API_KEY` to `.env` to enable in daily pipeline |
-| Daily pipeline | **Running** | Mac launchd at 7 AM. All 28 crawlers + Postgres sync |
+### Infrastructure
+| Task | Priority | Notes |
+|------|----------|-------|
+| **Migrate off Railway Postgres** | **High** | Replace with VPS + SQLite via rsync. Railway's shared Postgres can't handle bulk UPDATEs (scores, classification, body backfill all timeout). Plan: Mac crawls → rsync documents.db to VPS → web app reads SQLite directly. $6/mo DigitalOcean droplet. |
+| Fix launchd or switch to manual daily runs | Medium | macOS blocks `/bin/bash` without Full Disk Access in System Settings. Alternative: just run `./scripts/daily_sync.sh` manually each day. |
+| Run IPC Court deep crawl | Medium | `python3 -m crawlers.ipc_court --deep` — iterates all ~5k article IDs. Run when DB is free. |
+| Re-classify all docs with v2 prompt | **Paused** (24k/135k) | Add `DEEPSEEK_API_KEY` to `.env` to enable. ~$55 remaining, ~4 days at concurrency 2 |
 
 ### Website
 | Task | Priority | Notes |
 |------|----------|-------|
-| Redesign: white bg, serif text, looser density | High | Branch `redesign/warm-serif` started. Move from dark terminal aesthetic to research publication style |
-| Surface doc_type + policy_significance in browse/search | Medium | Replace old importance/category filters with new v2 fields |
+| ~~Redesign~~ | **Done** | White/serif research theme, merged to main |
+| ~~Surface scores in browse/search~~ | **Done** | Doc type filter, AI relevance filter, citation rank sort |
 | Show references_json on document pages | Medium | Clickable links to referenced policies |
+| Semantic search (embeddings) | Medium | Generate embeddings for all docs, enable "similar documents" and meaning-based search. ~$1 GPU job. |
 
 ### Data Quality
 | Task | Priority | Notes |
 |------|----------|-------|
-| Translate high-significance docs to English | High | Full body translation for original_policy + policy_significance=high docs. DeepSeek or dedicated translation API |
+| Translate high-significance docs to English | High | Full body translation for AI policy docs. DeepSeek or dedicated translation API |
 | Update chain.py for bidirectional queries | Medium | Code tested (8/8 green), needs deployment to web service |
 | Re-run extract_citations.py after classification finishes | Medium | More references_json = more LLM citations |
+| Reduce "other" doc type bucket | Low | 68k docs classified as "other" — need more title regex patterns |
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj |
 | Xinhua fortune + politics_read | Low | ~1,250 more docs |
 
-### Source Discovery (`scripts/discover_sources.py`)
-| Task | Priority | Notes |
-|------|----------|-------|
-| Web search discovery | High | Use Baidu/Google for `site:gov.cn 人工智能 政策` to find domains we don't know about |
-| Periodic discovery runs | Medium | Run discover_sources.py in daily pipeline to detect new AI content on known sites |
-
 ### Source Expansion
 
-**Reachable from US, not yet built:**
-| Site | Level | AI Hits | Priority | Notes |
-|------|-------|---------|----------|-------|
-| peopleapp.com | Media | — | High | People's Daily app. Nuxt.js SPA — article SSR works, column listing needs API reverse-engineering |
-| ifeng regional (zj.ifeng.com etc.) | Media | — | Medium | Same structure as tech.ifeng.com. Zhejiang channel has AI/data commerce coverage |
-| Beijing /ywdt/gzdt/ section | Municipal | — | Medium | Work updates section not covered by current Beijing crawler |
-| CAS (www.cas.cn) | Central | 2 | Medium | Chinese Academy of Sciences |
-| SASAC (www.sasac.gov.cn) | Central | 1 | Medium-High | Now reachable (was timing out) |
-| Jiangxi (www.jx.gov.cn) | Province | 2 | Low | |
-| Shandong (www.shandong.gov.cn) | Province | 2 | Low | Empty stub in crawlers/ |
-| Jinan (www.jinan.gov.cn) | Municipal | 2 | Low | Shandong capital |
+**Not yet built:**
+| Site | Level | Priority | Notes |
+|------|-------|----------|-------|
+| peopleapp.com | Media | High | People's Daily app. Nuxt.js SPA — article SSR works, column listing needs API reverse-engineering |
+| Beijing /ywdt/gzdt/ section | Municipal | Medium | Work updates section not covered by current Beijing crawler |
+| CAS (www.cas.cn) | Central | Medium | Chinese Academy of Sciences |
+| SASAC (www.sasac.gov.cn) | Central | Medium-High | Now reachable (was timing out) |
+| Shandong (www.shandong.gov.cn) | Province | Low | Empty stub in crawlers/ |
+| Jiangxi, Jinan | Province/Municipal | Low | |
 
 **Reachable, not yet scanned for AI:**
 MOE, PBoC, TC260, CSRC, NBS, Sichuan, Nanjing, Ningbo, Qingdao, Wuxi, Xi'an, Xiamen, Zhengzhou + others (33 total reachable)
