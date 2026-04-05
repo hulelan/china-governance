@@ -230,9 +230,15 @@ async def get_document_citations(db, doc_id: int):
     return cites, cited_by
 
 
+_sites_cache = {"data": None, "ts": 0}
+
 async def get_sites(db):
     """All sites with aggregate doc counts, body-text coverage, and doc-number counts."""
-    return await db.fetch("""
+    import time
+    now = time.time()
+    if _sites_cache["data"] and now - _sites_cache["ts"] < 3600:
+        return _sites_cache["data"]
+    result = await db.fetch("""
         SELECT s.site_key, s.name, s.base_url, s.admin_level, s.sid,
                COUNT(d.id) as doc_count,
                SUM(CASE WHEN d.body_text_cn != '' THEN 1 ELSE 0 END) as body_count,
@@ -242,6 +248,9 @@ async def get_sites(db):
         GROUP BY s.site_key, s.name, s.base_url, s.admin_level, s.sid
         ORDER BY doc_count DESC
     """)
+    _sites_cache["data"] = result
+    _sites_cache["ts"] = now
+    return result
 
 
 async def get_categories(db):
@@ -255,15 +264,22 @@ async def get_categories(db):
     """)
 
 
+_stats_cache = {"data": None, "ts": 0}
+
 async def get_stats(db):
     """Corpus-wide statistics: total documents, body-text and doc-number coverage, and year breakdown."""
-    total = await db.fetchval("SELECT COUNT(*) FROM documents")
-    with_body = await db.fetchval(
-        "SELECT COUNT(*) FROM documents WHERE body_text_cn != ''"
-    )
-    with_docnum = await db.fetchval(
-        "SELECT COUNT(*) FROM documents WHERE document_number != ''"
-    )
+    import time
+    now = time.time()
+    if _stats_cache["data"] and now - _stats_cache["ts"] < 3600:
+        return _stats_cache["data"]
+
+    # Single scan for all counts instead of 4 separate queries
+    row = await db.fetchrow("""
+        SELECT COUNT(*) as total,
+               SUM(CASE WHEN body_text_cn != '' THEN 1 ELSE 0 END) as with_body,
+               SUM(CASE WHEN document_number != '' THEN 1 ELSE 0 END) as with_docnum
+        FROM documents
+    """)
     site_count = await db.fetchval("SELECT COUNT(*) FROM sites")
 
     # By year
@@ -279,13 +295,16 @@ async def get_stats(db):
         ORDER BY yr
     """)
 
-    return {
-        "total": total,
-        "with_body": with_body,
-        "with_docnum": with_docnum,
+    result = {
+        "total": row["total"] or row[0],
+        "with_body": row["with_body"] or row[1],
+        "with_docnum": row["with_docnum"] or row[2],
         "site_count": site_count,
         "by_year": [dict(r) for r in year_rows],
     }
+    _stats_cache["data"] = result
+    _stats_cache["ts"] = now
+    return result
 
 
 def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
