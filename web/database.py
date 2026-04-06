@@ -116,7 +116,9 @@ def _pg_to_sqlite(query: str, args: tuple) -> tuple:
         new_args.append(val)
         return '?'
 
-    # Handle = ANY($N::int[]) pattern first
+    # Handle != ALL($N::int[]) → NOT IN (?,?,?) first
+    query = re.sub(r'!=\s*ALL\(\$(\d+)::int\[\]\)', lambda m: 'NOT ' + replace_placeholder(m), query)
+    # Handle = ANY($N::int[]) → IN (?,?,?)
     query = re.sub(r'=\s*ANY\(\$(\d+)::int\[\]\)', lambda m: replace_placeholder(m), query)
     # Then handle remaining $N
     query = re.sub(r'\$(\d+)', replace_placeholder, query)
