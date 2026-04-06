@@ -108,74 +108,62 @@ async def api_inbox(request: Request, site: str = None, admin_level: str = None,
 @router.get("/network")
 async def api_network(request: Request, site: str = None, min_degree: int = 2,
                       date_start: str = None, date_end: str = None):
-    """Citation network as nodes + edges for D3.js, with optional date range filter."""
+    """Citation network as nodes + edges for D3.js, using pre-computed citations table."""
     db = request.app.state.db
-    ds = date_str_to_timestamp(date_start) if date_start else None
-    de = date_str_to_timestamp(date_end) if date_end else None
 
-    where = ["body_text_cn != ''"]
-    params = []
-    idx = 0
-    if site:
-        idx += 1
-        where.append(f"site_key = ${idx}")
-        params.append(site)
-    if ds is not None:
-        idx += 1
-        where.append(f"date_written >= ${idx}")
-        params.append(ds)
-    if de is not None:
-        idx += 1
-        where.append(f"date_written < ${idx}")
-        params.append(de)
+    # Get citation counts per target_ref (how many times each doc is cited)
+    cite_rows = await db.fetch("""
+        SELECT target_ref, COUNT(*) as cnt, target_level
+        FROM citations
+        GROUP BY target_ref
+        HAVING cnt >= $1
+    """, min_degree)
 
-    where_sql = " AND ".join(where)
-    rows = await db.fetch(
-        f"SELECT id, title, document_number, site_key, body_text_cn, publisher "
-        f"FROM documents WHERE {where_sql}", *params
-    )
+    frequent = {r["target_ref"]: {"count": r["cnt"], "level": r["target_level"]} for r in cite_rows}
 
-    # Build known docs lookup
-    all_docs = await db.fetch(
-        "SELECT id, document_number, title, site_key FROM documents WHERE document_number != ''"
-    )
-    known = {r["document_number"]: dict(r) for r in all_docs}
+    if not frequent:
+        return {"nodes": [], "edges": []}
 
-    raw_edges = []  # (source_docnum, target_docnum, source_id)
-    node_refs = {}  # docnum -> citation count
+    # Get edges involving frequent nodes
+    edge_rows = await db.fetch("""
+        SELECT c.source_id, c.target_ref,
+               sd.document_number as source_docnum
+        FROM citations c
+        JOIN documents sd ON sd.id = c.source_id
+        WHERE sd.document_number != ''
+    """)
 
-    for row in rows:
-        refs = REF_PATTERN.findall(row["body_text_cn"])
-        if not refs:
-            continue
-        src = row["document_number"]
-        for ref in refs:
-            node_refs[ref] = node_refs.get(ref, 0) + 1
-            if src:  # only create edges from docs with a document_number
-                raw_edges.append((src, ref, row["id"]))
-
-    # Filter by min degree
-    frequent = {ref for ref, cnt in node_refs.items() if cnt >= min_degree}
-
-    # Build node set — include frequent cited docs + source docs that cite them
-    node_set = set(frequent)
-    for src, tgt, _ in raw_edges:
+    # Build node set and filtered edges
+    node_set = set(frequent.keys())
+    raw_edges = []
+    for r in edge_rows:
+        tgt = r["target_ref"]
+        src = r["source_docnum"]
         if tgt in frequent:
             node_set.add(src)
+            raw_edges.append((src, tgt, r["source_id"]))
+
+    # Resolve document info for all nodes
+    known = {}
+    for r in await db.fetch(
+        "SELECT id, document_number, title, site_key FROM documents WHERE document_number != ''"
+    ):
+        if r["document_number"] in node_set:
+            known[r["document_number"]] = dict(r)
 
     # Build node list
     nodes = []
     for ref in node_set:
-        level = get_admin_level(ref)
+        info = frequent.get(ref, {})
         resolved = known.get(ref)
         nodes.append({
-            "id": ref, "label": ref, "level": level,
-            "citations": node_refs.get(ref, 0),
+            "id": ref, "label": ref,
+            "level": info.get("level") or get_admin_level(ref),
+            "citations": info.get("count", 0),
             "title": resolved["title"] if resolved else "",
             "resolved": bool(resolved),
         })
 
-    # Filter edges to only include nodes in the graph
     edges = [
         {"source": src, "target": tgt, "source_id": sid}
         for src, tgt, sid in raw_edges

@@ -144,12 +144,22 @@ async def network_page(request: Request):
     })
 
 
+_dashboard_cache = {"data": None, "ts": 0}
+
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Analytics dashboard with timeline, citation hierarchy, top-cited docs, and coverage charts."""
+    import time
     db = request.app.state.db
     stats = await get_stats(db)
     sites = await get_sites(db)
+
+    now = time.time()
+    if _dashboard_cache["data"] and now - _dashboard_cache["ts"] < 3600:
+        cached = _dashboard_cache["data"]
+        return templates.TemplateResponse("dashboard.html", {
+            "request": request, "stats": stats, "sites": sites, **cached,
+        })
 
     # Timeline data
     timeline_labels = [str(yr["year"]) for yr in stats["by_year"]]
@@ -189,23 +199,38 @@ async def dashboard(request: Request):
     coverage_body = [s["body_count"] for s in sites[:12]]
     coverage_no_body = [s["doc_count"] - s["body_count"] for s in sites[:12]]
 
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request, "stats": stats, "sites": sites,
+    dashboard_data = {
         "timeline_labels": timeline_labels, "timeline_data": timeline_data,
         "hierarchy_labels": hierarchy_labels, "hierarchy_data": hierarchy_data,
         "top_cited": top_cited,
         "coverage_labels": coverage_labels, "coverage_body": coverage_body,
         "coverage_no_body": coverage_no_body,
+    }
+    _dashboard_cache["data"] = dashboard_data
+    _dashboard_cache["ts"] = now
+
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request, "stats": stats, "sites": sites, **dashboard_data,
     })
 
+
+_chain_cache = {}
 
 @router.get("/chain/{topic}", response_class=HTMLResponse)
 async def chain_page(request: Request, topic: str = "ai"):
     """Policy chain page showing cross-level citation hierarchy for a topic (e.g. AI, housing)."""
+    import time
     db = request.app.state.db
     stats = await get_stats(db)
     keyword = TOPIC_KEYWORDS.get(topic, topic)
-    chain = await get_chain(db, keyword, topic=topic)
+
+    now = time.time()
+    cached = _chain_cache.get(topic)
+    if cached and now - cached["ts"] < 3600:
+        chain = cached["data"]
+    else:
+        chain = await get_chain(db, keyword, topic=topic)
+        _chain_cache[topic] = {"data": chain, "ts": now}
 
     return templates.TemplateResponse("chain.html", {
         "request": request, "stats": stats, "chain": chain,
