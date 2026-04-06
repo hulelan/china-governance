@@ -155,17 +155,11 @@ async def dashboard(request: Request):
     timeline_labels = [str(yr["year"]) for yr in stats["by_year"]]
     timeline_data = [yr["count"] for yr in stats["by_year"]]
 
-    # Citation hierarchy — compute from body text
-    rows = await db.fetch(
-        "SELECT body_text_cn FROM documents WHERE body_text_cn != ''"
+    # Citation hierarchy — use pre-computed citations table
+    level_rows = await db.fetch(
+        "SELECT target_level, COUNT(*) as count FROM citations GROUP BY target_level"
     )
-    level_counts = Counter()
-    all_refs_counter = Counter()
-    for row in rows:
-        refs = REF_PATTERN.findall(row["body_text_cn"])
-        for ref in refs:
-            level_counts[get_admin_level(ref)] += 1
-            all_refs_counter[ref] += 1
+    level_counts = {r["target_level"]: r["count"] for r in level_rows}
 
     hierarchy_labels = ["Central", "Provincial", "Municipal", "District", "Unknown"]
     hierarchy_data = [
@@ -174,22 +168,21 @@ async def dashboard(request: Request):
         level_counts.get("unknown", 0),
     ]
 
-    # Top cited
-    known_docs = {}
-    for r in await db.fetch(
-        "SELECT id, document_number, title FROM documents WHERE document_number != ''"
-    ):
-        known_docs[r["document_number"]] = (r["id"], r["title"])
-
-    top_cited = []
-    for docnum, count in all_refs_counter.most_common(25):
-        resolved = known_docs.get(docnum)
-        top_cited.append({
-            "docnum": docnum, "count": count, "level": get_admin_level(docnum),
-            "resolved": bool(resolved),
-            "resolved_id": resolved[0] if resolved else None,
-            "title": resolved[1] if resolved else "",
-        })
+    # Top cited — from citations table with JOIN to resolve titles
+    top_rows = await db.fetch("""
+        SELECT c.target_ref as docnum, COUNT(*) as count, c.target_level as level,
+               d.id as resolved_id, d.title
+        FROM citations c
+        LEFT JOIN documents d ON d.document_number = c.target_ref
+        GROUP BY c.target_ref
+        ORDER BY count DESC
+        LIMIT 25
+    """)
+    top_cited = [{
+        "docnum": r["docnum"], "count": r["count"], "level": r["level"],
+        "resolved": r["resolved_id"] is not None,
+        "resolved_id": r["resolved_id"], "title": r["title"] or "",
+    } for r in top_rows]
 
     # Coverage data
     coverage_labels = [s["name"][:20] for s in sites[:12]]
