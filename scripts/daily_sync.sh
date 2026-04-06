@@ -227,33 +227,24 @@ fi
 CLASSIFIED_AFTER=$(sqlite3 documents.db "SELECT COUNT(*) FROM documents WHERE classified_at != '' AND classified_at IS NOT NULL" 2>/dev/null || echo 0)
 NEWLY_CLASSIFIED=$((CLASSIFIED_AFTER - CLASSIFIED_BEFORE))
 
-# --- Phase 3: Sync to Postgres ---
-PG_SYNCED=false
-PG_DOC_COUNT=0
-if [ -n "${DATABASE_URL:-}" ]; then
-    log "Phase 3: Syncing to Postgres..."
-    # Push new docs
-    SYNC_OUTPUT=$(python3 scripts/sqlite_to_postgres.py 2>&1 | tee -a "$LOG")
-    # Backfill body text for docs that were synced before bodies were fetched
-    python3 scripts/backfill_bodies.py >> "$LOG" 2>&1 || true
-    # Verify: compare local vs Postgres doc counts
-    LOCAL_COUNT=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
-    PG_DOC_COUNT=$(python3 -c "
-import psycopg2, os
-c = psycopg2.connect(os.environ['DATABASE_URL'])
-r = c.cursor()
-r.execute('SELECT COUNT(*) FROM documents')
-print(r.fetchone()[0])
-c.close()
-" 2>/dev/null || echo "?")
-    if [ "$LOCAL_COUNT" != "$PG_DOC_COUNT" ]; then
-        log "  WARNING: Local ($LOCAL_COUNT) != Postgres ($PG_DOC_COUNT)"
+# --- Phase 3: Rsync DB to production droplet ---
+RSYNC_OK=false
+DROPLET_IP="104.236.88.45"
+if ssh -o ConnectTimeout=5 -o BatchMode=yes root@$DROPLET_IP true 2>/dev/null; then
+    log "Phase 3: Rsyncing DB to droplet ($DROPLET_IP)..."
+    # Checkpoint WAL so all data is in the main DB file before rsync
+    sqlite3 documents.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true
+    if rsync -az documents.db root@$DROPLET_IP:/root/china-governance/documents.db >> "$LOG" 2>&1; then
+        # Restart the web app to pick up new data
+        ssh root@$DROPLET_IP 'systemctl restart chinagovernance' >> "$LOG" 2>&1 || true
+        REMOTE_COUNT=$(ssh root@$DROPLET_IP 'sqlite3 /root/china-governance/documents.db "SELECT COUNT(*) FROM documents"' 2>/dev/null || echo "?")
+        log "  Synced: $REMOTE_COUNT docs on droplet"
+        RSYNC_OK=true
     else
-        log "  Verified: $PG_DOC_COUNT docs in Postgres (matches local)"
+        log "  ERROR: rsync failed"
     fi
-    PG_SYNCED=true
 else
-    log "Phase 3: SKIPPED (no DATABASE_URL)"
+    log "Phase 3: SKIPPED (droplet unreachable)"
 fi
 
 # Weekly VACUUM to reclaim space (droplet only, Sundays)
@@ -318,7 +309,7 @@ $(echo -e "$CRAWL_RESULTS")
 
 🗄 *Database:*
 • SQLite total: $DOC_COUNT_FINAL docs
-• Postgres: ${PG_DOC_COUNT} docs (synced: $PG_SYNCED)
+• Droplet: ${REMOTE_COUNT:-?} docs (rsync: $RSYNC_OK)
 • 🔴 High: $HIGH | 🟡 Medium: $MEDIUM | ⚪ Low: $LOW
 $([ -n "$TOP_SITES" ] && echo "
 📍 *Top sites today:*
