@@ -92,40 +92,60 @@ DATABASE_URL="" uvicorn web.app:app --reload --port 8001  # Local dev (SQLite)
 # Opens SQLite in read-only mode — safe to run alongside crawlers (WAL mode)
 ```
 
+### Daily Crawl + Sync
+```bash
+# Run manually (takes 4-5 hours):
+nohup ./scripts/daily_sync.sh > logs/daily_$(date +%Y%m%d_%H%M).log 2>&1 &
+
+# What it does:
+# 1. Crawls all 62 sites (gkmlpt, central ministries, provinces, media)
+# 2. Backfills missing body text
+# 3. WAL checkpoint → rsync documents.db to droplet → restart web app
+# 4. Sends Telegram report
+
+# Check progress:
+tail -f logs/daily_*.log
+
+# Auto-run not yet working — macOS blocks cron/launchd from accessing
+# ~/Desktop without Full Disk Access for /usr/sbin/cron.
+# To fix: System Settings → Privacy & Security → Full Disk Access → add /usr/sbin/cron
+# Then: crontab -e and add:
+#   0 7 * * * cd ~/Desktop/claude_code/china-governance && ./scripts/daily_sync.sh >> logs/cron.log 2>&1
+```
+
 ### Deploy to Production
 ```bash
-# Normally handled automatically by daily_sync.sh on both Mac and droplet.
-# Manual commands if needed:
+# Production is a DigitalOcean droplet (104.236.88.45, NYC3, 2CPU/2GB).
+# Deployment = rsync the SQLite DB + restart the web app.
 
-# Incremental sync (fast — only inserts new docs, skips existing)
-DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
-  python3 scripts/sqlite_to_postgres.py
+# Manual sync (if daily_sync.sh didn't run):
+sqlite3 documents.db "PRAGMA wal_checkpoint(TRUNCATE);"  # Flush WAL first!
+rsync -az documents.db root@104.236.88.45:/root/china-governance/documents.db
+ssh root@104.236.88.45 'systemctl restart chinagovernance'
 
-# Backfill body text for docs synced before bodies were fetched
-DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
-  python3 scripts/backfill_bodies.py
+# Pull code changes to droplet:
+ssh root@104.236.88.45 'cd /root/china-governance && git pull && systemctl restart chinagovernance'
 
-# Full rebuild (slow — drops all tables, re-inserts everything. Rarely needed.)
-DATABASE_URL="postgresql://postgres:yNpVZKsSVTBvGNozjIbgBsKsQAnrJQdF@gondola.proxy.rlwy.net:48854/railway" \
-  python3 scripts/sqlite_to_postgres.py --drop
-
-# Verify production
-curl -s "https://china-governance-production.up.railway.app/api/v1/stats" | python3 -m json.tool
+# Verify production:
+curl -s "https://www.chinagovernance.com/api/v1/stats" | python3 -m json.tool
 ```
 
 ## Architecture
 
 ```
-Local:      crawlers/ → documents.db (SQLite, source of truth)
-                            ↓ scripts/sqlite_to_postgres.py (incremental, id-based)
-Production: Railway Postgres ← web app (FastAPI + Jinja2 + D3.js)
+Local Mac:  crawlers/ → documents.db (SQLite, source of truth, ~2GB)
+                            ↓ rsync (incremental, ~50MB delta)
+Production: DigitalOcean droplet (104.236.88.45, NYC3)
+            nginx + certbot (HTTPS) → uvicorn (2 workers) → SQLite (read-only)
 ```
 
 - **Local SQLite** is the source of truth. Crawlers write here.
-- **Railway Postgres** is the production mirror. The live website reads from this.
-- Sync is incremental: `sqlite_to_postgres.py` only sends docs with id > max Postgres id. INSERTs work fine; bulk UPDATEs are painfully slow on Railway's shared Postgres (scores push took 70 min for 27k rows).
-- Web app uses `DATABASE_URL` env var for Postgres, falls back to local SQLite.
-- **Planned migration**: Replace Postgres with VPS + SQLite served directly via rsync. See STATUS.md backlog.
+- **Droplet** serves a read-only copy synced via rsync. No Postgres.
+- Sync flow: WAL checkpoint → rsync main DB file → restart uvicorn.
+- Web app caches heavy queries (stats, sites, categories) for 1 hour in-memory.
+- SSL via Let's Encrypt (certbot auto-renews). Expires July 4, 2026.
+- Droplet: 2 vCPU / 2GB RAM / 2GB swap / $18/mo.
+- **Old Railway Postgres** still exists but is no longer used. Can be decommissioned.
 
 ### Scoring Pipeline (no LLM)
 
