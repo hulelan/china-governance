@@ -107,31 +107,61 @@ async def api_inbox(request: Request, site: str = None, admin_level: str = None,
 
 @router.get("/network")
 async def api_network(request: Request, site: str = None, min_degree: int = 2,
-                      date_start: str = None, date_end: str = None):
+                      date_start: str = None, date_end: str = None,
+                      doc_type: str = None):
     """Citation network as nodes + edges for D3.js, using pre-computed citations table."""
     db = request.app.state.db
+    ds = date_str_to_timestamp(date_start) if date_start else None
+    de = date_str_to_timestamp(date_end) if date_end else None
 
-    # Get citation counts per target_ref (how many times each doc is cited)
-    cite_rows = await db.fetch("""
-        SELECT target_ref, COUNT(*) as cnt, target_level
-        FROM citations
-        GROUP BY target_ref
+    # Build source filter for citations (filter by source doc attributes)
+    source_where = ["sd.document_number != ''"]
+    source_params = []
+    idx = 1  # $1 is min_degree
+    if site:
+        idx += 1
+        source_where.append(f"sd.site_key = ${idx}")
+        source_params.append(site)
+    if ds is not None:
+        idx += 1
+        source_where.append(f"sd.date_written >= ${idx}")
+        source_params.append(ds)
+    if de is not None:
+        idx += 1
+        source_where.append(f"sd.date_written < ${idx}")
+        source_params.append(de)
+    if doc_type == "_untyped":
+        source_where.append("(sd.algo_doc_type IS NULL OR sd.algo_doc_type = '' OR sd.algo_doc_type = 'other')")
+    elif doc_type:
+        idx += 1
+        source_where.append(f"sd.algo_doc_type = ${idx}")
+        source_params.append(doc_type)
+
+    source_filter = " AND ".join(source_where)
+
+    # Get citation counts filtered by source doc attributes
+    cite_rows = await db.fetch(f"""
+        SELECT c.target_ref, COUNT(*) as cnt, c.target_level
+        FROM citations c
+        JOIN documents sd ON sd.id = c.source_id
+        WHERE {source_filter}
+        GROUP BY c.target_ref
         HAVING cnt >= $1
-    """, min_degree)
+    """, min_degree, *source_params)
 
     frequent = {r["target_ref"]: {"count": r["cnt"], "level": r["target_level"]} for r in cite_rows}
 
     if not frequent:
         return {"nodes": [], "edges": []}
 
-    # Get edges involving frequent nodes
-    edge_rows = await db.fetch("""
+    # Get edges involving frequent nodes (with same source filter)
+    edge_rows = await db.fetch(f"""
         SELECT c.source_id, c.target_ref,
                sd.document_number as source_docnum
         FROM citations c
         JOIN documents sd ON sd.id = c.source_id
-        WHERE sd.document_number != ''
-    """)
+        WHERE {source_filter}
+    """, min_degree, *source_params)  # min_degree not used but keeps param indices consistent
 
     # Build node set and filtered edges
     node_set = set(frequent.keys())
@@ -146,7 +176,7 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
     # Resolve document info for all nodes
     known = {}
     for r in await db.fetch(
-        "SELECT id, document_number, title, site_key FROM documents WHERE document_number != ''"
+        "SELECT id, document_number, title, site_key, algo_doc_type FROM documents WHERE document_number != ''"
     ):
         if r["document_number"] in node_set:
             known[r["document_number"]] = dict(r)
@@ -162,6 +192,7 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
             "citations": info.get("count", 0),
             "title": resolved["title"] if resolved else "",
             "resolved": bool(resolved),
+            "doc_type": resolved.get("algo_doc_type", "") if resolved else "",
         })
 
     edges = [

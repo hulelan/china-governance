@@ -8,24 +8,49 @@
     <div class="flex gap-4" style="height: calc(100vh - 100px);">
         <!-- Controls -->
         <div class="w-56 flex-shrink-0 space-y-3">
-            <div class="card p-3 text-sm" x-data="{site: '', minDeg: 2, dateStart: '', dateEnd: ''}">
+            <div class="card p-3 text-sm" x-data="{site: '', minDeg: 3, dateStart: '2024-01-01', dateEnd: '', docType: '', refresh() { updateNetwork(this.site, this.minDeg, this.dateStart, this.dateEnd, this.docType) }}">
                 <div class="card-header -mx-3 -mt-3 mb-3">Filters</div>
                 <label class="text-gray-400 text-xs block mb-1">Site</label>
-                <select x-model="site" @change="updateNetwork(site, minDeg, dateStart, dateEnd)"
+                <select x-model="site" @change="refresh()"
                         class="w-full text-sm mb-3">
                     <option value="">All sites</option>
                     {% for s in sites %}
                     <option value="{{ s.site_key }}">{{ s.name }}</option>
                     {% endfor %}
                 </select>
+                <label class="text-gray-400 text-xs block mb-1">Policy type</label>
+                <select x-model="docType" @change="refresh()"
+                        class="w-full text-sm mb-3">
+                    <option value="">All documents</option>
+                    <option value="_untyped">Untyped / Other</option>
+                    <option value="regulation">Regulation</option>
+                    <option value="policy_issuance">Policy Issuance</option>
+                    <option value="action_plan">Action Plan</option>
+                    <option value="work_plan">Work Plan</option>
+                    <option value="strategy">Strategy</option>
+                    <option value="notice">Notice</option>
+                    <option value="announcement">Announcement</option>
+                    <option value="subsidy">Subsidy</option>
+                    <option value="subsidy_list">Subsidy List</option>
+                    <option value="administrative">Administrative</option>
+                    <option value="reply">Reply</option>
+                    <option value="explainer">Explainer</option>
+                    <option value="commentary">Commentary</option>
+                    <option value="consultation">Consultation</option>
+                    <option value="application_guide">Application Guide</option>
+                    <option value="standard">Standard</option>
+                    <option value="interview">Interview</option>
+                    <option value="personnel">Personnel</option>
+                    <option value="review">Review</option>
+                </select>
                 <label class="text-gray-400 text-xs block mb-1">Min citations</label>
-                <input type="range" x-model="minDeg" min="1" max="10" @input="updateNetwork(site, minDeg, dateStart, dateEnd)"
+                <input type="range" x-model="minDeg" min="1" max="10" @input="refresh()"
                        class="w-full mb-1">
                 <span class="text-gray-500 text-xs" x-text="minDeg + ' citations'"></span>
                 <label class="text-gray-400 text-xs block mb-1 mt-3">Date range</label>
-                <input type="date" x-model="dateStart" @change="updateNetwork(site, minDeg, dateStart, dateEnd)"
+                <input type="date" x-model="dateStart" @change="refresh()"
                        class="w-full text-sm mb-1">
-                <input type="date" x-model="dateEnd" @change="updateNetwork(site, minDeg, dateStart, dateEnd)"
+                <input type="date" x-model="dateEnd" @change="refresh()"
                        class="w-full text-sm">
             </div>
 
@@ -67,14 +92,15 @@ function initGraph() {
     const {width, height} = svg.node().getBoundingClientRect();
     g = svg.append('g');
     svg.call(d3.zoom().scaleExtent([0.1, 8]).on('zoom', (e) => g.attr('transform', e.transform)));
-    updateNetwork('', 2, '', '');
+    updateNetwork('', 3, '2024-01-01', '', '');
 }
 
-async function updateNetwork(site, minDeg, dateStart, dateEnd) {
+async function updateNetwork(site, minDeg, dateStart, dateEnd, docType) {
     let url = `/api/v1/network?min_degree=${minDeg}`;
     if (site) url += `&site=${site}`;
     if (dateStart) url += `&date_start=${dateStart}`;
     if (dateEnd) url += `&date_end=${dateEnd}`;
+    if (docType) url += `&doc_type=${docType}`;
     const data = await fetch(url).then(r => r.json());
 
     g.selectAll('*').remove();
