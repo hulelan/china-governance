@@ -82,7 +82,7 @@
                     <tr>
                         <td><a href="/browse?site={{ s.site_key }}">{{ s.name[:25] }}</a></td>
                         <td class="text-right mono text-gray-500">{{ "{:,}".format(s.doc_count) }}</td>
-                        <td class="text-right mono {{ 'text-green-600' if s.body_count / s.doc_count > 0.8 else 'text-amber-600' if s.body_count / s.doc_count > 0.5 else 'text-gray-400' if s.doc_count > 0 else '' }}">
+                        <td class="text-right mono {{ 'text-green-600' if s.doc_count > 0 and s.body_count / s.doc_count > 0.8 else 'text-amber-600' if s.doc_count > 0 and s.body_count / s.doc_count > 0.5 else 'text-gray-400' if s.doc_count > 0 else '' }}">
                             {% if s.doc_count > 0 %}{{ "{:.0f}%".format(s.body_count / s.doc_count * 100) }}{% endif %}
                         </td>
                     </tr>
