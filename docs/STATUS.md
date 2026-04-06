@@ -1,14 +1,14 @@
 # Project Status
 
-*Last updated: 2026-04-05*
+*Last updated: 2026-04-06*
 
 ## Corpus Summary
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 135,480 |
-| With body text | 126,027 (93%) |
-| Total sites | 62 |
+| Total documents | 137,932 |
+| With body text | ~128,000 (93%) |
+| Total sites | 64 |
 | Algorithmic scores | All docs scored: citation_rank, algo_doc_type (19 types), ai_relevance (0-1) |
 | High AI relevance (>=0.5) | 195 docs |
 | Medium+ AI relevance (>=0.2) | 2,627 docs |
@@ -21,21 +21,18 @@
 
 | Component | State |
 |-----------|-------|
-| Website | Live at chinagovernance.com (Railway). Redesigned: white/serif research theme |
-| Database | PostgreSQL on Railway (135,480 docs, scores synced 2026-04-04) |
-| Local DB | SQLite `documents.db` (~1GB, source of truth) |
-| Daily pipeline | Run manually: `./scripts/daily_sync.sh`. launchd blocked by macOS Full Disk Access |
+| Website | Live at chinagovernance.com. DigitalOcean droplet, nginx + uvicorn + SQLite |
+| Droplet | 104.236.88.45 (NYC3, 2 vCPU / 2GB RAM / 2GB swap, $18/mo) |
+| Database | SQLite `documents.db` (~2GB), rsynced from Mac after each crawl |
+| SSL | Let's Encrypt via certbot, auto-renews. Expires July 4, 2026 |
+| DNS | Squarespace. A records for @ and www → 104.236.88.45 |
+| Local DB | SQLite `documents.db` on Mac (source of truth) |
+| Daily pipeline | Run manually: `nohup ./scripts/daily_sync.sh &`. Crawl → backfill → WAL checkpoint → rsync → restart |
 | Telegram | Reports sent after each daily sync run |
-| **Planned migration** | Replace Railway Postgres with VPS + SQLite via rsync (see backlog) |
-
-## Droplet (Singapore, DigitalOcean) — Status Unknown
-
-| Item | Value |
-|------|-------|
-| IP | 152.42.184.25 |
-| Spec | 1 vCPU, 1GB RAM, 25GB disk |
-| Status | **Assumed down.** Mac now runs all crawlers including droplet-only ones (miit/most/zhejiang/hangzhou) |
-| Raw HTML | Disabled via `SKIP_RAW_HTML=1` to save disk |
+| Caching | Homepage/dashboard/chain cached 1hr in-memory. First visitor after restart pays ~10-25s cold load |
+| Workers | uvicorn with 2 workers (handles concurrent requests while one is doing heavy query) |
+| **Old Railway Postgres** | Decommissioned 2026-04-06. No longer used |
+| **Old Singapore droplet** | 152.42.184.25. Still alive, outdated code. Could be used as cold backup |
 
 ## Crawlers — Central Government
 
@@ -130,29 +127,81 @@
 
 ## Daily Pipeline
 
-Runs on Mac via launchd (`com.claude.china-governance-sync`) at 7:00 AM daily.
+Run manually on Mac: `nohup ./scripts/daily_sync.sh > logs/daily_$(date +%Y%m%d_%H%M).log 2>&1 &`
 
-**Phase 1 — Crawl (all 28 crawlers):**
-- Central: gov, ndrc, mof, mee, cac, nda, sic, samr, mofcom
+Auto-run not working yet — macOS blocks cron/launchd from accessing ~/Desktop without Full Disk Access for `/usr/sbin/cron`. To fix: System Settings → Privacy & Security → Full Disk Access → add /usr/sbin/cron.
+
+**Phase 1 — Crawl (~60 crawlers, 4-5 hours):**
+- Central: gov, ndrc, mof, mee, cac, nda, sic, samr, mofcom, ipc_court
 - Provinces: beijing, shanghai, jiangsu, chongqing, wuhan, suzhou, heilongjiang
 - Guangdong gkmlpt: 40+ sites via `--sync`, plus gd/huizhou/yangjiang individually
-- Slow-from-US: miit, most, zhejiang, hangzhou (partial data, better than nothing)
+- Slow-from-US: miit, most, zhejiang, hangzhou (partial data)
 - Research: tsinghua_aiig
 - Shenzhen non-gkmlpt: sz_invest
 - Media: 36kr, latepost, ifeng, xinhua, people
 
-**Phase 2 — Classify** (skipped if `DEEPSEEK_API_KEY` not in `.env`):
-- DeepSeek API, concurrency 2
-- Adds title_en, summary_en, doc_type, policy_significance, references_json
+**Phase 2 — Classify** (skipped if `DEEPSEEK_API_KEY` not in `.env`)
 
-**Phase 3 — Sync to Postgres:**
-- `sqlite_to_postgres.py` pushes new docs (ON CONFLICT DO NOTHING)
-- `backfill_bodies.py` fills body text for docs synced before bodies were fetched
-- Verifies local vs Postgres counts match
+**Phase 3 — Rsync to production:**
+- WAL checkpoint → rsync documents.db → restart uvicorn on droplet
+- Verifies doc count on droplet matches local
 
 **Reporting:** Telegram message with per-crawler results, doc counts, errors.
+Note: `UNIQUE constraint failed: documents.url` errors in the report are harmless — just duplicate docs from incremental re-crawls.
 
 **30-min timeout** per crawler to prevent pipeline stalls.
+
+## Crawler Coverage — What We Get vs Miss
+
+Each site has many sections; we only crawl the policy-relevant ones.
+
+| Site | Sections We Crawl | What We Miss |
+|------|-------------------|--------------|
+| **SAMR** (6 sections) | 总局文件, 政策解读, 新闻(总局/司局/地方/媒体聚焦) | Technical standards, enforcement case databases, product recall lists |
+| **MOFCOM** (6 sections) | 政策发布 + 5 export control sections (国内/国际动态, 各方观点, 常见问题, 政策法规) | Trade statistics, FDI data, press conferences, anti-dumping rulings |
+| **MIIT** (3 sections) | 文件发布, 政策发布, 政策解读 | Industry data/reports, telecom licenses, project approvals, spectrum allocation |
+| **NDRC** | 政策文件, 政策解读, 新闻发布 | Project approval lists, price monitoring, bond issuance data |
+| **MOF** | 财政政策, 政策解读 | Budget data, bond auction results, accounting standards |
+| **MEE** | 政策法规, 环评审批 | Air/water quality data, emissions monitoring, enforcement actions |
+| **CAC** | 政策法规 | Takedown notices, app store reviews, content moderation decisions |
+| **NDA** (5 sections) | 政策发布, 通知公告, 政策解读, 专家解读, 公开内容 | (Comprehensive — small site, we get most of it) |
+| **SIC** (6 sections) | 数字中国, 信息化, 电子政务, 宏观分析, 新闻, 成果 | (Comprehensive) |
+| **Suzhou** (6 sections) | 全部政策文件, 市政府/办公室文件, 规章, 人事, 其他 | City news, economic development reports, public service announcements |
+| **gkmlpt sites** (40+) | 政府信息公开目录 (standard Guangdong transparency API) | Non-transparency content (news, services) |
+| **Beijing** (5 sections) | 政策文件 across multiple categories | 工作动态 (work updates) section not yet crawled |
+| **Shanghai** (6 sections) | Year-archive policy documents | Municipal news, district-level content |
+| **Xinhua** | tech + politics sections | fortune, politics_read (~1,250 more articles) |
+| **People's Daily** | 17 opinion editorial sections from opinion.people.com.cn | Main news (people.cn), regional editions, peopleapp.com (SPA, needs API work) |
+| **ifeng** | 风声 + tech + 9 regional channels | Financial news, entertainment, video content |
+
+**General pattern:** We crawl **policy documents and interpretations** (政策文件 + 政策解读). We skip **data/statistics**, **enforcement actions**, **news/media**, and **public services**. This is intentional — policy docs are the core research value.
+
+## Officials Database (NEW — officials.db)
+
+Baidu Baike crawler for CPC Central Committee members. Separate from documents.db.
+
+| Metric | Value |
+|--------|-------|
+| Total officials | 2,181 unique CC members (7th–20th Congress, 1945-2022) |
+| Politburo members | 145 |
+| PSC members | 45 |
+| Baike pages crawled | In progress (~2hrs) |
+| Career records parsed | Pending (run after crawl completes) |
+| Source data | CPC_Elite_Leadership_Database.xlsx |
+| Career formats | Three: YYYY.MM-YYYY.MM, YYYY-YYYY年, YYYY年M月 |
+
+**Pipeline:** Excel → officials table → Baike scrape → career_records table → overlap computation → D3.js network visualization.
+
+## Recent Completions (2026-04-05 — 04-06)
+
+- **VPS migration complete**: Railway Postgres → DigitalOcean droplet (104.236.88.45, NYC3). SQLite served directly via rsync. No more Postgres timeouts.
+- **Daily pipeline rsyncs to droplet**: WAL checkpoint → rsync → restart. First successful end-to-end run Apr 6 (+616 new docs).
+- **Performance fixes**: Homepage/dashboard/chain cached 1hr, dashboard uses citations table (was loading 1GB of body text), network API rewritten to use citations table.
+- **Network page improved**: Default date range 2024+, policy type filter (19 types + untyped), min citations raised to 3.
+- **Dashboard ZeroDivisionError fixed**: Sites with 0 docs no longer crash the page.
+- **Chain renamed to "Policy Trace"**: User-facing rename in nav, headings, titles.
+- **SQLite `!= ALL()` translation**: Fixed chain page crash — added `NOT IN` conversion for Postgres→SQLite queries.
+- **Officials crawler built**: `crawlers/baike.py` scrapes Baidu Baike for 2,181 CC members' career timelines.
 
 ## Recent Completions (2026-03-29 — 04-05)
 
@@ -174,10 +223,12 @@ Runs on Mac via launchd (`com.claude.china-governance-sync`) at 7:00 AM daily.
 ### Infrastructure
 | Task | Priority | Notes |
 |------|----------|-------|
-| **Migrate off Railway Postgres** | **High** | Replace with VPS + SQLite via rsync. Railway's shared Postgres can't handle bulk UPDATEs (scores, classification, body backfill all timeout). Plan: Mac crawls → rsync documents.db to VPS → web app reads SQLite directly. $6/mo DigitalOcean droplet. |
-| Fix launchd or switch to manual daily runs | Medium | macOS blocks `/bin/bash` without Full Disk Access in System Settings. Alternative: just run `./scripts/daily_sync.sh` manually each day. |
+| ~~Migrate off Railway Postgres~~ | **Done** | Replaced with DigitalOcean droplet + rsync (2026-04-06) |
+| Set up cron auto-run | Medium | Grant Full Disk Access to `/usr/sbin/cron`, add crontab entry. Currently running manually. |
 | Run IPC Court deep crawl | Medium | `python3 -m crawlers.ipc_court --deep` — iterates all ~5k article IDs. Run when DB is free. |
-| Re-classify all docs with v2 prompt | **Paused** (24k/135k) | Add `DEEPSEEK_API_KEY` to `.env` to enable. ~$55 remaining, ~4 days at concurrency 2 |
+| Re-classify all docs with v2 prompt | **Paused** (24k/137k) | Add `DEEPSEEK_API_KEY` to `.env` to enable. ~$55 remaining, ~4 days at concurrency 2 |
+| Back up documents.db offsite | Medium | rsync to Singapore droplet or external drive. Mac is single point of failure for 2 years of crawl data. |
+| Decommission Railway | Low | Old Postgres still exists. Can be deleted to stop billing. |
 
 ### Website
 | Task | Priority | Notes |
