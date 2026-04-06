@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}{{ keyword|default('Policy') }} Chain — ChinaGovernance{% endblock %}
+{% block title %}{{ keyword|default('Policy') }} Trace — ChinaGovernance{% endblock %}
 {% block content %}
 <div class="max-w-6xl mx-auto">
     <div class="mb-6 flex items-start justify-between">
         <div>
-            <h1 class="font-serif text-xl text-gray-900">Policy Chain: {{ keyword }}</h1>
+            <h1 class="font-serif text-xl text-gray-900">Policy Trace: {{ keyword }}</h1>
             <p class="text-sm text-gray-500 mt-1">
                 How policy flows from central government through provincial, municipal, and district implementation.
                 {{ chain.stats.source_documents|default(0) }} source documents &middot;

@@ -218,7 +218,7 @@ _chain_cache = {}
 
 @router.get("/chain/{topic}", response_class=HTMLResponse)
 async def chain_page(request: Request, topic: str = "ai"):
-    """Policy chain page showing cross-level citation hierarchy for a topic (e.g. AI, housing)."""
+    """Policy Trace page showing cross-level citation hierarchy for a topic (e.g. AI, housing)."""
     import time
     db = request.app.state.db
     stats = await get_stats(db)
@@ -240,7 +240,7 @@ async def chain_page(request: Request, topic: str = "ai"):
 
 @router.get("/chain", response_class=HTMLResponse)
 async def chain_default(request: Request):
-    """Redirect /chain to /chain/ai (default topic)."""
+    """Redirect /chain to /chain/ai (default Policy Trace topic)."""
     return await chain_page(request, "ai")
 
 
