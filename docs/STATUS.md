@@ -6,8 +6,8 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 138,822 |
-| With body text | ~128,800 (93%) |
+| Total documents | 138,894 |
+| With body text | ~128,857 (93%) |
 | Total sites | 66 |
 | Algorithmic scores | All docs scored: citation_rank, algo_doc_type (19 types), ai_relevance (0-1) |
 | High AI relevance (>=0.5) | 195 docs |
@@ -118,9 +118,9 @@
 
 | Site Key | Name | Docs | Bodies | Body% | Notes |
 |----------|------|------|--------|-------|-------|
-| xinhua | Xinhua (新华社) | 2,548 | 2,523 | 99% | 4 sections: tech, fortune, politics_docs, politics_read. **Missing:** general-news homepage articles (paths like `xinhuanet.com/YYYYMMDD/{uuid}/c.html` with no section prefix — 时政/国内/国际/domestic/world) |
+| xinhua | Xinhua (新华社) | 2,556 | 2,531 | 99% | **5 sections (closed homepage gap 04-07):** tech, fortune, politics_docs, politics_read, **general** (homepage scrape covering 时政/国内/国际/domestic/world). The first 4 use Xinhua's JSON datasource feeds; `general` scrapes the xinhuanet.com homepage HTML for `/{YYYYMMDD}/{uuid}/c.html` URLs. ~147 URLs discovered per fetch but only ~8 are live (Xinhua deletes general-news articles after ~6 weeks). |
 | stdaily | Science & Technology Daily (科技日报) | 200 | 200 | 100% | Official MOST newspaper — effectively a central-government voice on tech/AI/innovation policy. Discovery via `sitemap.xml` (~200 recent URLs) + homepage (`--deep`). **No browsable historical archive** — only rolling last ~4 days per fetch |
-| guancha | Guancha / Observer Network (观察者网) | 690 | 646 | 94% | Influential nationalist-aligned commentary site. Homepage (~185 links) + 7 section pages + columnist pages (`--deep`, ~690/run). 44 title-only docs are politics speeches whose bodies redirect to Xinhua via JS. Author slugs stored in `classify_theme_name` for future author-citation analysis. |
+| guancha | Guancha / Observer Network (观察者网) | 710 | 667 | 94% | Influential nationalist-aligned commentary site. Homepage (~185 links) + 7 section pages + columnist pages (`--deep`, ~700/run). **43 docs (~6%) are intentionally title-only** — empirical survey: 38 paywalled member content (`paywall_member`), 3 Xinhua SPA mirrors (`redirect_xinhua`), ~2 untagged variants. Stored as title-only rows tagged via `classify_genre_name` so the gap is filterable rather than hidden. Author slugs stored in `classify_theme_name` for future author-citation analysis. |
 | people | People's Daily (人民日报) | 1,102 | 1,102 | 100% | 17 editorial sections from opinion.people.com.cn |
 | ifeng | Phoenix/风声 | 180 | 180 | 100% | Added tech section |
 | latepost | LatePost (晚点) | 94 | 94 | 100% | ~94 recent articles, no pagination |
@@ -172,7 +172,7 @@ Each site has many sections; we only crawl the policy-relevant ones.
 | **gkmlpt sites** (40+) | 政府信息公开目录 (standard Guangdong transparency API) | Non-transparency content (news, services) |
 | **Beijing** (5 sections) | 政策文件 across multiple categories | 工作动态 (work updates) section not yet crawled |
 | **Shanghai** (6 sections) | Year-archive policy documents | Municipal news, district-level content |
-| **Xinhua** | 4 sections: 科技 (tech), 财经 (fortune), 中央文件发布 (politics_docs), 中央文件解读 (politics_read) | **General-news homepage articles** (时政/国内/国际/domestic/world — URLs like `xinhuanet.com/YYYYMMDD/{uuid}/c.html` with no section prefix). Each section JSON feed is capped at ~1,000 items (~4–5 months of history) |
+| **Xinhua** | 5 sections: 科技 (tech), 财经 (fortune), 中央文件发布 (politics_docs), 中央文件解读 (politics_read), **首页综合 (general — homepage scrape, added 04-07)** | Each JSON section feed caps at ~1,000 items (~4–5 months); homepage section captures ~147 stories per fetch with no historical pagination. |
 | **People's Daily** | 17 opinion editorial sections from opinion.people.com.cn | Main news (people.cn), regional editions, peopleapp.com (SPA, needs API work) |
 | **ifeng** | 风声 + tech + 9 regional channels | Financial news, entertainment, video content |
 | **stdaily** | Rolling last ~4 days via `sitemap.xml` (~200 recent URLs), homepage with `--deep` | **No historical archive** — no browsable month/year index, no pagination. Coverage accumulates only by running daily. Older content reachable only if we guess content IDs or use Wayback |
@@ -237,6 +237,9 @@ Page: /officials
 
 ## Recent Completions (2026-04-05 — 04-07)
 
+- **Xinhua general-news section** (2026-04-07): `crawlers/xinhua.py` now has a 5th section, `general`, that scrapes the xinhuanet.com homepage HTML for top-level article URLs (`/{YYYYMMDD}/{uuid}/c.html`). These are the domestic/world/时政 stories that no JSON datasource covers. **Discovers ~147 URLs per fetch but only ~8 are live** — Xinhua's general-news content has ~6-week retention; the homepage HTML still references deleted articles via static carousels. Yield: ~8 fresh articles/run × daily = ~2,800/year. First run captured oil-price regulation, anti-poverty employment, satellite mission identifiers — substantive central-voice content. Closes the long-standing "Xinhua general-news section" backlog item.
+- **Wayback backfill script** (2026-04-07): `scripts/wayback_backfill.py` discovers historical URLs via the Internet Archive CDX API, tries each live URL first (most 2024+ stdaily content is still live), falls back to Wayback snapshots via `web.archive.org/web/{ts}if_/`, and rejects stub pages (15175-byte 404 + 稿件详情 placeholder) on both paths. Verified end-to-end with 50 stdaily articles. CDX reports ~5k discoverable URLs/year per site.
+- **Guancha redirect tagging** (2026-04-07): An empirical survey of 44 empty-body guancha pages found **82% are paywalled member content** (`user.guancha.cn/main/content`), ~14% are CCTV 天天学习 Xi-speech program redirects, and ~4% are Xinhua SPA mirrors. Rather than dropping these from the corpus, `crawlers/guancha.py` now stores them as title-only rows with `classify_genre_name` set to one of `paywall_member` / `redirect_cctv` / `redirect_xinhua` so the corpus retains a record that the article existed and the gap is filterable.
 - **Two new media crawlers** (2026-04-07): `crawlers/stdaily.py` for 科技日报 (Science & Technology Daily — MOST's official newspaper, `admin_level=central`) and `crawlers/guancha.py` for 观察者网 (Guancha / Observer Network, `admin_level=media`). Both added to `daily_sync.sh`. stdaily discovers via `sitemap.xml` (rolling ~200 URLs/4 days). guancha runs in `--deep` mode covering homepage + 7 section pages + all columnist pages (~690 URLs/run). Neither site has pagination or a historical archive — coverage will accumulate via daily runs.
 - **Guancha author-slug capture**: Columnist sections (CamelCase slugs like `GuanJinRong`, `TuZhuXi`) are stored in `classify_theme_name` to enable future analysis of which named authors get referenced in policy docs vs which remain uncited. Tracked as a research analysis task.
 - **Officials Network live** (2026-04-07): `/officials` page shows CCP elite career overlap graph. 5,121 overlaps from 17,727 career records. D3.js force-directed, filterable by overlap duration, year range, Politburo-only. Click node → full career + top overlaps.
@@ -295,10 +298,9 @@ Page: /officials
 | Re-run extract_citations.py after classification finishes | Medium | More references_json = more LLM citations |
 | Reduce "other" doc type bucket | Low | 68k docs classified as "other" — need more title regex patterns |
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj |
-| Xinhua general-news section | Low | Homepage articles at `xinhuanet.com/YYYYMMDD/{uuid}/c.html` (no section prefix) — need to find the front-page JSON datasource UUID |
-| stdaily historical backfill | Low | Sitemap + homepage only yield a 4-day rolling window. True multi-year backfill would need Wayback Machine or guessing content IDs. Will accumulate naturally via daily runs. |
-| guancha historical backfill | Low | No pagination on section pages. Same "accumulate over time" problem as stdaily. |
-| guancha: fetch body text for politics-speech pages | Low | Politics pages with JS redirects to `h.xinhuaxmt.com/...` currently stored as title-only. Could follow the redirect to get body. |
+| ~~Xinhua general-news section~~ | **Done 04-07** | Homepage scrape added as 5th xinhua section. ~147 URLs/run. |
+| stdaily / guancha historical backfill via Wayback | Medium | Script `scripts/wayback_backfill.py` ready. CDX reports ~5k discoverable URLs/year per site. Stdaily 2020-2025 ≈ 20-25k articles. Run as multi-hour background job when ready. |
+| ~~guancha: fetch body for politics-speech pages~~ | **Wontfix** | Survey showed 82% of empty-body guancha pages are paywalled member content (not politics speeches). The remaining ~18% redirect to Xinhua/CCTV SPAs that need a headless browser. Title-only rows are now tagged via `classify_genre_name` for filterable corpus visibility. Higher-value coverage of Xi speeches now comes from the new xinhua `general` section. |
 
 ### Officials Network Improvements
 | Task | Priority | Notes |

@@ -54,8 +54,18 @@ BROWSER_UA = (
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 )
 
-# Each section maps to a JSON datasource endpoint.
-# path_prefix is used to build the JSON URL: https://www.news.cn/{path_prefix}/ds_{datasource_id}.json
+# Each section maps to either a JSON datasource endpoint OR a homepage URL.
+#
+# JSON datasource sections (most of them) use Xinhua's superEdit4 frontend
+# which loads articles from `https://www.news.cn/{path_prefix}/ds_{ds_id}.json`.
+# These return a structured list of articles with metadata.
+#
+# The "general" section uses a different mechanism: it scrapes the
+# xinhuanet.com homepage HTML for top-level article URLs of the form
+# `/{YYYYMMDD}/{uuid}/c.html` (no section prefix). These are the
+# domestic/world/政时 stories that the homepage curates and that none of
+# the JSON datasources cover. We pull them by direct HTML scraping
+# because there's no JSON feed for the homepage stream.
 SECTIONS = {
     "tech": {
         "name": "科技 (Technology)",
@@ -77,7 +87,16 @@ SECTIONS = {
         "path_prefix": "politics/zywj",
         "datasource_id": "751e4d15841642e5b6b636377247b397",
     },
+    "general": {
+        "name": "首页综合 (Homepage General News)",
+        "discovery_type": "homepage",
+        "homepage_url": "https://www.xinhuanet.com/",
+    },
 }
+
+# Pattern matching general-news article URLs:
+#   /{YYYYMMDD}/{32-char hex uuid}/c.html
+GENERAL_ARTICLE_PATH_RE = re.compile(r"/(\d{8})/([a-f0-9]{32})/c\.html")
 
 
 def _parse_date(date_str: str) -> int:
@@ -101,9 +120,70 @@ def _build_full_url(publish_url: str) -> str:
     return ""
 
 
-def _fetch_listing(section_key: str) -> list[dict]:
-    """Fetch the JSON datasource for a section and return article metadata."""
+def _discover_from_homepage(section_key: str) -> list[dict]:
+    """Scrape xinhuanet.com homepage for general-news article URLs.
+
+    The homepage HTML contains ~150 article links of the form
+    `/{YYYYMMDD}/{uuid}/c.html` interspersed with image carousels and
+    section widgets. Most are link-only (no inline title) — we pull
+    those titles from the article page itself when fetching the body.
+    """
     sec = SECTIONS[section_key]
+    log.info(f"  Fetching homepage: {sec['homepage_url']}")
+    try:
+        html = fetch(sec["homepage_url"], headers={"User-Agent": BROWSER_UA})
+    except Exception as e:
+        log.error(f"  Failed to fetch homepage for {section_key}: {e}")
+        return []
+
+    # Collect unique general-news URL paths
+    paths = set()
+    for m in GENERAL_ARTICLE_PATH_RE.finditer(html):
+        paths.add(f"/{m.group(1)}/{m.group(2)}/c.html")
+
+    # Optional: also extract titles from inline anchors so the article
+    # fetcher can use them as a fallback if the article page itself is
+    # missing a title.
+    title_map = {}
+    anchor_re = re.compile(
+        r'<a[^>]*href="(?:https?://[^/"]+)?(/\d{8}/[a-f0-9]{32}/c\.html)"[^>]*>([^<]{2,200})</a>'
+    )
+    for m in anchor_re.finditer(html):
+        path, text = m.group(1), m.group(2).strip()
+        if path not in title_map and text:
+            title_map[path] = text
+
+    # Build articles list in the same shape as _fetch_listing
+    articles = []
+    for path in sorted(paths):
+        date_str = ""
+        m = re.match(r"/(\d{4})(\d{2})(\d{2})/", path)
+        if m:
+            date_str = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+        articles.append({
+            # Canonicalize to www.news.cn (xinhuanet.com aliases to it).
+            "url": f"https://www.news.cn{path}",
+            "title": title_map.get(path, ""),
+            "publish_time": date_str,
+            "section": section_key,
+            "keywords": "",
+            "author": "",
+            "source": "",
+            "summary": "",
+            "content_id": "",
+        })
+    return articles
+
+
+def _fetch_listing(section_key: str) -> list[dict]:
+    """Fetch the JSON datasource for a section and return article metadata.
+
+    For sections with `discovery_type=homepage`, scrape HTML instead.
+    """
+    sec = SECTIONS[section_key]
+    if sec.get("discovery_type") == "homepage":
+        return _discover_from_homepage(section_key)
+
     json_url = (
         f"https://www.news.cn/{sec['path_prefix']}/"
         f"ds_{sec['datasource_id']}.json"

@@ -96,25 +96,31 @@ ARTICLE_PATH_PATTERN = re.compile(
 # Exclude non-article slugs that look like article paths.
 EXCLUDE_SLUGS = {"Search", "df888"}
 
-# Guancha articles with these markers have no readable body and should be
-# skipped at crawl time. They all share a common symptom — the
-# `<div class="content all-txt">` body container is present but empty, and
-# the page includes a JS redirect to one of these external targets.
+# Guancha articles with these markers have no readable body — the
+# `<div class="content all-txt">` container is present but empty and the
+# page contains a JS redirect to one of these external targets.
 #
-#   user.guancha.cn/main/content — paywalled "观察员" (member) content.
-#   h.xinhuaxmt.com/vh512/share   — republished Xinhua speech (Vue SPA, no body
-#                                   without headless browsing). Covered by our
-#                                   xinhua crawler via politics_docs.
-#   news.cctv.com/tiantianxuexi   — CCTV "天天学习" Xi-speech program (video-first).
+# We STORE these as title-only rows (not skip) so the corpus retains a
+# record that the article existed, with the redirect target encoded in
+# `classify_genre_name` for later filtering and analysis. The body stays
+# empty as a flag.
 #
-# We store the body-bearing pages normally and silently skip the rest, since
-# they'd otherwise land as title-only rows. An empirical survey found 82% of
-# empty-body guancha pages are paywalled content.
-SKIP_REDIRECT_MARKERS = (
-    "user.guancha.cn/main/content",      # paid member content
-    "h.xinhuaxmt.com/vh512/share",       # Xinhua SPA
-    "news.cctv.com/tiantianxuexi",       # CCTV 天天学习 Xi speeches
-)
+# An empirical survey found 82% of empty-body guancha pages are paywalled
+# member content. The remaining ~18% redirect to Xinhua or CCTV.
+REDIRECT_MARKERS = {
+    "user.guancha.cn/main/content": "paywall_member",   # paid 观察员 content
+    "h.xinhuaxmt.com/vh512/share":  "redirect_xinhua",  # Xinhua SPA mirror
+    "news.cctv.com/tiantianxuexi":  "redirect_cctv",    # CCTV 天天学习 program
+}
+
+
+def _detect_redirect(html: str) -> str:
+    """Return the redirect-type label if this page is a known empty-body
+    redirect target, else empty string."""
+    for marker, label in REDIRECT_MARKERS.items():
+        if marker in html:
+            return label
+    return ""
 
 
 def _parse_date(y: str, m: str, d: str) -> int:
@@ -368,12 +374,15 @@ def crawl(conn, deep: bool = False, list_only: bool = False) -> int:
     stored = 0
     skipped = 0
     errors = 0
-    skipped_redirect = 0
+    redirect_count = 0
     for i, (section, url) in enumerate(all_links):
+        # Skip only if we already have body OR a known redirect label —
+        # rerunning the crawler should not re-fetch a known dead link.
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (url,)
+            "SELECT id, body_text_cn, classify_genre_name FROM documents WHERE url = ?",
+            (url,),
         ).fetchone()
-        if existing and existing[1]:
+        if existing and (existing[1] or existing[2]):
             skipped += 1
             continue
 
@@ -384,13 +393,12 @@ def crawl(conn, deep: bool = False, list_only: bool = False) -> int:
             errors += 1
             continue
 
-        # Detect known redirect targets (paywall / SPA republications) and
-        # skip them rather than storing an empty-body row.
-        redirect_hit = next((m for m in SKIP_REDIRECT_MARKERS if m in html), None)
-        if redirect_hit:
-            skipped_redirect += 1
-            log.debug(f"  Skipping redirect ({redirect_hit}): {url}")
-            continue
+        # Detect known redirect targets. We STORE these as title-only rows
+        # tagged with the redirect label so the corpus remembers they
+        # existed and we can filter on classify_genre_name later.
+        redirect_label = _detect_redirect(html)
+        if redirect_label:
+            redirect_count += 1
 
         title = _extract_title(html)
         if not title:
@@ -432,6 +440,9 @@ def crawl(conn, deep: bool = False, list_only: bool = False) -> int:
             "relation": section,
             # Author goes into classify_theme_name for columnist research later.
             "classify_theme_name": author,
+            # If this article is a known external redirect (paywall, Xinhua,
+            # CCTV), tag it here so we can filter the empty-body rows by reason.
+            "classify_genre_name": redirect_label,
             "classify_main_name": "媒体报道",
             "raw_html_path": raw_html_path,
         })
@@ -440,7 +451,8 @@ def crawl(conn, deep: bool = False, list_only: bool = False) -> int:
         if stored % 20 == 0:
             conn.commit()
             log.info(
-                f"  Progress: {stored} stored, {skipped} skipped, {errors} errors "
+                f"  Progress: {stored} stored, {skipped} skipped, "
+                f"{redirect_count} redirects (title-only), {errors} errors "
                 f"({i+1}/{len(all_links)})"
             )
 
@@ -448,8 +460,8 @@ def crawl(conn, deep: bool = False, list_only: bool = False) -> int:
 
     conn.commit()
     log.info(
-        f"=== guancha: {stored} new, {skipped} skipped (already crawled), "
-        f"{skipped_redirect} skipped (paywall/redirect), {errors} errors, "
+        f"=== guancha: {stored} new ({redirect_count} title-only redirects), "
+        f"{skipped} skipped (already crawled), {errors} errors, "
         f"{len(all_links)} discovered ==="
     )
     return stored
