@@ -96,6 +96,26 @@ ARTICLE_PATH_PATTERN = re.compile(
 # Exclude non-article slugs that look like article paths.
 EXCLUDE_SLUGS = {"Search", "df888"}
 
+# Guancha articles with these markers have no readable body and should be
+# skipped at crawl time. They all share a common symptom — the
+# `<div class="content all-txt">` body container is present but empty, and
+# the page includes a JS redirect to one of these external targets.
+#
+#   user.guancha.cn/main/content — paywalled "观察员" (member) content.
+#   h.xinhuaxmt.com/vh512/share   — republished Xinhua speech (Vue SPA, no body
+#                                   without headless browsing). Covered by our
+#                                   xinhua crawler via politics_docs.
+#   news.cctv.com/tiantianxuexi   — CCTV "天天学习" Xi-speech program (video-first).
+#
+# We store the body-bearing pages normally and silently skip the rest, since
+# they'd otherwise land as title-only rows. An empirical survey found 82% of
+# empty-body guancha pages are paywalled content.
+SKIP_REDIRECT_MARKERS = (
+    "user.guancha.cn/main/content",      # paid member content
+    "h.xinhuaxmt.com/vh512/share",       # Xinhua SPA
+    "news.cctv.com/tiantianxuexi",       # CCTV 天天学习 Xi speeches
+)
+
 
 def _parse_date(y: str, m: str, d: str) -> int:
     """Convert Y/M/D strings to Unix timestamp (midnight CST)."""
@@ -348,6 +368,7 @@ def crawl(conn, deep: bool = False, list_only: bool = False) -> int:
     stored = 0
     skipped = 0
     errors = 0
+    skipped_redirect = 0
     for i, (section, url) in enumerate(all_links):
         existing = conn.execute(
             "SELECT id, body_text_cn FROM documents WHERE url = ?", (url,)
@@ -361,6 +382,14 @@ def crawl(conn, deep: bool = False, list_only: bool = False) -> int:
         except Exception as e:
             log.warning(f"  Failed to fetch {url}: {e}")
             errors += 1
+            continue
+
+        # Detect known redirect targets (paywall / SPA republications) and
+        # skip them rather than storing an empty-body row.
+        redirect_hit = next((m for m in SKIP_REDIRECT_MARKERS if m in html), None)
+        if redirect_hit:
+            skipped_redirect += 1
+            log.debug(f"  Skipping redirect ({redirect_hit}): {url}")
             continue
 
         title = _extract_title(html)
@@ -419,7 +448,8 @@ def crawl(conn, deep: bool = False, list_only: bool = False) -> int:
 
     conn.commit()
     log.info(
-        f"=== guancha: {stored} new, {skipped} skipped, {errors} errors, "
+        f"=== guancha: {stored} new, {skipped} skipped (already crawled), "
+        f"{skipped_redirect} skipped (paywall/redirect), {errors} errors, "
         f"{len(all_links)} discovered ==="
     )
     return stored
