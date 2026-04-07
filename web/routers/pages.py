@@ -257,6 +257,16 @@ async def analysis_ai(request: Request):
     })
 
 
+@router.get("/officials", response_class=HTMLResponse)
+async def officials_page(request: Request):
+    """Officials network — CCP elite career overlaps from Baidu Baike."""
+    db = request.app.state.db
+    stats = await get_stats(db)
+    return templates.TemplateResponse("officials.html", {
+        "request": request, "stats": stats,
+    })
+
+
 @router.get("/analysis/subsidies", response_class=HTMLResponse)
 async def analysis_subsidies(request: Request):
     """Subsidy analysis report with district, sector, and timeline breakdowns."""

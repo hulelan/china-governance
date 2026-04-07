@@ -234,6 +234,9 @@ if ssh -o ConnectTimeout=5 -o BatchMode=yes root@$DROPLET_IP true 2>/dev/null; t
     log "Phase 3: Rsyncing DB to droplet ($DROPLET_IP)..."
     # Checkpoint WAL so all data is in the main DB file before rsync
     sqlite3 documents.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true
+    # Also checkpoint officials.db if present
+    [ -f officials.db ] && sqlite3 officials.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true
+    [ -f officials.db ] && rsync -az officials.db root@$DROPLET_IP:/root/china-governance/officials.db >> "$LOG" 2>&1 || true
     if rsync -az documents.db root@$DROPLET_IP:/root/china-governance/documents.db >> "$LOG" 2>&1; then
         # Restart the web app to pick up new data
         ssh root@$DROPLET_IP 'systemctl restart chinagovernance' >> "$LOG" 2>&1 || true

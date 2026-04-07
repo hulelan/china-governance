@@ -202,3 +202,107 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
     ]
 
     return {"nodes": nodes, "edges": edges}
+
+
+@router.get("/officials/network")
+async def api_officials_network(request: Request, min_months: int = 12,
+                                year_start: int = None, year_end: int = None,
+                                only_pb: bool = False):
+    """CCP official career overlap network from officials.db.
+
+    Returns nodes (officials) and edges (overlaps) for D3.js visualization.
+    """
+    odb = request.app.state.officials_db
+    if odb is None:
+        return {"nodes": [], "edges": [], "error": "officials.db not loaded"}
+
+    # Build overlap filter
+    where = ["o.overlap_months >= $1"]
+    params = [min_months]
+    idx = 1
+    if year_start:
+        idx += 1
+        where.append(f"o.overlap_end_year >= ${idx}")
+        params.append(year_start)
+    if year_end:
+        idx += 1
+        where.append(f"o.overlap_start_year <= ${idx}")
+        params.append(year_end)
+
+    where_sql = " AND ".join(where)
+
+    # Get edges with both officials' info
+    edge_rows = await odb.fetch(f"""
+        SELECT o.official_a, o.official_b, o.organization, o.province,
+               o.overlap_start_year, o.overlap_end_year, o.overlap_months,
+               a.name_cn as name_a, a.name_en as en_a, a.is_politburo as pb_a, a.is_psc as psc_a,
+               b.name_cn as name_b, b.name_en as en_b, b.is_politburo as pb_b, b.is_psc as psc_b
+        FROM overlaps o
+        JOIN officials a ON a.id = o.official_a
+        JOIN officials b ON b.id = o.official_b
+        WHERE {where_sql}
+        ORDER BY o.overlap_months DESC
+        LIMIT 2000
+    """, *params)
+
+    if only_pb:
+        edge_rows = [r for r in edge_rows if (r["pb_a"] or r["psc_a"]) and (r["pb_b"] or r["psc_b"])]
+
+    # Build node set + node list
+    node_dict = {}
+    edges = []
+    for r in edge_rows:
+        for off_id, name, en, pb, psc in [
+            (r["official_a"], r["name_a"], r["en_a"], r["pb_a"], r["psc_a"]),
+            (r["official_b"], r["name_b"], r["en_b"], r["pb_b"], r["psc_b"]),
+        ]:
+            if off_id not in node_dict:
+                node_dict[off_id] = {
+                    "id": off_id, "name": name, "name_en": en or "",
+                    "level": "psc" if psc else "pb" if pb else "cc",
+                }
+        edges.append({
+            "source": r["official_a"], "target": r["official_b"],
+            "org": r["organization"] or r["province"] or "",
+            "start": r["overlap_start_year"], "end": r["overlap_end_year"],
+            "months": r["overlap_months"],
+        })
+
+    return {"nodes": list(node_dict.values()), "edges": edges}
+
+
+@router.get("/officials/{official_id}")
+async def api_official_detail(request: Request, official_id: int):
+    """Get full career history and overlaps for one official."""
+    odb = request.app.state.officials_db
+    if odb is None:
+        return {"error": "officials.db not loaded"}
+
+    official = await odb.fetchrow(
+        "SELECT * FROM officials WHERE id = $1", official_id
+    )
+    if not official:
+        return {"error": "not found"}
+
+    careers = await odb.fetch(
+        """SELECT * FROM career_records WHERE official_id = $1
+           ORDER BY start_year, start_month""",
+        official_id
+    )
+
+    overlaps = await odb.fetch(
+        """SELECT o.*, b.name_cn, b.name_en
+           FROM overlaps o
+           JOIN officials b ON b.id =
+               CASE WHEN o.official_a = $1 THEN o.official_b ELSE o.official_a END
+           WHERE o.official_a = $1 OR o.official_b = $1
+           ORDER BY o.overlap_months DESC
+           LIMIT 50""",
+        official_id
+    )
+
+    return {
+        "official": dict(official),
+        "careers": [dict(r) for r in careers],
+        "overlaps": [dict(r) for r in overlaps],
+    }

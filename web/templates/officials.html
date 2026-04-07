@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Officials Network — ChinaGovernance{% endblock %}
+{% block head %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-3">
+        <h1 class="font-serif text-2xl">CCP Officials Network</h1>
+        <p class="text-sm text-gray-500">2,155 Central Committee members from Baidu Baike. Edges = career overlaps in shared organizations. Click a node to see career details.</p>
+    </div>
+    <div class="flex gap-4" style="height: calc(100vh - 180px);">
+        <!-- Controls -->
+        <div class="w-56 flex-shrink-0 space-y-3">
+            <div class="card p-3 text-sm" x-data="{minMonths: 24, yearStart: 2000, yearEnd: 2025, onlyPB: true, refresh() { updateGraph(this.minMonths, this.yearStart, this.yearEnd, this.onlyPB) }}">
+                <div class="card-header -mx-3 -mt-3 mb-3">Filters</div>
+
+                <label class="text-gray-400 text-xs block mb-1">Min overlap (months)</label>
+                <input type="range" x-model="minMonths" min="6" max="120" step="6" @change="refresh()" class="w-full mb-1">
+                <span class="text-gray-500 text-xs" x-text="minMonths + ' months'"></span>
+
+                <label class="text-gray-400 text-xs block mb-1 mt-3">Year range</label>
+                <input type="number" x-model="yearStart" @change="refresh()" placeholder="From" class="w-full text-sm mb-1" min="1945" max="2025">
+                <input type="number" x-model="yearEnd" @change="refresh()" placeholder="To" class="w-full text-sm" min="1945" max="2025">
+
+                <label class="flex items-center gap-2 mt-3 text-xs">
+                    <input type="checkbox" x-model="onlyPB" @change="refresh()">
+                    Politburo only
+                </label>
+            </div>
+
+            <div class="card p-3 text-sm">
+                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Legend</div>
+                <div class="space-y-1.5 text-xs">
+                    <div><span class="inline-block w-3 h-3 rounded-full bg-red-600 mr-2"></span> PSC</div>
+                    <div><span class="inline-block w-3 h-3 rounded-full bg-orange-500 mr-2"></span> Politburo</div>
+                    <div><span class="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span> Central Committee</div>
+                </div>
+            </div>
+
+            <div id="official-info" class="card p-3 text-sm hidden" style="max-height: 60vh; overflow-y: auto;">
+                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Selected</div>
+                <div id="off-name" class="font-serif text-base mb-1"></div>
+                <div id="off-name-en" class="text-gray-500 text-xs mb-2"></div>
+                <div class="text-xs font-semibold text-gray-400 mt-3 mb-1">Career</div>
+                <div id="off-careers" class="text-xs space-y-1"></div>
+                <div class="text-xs font-semibold text-gray-400 mt-3 mb-1">Top Overlaps</div>
+                <div id="off-overlaps" class="text-xs space-y-1"></div>
+            </div>
+        </div>
+
+        <!-- Graph -->
+        <div class="flex-1 card overflow-hidden">
+            <svg id="officials-svg" width="100%" height="100%"></svg>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const COLORS = {psc: '#dc2626', pb: '#ea580c', cc: '#3b82f6'};
+const RADIUS = {psc: 9, pb: 7, cc: 4};
+
+let simulation, svg, g;
+
+function initGraph() {
+    svg = d3.select('#officials-svg');
+    g = svg.append('g');
+    svg.call(d3.zoom().scaleExtent([0.1, 8]).on('zoom', (e) => g.attr('transform', e.transform)));
+    updateGraph(24, 2000, 2025, true);
+}
+
+async function updateGraph(minMonths, yearStart, yearEnd, onlyPB) {
+    let url = `/api/v1/officials/network?min_months=${minMonths}`;
+    if (yearStart) url += `&year_start=${yearStart}`;
+    if (yearEnd) url += `&year_end=${yearEnd}`;
+    if (onlyPB) url += `&only_pb=true`;
+
+    const data = await fetch(url).then(r => r.json());
+
+    g.selectAll('*').remove();
+    const {width, height} = svg.node().getBoundingClientRect();
+
+    if (!data.nodes || !data.nodes.length) {
+        g.append('text').attr('x', width/2).attr('y', height/2)
+         .attr('text-anchor', 'middle').attr('fill', '#9ca3af').attr('font-size', 13)
+         .text('No officials match filters');
+        return;
+    }
+
+    // Lookup map for force-directed graph
+    const nodeMap = new Map(data.nodes.map(n => [n.id, n]));
+    const edges = data.edges.map(e => ({
+        source: nodeMap.get(e.source) || e.source,
+        target: nodeMap.get(e.target) || e.target,
+        org: e.org, months: e.months, start: e.start, end: e.end,
+    }));
+
+    if (simulation) simulation.stop();
+    simulation = d3.forceSimulation(data.nodes)
+        .force('link', d3.forceLink(edges).id(d => d.id).distance(d => 100 - Math.min(80, d.months/3)))
+        .force('charge', d3.forceManyBody().strength(-150))
+        .force('center', d3.forceCenter(width/2, height/2))
+        .force('collision', d3.forceCollide().radius(d => RADIUS[d.level] + 4));
+
+    const link = g.append('g').selectAll('line')
+        .data(edges).join('line')
+        .attr('stroke', '#cbd5e1')
+        .attr('stroke-width', d => Math.min(3, Math.sqrt(d.months) / 4))
+        .attr('stroke-opacity', 0.5);
+
+    link.append('title').text(d => `${d.source.name || d.source} ↔ ${d.target.name || d.target}\n${d.org}\n${d.start}-${d.end} (${d.months} months)`);
+
+    const node = g.append('g').selectAll('circle')
+        .data(data.nodes).join('circle')
+        .attr('r', d => RADIUS[d.level])
+        .attr('fill', d => COLORS[d.level])
+        .attr('stroke', '#fff').attr('stroke-width', 1.5)
+        .attr('cursor', 'pointer')
+        .call(d3.drag()
+            .on('start', (e,d) => { if(!e.active) simulation.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+            .on('drag', (e,d) => { d.fx=e.x; d.fy=e.y; })
+            .on('end', (e,d) => { if(!e.active) simulation.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+    node.append('title').text(d => `${d.name} (${d.name_en})`);
+    node.on('click', (e, d) => showOfficial(d.id));
+
+    const labels = g.append('g').selectAll('text')
+        .data(data.nodes).join('text')
+        .text(d => d.name)
+        .attr('font-size', d => d.level === 'psc' ? 12 : d.level === 'pb' ? 10 : 9)
+        .attr('font-weight', d => d.level === 'psc' ? '600' : '400')
+        .attr('fill', '#374151')
+        .attr('dx', d => RADIUS[d.level] + 3).attr('dy', 4)
+        .style('pointer-events', 'none');
+
+    simulation.on('tick', () => {
+        link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+            .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+        node.attr('cx',d=>d.x).attr('cy',d=>d.y);
+        labels.attr('x',d=>d.x).attr('y',d=>d.y);
+    });
+}
+
+async function showOfficial(officialId) {
+    const data = await fetch(`/api/v1/officials/${officialId}`).then(r => r.json());
+    if (data.error) return;
+
+    document.getElementById('official-info').classList.remove('hidden');
+    document.getElementById('off-name').textContent = data.official.name_cn;
+    document.getElementById('off-name-en').textContent =
+        `${data.official.name_en || ''} • ${data.official.birth_year || '?'} • ${data.official.home_province || '?'}`;
+
+    const careersDiv = document.getElementById('off-careers');
+    careersDiv.innerHTML = data.careers.map(c => {
+        const period = `${c.start_year}${c.start_month ? '.' + c.start_month : ''}–${c.end_year || 'now'}`;
+        return `<div><span class="text-gray-400">${period}</span> ${c.organization || ''} ${c.position || ''}</div>`;
+    }).join('');
+
+    const overlapsDiv = document.getElementById('off-overlaps');
+    overlapsDiv.innerHTML = data.overlaps.slice(0, 15).map(o => {
+        const months = Math.round(o.overlap_months / 12 * 10) / 10;
+        return `<div><span class="font-semibold">${o.name_cn}</span> · <span class="text-gray-400">${o.organization || o.province || ''}</span> · ${months}y</div>`;
+    }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', initGraph);
+</script>
+{% endblock %}

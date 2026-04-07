@@ -126,6 +126,9 @@ def _pg_to_sqlite(query: str, args: tuple) -> tuple:
     return query, tuple(new_args)
 
 
+OFFICIALS_PATH = str(Path(__file__).parent.parent / "officials.db")
+
+
 @asynccontextmanager
 async def lifespan(app):
     """FastAPI lifespan: open database connection pool."""
@@ -137,9 +140,19 @@ async def lifespan(app):
         import aiosqlite
         conn = await aiosqlite.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
         conn.row_factory = aiosqlite.Row
-        # Limit SQLite memory usage (~32MB cache instead of unbounded)
         await conn.execute("PRAGMA cache_size = -32000")
         app.state.db = SQLiteDB(conn)
 
+    # Open officials.db (separate read-only connection) if it exists
+    app.state.officials_db = None
+    if Path(OFFICIALS_PATH).exists():
+        import aiosqlite
+        off_conn = await aiosqlite.connect(f"file:{OFFICIALS_PATH}?mode=ro", uri=True)
+        off_conn.row_factory = aiosqlite.Row
+        await off_conn.execute("PRAGMA cache_size = -16000")
+        app.state.officials_db = SQLiteDB(off_conn)
+
     yield
     await app.state.db.close()
+    if app.state.officials_db:
+        await app.state.officials_db.close()
