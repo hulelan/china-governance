@@ -2,27 +2,57 @@
 {% block title %}Officials Network — ChinaGovernance{% endblock %}
 {% block head %}
 <script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+    .tab-btn { padding: 6px 14px; border-radius: 6px 6px 0 0; font-size: 13px;
+        color: #6b7280; cursor: pointer; border-bottom: 2px solid transparent; }
+    .tab-btn.active { color: #1f2937; border-bottom-color: #991b1b; font-weight: 600; }
+    .tab-btn:hover:not(.active) { color: #1f2937; background: #f3f4f6; }
+
+    .gov-row { padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+    .gov-row:last-child { border-bottom: none; }
+    .gov-row.clickable { cursor: pointer; }
+    .gov-row.clickable:hover { background: #f9fafb; }
+    .gov-name { font-weight: 600; color: #1f2937; }
+    .gov-meta { color: #9ca3af; font-size: 11px; }
+    .gov-co { margin-top: 4px; padding-left: 8px; border-left: 2px solid #e5e7eb; }
+    .gov-co .co-off { display: inline-block; font-size: 11px; padding: 1px 6px;
+        margin: 2px 2px 2px 0; background: #f3f4f6; border-radius: 3px; cursor: pointer; }
+    .gov-co .co-off:hover { background: #fef3c7; }
+    .gov-co .co-off.psc { background: #fef2f2; color: #991b1b; font-weight: 600; }
+    .gov-co .co-off.pb { background: #fff7ed; color: #9a3412; }
+
+    .psc-bar { cursor: pointer; }
+    .psc-bar:hover rect { filter: brightness(0.9); }
+</style>
 {% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
     <div class="mb-3">
         <h1 class="font-serif text-2xl">CCP Officials Network</h1>
-        <p class="text-sm text-gray-500">2,155 Central Committee members from Baidu Baike. Edges = career overlaps in shared organizations. Click a node to see career details.</p>
+        <p class="text-sm text-gray-500">2,155 Central Committee members from Baidu Baike. Click any node, bar, or name to see career details and co-officials across every government they served in.</p>
     </div>
-    <div class="flex gap-4" style="height: calc(100vh - 180px);">
-        <!-- Controls -->
-        <div class="w-56 flex-shrink-0 space-y-3">
-            <div class="card p-3 text-sm" x-data="{minMonths: 24, yearStart: 2000, yearEnd: 2025, onlyPB: true, refresh() { updateGraph(this.minMonths, this.yearStart, this.yearEnd, this.onlyPB) }}">
-                <div class="card-header -mx-3 -mt-3 mb-3">Filters</div>
 
+    <!-- Tab bar -->
+    <div class="flex gap-1 border-b border-gray-200 mb-3" x-data="{ tab: 'network' }">
+        <button class="tab-btn" :class="tab === 'network' ? 'active' : ''" @click="tab = 'network'">Network Graph</button>
+        <button class="tab-btn" :class="tab === 'psc' ? 'active' : ''" @click="tab = 'psc'">PSC Mobility</button>
+
+        <div class="flex-1"></div>
+
+        <!-- Views live in the same Alpine scope so we can toggle without rebuilding state -->
+    </div>
+
+    <div class="flex gap-4" style="height: calc(100vh - 220px);">
+        <!-- LEFT: filters/legend + selected-official detail panel (shared across tabs) -->
+        <div class="w-64 flex-shrink-0 space-y-3 overflow-y-auto">
+            <div id="network-filters" class="card p-3 text-sm" x-data="{minMonths: 24, yearStart: 2000, yearEnd: 2025, onlyPB: true, refresh() { updateGraph(this.minMonths, this.yearStart, this.yearEnd, this.onlyPB) }}">
+                <div class="card-header -mx-3 -mt-3 mb-3">Network Filters</div>
                 <label class="text-gray-400 text-xs block mb-1">Min overlap (months)</label>
                 <input type="range" x-model="minMonths" min="6" max="120" step="6" @change="refresh()" class="w-full mb-1">
                 <span class="text-gray-500 text-xs" x-text="minMonths + ' months'"></span>
-
                 <label class="text-gray-400 text-xs block mb-1 mt-3">Year range</label>
                 <input type="number" x-model="yearStart" @change="refresh()" placeholder="From" class="w-full text-sm mb-1" min="1945" max="2025">
                 <input type="number" x-model="yearEnd" @change="refresh()" placeholder="To" class="w-full text-sm" min="1945" max="2025">
-
                 <label class="flex items-center gap-2 mt-3 text-xs">
                     <input type="checkbox" x-model="onlyPB" @change="refresh()">
                     Politburo only
@@ -32,26 +62,42 @@
             <div class="card p-3 text-sm">
                 <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Legend</div>
                 <div class="space-y-1.5 text-xs">
-                    <div><span class="inline-block w-3 h-3 rounded-full bg-red-600 mr-2"></span> PSC</div>
+                    <div><span class="inline-block w-3 h-3 rounded-full bg-red-600 mr-2"></span> PSC (Standing Committee)</div>
                     <div><span class="inline-block w-3 h-3 rounded-full bg-orange-500 mr-2"></span> Politburo</div>
                     <div><span class="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span> Central Committee</div>
                 </div>
             </div>
 
-            <div id="official-info" class="card p-3 text-sm hidden" style="max-height: 60vh; overflow-y: auto;">
+            <div id="official-info" class="card p-3 text-sm hidden">
                 <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Selected</div>
                 <div id="off-name" class="font-serif text-base mb-1"></div>
                 <div id="off-name-en" class="text-gray-500 text-xs mb-2"></div>
+
                 <div class="text-xs font-semibold text-gray-400 mt-3 mb-1">Career</div>
                 <div id="off-careers" class="text-xs space-y-1"></div>
-                <div class="text-xs font-semibold text-gray-400 mt-3 mb-1">Top Overlaps</div>
+
+                <div class="text-xs font-semibold text-gray-400 mt-3 mb-1">Governments served in</div>
+                <div id="off-governments" class="text-xs space-y-1"></div>
+
+                <div class="text-xs font-semibold text-gray-400 mt-3 mb-1">Top temporal overlaps</div>
                 <div id="off-overlaps" class="text-xs space-y-1"></div>
             </div>
         </div>
 
-        <!-- Graph -->
+        <!-- RIGHT: tab-specific visualization -->
         <div class="flex-1 card overflow-hidden">
-            <svg id="officials-svg" width="100%" height="100%"></svg>
+            <!-- Network tab -->
+            <div id="view-network" style="width:100%;height:100%;">
+                <svg id="officials-svg" width="100%" height="100%"></svg>
+            </div>
+            <!-- PSC tab (hidden by default) -->
+            <div id="view-psc" class="hidden" style="width:100%;height:100%;overflow-y:auto;padding:16px;">
+                <div class="mb-3 text-sm text-gray-600">
+                    Number of distinct provinces each Politburo Standing Committee member worked in before reaching the top leadership.
+                    Bars are sorted by mobility — the widest career geography at the top. Click a bar to see that person's full career.
+                </div>
+                <svg id="psc-svg" width="100%"></svg>
+            </div>
         </div>
     </div>
 </div>
@@ -63,6 +109,31 @@ const RADIUS = {psc: 9, pb: 7, cc: 4};
 
 let simulation, svg, g;
 
+// --- Tab switching (wires up DOM visibility based on Alpine state) ---
+document.addEventListener('alpine:init', () => {
+    Alpine.magic('__', () => (msg) => console.log(msg));
+});
+// Fallback plain-JS tab switcher (Alpine handles the .active class + our JS handles view visibility)
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    const label = btn.textContent.trim();
+    const networkView = document.getElementById('view-network');
+    const pscView = document.getElementById('view-psc');
+    const netFilters = document.getElementById('network-filters');
+    if (label === 'PSC Mobility') {
+        networkView.classList.add('hidden');
+        pscView.classList.remove('hidden');
+        netFilters.classList.add('hidden');
+        drawPscChart();
+    } else {
+        networkView.classList.remove('hidden');
+        pscView.classList.add('hidden');
+        netFilters.classList.remove('hidden');
+    }
+});
+
+// ========== NETWORK GRAPH (existing) ==========
 function initGraph() {
     svg = d3.select('#officials-svg');
     g = svg.append('g');
@@ -88,7 +159,6 @@ async function updateGraph(minMonths, yearStart, yearEnd, onlyPB) {
         return;
     }
 
-    // Lookup map for force-directed graph
     const nodeMap = new Map(data.nodes.map(n => [n.id, n]));
     const edges = data.edges.map(e => ({
         source: nodeMap.get(e.source) || e.source,
@@ -142,6 +212,87 @@ async function updateGraph(minMonths, yearStart, yearEnd, onlyPB) {
     });
 }
 
+// ========== PSC MOBILITY BAR CHART ==========
+let pscData = null;
+
+async function drawPscChart() {
+    if (!pscData) {
+        pscData = await fetch('/api/v1/officials/psc/provinces').then(r => r.json());
+    }
+    const officials = pscData.officials || [];
+    if (!officials.length) return;
+
+    const svgEl = d3.select('#psc-svg');
+    svgEl.selectAll('*').remove();
+
+    const barHeight = 22;
+    const gap = 3;
+    const margin = {top: 10, right: 120, bottom: 30, left: 160};
+    const width = svgEl.node().getBoundingClientRect().width;
+    const innerWidth = width - margin.left - margin.right;
+    const height = margin.top + margin.bottom + officials.length * (barHeight + gap);
+
+    svgEl.attr('height', height);
+    const gChart = svgEl.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const maxCount = d3.max(officials, d => d.count);
+    const x = d3.scaleLinear().domain([0, maxCount]).range([0, innerWidth]);
+
+    // X axis
+    const xAxis = d3.axisBottom(x).ticks(Math.min(maxCount, 10)).tickSize(-officials.length * (barHeight + gap));
+    gChart.append('g')
+        .attr('transform', `translate(0, ${officials.length * (barHeight + gap)})`)
+        .call(xAxis)
+        .call(sel => sel.selectAll('line').attr('stroke', '#f3f4f6'))
+        .call(sel => sel.selectAll('path').attr('stroke', '#e5e7eb'));
+    gChart.append('text')
+        .attr('x', innerWidth / 2)
+        .attr('y', officials.length * (barHeight + gap) + 25)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#6b7280')
+        .attr('font-size', 11)
+        .text('Distinct provinces worked in');
+
+    // Bars
+    const rows = gChart.selectAll('.psc-bar')
+        .data(officials).join('g')
+        .attr('class', 'psc-bar')
+        .attr('transform', (d, i) => `translate(0, ${i * (barHeight + gap)})`)
+        .on('click', (e, d) => showOfficial(d.id));
+
+    rows.append('rect')
+        .attr('width', d => x(d.count))
+        .attr('height', barHeight)
+        .attr('fill', '#991b1b')
+        .attr('rx', 2);
+
+    // Name label on the left
+    rows.append('text')
+        .attr('x', -8)
+        .attr('y', barHeight / 2 + 4)
+        .attr('text-anchor', 'end')
+        .attr('font-size', 12)
+        .attr('fill', '#1f2937')
+        .text(d => d.name_cn);
+
+    // Count + province list on the right of each bar
+    rows.append('text')
+        .attr('x', d => x(d.count) + 6)
+        .attr('y', barHeight / 2 + 4)
+        .attr('font-size', 11)
+        .attr('fill', '#374151')
+        .text(d => `${d.count}  ·  ${d.provinces.map(p => p.province).join(' → ')}`);
+
+    // Hover tooltip
+    rows.append('title').text(d => {
+        const list = d.provinces.map(p =>
+            `${p.province} (${p.first_year}-${p.last_year || '?'})`
+        ).join('\n');
+        return `${d.name_cn} (${d.name_en})\nborn ${d.birth_year}, from ${d.home_province}\n\n${list}`;
+    });
+}
+
+// ========== OFFICIAL DETAIL PANEL ==========
 async function showOfficial(officialId) {
     const data = await fetch(`/api/v1/officials/${officialId}`).then(r => r.json());
     if (data.error) return;
@@ -151,17 +302,46 @@ async function showOfficial(officialId) {
     document.getElementById('off-name-en').textContent =
         `${data.official.name_en || ''} • ${data.official.birth_year || '?'} • ${data.official.home_province || '?'}`;
 
-    const careersDiv = document.getElementById('off-careers');
-    careersDiv.innerHTML = data.careers.map(c => {
+    // Career list
+    document.getElementById('off-careers').innerHTML = data.careers.map(c => {
         const period = `${c.start_year}${c.start_month ? '.' + c.start_month : ''}–${c.end_year || 'now'}`;
-        return `<div><span class="text-gray-400">${period}</span> ${c.organization || ''} ${c.position || ''}</div>`;
+        return `<div><span class="text-gray-400">${period}</span> ${escapeHtml(c.organization || '')} ${escapeHtml(c.position || '')}</div>`;
     }).join('');
 
-    const overlapsDiv = document.getElementById('off-overlaps');
-    overlapsDiv.innerHTML = data.overlaps.slice(0, 15).map(o => {
-        const months = Math.round(o.overlap_months / 12 * 10) / 10;
-        return `<div><span class="font-semibold">${o.name_cn}</span> · <span class="text-gray-400">${o.organization || o.province || ''}</span> · ${months}y</div>`;
+    // Governments section: list of orgs/provinces + co-officials per government
+    const govs = data.governments || [];
+    document.getElementById('off-governments').innerHTML = govs.length === 0
+        ? '<div class="text-gray-400 italic">No government records.</div>'
+        : govs.map((g, idx) => {
+            const period = `${g.first_year || '?'}–${g.last_year || '?'}`;
+            const coList = (g.co_officials || []).slice(0, 25).map(co => {
+                const cls = co.is_psc ? 'co-off psc' : co.is_politburo ? 'co-off pb' : 'co-off';
+                return `<span class="${cls}" onclick="event.stopPropagation(); showOfficial(${co.id})" title="${escapeHtml(co.name_en)} (${co.first_year}-${co.last_year || '?'})">${escapeHtml(co.name_cn)}</span>`;
+            }).join('');
+            const moreNote = g.co_count > 25 ? `<span class="text-gray-400"> +${g.co_count - 25} more</span>` : '';
+            return `
+                <div class="gov-row clickable" onclick="this.querySelector('.gov-co').classList.toggle('hidden')">
+                    <div>
+                        <span class="gov-name">${escapeHtml(g.key)}</span>
+                        <span class="gov-meta"> ${period} · ${g.co_count} co-officials</span>
+                    </div>
+                    <div class="gov-co hidden">
+                        ${coList}${moreNote}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    // Top overlaps
+    document.getElementById('off-overlaps').innerHTML = data.overlaps.slice(0, 15).map(o => {
+        const years = Math.round(o.overlap_months / 12 * 10) / 10;
+        return `<div><span class="font-semibold cursor-pointer hover:text-red-700" onclick="showOfficial(${o.official_a === officialId ? o.official_b : o.official_a})">${escapeHtml(o.name_cn)}</span> · <span class="text-gray-400">${escapeHtml(o.organization || o.province || '')}</span> · ${years}y</div>`;
     }).join('');
+}
+
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 document.addEventListener('DOMContentLoaded', initGraph);

@@ -271,9 +271,73 @@ async def api_officials_network(request: Request, min_months: int = 12,
     return {"nodes": list(node_dict.values()), "edges": edges}
 
 
+@router.get("/officials/psc/provinces")
+async def api_psc_provinces(request: Request):
+    """Province-mobility visualization data: how many distinct provinces each
+    PSC member worked in across their career.
+
+    Sorted by province count descending. Used by the /officials PSC Mobility
+    tab to show the geographic breadth of each Standing Committee member's
+    pre-Politburo career.
+    """
+    odb = request.app.state.officials_db
+    if odb is None:
+        return {"officials": [], "error": "officials.db not loaded"}
+
+    # Per-PSC-member province list with full career period info per province
+    rows = await odb.fetch(
+        """SELECT o.id, o.name_cn, o.name_en, o.birth_year, o.home_province,
+                  c.province, MIN(c.start_year) as first_year, MAX(c.end_year) as last_year
+           FROM officials o
+           JOIN career_records c ON c.official_id = o.id
+           WHERE o.is_psc = 1
+             AND c.province IS NOT NULL AND c.province != ''
+           GROUP BY o.id, c.province
+           ORDER BY o.id, first_year"""
+    )
+
+    # Aggregate by official
+    by_id: dict[int, dict] = {}
+    for r in rows:
+        oid = r["id"]
+        if oid not in by_id:
+            by_id[oid] = {
+                "id": oid,
+                "name_cn": r["name_cn"],
+                "name_en": r["name_en"] or "",
+                "birth_year": r["birth_year"],
+                "home_province": r["home_province"] or "",
+                "provinces": [],
+            }
+        by_id[oid]["provinces"].append({
+            "province": r["province"],
+            "first_year": r["first_year"],
+            "last_year": r["last_year"],
+        })
+
+    officials = sorted(
+        by_id.values(),
+        key=lambda x: -len(x["provinces"]),
+    )
+    for o in officials:
+        o["count"] = len(o["provinces"])
+
+    return {"officials": officials}
+
+
 @router.get("/officials/{official_id}")
 async def api_official_detail(request: Request, official_id: int):
-    """Get full career history and overlaps for one official."""
+    """Get full career history, overlaps, and government affiliations for one official.
+
+    Returns:
+      - official:       full DB row
+      - careers:        all career_records for this person
+      - overlaps:       top 50 temporal overlaps from the overlaps table
+      - governments:    career records grouped by `organization|province` with
+                        the list of OTHER officials we have records for who
+                        also served in that government (whether or not their
+                        tenures overlapped with this person's).
+    """
     odb = request.app.state.officials_db
     if odb is None:
         return {"error": "officials.db not loaded"}
@@ -301,8 +365,107 @@ async def api_official_detail(request: Request, official_id: int):
         official_id
     )
 
+    # Build "governments" view: distinct organizations/provinces this person
+    # worked in, with the people who populated each.
+    # Group key prefers organization, falls back to province.
+    gov_periods: dict[str, dict] = {}
+    for c in careers:
+        org = (c["organization"] or "").strip()
+        prov = (c["province"] or "").strip()
+        key = org if org else prov
+        if not key:
+            continue
+        if key not in gov_periods:
+            gov_periods[key] = {
+                "key": key,
+                "organization": org,
+                "province": prov,
+                "official_periods": [],
+                "first_year": c["start_year"] or 0,
+                "last_year": c["end_year"] or 0,
+            }
+        gov_periods[key]["official_periods"].append({
+            "start": c["start_year"],
+            "end": c["end_year"],
+            "position": (c["position"] or "")[:120],
+        })
+        if c["start_year"] and (not gov_periods[key]["first_year"] or c["start_year"] < gov_periods[key]["first_year"]):
+            gov_periods[key]["first_year"] = c["start_year"]
+        if c["end_year"] and c["end_year"] > gov_periods[key]["last_year"]:
+            gov_periods[key]["last_year"] = c["end_year"]
+
+    # For each government, find co-officials (anyone else with a career
+    # record in the same organization OR province, depending on the key).
+    if gov_periods:
+        org_keys = [k for k, v in gov_periods.items() if v["organization"]]
+        prov_only_keys = [k for k, v in gov_periods.items() if not v["organization"] and v["province"]]
+
+        co_by_key: dict[str, list] = {k: [] for k in gov_periods}
+
+        # Co-officials by organization match (skip placeholder/junk orgs)
+        if org_keys:
+            placeholders = ",".join(f"${i+2}" for i in range(len(org_keys)))
+            co_org = await odb.fetch(
+                f"""SELECT c.organization, c.official_id, o.name_cn, o.name_en,
+                           MIN(c.start_year) as first_year, MAX(c.end_year) as last_year,
+                           o.is_psc, o.is_politburo
+                    FROM career_records c
+                    JOIN officials o ON o.id = c.official_id
+                    WHERE c.organization IN ({placeholders})
+                      AND c.official_id != $1
+                    GROUP BY c.organization, c.official_id
+                    ORDER BY first_year""",
+                official_id, *org_keys
+            )
+            for r in co_org:
+                co_by_key[r["organization"]].append({
+                    "id": r["official_id"],
+                    "name_cn": r["name_cn"],
+                    "name_en": r["name_en"] or "",
+                    "first_year": r["first_year"],
+                    "last_year": r["last_year"],
+                    "is_psc": bool(r["is_psc"]),
+                    "is_politburo": bool(r["is_politburo"]),
+                })
+
+        # Co-officials by province match (only for province-only governments)
+        if prov_only_keys:
+            placeholders = ",".join(f"${i+2}" for i in range(len(prov_only_keys)))
+            co_prov = await odb.fetch(
+                f"""SELECT c.province, c.official_id, o.name_cn, o.name_en,
+                           MIN(c.start_year) as first_year, MAX(c.end_year) as last_year,
+                           o.is_psc, o.is_politburo
+                    FROM career_records c
+                    JOIN officials o ON o.id = c.official_id
+                    WHERE c.province IN ({placeholders})
+                      AND c.official_id != $1
+                    GROUP BY c.province, c.official_id
+                    ORDER BY first_year""",
+                official_id, *prov_only_keys
+            )
+            for r in co_prov:
+                co_by_key[r["province"]].append({
+                    "id": r["official_id"],
+                    "name_cn": r["name_cn"],
+                    "name_en": r["name_en"] or "",
+                    "first_year": r["first_year"],
+                    "last_year": r["last_year"],
+                    "is_psc": bool(r["is_psc"]),
+                    "is_politburo": bool(r["is_politburo"]),
+                })
+
+        for k, v in gov_periods.items():
+            v["co_officials"] = co_by_key.get(k, [])
+            v["co_count"] = len(v["co_officials"])
+
+    governments = sorted(
+        gov_periods.values(),
+        key=lambda g: g["first_year"] or 0,
+    )
+
     return {
         "official": dict(official),
         "careers": [dict(r) for r in careers],
         "overlaps": [dict(r) for r in overlaps],
+        "governments": governments,
     }
