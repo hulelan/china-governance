@@ -48,7 +48,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS officials (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name_en TEXT,
-            name_cn TEXT UNIQUE,
+            name_cn TEXT,
             birth_year INTEGER,
             home_province TEXT,
             cc_congresses TEXT,
@@ -61,6 +61,14 @@ def init_db():
             crawl_timestamp TEXT,
             parse_status TEXT DEFAULT 'pending'
         );
+        -- Two distinct people can share a Chinese name (李强, 王宁, 刘伟,
+        -- ...). The Excel source had 31 such collisions. Uniqueness must
+        -- be on (name_cn, birth_year), not name_cn alone. The original
+        -- DB shipped with `name_cn UNIQUE` and `INSERT OR IGNORE` silently
+        -- dropped the second twin in each collision; see
+        -- scripts/fix_baike_collisions.py for the historical repair.
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_officials_name_birth
+            ON officials(name_cn, birth_year);
 
         CREATE TABLE IF NOT EXISTS career_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -102,12 +110,18 @@ def init_db():
 
 
 def load_members_from_excel(conn):
-    """Load CC members from Excel into officials table (skip existing)."""
+    """Load CC members from Excel into officials table (skip existing).
+
+    Two CC members can share a Chinese name (the Excel had 31 collisions).
+    We dedupe by `(name_cn, birth_year)` so both twins survive — keyed by
+    name alone would silently drop one of them, which is how we ended up
+    with the wrong 李强 in the original DB load.
+    """
     wb = openpyxl.load_workbook(str(EXCEL_PATH), read_only=True)
 
-    # Collect CC membership info
+    # Collect CC membership info, keyed by (name_cn, birth_year)
     ws = wb["CC Members"]
-    member_info = {}  # name_cn -> {congresses, is_pb, is_psc, ...}
+    member_info: dict[tuple, dict] = {}
     for i, row in enumerate(ws.iter_rows(values_only=True)):
         if i == 0:
             continue
@@ -115,30 +129,32 @@ def load_members_from_excel(conn):
         is_pb, is_psc = row[6], row[7]
         if not name_cn:
             continue
-        if name_cn not in member_info:
-            member_info[name_cn] = {
+        key = (name_cn, birth_year)
+        if key not in member_info:
+            member_info[key] = {
                 "name_en": name_en,
+                "name_cn": name_cn,
                 "birth_year": birth_year,
                 "province": province,
                 "congresses": [],
                 "is_pb": False,
                 "is_psc": False,
             }
-        member_info[name_cn]["congresses"].append(congress)
+        member_info[key]["congresses"].append(congress)
         if is_pb == "Y":
-            member_info[name_cn]["is_pb"] = True
+            member_info[key]["is_pb"] = True
         if is_psc == "Y":
-            member_info[name_cn]["is_psc"] = True
+            member_info[key]["is_psc"] = True
 
     # Insert into DB
     inserted = 0
-    for name_cn, info in member_info.items():
+    for info in member_info.values():
         try:
             conn.execute(
                 """INSERT OR IGNORE INTO officials
                    (name_en, name_cn, birth_year, home_province, cc_congresses, is_politburo, is_psc)
                    VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (info["name_en"], name_cn, info["birth_year"], info["province"],
+                (info["name_en"], info["name_cn"], info["birth_year"], info["province"],
                  json.dumps(info["congresses"]), int(info["is_pb"]), int(info["is_psc"])),
             )
             if conn.execute("SELECT changes()").fetchone()[0] > 0:
@@ -146,7 +162,7 @@ def load_members_from_excel(conn):
         except sqlite3.IntegrityError:
             pass
     conn.commit()
-    log.info(f"Loaded {inserted} new officials from Excel ({len(member_info)} total unique)")
+    log.info(f"Loaded {inserted} new officials from Excel ({len(member_info)} unique by (name, birth))")
     return len(member_info)
 
 

@@ -309,6 +309,7 @@ Page: /officials
 | Task | Priority | Notes |
 |------|----------|-------|
 | Cross-link officials ↔ documents | **High** | Match document publishers/signatories against officials table. Show which policies each person authored/signed during their tenure. |
+| Add missing collision twins | Medium | Excel had 31 name collisions (e.g., two 李强s, three 刘伟s) but the original `baike.py` loader deduplicated by `name_cn` alone, silently keeping only the first occurrence. Loader is now fixed to use `(name_cn, birth_year)`, and `scripts/fix_baike_collisions.py` already repaired the 12 Frankenstein rows where career data was stitched to the wrong metadata. Still TODO: add the ~19-30 missing twin rows + fetch Baidu Baike for each via disambiguation (bare URL `/item/{name}` serves the more-famous twin, so the other needs a numbered `/item/{name}/{disambig_id}` URL). Requires schema migration to drop the legacy `name_cn UNIQUE` constraint on existing DBs. |
 | Better org normalization | Medium | 32 provinces detected, but admin_level detection is only 42% accurate. More regex patterns for 部/委/局/院. |
 | Parse narrative biographies | Medium | 527 officials have 0 career records (mostly pre-1978 leaders with prose bios). Could use DeepSeek to extract. |
 | Add search by name | Medium | Currently no way to find a specific person. Add search box. |
