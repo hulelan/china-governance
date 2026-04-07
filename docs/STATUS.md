@@ -1,6 +1,6 @@
 # Project Status
 
-*Last updated: 2026-04-06*
+*Last updated: 2026-04-07*
 
 ## Corpus Summary
 
@@ -23,7 +23,7 @@
 |-----------|-------|
 | Website | Live at chinagovernance.com. DigitalOcean droplet, nginx + uvicorn + SQLite |
 | Droplet | 104.236.88.45 (NYC3, 2 vCPU / 2GB RAM / 2GB swap, $18/mo) |
-| Database | SQLite `documents.db` (~2GB), rsynced from Mac after each crawl |
+| Databases | Two SQLite files rsynced from Mac: `documents.db` (~2GB, policy corpus) and `officials.db` (250MB, CCP elite) |
 | SSL | Let's Encrypt via certbot, auto-renews. Expires July 4, 2026 |
 | DNS | Squarespace. A records for @ and www → 104.236.88.45 |
 | Local DB | SQLite `documents.db` on Mac (source of truth) |
@@ -176,24 +176,68 @@ Each site has many sections; we only crawl the policy-relevant ones.
 
 **General pattern:** We crawl **policy documents and interpretations** (政策文件 + 政策解读). We skip **data/statistics**, **enforcement actions**, **news/media**, and **public services**. This is intentional — policy docs are the core research value.
 
-## Officials Database (NEW — officials.db)
+## Officials Database (officials.db — 250MB)
 
-Baidu Baike crawler for CPC Central Committee members. Separate from documents.db.
+Separate SQLite database for CCP elite career data. Lives alongside documents.db
+on Mac and droplet. Both rsynced together during daily sync.
 
 | Metric | Value |
 |--------|-------|
 | Total officials | 2,181 unique CC members (7th–20th Congress, 1945-2022) |
 | Politburo members | 145 |
 | PSC members | 45 |
-| Baike pages crawled | In progress (~2hrs) |
-| Career records parsed | Pending (run after crawl completes) |
-| Source data | CPC_Elite_Leadership_Database.xlsx |
-| Career formats | Three: YYYY.MM-YYYY.MM, YYYY-YYYY年, YYYY年M月 |
+| Baike pages crawled | 2,155 / 2,181 (98.8% success) |
+| Failed | 26 (no Baike page or disambiguation issue) |
+| Career records parsed | 17,727 from 1,628 officials |
+| Overlaps computed | 5,121 (pairs who served in same org with time overlap) |
+| Source data | CPC_Elite_Leadership_Database.xlsx (Jonathon P Sine) |
 
-**Pipeline:** Excel → officials table → Baike scrape → career_records table → overlap computation → D3.js network visualization.
+**Tables:**
+- `officials` — name, birth year, home province, CC membership, Baike HTML + career text
+- `career_records` — (official_id, position, organization, province, admin_level, start/end year/month)
+- `overlaps` — (official_a, official_b, organization, overlap_start_year, overlap_end_year, overlap_months)
 
-## Recent Completions (2026-04-05 — 04-06)
+**Pipeline:**
+```
+CPC_Elite_Leadership_Database.xlsx
+    ↓ load_members_from_excel() (openpyxl)
+officials table
+    ↓ crawlers/baike.py — scrapes baike.baidu.com/item/{name_cn}
+baike_html + baike_career_text
+    ↓ parse_career_text() — regex for 3 date formats
+career_records table
+    ↓ scripts/compute_overlaps.py — pairwise overlap by shared normalized org
+overlaps table
+    ↓ aiosqlite read-only in FastAPI lifespan
+API: /api/v1/officials/network + /api/v1/officials/{id}
+    ↓ D3.js force-directed graph
+Page: /officials
+```
 
+**Live at:** https://www.chinagovernance.com/officials
+- Filters: min overlap months, year range, Politburo only
+- Click node → career history + top 15 overlaps
+- PSC = red, Politburo = orange, CC = blue
+
+**Parser coverage:**
+- 76% of officials have parsed records (1,628 / 2,155)
+- Missing: old leaders (pre-1978) with narrative biographies
+- Works on 3 Baike formats: `YYYY.MM-YYYY.MM position`, `YYYY-YYYY年 position`, `YYYY年M月 position`
+
+**Overlap logic:**
+- Skips non-org entries (joining party, education, birth)
+- Groups by normalized org key (first 4+ chars ending at position marker)
+- Pairs with overlapping date ranges become edges
+- No end date → assume 4 years (typical CCP term length)
+- Province-only overlaps excluded (too broad to be meaningful)
+
+## Recent Completions (2026-04-05 — 04-07)
+
+- **Officials Network live** (2026-04-07): `/officials` page shows CCP elite career overlap graph. 5,121 overlaps from 17,727 career records. D3.js force-directed, filterable by overlap duration, year range, Politburo-only. Click node → full career + top overlaps.
+- **compute_overlaps.py**: Groups career records by normalized org key, computes pairwise overlaps with realistic end-date inference (4-year default), filters out non-org entries (party-joining, education, birth).
+- **Officials crawler**: `crawlers/baike.py` scraped Baidu Baike for 2,155/2,181 CC members (98.8% success). Parses 3 Baike career formats via regex, no LLM needed. 17,727 career records extracted.
+- **Web app opens 2 SQLite DBs**: `documents.db` for policy corpus, `officials.db` for elite career data. Lifespan handler opens both read-only, separate aiosqlite connections.
+- **daily_sync.sh rsyncs officials.db too**: WAL checkpoint + rsync for both DBs.
 - **VPS migration complete**: Railway Postgres → DigitalOcean droplet (104.236.88.45, NYC3). SQLite served directly via rsync. No more Postgres timeouts.
 - **Daily pipeline rsyncs to droplet**: WAL checkpoint → rsync → restart. First successful end-to-end run Apr 6 (+616 new docs).
 - **Performance fixes**: Homepage/dashboard/chain cached 1hr, dashboard uses citations table (was loading 1GB of body text), network API rewritten to use citations table.
@@ -201,7 +245,6 @@ Baidu Baike crawler for CPC Central Committee members. Separate from documents.d
 - **Dashboard ZeroDivisionError fixed**: Sites with 0 docs no longer crash the page.
 - **Chain renamed to "Policy Trace"**: User-facing rename in nav, headings, titles.
 - **SQLite `!= ALL()` translation**: Fixed chain page crash — added `NOT IN` conversion for Postgres→SQLite queries.
-- **Officials crawler built**: `crawlers/baike.py` scrapes Baidu Baike for 2,181 CC members' career timelines.
 
 ## Recent Completions (2026-03-29 — 04-05)
 
@@ -247,6 +290,17 @@ Baidu Baike crawler for CPC Central Committee members. Separate from documents.d
 | Reduce "other" doc type bucket | Low | 68k docs classified as "other" — need more title regex patterns |
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj |
 | Xinhua fortune + politics_read | Low | ~1,250 more docs |
+
+### Officials Network Improvements
+| Task | Priority | Notes |
+|------|----------|-------|
+| Cross-link officials ↔ documents | **High** | Match document publishers/signatories against officials table. Show which policies each person authored/signed during their tenure. |
+| Better org normalization | Medium | 32 provinces detected, but admin_level detection is only 42% accurate. More regex patterns for 部/委/局/院. |
+| Parse narrative biographies | Medium | 527 officials have 0 career records (mostly pre-1978 leaders with prose bios). Could use DeepSeek to extract. |
+| Add search by name | Medium | Currently no way to find a specific person. Add search box. |
+| Timeline slider | Medium | Show network state at year X (animate through years). |
+| Faction detection | Low | Color-code by faction (Shanghai clique, Youth League, etc.) using clustering. |
+| Cross-link to documents | Medium | "Policies issued during 李强's tenure in Zhejiang (2012-2017)" |
 
 ### Source Expansion
 
