@@ -162,9 +162,12 @@ run_crawler "tsinghua_aiig" python3 -m crawlers.tsinghua_aiig
 run_crawler "sz_invest (9 sections)" python3 -m crawlers.sz_invest
 
 # Media / tech news crawlers
-for crawler in 36kr latepost ifeng xinhua people; do
+for crawler in 36kr latepost ifeng xinhua people stdaily; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
+
+# Guancha runs in --deep mode to pick up section pages + columnists
+run_crawler "guancha" python3 -m crawlers.guancha --deep
 
 # Location-specific crawlers
 if [ "$IS_MAC" = "true" ]; then

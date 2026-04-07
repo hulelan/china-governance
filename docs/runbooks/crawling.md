@@ -178,6 +178,28 @@ All crawlers support `--stats`, `--list-only`, `--db <path>` flags.
 - **Technique:** Static JSON datasource feeds (`ds_{id}.json`), up to 1,000 articles per feed. Body from HTML detail pages.
 - **Sections:** tech (~1,000), fortune (~1,000), politics_docs (~251), politics_read (~253)
 - **Note:** JSON feeds have no pagination — each returns the full recent article list. Run regularly for incremental capture.
+- **Known gap:** General-news homepage articles (`xinhuanet.com/YYYYMMDD/{uuid}/c.html` with no section prefix — domestic/world/时政). Need to find the front-page JSON datasource UUID to capture these.
+
+### Science & Technology Daily (`crawlers/stdaily.py`)
+
+- **Technique:** Fetch `sitemap.xml` (rolling ~200 recent URLs over ~4 days) and optionally the homepage. Body from `<div id="printContent">`.
+- **Sections:** gdxw (国内新闻, main volume), gjxw (国际), ztxw (专题), main paper (no section prefix)
+- **Flags:** `--deep` adds homepage discovery on top of the sitemap (~120 more links, with overlap). `--list-only` lists URLs without fetching.
+- **Level:** `admin_level=central` because stdaily is the Ministry of Science & Technology's official newspaper.
+- **Note on 404s:** Some dead links may come from the sitemap. `fetch()` raises `HTTPError 404` and the crawler logs it as an error and continues.
+- **Known gap:** No historical archive. Only ~4 days rolling window per run. Multi-year backfill is not possible without an external source (Wayback).
+
+### Guancha / Observer Network (`crawlers/guancha.py`)
+
+- **Technique:** Scrape the homepage for article links, follow each one to the desktop article page. Body from `<div class="content all-txt">`. Title from `<title>` (normal template) or h-tag before body (speech template).
+- **Sections:** politics, economy, internation, qiche, kegongliliang, xinzhiguanchasuo, xinqiang — plus columnist pages (CamelCase slugs like `/GuanJinRong`, `/TuZhuXi`) in `--deep` mode.
+- **Flags:** `--deep` also fetches each section page and every columnist page discovered on the homepage (~400+ unique URLs per run instead of ~185).
+- **Two page templates:**
+  1. **Normal** (most sections, columnists): single HTML doc, title in `<title>` tag.
+  2. **Politics speeches** (high-level announcements): double-`<html>` structure with empty stub first, title in an `<h3>` before the body, and body redirected to Xinhua via JavaScript (so body_text is empty). Stored as title-only entries.
+- **Nginx fallback quirk:** Unknown section slugs return the homepage (exactly 349929 bytes) as a fallback. The crawler detects this and skips. Slugs `society`, `military`, `zhongguo` fall back — don't add them.
+- **Author analysis:** Columnist names (the section slug, e.g. `GuanJinRong`) are stored in `classify_theme_name` so we can later compare referenced vs non-referenced authors.
+- **Known gap:** No pagination. Same rolling-window accumulation strategy as stdaily.
 
 ## Patterns and Learnings
 
@@ -198,6 +220,8 @@ Media crawlers only capture **recent articles** — there's no deep archive. The
 | LatePost | ~85 articles (~3 months) | Single channel page, no pagination | No |
 | 36Kr | ~10-30 articles (~1 week) | RSS feed, latest only | No |
 | ifeng/风声 | ~100 articles (~6 months) | 10 API pages max | Could increase MAX_PAGES |
+| stdaily | ~200 URLs (~4 days rolling) | sitemap.xml is rolling, no pagination | No — accumulate over time |
+| guancha | ~185 homepage / ~400 with `--deep` | No pagination on section pages | No — accumulate over time |
 
 **Government crawlers** are different — they have full pagination and capture the complete corpus. Media crawlers are "catch what's current and run regularly."
 

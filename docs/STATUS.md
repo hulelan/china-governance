@@ -6,9 +6,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documents | 137,932 |
-| With body text | ~128,000 (93%) |
-| Total sites | 64 |
+| Total documents | 138,822 |
+| With body text | ~128,800 (93%) |
+| Total sites | 66 |
 | Algorithmic scores | All docs scored: citation_rank, algo_doc_type (19 types), ai_relevance (0-1) |
 | High AI relevance (>=0.5) | 195 docs |
 | Medium+ AI relevance (>=0.2) | 2,627 docs |
@@ -118,7 +118,9 @@
 
 | Site Key | Name | Docs | Bodies | Body% | Notes |
 |----------|------|------|--------|-------|-------|
-| xinhua | Xinhua (新华社) | 1,504 | 1,496 | 99% | tech + politics. fortune/politics_read sections not yet crawled |
+| xinhua | Xinhua (新华社) | 2,548 | 2,523 | 99% | 4 sections: tech, fortune, politics_docs, politics_read. **Missing:** general-news homepage articles (paths like `xinhuanet.com/YYYYMMDD/{uuid}/c.html` with no section prefix — 时政/国内/国际/domestic/world) |
+| stdaily | Science & Technology Daily (科技日报) | 200 | 200 | 100% | Official MOST newspaper — effectively a central-government voice on tech/AI/innovation policy. Discovery via `sitemap.xml` (~200 recent URLs) + homepage (`--deep`). **No browsable historical archive** — only rolling last ~4 days per fetch |
+| guancha | Guancha / Observer Network (观察者网) | 690 | 646 | 94% | Influential nationalist-aligned commentary site. Homepage (~185 links) + 7 section pages + columnist pages (`--deep`, ~690/run). 44 title-only docs are politics speeches whose bodies redirect to Xinhua via JS. Author slugs stored in `classify_theme_name` for future author-citation analysis. |
 | people | People's Daily (人民日报) | 1,102 | 1,102 | 100% | 17 editorial sections from opinion.people.com.cn |
 | ifeng | Phoenix/风声 | 180 | 180 | 100% | Added tech section |
 | latepost | LatePost (晚点) | 94 | 94 | 100% | ~94 recent articles, no pagination |
@@ -170,9 +172,11 @@ Each site has many sections; we only crawl the policy-relevant ones.
 | **gkmlpt sites** (40+) | 政府信息公开目录 (standard Guangdong transparency API) | Non-transparency content (news, services) |
 | **Beijing** (5 sections) | 政策文件 across multiple categories | 工作动态 (work updates) section not yet crawled |
 | **Shanghai** (6 sections) | Year-archive policy documents | Municipal news, district-level content |
-| **Xinhua** | tech + politics sections | fortune, politics_read (~1,250 more articles) |
+| **Xinhua** | 4 sections: 科技 (tech), 财经 (fortune), 中央文件发布 (politics_docs), 中央文件解读 (politics_read) | **General-news homepage articles** (时政/国内/国际/domestic/world — URLs like `xinhuanet.com/YYYYMMDD/{uuid}/c.html` with no section prefix). Each section JSON feed is capped at ~1,000 items (~4–5 months of history) |
 | **People's Daily** | 17 opinion editorial sections from opinion.people.com.cn | Main news (people.cn), regional editions, peopleapp.com (SPA, needs API work) |
 | **ifeng** | 风声 + tech + 9 regional channels | Financial news, entertainment, video content |
+| **stdaily** | Rolling last ~4 days via `sitemap.xml` (~200 recent URLs), homepage with `--deep` | **No historical archive** — no browsable month/year index, no pagination. Coverage accumulates only by running daily. Older content reachable only if we guess content IDs or use Wayback |
+| **guancha** | Homepage (~185 links) + 7 in-section pages (politics/economy/internation/qiche/kegongliliang/xinzhiguanchasuo/xinqiang) + all columnist pages with `--deep` | **No pagination** on section pages. Politics-speech pages have title + date but **no body** (Guancha redirects to Xinhua via JS). Sections `society`/`military`/`zhongguo` fall back to homepage |
 
 **General pattern:** We crawl **policy documents and interpretations** (政策文件 + 政策解读). We skip **data/statistics**, **enforcement actions**, **news/media**, and **public services**. This is intentional — policy docs are the core research value.
 
@@ -233,6 +237,8 @@ Page: /officials
 
 ## Recent Completions (2026-04-05 — 04-07)
 
+- **Two new media crawlers** (2026-04-07): `crawlers/stdaily.py` for 科技日报 (Science & Technology Daily — MOST's official newspaper, `admin_level=central`) and `crawlers/guancha.py` for 观察者网 (Guancha / Observer Network, `admin_level=media`). Both added to `daily_sync.sh`. stdaily discovers via `sitemap.xml` (rolling ~200 URLs/4 days). guancha runs in `--deep` mode covering homepage + 7 section pages + all columnist pages (~690 URLs/run). Neither site has pagination or a historical archive — coverage will accumulate via daily runs.
+- **Guancha author-slug capture**: Columnist sections (CamelCase slugs like `GuanJinRong`, `TuZhuXi`) are stored in `classify_theme_name` to enable future analysis of which named authors get referenced in policy docs vs which remain uncited. Tracked as a research analysis task.
 - **Officials Network live** (2026-04-07): `/officials` page shows CCP elite career overlap graph. 5,121 overlaps from 17,727 career records. D3.js force-directed, filterable by overlap duration, year range, Politburo-only. Click node → full career + top overlaps.
 - **compute_overlaps.py**: Groups career records by normalized org key, computes pairwise overlaps with realistic end-date inference (4-year default), filters out non-org entries (party-joining, education, birth).
 - **Officials crawler**: `crawlers/baike.py` scraped Baidu Baike for 2,155/2,181 CC members (98.8% success). Parses 3 Baike career formats via regex, no LLM needed. 17,727 career records extracted.
@@ -289,7 +295,10 @@ Page: /officials
 | Re-run extract_citations.py after classification finishes | Medium | More references_json = more LLM citations |
 | Reduce "other" doc type bucket | Low | 68k docs classified as "other" — need more title regex patterns |
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj |
-| Xinhua fortune + politics_read | Low | ~1,250 more docs |
+| Xinhua general-news section | Low | Homepage articles at `xinhuanet.com/YYYYMMDD/{uuid}/c.html` (no section prefix) — need to find the front-page JSON datasource UUID |
+| stdaily historical backfill | Low | Sitemap + homepage only yield a 4-day rolling window. True multi-year backfill would need Wayback Machine or guessing content IDs. Will accumulate naturally via daily runs. |
+| guancha historical backfill | Low | No pagination on section pages. Same "accumulate over time" problem as stdaily. |
+| guancha: fetch body text for politics-speech pages | Low | Politics pages with JS redirects to `h.xinhuaxmt.com/...` currently stored as title-only. Could follow the redirect to get body. |
 
 ### Officials Network Improvements
 | Task | Priority | Notes |
@@ -321,6 +330,16 @@ MOE, PBoC, TC260, CSRC, NBS, Sichuan, Nanjing, Ningbo, Qingdao, Wuxi, Xi'an, Xia
 Anhui, Chengdu, Hebei, Henan, Hubei, Gansu, Guangxi, Inner Mongolia, Tianjin, Xinjiang, Changsha, Hefei + others
 
 **Discovery tool:** `python3 scripts/discover_sources.py --quick` (reachability) or without flag (deep scan with AI term search)
+
+### Research Analyses
+
+Open research questions we plan to investigate over the corpus:
+
+| Question | Notes |
+|----------|-------|
+| **Referenced vs non-referenced authors** | For media sources where we capture named author bylines (guancha columnists, Xinhua, People's Daily, ifeng), compare which authors get **cited in policy documents** vs which remain uncited. Which columnists shape official narratives? Which are pure commentary with no policy footprint? Requires: (1) reliable author extraction per source, (2) citation matching — since policy docs typically cite by doc number not author, this needs fuzzy name + org matching. Start with guancha columnists (stored in `classify_theme_name` for the guancha site). |
+| **Policy language genealogy** | How do phrases/slogans in central policy documents propagate into provincial and municipal docs? Track n-gram diffusion with dates. |
+| **AI policy acceleration curve** | Rate of AI-tagged policy issuance over time, by level. Use `ai_relevance` + `date_written`. |
 
 ## Classification
 

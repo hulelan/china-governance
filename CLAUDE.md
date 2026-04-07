@@ -48,6 +48,11 @@ python3 -m crawlers.tsinghua_aiig               # Tsinghua AI Governance Institu
 python3 -m crawlers.sz_invest                   # Shenzhen non-gkmlpt (investment news, DRC, Longgang AI)
 python3 -m crawlers.sz_invest --section fgw_xwdt  # DRC news only
 python3 -m crawlers.sz_invest --section lg_ai     # Longgang AI/robotics only
+
+python3 -m crawlers.stdaily                     # Science & Technology Daily (MOST newspaper, sitemap-based)
+python3 -m crawlers.stdaily --deep              # Sitemap + homepage discovery
+python3 -m crawlers.guancha                     # Guancha / Observer Network (homepage only, ~185 articles)
+python3 -m crawlers.guancha --deep              # + section pages + all columnists (~400 articles)
 ```
 
 ### Classification (DeepSeek API)
