@@ -165,3 +165,159 @@ specific research question." The fix is not "crawl more stuff" — it's
 "crawl the right stuff," which in this case means the
 cybersecurity/standards layer (NVDB, CNCERT, TC260) and the WeChat
 distribution layer.
+
+---
+
+## Strategic takeaways
+
+The four insights below are the reason this audit matters more than a
+typical "coverage check." Worth re-reading before scoping any of the
+remediation work.
+
+### 1. "0/24 against a real bibliography" is the most useful gap measure we have
+
+Counting total documents tells you **size**; counting matches against
+someone's actual bibliography tells you **analytical usefulness for a
+specific research question**. We've been measuring the corpus by
+volume (138k docs, 66 sites, 93% body coverage) — all legitimate
+metrics, but none of them would have flagged that we have zero of the
+things this particular researcher cites.
+
+This is the single best kind of gap analysis because it's grounded in
+how a real analyst actually cites sources, not in our own guesses
+about what's important. Running similar audits against 2-3 more
+recent Chinese AI-governance pieces (e.g., CNAS or CSET reports,
+Asia Society commentary, academic papers from policy journals) would
+quickly reveal whether the gap shape we found here is idiosyncratic
+to one author or structural to the research community.
+
+**Action:** Turn this into a recurring practice. Pick 3-5
+well-researched Chinese AI-governance pieces per quarter and run the
+same audit. If the cybersecurity/standards + WeChat pattern
+replicates, we know where to prioritize. If different gaps appear
+each time, we know coverage needs to be more breadth-oriented.
+
+### 2. The WeChat finding is the structurally biggest lesson
+
+Over 40% of the Substack post's citations are `mp.weixin.qq.com`
+URLs. For AIIA, CAICT, cybersec firms, and most Chinese policy
+think-tanks, **WeChat IS the primary publication venue.** They don't
+publish on their own websites first — they push to 公众号 (public
+accounts) and the "official" site is often a stale mirror.
+
+Any Chinese AI-governance corpus that doesn't crawl WeChat has a
+systematic blind spot. Ours does, and we were treating it as noise —
+our 493 existing WeChat docs are side-effects of other crawlers (local
+government sites linking out). That's backward: WeChat should be a
+first-class source, not an accidental one.
+
+Fixing this is a **different kind of problem** than adding more
+ministry crawlers. WeChat's anti-bot posture means none of our
+existing patterns work. The real options are:
+
+1. **Headless browser + logged-in cookies** (fragile, account bans)
+2. **Manual curation** (start with 5-10 priority accounts, seeded
+   from audits like this one) ← **recommended MVP**
+3. **Third-party RSS mirrors** (quality varies, coverage sparse)
+4. **Paid WeChat data provider** (adds ongoing cost + dependency)
+
+The MVP path is: maintain a seed list of ~10 priority public accounts
+(AIIA, CAICT, CNCERT, MPS/中央政法委官微, TC260 if present, 人民日报评论,
+and the major cybersec firms), curate a "known article URLs per
+account" list, and fetch each URL through a polite headless browser
+pipeline once per week. Accept that this won't scale to thousands of
+accounts — the value is in depth, not breadth.
+
+**This deserves its own design doc before implementation** (similar
+to the Brookings-bio-generator doc). Don't just start writing a
+`crawlers/wechat.py` — think about the curation workflow, the
+browser infrastructure, the refresh cadence, and the failure modes
+first.
+
+### 3. The CAC "draft vs interpretation" asymmetry is a subtle gap pattern
+
+We crawled 3 expert interpretations of the chatbot measures (2025-12-27)
+but not the document they interpret — and the slug IDs are consecutive:
+
+```
+MISSING: c_1768571207311996.htm   ← the draft measures
+HAVE:    c_1768571208101359.htm   ← expert interp #1
+HAVE:    c_1768571208306469.htm   ← expert interp #2
+HAVE:    c_1768571208631968.htm   ← expert interp #3
+```
+
+The originals and the interpretations are published in the same
+batch. Our crawler is pulling from an "interpretations index" and
+missing the "drafts for public comment" index. This isn't a one-off
+bug — it's a systematic pattern that probably repeats across many
+CAC dates.
+
+**When we fix it, we should audit:** for every 解读 row we have from
+2024-2026, do we also have the original 征求意见稿? The mismatch count
+will tell us how many drafts we're silently missing. If it's in the
+dozens, it's a coverage issue. If it's in the hundreds, the audit
+pattern itself is worth adding as a nightly sanity check.
+
+More generally: **any time we have a "commentary on X" without "X,"
+the corpus is analytically lopsided.** The fix isn't just to crawl
+more — it's to build relational consistency checks between doc types.
+
+### 4. The cybersecurity/standards layer is a coherent mini-corpus we're missing
+
+NVDB + CNCERT + TC260 + NDA + CAICT + AIIA together form the Chinese
+"AI safety / cybersecurity" ecosystem. These bodies cite each other
+heavily — a TC260 draft practice guide references NVDB disclosures,
+which reference CNCERT warnings, which cite MSS advisories, which
+are interpreted by AIIA and CAICT. It's a dense discourse network
+with its own vocabulary and internal logic.
+
+Right now we have NDA in full, partial CAC, and **nothing else** from
+this ecosystem. Adding NVDB + CNCERT + TC260 (each a ~200-line
+crawler in the existing ministry pattern) would turn this from a
+"partial corpus with holes" into a "comprehensive view of the
+ecosystem." It's arguably a **higher-leverage expansion than adding
+more provincial crawlers** — not because provinces don't matter, but
+because the cybersecurity layer is internally coherent enough that
+adding the missing nodes reveals relationships you literally cannot
+see with partial coverage.
+
+**Estimated effort:** ~1-3 days per crawler × 3 = 1 week. Output:
+the entire AI-safety policy discourse becomes visible to our
+citation graph and the network viz on `/network`.
+
+---
+
+## Recommended order of operations
+
+For the next sitting on this backlog:
+
+1. **Two one-off fetches first** (action plan step 1). CAC draft
+   measures + NDA Liu Liehong speech. Validates the `_extract_body`
+   functions of each crawler against the missing sections and
+   produces immediate corpus value. ~30 min of work.
+
+2. **Extend the CAC + NDA crawlers structurally** (action plan
+   step 2). Find the CAC `征求意见稿` index; add the NDA
+   `jld/*/llhldhd/` leader-activity section. Run the "do we have
+   originals for every interpretation" consistency check as part
+   of this. ~1 day.
+
+3. **Decide on WeChat strategy** (highest-leverage structural
+   decision). Don't start coding yet — write a design doc like the
+   Brookings-bio one first. Options, costs, failure modes, seed
+   account list.
+
+4. **Build the 3 cybersecurity crawlers** (NVDB, CNCERT, TC260) in
+   parallel with or after the WeChat design decision. They're the
+   biggest topical win for AI safety / cybersecurity research and
+   they're all standard HTML-scrape patterns we already know how
+   to do.
+
+5. **Permanent exclusions**: English media, arxiv, CCTV video. Leave
+   alone unless someone explicitly re-scopes.
+
+6. **Run one more link audit** against a different recent Chinese
+   AI-governance piece before committing to all of the above — if
+   the gap shape is different, reprioritize. If it's the same, we
+   have confirmation that this is the real structural gap.
+
