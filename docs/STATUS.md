@@ -316,6 +316,7 @@ Page: /officials
 | Timeline slider | Medium | Show network state at year X (animate through years). |
 | Faction detection | Low | Color-code by faction (Shanghai clique, Youth League, etc.) using clustering. |
 | Cross-link to documents | Medium | "Policies issued during 李强's tenure in Zhejiang (2012-2017)" |
+| **Brookings-style biography generator** | Medium-High | For every official in `officials.db`, auto-generate an analyst biography in the Brookings "20th Party Congress Leadership" PDF format. [Example: Ding Xuexiang](https://www.brookings.edu/wp-content/uploads/2022/10/20thpartycongress_ding_xuexiang.pdf). Sections: **Current Positions** (bulleted list of active roles, derivable from `career_records` with `end_year IS NULL` or >= current year), **Personal and Professional Background** (birth place + year, party-joining year, education, narrative chronology of career with parenthetical year ranges — fully derivable from our data), **Family and Patron-Client Ties** (needs LLM: identify longest-tenure seniors + rank trajectory from `overlaps` table; family info not in our data, may need to skip or fetch separately), **Policy Preferences and Political Prospects** (needs LLM inference from public speeches/writings — cross-reference with `documents.db` entries where the official is a signatory or mentioned author). Output: one markdown or PDF per official + a web view per official on `/officials/{id}/bio`. Hybrid pipeline: mechanical chronology (our data) + LLM narrative wrapper (DeepSeek or Claude) for the analytical sections. Scope: start with ~45 PSC members, then expand to Politburo (~50), then the full ~1,628 officials with substantive career records. |
 
 ### Source Expansion
 
@@ -324,10 +325,15 @@ Page: /officials
 |------|-------|----------|-------|
 | peopleapp.com | Media | High | People's Daily app. Nuxt.js SPA — article SSR works, column listing needs API reverse-engineering |
 | Beijing /ywdt/gzdt/ section | Municipal | Medium | Work updates section not covered by current Beijing crawler |
-| CAS (www.cas.cn) | Central | Medium | Chinese Academy of Sciences |
+| **NDRC / MOST / MIIT section expansion** | Medium | We already crawl each of these (`crawlers/ndrc.py`, `crawlers/most.py`, `crawlers/miit.py`) but only cover policy-document sections. Each ministry has additional sections we skip: news/工作动态 updates, 新闻发布会 press conferences, 领导活动 leadership activity, 司局 department pages, 地方动态 local updates. Investigate what's missing per ministry and add sections. MIIT note: runs from the droplet only (US → China times out). |
+| **CSTC (中国科协 — cast.org.cn)** | Central (S&T) | Medium | China Association for Science and Technology. Umbrella body for ~200 national scientific societies (physics, chemistry, informatics, AI, etc.) and a major soft-power vector for Party-science coordination. Important to include for research on how the Party-state mobilizes scientific expertise for policy. |
+| **S&T organization expansion** | Central (S&T) | Medium | Beyond the existing CAS-only entry, we should add: CAE (中国工程院 — www.cae.cn), CAST (中国科协 — cast.org.cn, see above), NSFC (国家自然科学基金委 — www.nsfc.gov.cn), plus major CAS institutes (e.g., CASIA, ICT, SIAT). Together these cover the scientific-research decision-making layer that connects the bureaucracy to the research community. |
+| CAS (www.cas.cn) | Central (S&T) | Medium | Chinese Academy of Sciences. Part of S&T expansion above. |
 | SASAC (www.sasac.gov.cn) | Central | Medium-High | Now reachable (was timing out) |
 | Shandong (www.shandong.gov.cn) | Province | Low | Empty stub in crawlers/ |
 | Jiangxi, Jinan | Province/Municipal | Low | |
+
+**Party vs state organization distinction** (Medium): Add an `org_type` dimension to the sites table (values: `party`, `state`, `hybrid`, `media`, `research`). China's Party and State are parallel structures — e.g., **Party organs** include CCP Central Committee offices (中办, 中组部, 中宣部, 中央政法委, 中央军委), provincial Party committees, discipline inspection commissions; **State organs** include State Council ministries (NDRC, MOF, MEE, MIIT, MOST), provincial governments, NPC/CPPCC, courts/procuratorates. Our current corpus is 95%+ State organs because Party organs are less publicly transparent. This dimension should be surfaced as a filter on `/browse` and `/dashboard` so users can compare Party vs State discourse, and should be the starting point for a "Party organ crawl expansion" sub-initiative (中央政法委 chinapeace.gov.cn is one confirmed reachable Party target). Also relevant to the Brookings-style biography task above — many officials move between parallel Party and State roles, and analysts distinguish them.
 
 **Reachable, not yet scanned for AI:**
 MOE, PBoC, TC260, CSRC, NBS, Sichuan, Nanjing, Ningbo, Qingdao, Wuxi, Xi'an, Xiamen, Zhengzhou + others (33 total reachable)
