@@ -19,6 +19,12 @@ intentionally out of scope.
 | WeChat articles (anti-bot, no crawler) | 10 | ❓ needs dedicated strategy |
 | Out of scope (English media, academic, video) | 5 | ❌ intentional |
 
+**2026-04-13 correction:** Original audit (04-08) classified item #23
+(Xinhua Jan 24) as "lost to retention." Empirical recheck shows the
+article is **still live** (HTTP 200, 6,755 chars of body text). The
+real gap is discovery + title-extraction, not retention. See corrected
+item #23 below.
+
 ---
 
 ## Full list with per-URL status
@@ -57,24 +63,36 @@ remediation.
 | # | Label | URL | Status | Remediation |
 |---|---|---|---|---|
 | 22 | CCTV Politburo study session | https://tv.cctv.com/2026/01/20/VIDEx0VMRP7T9t8V3w6PF6JF260120.shtml | MISS (3 unrelated docs from host) | **Out of scope (video)** — CCTV video page, body content is a video player. Could capture title + transcript if available, but video pages require different handling. Skip for MVP; revisit if we add a video-metadata crawler. |
-| 23 | Xinhua Jan 24 report | https://www.news.cn/20260124/3f1f3cead780463b9f8119285fe6fb4f/c.html | MISS (2,551 xinhua docs but none from that date) | **Lost to retention.** This is the same Jan-to-April retention pattern we discovered for xinhua's `general` section (articles get deleted after ~6 weeks). The article is now behind Xinhua's rolling window. Future Jan articles WILL be captured because we added the `general` section 2026-04-07 — but this specific Jan 24 doc is unrecoverable without Wayback. Add to Wayback backfill scope. |
-| 24 | CAC draft chatbot measures (CN) | https://www.cac.gov.cn/2025-12/27/c_1768571207311996.htm | MISS (754 CAC docs including 3 *expert interpretations* of this exact draft from the same day) | **One-off fetch + structural fix.** The URL is live, verified 24,712 bytes, title `国家互联网信息办公室关于《人工智能拟人化互动服务管理暂行办法（征求意见稿）》公开征求意见的通知`. We crawled 3 `专家解读` (expert interpretation) pieces from 2025-12-27 but missed the original draft they all interpret — consecutive slug IDs (`...207311996` vs `...208...`). Our CAC crawler has a systematic asymmetry: captures interpretations but skips the `征求意见稿` original drafts they're about. Can ingest this one URL immediately; structural fix is to audit what CAC section contains the drafts and add it. |
+| 23 | Xinhua Jan 24 report | https://www.news.cn/20260124/3f1f3cead780463b9f8119285fe6fb4f/c.html | MISS (2,551 xinhua docs but none from that date) | **~~Lost to retention.~~** ⚠️ **CORRECTED 04-13: article is still live.** HTTP 200, 15,043 bytes, 6,755 chars of visible body text. Title: 省部级主要领导干部专题研讨班侧记. The `<title>` tag is empty (Xinhua populates via JS), but body text and `og:title`-equivalent metadata are intact. Real root cause: **discovery gap** — our `general` homepage section was added 2026-04-07, and xinhuanet.com's homepage no longer links to this Jan 24 article. The article never entered our URL discovery pipeline because it was published before the scraper existed. **Recoverable today** with a one-off fetch. Also reveals a title-extraction hazard: Xinhua's empty `<title>` tags need an `og:title` / first-`<h1>` fallback in `crawlers/xinhua.py`. |
+| 24 | CAC draft chatbot measures (CN) | https://www.cac.gov.cn/2025-12/27/c_1768571207311996.htm | MISS (754 CAC docs including 3 *expert interpretations* of this exact draft from the same day) | **One-off fetch + structural fix.** The URL is live, verified 24,712 bytes, title `国家互联网信息办公室关于《人工智能拟人化互动服务管理暂行办法（征求意见稿）》公开征求意见的通知`. We crawled 3 `专家解读` (expert interpretation) pieces from 2025-12-27 but missed the original draft they all interpret — consecutive slug IDs (`...207311996` vs `...208...`). **⚠️ SHARPENED 04-13: the asymmetry is far worse than one URL.** Empirical check: CAC corpus has **215 解读 (interpretations) vs 0 征求意见稿 (original drafts)**. Of 45 official notices with title format "国家互联网信息办公室关于...", zero are drafts. The `zcfg` channel (A093703) that our crawler queries returns interpretations but not the drafts they interpret. Additionally, the `zcfg` HTML listing URL (`/zcfg/A093703index_1.htm`) now returns **404** — the JSON API fallback masks this. The correct channel code for drafts has not yet been located. Also notable: some CAC pages like [c_1773925231290620.htm](https://www.cac.gov.cn/2026-02/28/c_1773925231290620.htm) have the real content in **PDF attachments** while the HTML body is just a 219-char stub — our crawler stores only the stub. |
 | 25 | CAC draft chatbot measures (EN translation) | https://www.chinalawtranslate.com/en/chatbot-measures-draft/ | MISS (0 docs from host) | **Out of scope** — English translation site, third-party legal translations. Not our corpus remit. If we want the English version of the CAC draft, better to commission a translation ourselves. |
 
 ---
 
 ## Root-cause summary
 
-### Category A: One-off fetch — 2 URLs (items #15, #24)
-Both are from hosts we already crawl (NDA, CAC), just from sections our
-crawlers don't hit. We can ingest each with a ~10-line script that uses
-the existing `_extract_body` functions.
+### Category A: One-off fetch — 3 URLs (items #15, #23, #24)
 
-- **CAC draft chatbot measures** — also surfaces that our CAC crawler
-  misses `征求意见稿` original drafts while capturing the 解读 that
-  interpret them. Structural fix = one backlog item.
-- **NDA Liu Liehong speech** — also surfaces that we don't crawl
-  any ministry's `jld/*/llhldhd/` (leader activity) section.
+All three are from hosts we already crawl, and all are still live.
+Can be fetched today with existing `_extract_body` functions.
+
+- **CAC draft chatbot measures (#24)** — surfaces a much deeper problem:
+  our CAC crawler has **215 解读 vs 0 征求意见稿** across the entire corpus.
+  The `zcfg` channel (A093703) returns only interpretations; drafts live
+  in a different channel not yet located. The HTML listing path
+  `/zcfg/A093703index_1.htm` is also now 404 (JSON API masks this).
+  Additionally, some CAC pages contain PDF attachments where the real
+  content lives, but we only store the brief HTML stub.
+- **NDA Liu Liehong speech (#15)** — our 5 NDA sections are all under
+  `/sjj/zwgk/` and `/sjj/xxgk/`. The leader-activity tree at
+  `/sjj/jgsz/jld/*/llhldhd/` is entirely uncovered (verified: 0 docs
+  with `/jgsz/` in URL).
+- **Xinhua Jan 24 report (#23)** — ~~originally classified as
+  "lost to retention"~~. **Corrected 04-13**: the article is still live
+  (HTTP 200, 6,755 chars visible). Gap is discovery + title-extraction:
+  the `general` homepage section was added after the homepage cycled past
+  this URL, and Xinhua's `<title>` tag is empty (JS-populated) which
+  would break our extractor. Fully recoverable with a one-off fetch.
 
 ### Category B: New crawler needed — 3 hosts (items #3, #4, #8)
 All three are authoritative Chinese cybersecurity / standards bodies
@@ -128,30 +146,33 @@ of WeChat.
 - **CCTV video** (item #22): Video player page — different media
   type, different handling.
 
-### Category E: Lost to retention — 1 URL (item #23)
-The Xinhua Jan 24 article was deleted from the origin before we added
-the `general` section. Unrecoverable without Wayback. Add to the
-Wayback backfill scope for `news.cn/{YYYYMMDD}/{uuid}/c.html` URL
-pattern.
+### ~~Category E: Lost to retention — 1 URL (item #23)~~
+**Dissolved 04-13.** Item #23 was moved to Category A after verifying
+the Xinhua article is still live. No URLs in this audit are actually
+lost to retention.
 
 ---
 
 ## Action plan (work through in order)
 
-1. **Today (immediate)**: Ingest CAC draft measures (#24) and NDA Liu
-   Liehong speech (#15) as one-off fetches into documents.db. Rsync.
-2. **This week**: Investigate which CAC section holds `征求意见稿`
-   original drafts. Extend the CAC crawler to cover it. Also extend
-   NDA crawler to include `jld/*/llhldhd/` (leader activities) for
-   Liu Liehong and any other bureau leaders.
-3. **Next 1-2 weeks**: Build `crawlers/nvdb.py`, `crawlers/cncert.py`,
-   `crawlers/tc260.py`. Each is ~200 lines, similar to existing
-   ministry crawlers.
+*Updated 04-13 with corrections from empirical recheck.*
+
+1. **Immediate**: One-off fetch 3 URLs — CAC draft (#24), NDA Liu
+   Liehong speech (#15), Xinhua Jan 24 report (#23, still live).
+   Also fix Xinhua title extraction (`<title>` is empty; need
+   `og:title` or first-`<h1>` fallback in `crawlers/xinhua.py`).
+2. **This week**: Investigate CAC channel structure — find where
+   征求意见稿 drafts live. The `zcfg` channel (A093703) has 215
+   解读 and 0 drafts. Also: extend NDA crawler to include
+   `jld/*/llhldhd/` leader activities. Add CAC PDF attachment
+   extraction (some pages like c_1773925231290620.htm have real
+   content in PDF, HTML body is just a 219-char stub).
+3. **This week**: Build `crawlers/nvdb.py`, `crawlers/cncert.py`,
+   `crawlers/tc260.py`. Each ~200 lines, same ministry-crawler
+   pattern. Biggest topical win for AI safety research.
 4. **Medium-term**: Design a WeChat strategy. Start with manual
    curation of 5-10 priority public accounts.
-5. **Eventually**: Xinhua Wayback backfill would recover item #23
-   (tracked in existing Wayback backlog).
-6. **Out of scope permanently**: English media, arxiv, CCTV video
+5. **Out of scope permanently**: English media, arxiv, CCTV video
    (unless explicitly re-scoped).
 
 ## Why this list matters

@@ -165,8 +165,8 @@ Each site has many sections; we only crawl the policy-relevant ones.
 | **NDRC** | 政策文件, 政策解读, 新闻发布 | Project approval lists, price monitoring, bond issuance data |
 | **MOF** | 财政政策, 政策解读 | Budget data, bond auction results, accounting standards |
 | **MEE** | 政策法规, 环评审批 | Air/water quality data, emissions monitoring, enforcement actions |
-| **CAC** | 政策法规 | Takedown notices, app store reviews, content moderation decisions |
-| **NDA** (5 sections) | 政策发布, 通知公告, 政策解读, 专家解读, 公开内容 | (Comprehensive — small site, we get most of it) |
+| **CAC** | 网信发布, 政策法规 | **征求意见稿 (drafts for public comment)** — 215 解读 but 0 original drafts in corpus (see [link audit](working/ai-governance-link-audit.md)). Also: PDF-attachment pages where real content is in PDF (e.g. 政务APP备案指南), takedown notices, app store reviews, content moderation decisions. zcfg HTML listing URL now 404; JSON API masks this. |
+| **NDA** (5 sections) | 政策发布, 通知公告, 政策解读, 专家解读, 公开内容 | **Leader activities** (`/sjj/jgsz/jld/*/llhldhd/`) — 0 docs from the institutional-structure subtree. Misses Liu Liehong speeches, bureau leader activities. |
 | **SIC** (6 sections) | 数字中国, 信息化, 电子政务, 宏观分析, 新闻, 成果 | (Comprehensive) |
 | **Suzhou** (6 sections) | 全部政策文件, 市政府/办公室文件, 规章, 人事, 其他 | City news, economic development reports, public service announcements |
 | **gkmlpt sites** (40+) | 政府信息公开目录 (standard Guangdong transparency API) | Non-transparency content (news, services) |
@@ -297,6 +297,8 @@ Page: /officials
 | Translate high-significance docs to English | High | Full body translation for AI policy docs. DeepSeek or dedicated translation API |
 | Update chain.py for bidirectional queries | Medium | Code tested (8/8 green), needs deployment to web service |
 | Re-run extract_citations.py after classification finishes | Medium | More references_json = more LLM citations |
+| **Xinhua `<title>` fallback** | Medium | Xinhua general-news pages have empty `<title>` tags (JS-populated). Add `og:title` / first-`<h1>` fallback to `crawlers/xinhua.py`. Also backfill any existing Xinhua rows with empty titles. Discovered via [link audit](working/ai-governance-link-audit.md) recheck — the "lost to retention" Jan 24 article is actually still live. |
+| **CAC PDF attachment extraction** | Medium | Some CAC pages (e.g. [政务APP备案工作指南](https://www.cac.gov.cn/2026-02/28/c_1773925231290620.htm)) contain only a brief HTML stub (219 chars) with the real content in a PDF attachment. We store only the stub. Integrate with `scripts/extract_pdf_text.py` or discover/download the PDF at crawl time. |
 | Reduce "other" doc type bucket | Low | 68k docs classified as "other" — need more title regex patterns |
 | SAMR full news sections | Low | ~15k more docs across xw_zj, xw_sj, xw_df, xw_mtjj |
 | ~~Xinhua general-news section~~ | **Done 04-07** | Homepage scrape added as 5th xinhua section. ~147 URLs/run. |
@@ -332,6 +334,8 @@ Page: /officials
 | **WeChat public-account strategy** | High | Surfaced by the [AI Governance Link Audit](working/ai-governance-link-audit.md). **>40% of citations in serious Chinese AI-governance writing are `mp.weixin.qq.com/s/{id}` URLs** — AIIA, CAICT, MSS, CNCERT, MPS, TC260 all publish primarily via WeChat public accounts (公众号). Our corpus has 493 WeChat docs only as side-effects of other crawlers (local govt sites linking out). No dedicated WeChat strategy yet. Options: headless-browser with logged-in cookies (fragile), manual curation of 5-10 priority accounts (MVP — recommended starting point), RSS mirrors (quality varies), or paid WeChat data provider. Start with manual MVP seeded from the link-audit doc's citation list. |
 | **S&T organization expansion** | Central (S&T) | Medium | Beyond the existing CAS-only entry, we should add: CAE (中国工程院 — www.cae.cn), CAST (中国科协 — cast.org.cn, see above), NSFC (国家自然科学基金委 — www.nsfc.gov.cn), plus major CAS institutes (e.g., CASIA, ICT, SIAT). Together these cover the scientific-research decision-making layer that connects the bureaucracy to the research community. |
 | CAS (www.cas.cn) | Central (S&T) | Medium | Chinese Academy of Sciences. Part of S&T expansion above. |
+| **CIIFUND (ciifund.cn)** | Central (Investment) | Medium-High | 中国互联网投资基金 (China Internet Investment Fund). State-backed fund investing in internet/AI companies (e.g., invested in 生数科技 Shengshu for world models, 润开鸿 OpenHarmony, RISC-V AI chip firm 进迭时空). Sections: 公司新闻 (company news, `/zwt/gsxw/piclist.shtml`), 行业动态 (industry dynamics, `/zwt/hydt/list.shtml`). Small corpus but high signal — tracks where the state is directing capital in AI/internet. Build `crawlers/ciifund.py`. |
+| **MOE (moe.gov.cn)** | Central | **High** | 教育部 (Ministry of Education). Published the [**"人工智能+教育" 行动计划**](http://www.moe.gov.cn/srcsite/A16/s3342/202604/t20260410_1433240.html) (AI + Education Action Plan, 2026-04-10, five-ministry joint issuance). Key source for AI talent, curriculum, and campus-AI policy. `/srcsite/A16/` = Science & Technology Department. Build `crawlers/moe.py`. |
 | SASAC (www.sasac.gov.cn) | Central | Medium-High | Now reachable (was timing out) |
 | Shandong (www.shandong.gov.cn) | Province | Low | Empty stub in crawlers/ |
 | Jiangxi, Jinan | Province/Municipal | Low | |

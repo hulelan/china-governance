@@ -191,6 +191,13 @@ NEW_DOCS=$((DOC_COUNT_AFTER_CRAWL - DOC_COUNT_BEFORE))
 
 log "Phase 1 done. $DOC_COUNT_AFTER_CRAWL total docs (+$NEW_DOCS new)"
 
+# --- Phase 1b: Body backfill + algorithmic scoring ---
+log "Phase 1b: Body backfill from saved HTML..."
+timeout 600 python3 scripts/backfill_from_html.py >> "$LOG" 2>&1 || log "  backfill_from_html had errors"
+
+log "Phase 1b: Algorithmic scoring (citation_rank, algo_doc_type, ai_relevance)..."
+timeout 600 python3 scripts/compute_scores.py >> "$LOG" 2>&1 || log "  compute_scores had errors"
+
 if [ "${1:-}" = "--crawl" ]; then
     log "=== Crawl-only mode, stopping ==="
     # Still send report for crawl-only
