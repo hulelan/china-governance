@@ -341,3 +341,28 @@ async def changes_page(request: Request):
         "sync_runs": sync_runs,
         "recent_changes": recent_changes,
     })
+
+
+@router.get("/coverage", response_class=HTMLResponse)
+async def coverage_page(request: Request):
+    """Government org map showing extraction coverage across all agencies."""
+    db = request.app.state.db
+    stats = await get_stats(db)
+
+    # Load the org map JSON
+    org_map_path = Path(__file__).parent.parent.parent / "data" / "government_org_map.json"
+    org_data = {}
+    if org_map_path.exists():
+        org_data = json.loads(org_map_path.read_text(encoding="utf-8"))
+
+    # Get live doc counts by site_key
+    site_counts = {}
+    rows = await db.execute("SELECT site_key, COUNT(*) FROM documents GROUP BY site_key")
+    for row in await rows.fetchall():
+        site_counts[row[0]] = row[1]
+
+    return templates.TemplateResponse("coverage.html", {
+        "request": request, "stats": stats,
+        "org_data_json": json.dumps(org_data, ensure_ascii=False),
+        "site_counts_json": json.dumps(site_counts),
+    })

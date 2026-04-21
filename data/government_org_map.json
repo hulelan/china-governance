@@ -1,0 +1,1319 @@
+{
+  "_meta": {
+    "description": "Comprehensive map of PRC government agencies with corpus extraction status",
+    "last_updated": "2026-04-20",
+    "structure_basis": "2023 State Council institutional reform (第十四届国务院)",
+    "total_agencies": 120,
+    "agencies_with_coverage": 15,
+    "notes": "Coverage counts from documents.db as of 2026-04-20. 'site_key' links to our corpus. Agencies without site_key are not yet crawled."
+  },
+
+  "branches": [
+    {
+      "id": "party",
+      "name_cn": "中国共产党中央委员会",
+      "name_en": "CPC Central Committee",
+      "note": "Party organs parallel state organs; less publicly transparent",
+      "agencies": [
+        {
+          "id": "party_general_office",
+          "name_cn": "中共中央办公厅",
+          "name_en": "General Office of CPC Central Committee",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "Issues 中办发 documents that propagate to all state organs"
+        },
+        {
+          "id": "party_org_dept",
+          "name_cn": "中共中央组织部",
+          "name_en": "Organization Department",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "party_propaganda",
+          "name_cn": "中共中央宣传部",
+          "name_en": "Propaganda Department",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "Manages National Press and Publication Administration (NPPA), State Film Administration"
+        },
+        {
+          "id": "party_united_front",
+          "name_cn": "中共中央统一战线工作部",
+          "name_en": "United Front Work Department",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "party_political_legal",
+          "name_cn": "中共中央政法委员会",
+          "name_en": "Central Political and Legal Affairs Commission",
+          "website": "https://www.chinapeace.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "Confirmed reachable; oversees courts, procuratorate, public security"
+        },
+        {
+          "id": "cac",
+          "name_cn": "中央网络安全和信息化委员会办公室 / 国家互联网信息办公室",
+          "name_en": "Cyberspace Administration of China (CAC)",
+          "website": "https://www.cac.gov.cn",
+          "site_key": "cac",
+          "doc_count": 763,
+          "rank": "正部级",
+          "relevance": "critical",
+          "note": "Dual signboard: Party organ + State Council office. Primary AI/internet regulator. Now has draft channel (A093802)."
+        },
+        {
+          "id": "party_discipline",
+          "name_cn": "中央纪律检查委员会 / 国家监察委员会",
+          "name_en": "Central Commission for Discipline Inspection / National Supervisory Commission",
+          "website": "https://www.ccdi.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副国级",
+          "relevance": "low"
+        }
+      ]
+    },
+
+    {
+      "id": "npc",
+      "name_cn": "全国人民代表大会",
+      "name_en": "National People's Congress",
+      "note": "Legislature. NPC Standing Committee enacts laws between sessions.",
+      "agencies": [
+        {
+          "id": "npc_main",
+          "name_cn": "全国人民代表大会",
+          "name_en": "National People's Congress",
+          "website": "https://www.npc.gov.cn",
+          "site_key": "npc",
+          "doc_count": 29208,
+          "rank": "最高国家权力机关",
+          "relevance": "high",
+          "note": "National Laws Database (flk.npc.gov.cn). 29k laws, metadata only (body needs China IP)."
+        }
+      ]
+    },
+
+    {
+      "id": "state_council",
+      "name_cn": "国务院",
+      "name_en": "State Council",
+      "note": "Executive branch. 26 constituent departments + agencies.",
+      "agencies": [
+        {
+          "id": "state_council_main",
+          "name_cn": "国务院",
+          "name_en": "State Council (General)",
+          "website": "https://www.gov.cn",
+          "site_key": "gov",
+          "doc_count": 1021,
+          "rank": "最高国家行政机关",
+          "relevance": "critical"
+        }
+      ]
+    },
+
+    {
+      "id": "sc_constituent",
+      "name_cn": "国务院组成部门",
+      "name_en": "State Council Constituent Departments (Ministries)",
+      "note": "26 ministerial-rank bodies. Heads are State Council members.",
+      "agencies": [
+        {
+          "id": "mfa",
+          "name_cn": "外交部",
+          "name_en": "Ministry of Foreign Affairs",
+          "website": "https://www.mfa.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "mod",
+          "name_cn": "国防部",
+          "name_en": "Ministry of National Defense",
+          "website": "https://www.mod.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "ndrc",
+          "name_cn": "国家发展和改革委员会",
+          "name_en": "National Development and Reform Commission (NDRC)",
+          "website": "https://www.ndrc.gov.cn",
+          "site_key": "ndrc",
+          "doc_count": 1624,
+          "rank": "正部级",
+          "relevance": "critical",
+          "note": "Macro-economic planning, industrial policy, pricing. Oversees NDA and NEA."
+        },
+        {
+          "id": "moe",
+          "name_cn": "教育部",
+          "name_en": "Ministry of Education (MOE)",
+          "website": "https://www.moe.gov.cn",
+          "site_key": "moe",
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "high",
+          "note": "Crawler built (WAS search system). AI+Education Action Plan (2026-04). Pending first full run."
+        },
+        {
+          "id": "most",
+          "name_cn": "科学技术部",
+          "name_en": "Ministry of Science and Technology (MOST)",
+          "website": "https://www.most.gov.cn",
+          "site_key": "most",
+          "doc_count": 1510,
+          "rank": "正部级",
+          "relevance": "critical",
+          "note": "S&T policy, R&D funding, tech standards. Restructured in 2023 reform."
+        },
+        {
+          "id": "miit",
+          "name_cn": "工业和信息化部",
+          "name_en": "Ministry of Industry and Information Technology (MIIT)",
+          "website": "https://www.miit.gov.cn",
+          "site_key": "miit",
+          "doc_count": 1342,
+          "rank": "正部级",
+          "relevance": "critical",
+          "note": "Industrial policy, telecom, AI industry. Only reachable from Asia (runs from droplet)."
+        },
+        {
+          "id": "neac",
+          "name_cn": "国家民族事务委员会",
+          "name_en": "National Ethnic Affairs Commission",
+          "website": "https://www.neac.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "mps",
+          "name_cn": "公安部",
+          "name_en": "Ministry of Public Security",
+          "website": "https://www.mps.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "Cybersecurity enforcement, surveillance policy. Publishes via WeChat primarily."
+        },
+        {
+          "id": "mss",
+          "name_cn": "国家安全部",
+          "name_en": "Ministry of State Security",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "No public website. Publishes via WeChat (国安部微信公众号). Counter-espionage, data security enforcement."
+        },
+        {
+          "id": "mca",
+          "name_cn": "民政部",
+          "name_en": "Ministry of Civil Affairs",
+          "website": "https://www.mca.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "moj",
+          "name_cn": "司法部",
+          "name_en": "Ministry of Justice",
+          "website": "https://www.moj.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "mof",
+          "name_cn": "财政部",
+          "name_en": "Ministry of Finance (MOF)",
+          "website": "https://www.mof.gov.cn",
+          "site_key": "mof",
+          "doc_count": 1036,
+          "rank": "正部级",
+          "relevance": "high",
+          "note": "Budget allocations, fiscal policy, gov procurement standards."
+        },
+        {
+          "id": "mohrss",
+          "name_cn": "人力资源和社会保障部",
+          "name_en": "Ministry of Human Resources and Social Security",
+          "website": "https://www.mohrss.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "AI labor market policy, talent programs"
+        },
+        {
+          "id": "mnr",
+          "name_cn": "自然资源部",
+          "name_en": "Ministry of Natural Resources",
+          "website": "https://www.mnr.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "mee",
+          "name_cn": "生态环境部",
+          "name_en": "Ministry of Ecology and Environment (MEE)",
+          "website": "https://www.mee.gov.cn",
+          "site_key": "mee",
+          "doc_count": 570,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "Environmental standards, emissions monitoring. Crawler built."
+        },
+        {
+          "id": "mohurd",
+          "name_cn": "住房和城乡建设部",
+          "name_en": "Ministry of Housing and Urban-Rural Development",
+          "website": "https://www.mohurd.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "mot",
+          "name_cn": "交通运输部",
+          "name_en": "Ministry of Transport",
+          "website": "https://www.mot.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "Autonomous driving regulation, smart transport"
+        },
+        {
+          "id": "mwr",
+          "name_cn": "水利部",
+          "name_en": "Ministry of Water Resources",
+          "website": "https://www.mwr.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "moa",
+          "name_cn": "农业农村部",
+          "name_en": "Ministry of Agriculture and Rural Affairs",
+          "website": "https://www.moa.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "mofcom",
+          "name_cn": "商务部",
+          "name_en": "Ministry of Commerce (MOFCOM)",
+          "website": "https://www.mofcom.gov.cn",
+          "site_key": "mofcom",
+          "doc_count": 2945,
+          "rank": "正部级",
+          "relevance": "high",
+          "note": "Trade policy, export controls, foreign investment rules."
+        },
+        {
+          "id": "mct",
+          "name_cn": "文化和旅游部",
+          "name_en": "Ministry of Culture and Tourism",
+          "website": "https://www.mct.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "nhc",
+          "name_cn": "国家卫生健康委员会",
+          "name_en": "National Health Commission",
+          "website": "https://www.nhc.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "AI in healthcare regulation, medical devices"
+        },
+        {
+          "id": "mva",
+          "name_cn": "退役军人事务部",
+          "name_en": "Ministry of Veterans Affairs",
+          "website": "https://www.mva.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "mem",
+          "name_cn": "应急管理部",
+          "name_en": "Ministry of Emergency Management",
+          "website": "https://www.mem.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "pboc",
+          "name_cn": "中国人民银行",
+          "name_en": "People's Bank of China (PBOC)",
+          "website": "https://www.pbc.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "high",
+          "note": "Fintech regulation, digital yuan (e-CNY), AI in financial services"
+        },
+        {
+          "id": "audit",
+          "name_cn": "审计署",
+          "name_en": "National Audit Office",
+          "website": "https://www.audit.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        }
+      ]
+    },
+
+    {
+      "id": "sc_special",
+      "name_cn": "国务院直属特设机构",
+      "name_en": "Directly Subordinate Special Agency",
+      "agencies": [
+        {
+          "id": "sasac",
+          "name_cn": "国务院国有资产监督管理委员会",
+          "name_en": "SASAC",
+          "website": "https://www.sasac.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium-high",
+          "note": "Oversees SOEs including AI/tech companies. Confirmed reachable."
+        }
+      ]
+    },
+
+    {
+      "id": "sc_directly_subordinate",
+      "name_cn": "国务院直属机构",
+      "name_en": "Directly Subordinate Agencies",
+      "note": "14 agencies. 8 ministerial rank, 6 vice-ministerial.",
+      "agencies": [
+        {
+          "id": "customs",
+          "name_cn": "海关总署",
+          "name_en": "General Administration of Customs",
+          "website": "https://www.customs.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "Export control enforcement for chips/tech"
+        },
+        {
+          "id": "tax",
+          "name_cn": "国家税务总局",
+          "name_en": "State Taxation Administration",
+          "website": "https://www.chinatax.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "samr",
+          "name_cn": "国家市场监督管理总局",
+          "name_en": "State Administration for Market Regulation (SAMR)",
+          "website": "https://www.samr.gov.cn",
+          "site_key": "samr",
+          "doc_count": 2592,
+          "rank": "正部级",
+          "relevance": "critical",
+          "note": "Antitrust/anti-monopoly, platform regulation, AI standards. Also manages SAC (standards)."
+        },
+        {
+          "id": "nfra",
+          "name_cn": "国家金融监督管理总局",
+          "name_en": "National Financial Regulatory Administration (NFRA)",
+          "website": "https://www.nfra.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "NEW in 2023 (absorbed former CBIRC). Banking/insurance fintech regulation."
+        },
+        {
+          "id": "csrc",
+          "name_cn": "中国证券监督管理委员会",
+          "name_en": "China Securities Regulatory Commission (CSRC)",
+          "website": "https://www.csrc.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "AI company IPO rules, algorithmic trading regulation"
+        },
+        {
+          "id": "nrta",
+          "name_cn": "国家广播电视总局",
+          "name_en": "National Radio and Television Administration",
+          "website": "https://www.nrta.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "AI-generated content regulation, deepfake rules"
+        },
+        {
+          "id": "sport",
+          "name_cn": "国家体育总局",
+          "name_en": "General Administration of Sport",
+          "website": "https://www.sport.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "low"
+        },
+        {
+          "id": "xinfang",
+          "name_cn": "国家信访局",
+          "name_en": "National Bureau for Letters and Calls",
+          "website": "https://www.gjxfj.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "nbs",
+          "name_cn": "国家统计局",
+          "name_en": "National Bureau of Statistics",
+          "website": "https://www.stats.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "medium",
+          "note": "Digital economy statistics, AI industry data"
+        },
+        {
+          "id": "cnipa",
+          "name_cn": "国家知识产权局",
+          "name_en": "China National Intellectual Property Administration",
+          "website": "https://www.cnipa.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "medium",
+          "note": "AI patent policy, IP protection for algorithms"
+        },
+        {
+          "id": "cidca",
+          "name_cn": "国家国际发展合作署",
+          "name_en": "China International Development Cooperation Agency",
+          "website": "https://www.cidca.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "nhsa",
+          "name_cn": "国家医疗保障局",
+          "name_en": "National Healthcare Security Administration",
+          "website": "https://www.nhsa.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "counsellor",
+          "name_cn": "国务院参事室",
+          "name_en": "Counsellors' Office of the State Council",
+          "website": "https://www.counsellor.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "ggj",
+          "name_cn": "国家机关事务管理局",
+          "name_en": "National Government Offices Administration",
+          "website": "https://www.ggj.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        }
+      ]
+    },
+
+    {
+      "id": "sc_national_bureaus",
+      "name_cn": "国务院部委管理的国家局",
+      "name_en": "National Bureaus Under Ministries",
+      "note": "17 vice-ministerial bureaus managed by parent ministries.",
+      "agencies": [
+        {
+          "id": "nda",
+          "name_cn": "国家数据局",
+          "name_en": "National Data Administration (NDA)",
+          "website": "https://www.nda.gov.cn",
+          "parent": "ndrc",
+          "site_key": "nda",
+          "doc_count": 399,
+          "rank": "副部级",
+          "relevance": "critical",
+          "note": "NEW in 2023. Data governance, cross-border data flow, data trading. Under NDRC."
+        },
+        {
+          "id": "nea",
+          "name_cn": "国家能源局",
+          "name_en": "National Energy Administration",
+          "website": "https://www.nea.gov.cn",
+          "parent": "ndrc",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "medium",
+          "note": "AI for energy, data center power policy"
+        },
+        {
+          "id": "grain",
+          "name_cn": "国家粮食和物资储备局",
+          "name_en": "National Food and Strategic Reserves Administration",
+          "website": "https://www.lswz.gov.cn",
+          "parent": "ndrc",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "sastind",
+          "name_cn": "国家国防科技工业局",
+          "name_en": "SASTIND",
+          "website": null,
+          "parent": "miit",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "medium",
+          "note": "Military-civil fusion tech, dual-use AI"
+        },
+        {
+          "id": "tobacco",
+          "name_cn": "国家烟草专卖局",
+          "name_en": "State Tobacco Monopoly Administration",
+          "website": "https://www.tobacco.gov.cn",
+          "parent": "miit",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "nia",
+          "name_cn": "国家移民管理局",
+          "name_en": "National Immigration Administration",
+          "website": "https://www.nia.gov.cn",
+          "parent": "mps",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "forestry",
+          "name_cn": "国家林业和草原局",
+          "name_en": "National Forestry and Grassland Administration",
+          "website": "https://www.forestry.gov.cn",
+          "parent": "mnr",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "nra",
+          "name_cn": "国家铁路局",
+          "name_en": "National Railway Administration",
+          "website": "https://www.nra.gov.cn",
+          "parent": "mot",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "caac",
+          "name_cn": "中国民用航空局",
+          "name_en": "Civil Aviation Administration of China (CAAC)",
+          "website": "https://www.caac.gov.cn",
+          "parent": "mot",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "medium",
+          "note": "Drone/UAV regulation, autonomous flight"
+        },
+        {
+          "id": "spb",
+          "name_cn": "国家邮政局",
+          "name_en": "State Post Bureau",
+          "website": "https://www.spb.gov.cn",
+          "parent": "mot",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "ncha",
+          "name_cn": "国家文物局",
+          "name_en": "National Cultural Heritage Administration",
+          "website": "https://www.ncha.gov.cn",
+          "parent": "mct",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "natcm",
+          "name_cn": "国家中医药管理局",
+          "name_en": "National Administration of Traditional Chinese Medicine",
+          "website": "https://www.natcm.gov.cn",
+          "parent": "nhc",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "cdc",
+          "name_cn": "国家疾病预防控制局",
+          "name_en": "National Disease Control and Prevention Administration",
+          "website": null,
+          "parent": "nhc",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "mine_safety",
+          "name_cn": "国家矿山安全监察局",
+          "name_en": "National Mine Safety Administration",
+          "website": "https://www.chinamine-safety.gov.cn",
+          "parent": "mem",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "fire",
+          "name_cn": "国家消防救援局",
+          "name_en": "National Fire and Rescue Administration",
+          "website": null,
+          "parent": "mem",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "safe",
+          "name_cn": "国家外汇管理局",
+          "name_en": "State Administration of Foreign Exchange (SAFE)",
+          "website": "https://www.safe.gov.cn",
+          "parent": "pboc",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        },
+        {
+          "id": "nmpa",
+          "name_cn": "国家药品监督管理局",
+          "name_en": "National Medical Products Administration (NMPA)",
+          "website": "https://www.nmpa.gov.cn",
+          "parent": "samr",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "medium",
+          "note": "AI medical devices regulation"
+        }
+      ]
+    },
+
+    {
+      "id": "sc_public_institutions",
+      "name_cn": "国务院直属事业单位",
+      "name_en": "Directly Subordinate Public Institutions",
+      "note": "7 institutions. Research, media, science academies.",
+      "agencies": [
+        {
+          "id": "xinhua",
+          "name_cn": "新华通讯社",
+          "name_en": "Xinhua News Agency",
+          "website": "https://www.xinhuanet.com",
+          "site_key": "xinhua",
+          "doc_count": 2682,
+          "rank": "正部级",
+          "relevance": "high",
+          "note": "Official state news wire. Policy announcements first break here."
+        },
+        {
+          "id": "cas",
+          "name_cn": "中国科学院",
+          "name_en": "Chinese Academy of Sciences (CAS)",
+          "website": "https://www.cas.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "high",
+          "note": "Premier research institution. AI research institutes (CASIA, ICT, SIAT)."
+        },
+        {
+          "id": "cass",
+          "name_cn": "中国社会科学院",
+          "name_en": "Chinese Academy of Social Sciences (CASS)",
+          "website": "https://www.cass.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium",
+          "note": "AI governance research, social impact studies"
+        },
+        {
+          "id": "cae",
+          "name_cn": "中国工程院",
+          "name_en": "Chinese Academy of Engineering (CAE)",
+          "website": "https://www.cae.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "high",
+          "note": "Engineering research strategy. AI/computing academicians."
+        },
+        {
+          "id": "drc",
+          "name_cn": "国务院发展研究中心",
+          "name_en": "Development Research Center of the State Council (DRC)",
+          "website": "https://www.drc.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "high",
+          "note": "Policy advisory think tank directly serving the State Council."
+        },
+        {
+          "id": "cmg",
+          "name_cn": "中央广播电视总台",
+          "name_en": "China Media Group (CMG/CCTV)",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "正部级",
+          "relevance": "medium"
+        },
+        {
+          "id": "cma",
+          "name_cn": "中国气象局",
+          "name_en": "China Meteorological Administration",
+          "website": "https://www.cma.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副部级",
+          "relevance": "low"
+        }
+      ]
+    },
+
+    {
+      "id": "sc_other",
+      "name_cn": "其他重要机构",
+      "name_en": "Other Key Agencies",
+      "note": "Standards bodies, cybersecurity organizations, investment funds not in the formal org chart but policy-relevant.",
+      "agencies": [
+        {
+          "id": "sic",
+          "name_cn": "国家信息中心",
+          "name_en": "State Information Center (SIC)",
+          "website": "https://www.sic.gov.cn",
+          "site_key": "sic",
+          "doc_count": 1120,
+          "rank": "副部级",
+          "relevance": "high",
+          "note": "Digital China, e-government, informatics policy. Under NDRC."
+        },
+        {
+          "id": "tc260",
+          "name_cn": "全国信息安全标准化技术委员会",
+          "name_en": "National Information Security Standardization Technical Committee (TC260)",
+          "website": "https://www.tc260.org.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "标准化组织",
+          "relevance": "critical",
+          "note": "Source of AI safety practice guides, data security standards. NOT YET CRAWLED."
+        },
+        {
+          "id": "cncert",
+          "name_cn": "国家互联网应急中心",
+          "name_en": "CNCERT/CC",
+          "website": "https://www.cert.org.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "事业单位",
+          "relevance": "high",
+          "note": "Cybersecurity incident response, vulnerability disclosure. NOT YET CRAWLED."
+        },
+        {
+          "id": "nvdb",
+          "name_cn": "国家信息安全漏洞库",
+          "name_en": "China National Vulnerability Database (CNVD/NVDB)",
+          "website": "https://www.nvdb.org.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "数据库",
+          "relevance": "high",
+          "note": "National vulnerability database. NOT YET CRAWLED."
+        },
+        {
+          "id": "ciifund",
+          "name_cn": "中国互联网投资基金",
+          "name_en": "China Internet Investment Fund",
+          "website": "https://www.ciifund.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "国有基金",
+          "relevance": "medium-high",
+          "note": "State fund investing in AI/internet companies (Shengshu, OpenHarmony, etc.)"
+        },
+        {
+          "id": "cast",
+          "name_cn": "中国科学技术协会",
+          "name_en": "China Association for Science and Technology (CAST)",
+          "website": "https://www.cast.org.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "人民团体",
+          "relevance": "medium",
+          "note": "Umbrella for ~200 scientific societies. Party-science coordination."
+        },
+        {
+          "id": "ipc_court",
+          "name_cn": "最高人民法院知识产权法庭",
+          "name_en": "Supreme People's Court IP Tribunal",
+          "website": "https://ipc.court.gov.cn",
+          "site_key": "ipc_court",
+          "doc_count": 97,
+          "rank": "司法机关",
+          "relevance": "medium",
+          "note": "AI/tech IP disputes, algorithm patent cases."
+        },
+        {
+          "id": "tsinghua_aiig",
+          "name_cn": "清华大学人工智能国际治理研究院",
+          "name_en": "Tsinghua Institute for AI International Governance",
+          "website": "https://aiig.tsinghua.edu.cn",
+          "site_key": "tsinghua_aiig",
+          "doc_count": 57,
+          "rank": "学术机构",
+          "relevance": "high",
+          "note": "Leading AI governance think tank. Publishes policy recommendations."
+        }
+      ]
+    },
+
+    {
+      "id": "judiciary",
+      "name_cn": "司法机关",
+      "name_en": "Judicial Organs",
+      "agencies": [
+        {
+          "id": "spc",
+          "name_cn": "最高人民法院",
+          "name_en": "Supreme People's Court",
+          "website": "https://www.court.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副国级",
+          "relevance": "medium",
+          "note": "Judicial interpretations in NPC laws DB. IP Tribunal crawled separately."
+        },
+        {
+          "id": "spp",
+          "name_cn": "最高人民检察院",
+          "name_en": "Supreme People's Procuratorate",
+          "website": "https://www.spp.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "副国级",
+          "relevance": "low"
+        }
+      ]
+    },
+
+    {
+      "id": "provinces",
+      "name_cn": "省级行政区",
+      "name_en": "Provincial-Level Divisions",
+      "note": "31 provinces/autonomous regions/municipalities + 2 SARs. We cover 7 + Guangdong sub-provincial.",
+      "agencies": [
+        {
+          "id": "beijing",
+          "name_cn": "北京市",
+          "name_en": "Beijing",
+          "website": "https://www.beijing.gov.cn",
+          "site_key": "bj",
+          "doc_count": 1805,
+          "rank": "省级",
+          "relevance": "high"
+        },
+        {
+          "id": "shanghai",
+          "name_cn": "上海市",
+          "name_en": "Shanghai",
+          "website": "https://www.shanghai.gov.cn",
+          "site_key": "sh",
+          "doc_count": 3830,
+          "rank": "省级",
+          "relevance": "high"
+        },
+        {
+          "id": "guangdong",
+          "name_cn": "广东省",
+          "name_en": "Guangdong Province",
+          "website": "https://www.gd.gov.cn",
+          "site_key": "gd",
+          "doc_count": 6179,
+          "rank": "省级",
+          "relevance": "high",
+          "note": "Deep coverage: province + 18 cities + Shenzhen districts/departments via gkmlpt"
+        },
+        {
+          "id": "zhejiang",
+          "name_cn": "浙江省",
+          "name_en": "Zhejiang Province",
+          "website": "https://www.zj.gov.cn",
+          "site_key": "zj",
+          "doc_count": 269,
+          "rank": "省级",
+          "relevance": "high",
+          "note": "Digital economy pioneer. Only partial coverage (IPv6 issues from US)."
+        },
+        {
+          "id": "jiangsu",
+          "name_cn": "江苏省",
+          "name_en": "Jiangsu Province",
+          "website": "https://www.jiangsu.gov.cn",
+          "site_key": "js",
+          "doc_count": 1048,
+          "rank": "省级",
+          "relevance": "medium"
+        },
+        {
+          "id": "heilongjiang",
+          "name_cn": "黑龙江省",
+          "name_en": "Heilongjiang Province",
+          "website": "https://www.hlj.gov.cn",
+          "site_key": "hlj",
+          "doc_count": 2266,
+          "rank": "省级",
+          "relevance": "medium"
+        },
+        {
+          "id": "chongqing",
+          "name_cn": "重庆市",
+          "name_en": "Chongqing",
+          "website": "https://www.cq.gov.cn",
+          "site_key": "cq",
+          "doc_count": 697,
+          "rank": "省级",
+          "relevance": "medium"
+        },
+        {
+          "id": "tianjin",
+          "name_cn": "天津市",
+          "name_en": "Tianjin",
+          "website": "https://www.tj.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "省级",
+          "relevance": "medium",
+          "note": "Unreachable from US"
+        },
+        {
+          "id": "sichuan",
+          "name_cn": "四川省",
+          "name_en": "Sichuan Province",
+          "website": "https://www.sc.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "省级",
+          "relevance": "medium",
+          "note": "Stub crawler exists"
+        },
+        {
+          "id": "shandong",
+          "name_cn": "山东省",
+          "name_en": "Shandong Province",
+          "website": "https://www.shandong.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "省级",
+          "relevance": "medium",
+          "note": "Stub crawler exists"
+        },
+        {
+          "id": "hubei",
+          "name_cn": "湖北省",
+          "name_en": "Hubei Province",
+          "website": "https://www.hubei.gov.cn",
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "省级",
+          "relevance": "medium",
+          "note": "Unreachable from US"
+        },
+        {
+          "id": "hunan",
+          "name_cn": "湖南省",
+          "name_en": "Hunan Province",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "省级",
+          "relevance": "low"
+        },
+        {
+          "id": "henan",
+          "name_cn": "河南省",
+          "name_en": "Henan Province",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "省级",
+          "relevance": "low",
+          "note": "Unreachable from US"
+        },
+        {
+          "id": "anhui",
+          "name_cn": "安徽省",
+          "name_en": "Anhui Province",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "省级",
+          "relevance": "medium",
+          "note": "Unreachable from US. Hefei is major AI hub."
+        },
+        {
+          "id": "fujian",
+          "name_cn": "福建省",
+          "name_en": "Fujian Province",
+          "website": null,
+          "site_key": null,
+          "doc_count": 0,
+          "rank": "省级",
+          "relevance": "low"
+        }
+      ]
+    },
+
+    {
+      "id": "municipalities",
+      "name_cn": "重要地级市",
+      "name_en": "Key Municipalities",
+      "note": "Sub-provincial cities and major tech hubs.",
+      "agencies": [
+        {
+          "id": "shenzhen",
+          "name_cn": "深圳市",
+          "name_en": "Shenzhen",
+          "website": "https://www.sz.gov.cn",
+          "site_key": "sz",
+          "doc_count": 1011,
+          "rank": "副省级",
+          "relevance": "critical",
+          "note": "Deepest coverage: main portal + 9 districts + 13 departments + investment portal. ~60k docs total across all Shenzhen site_keys."
+        },
+        {
+          "id": "suzhou",
+          "name_cn": "苏州市",
+          "name_en": "Suzhou",
+          "website": null,
+          "site_key": "suzhou",
+          "doc_count": 4842,
+          "rank": "地级市",
+          "relevance": "medium"
+        },
+        {
+          "id": "wuhan",
+          "name_cn": "武汉市",
+          "name_en": "Wuhan",
+          "website": null,
+          "site_key": "wuhan",
+          "doc_count": 999,
+          "rank": "副省级",
+          "relevance": "medium",
+          "note": "Optics Valley, AI/semiconductor hub"
+        },
+        {
+          "id": "hangzhou",
+          "name_cn": "杭州市",
+          "name_en": "Hangzhou",
+          "website": null,
+          "site_key": "hangzhou",
+          "doc_count": 48,
+          "rank": "副省级",
+          "relevance": "high",
+          "note": "Alibaba HQ, major AI city. Crawler new, very low coverage."
+        },
+        {
+          "id": "guangzhou",
+          "name_cn": "广州市",
+          "name_en": "Guangzhou",
+          "website": "https://www.gz.gov.cn",
+          "site_key": "gz",
+          "doc_count": 3656,
+          "rank": "副省级",
+          "relevance": "medium"
+        }
+      ]
+    },
+
+    {
+      "id": "media",
+      "name_cn": "媒体",
+      "name_en": "Media Sources",
+      "note": "State and independent media covering policy.",
+      "agencies": [
+        {
+          "id": "people_daily",
+          "name_cn": "人民日报",
+          "name_en": "People's Daily",
+          "website": "https://www.people.com.cn",
+          "site_key": "people",
+          "doc_count": 1154,
+          "rank": "央媒",
+          "relevance": "high"
+        },
+        {
+          "id": "stdaily",
+          "name_cn": "科技日报",
+          "name_en": "Science and Technology Daily",
+          "website": "https://www.stdaily.com",
+          "site_key": "stdaily",
+          "doc_count": 444,
+          "rank": "央媒",
+          "relevance": "medium",
+          "note": "MOST's newspaper. S&T policy signals."
+        },
+        {
+          "id": "ifeng",
+          "name_cn": "凤凰网",
+          "name_en": "Phoenix News (iFeng)",
+          "website": "https://www.ifeng.com",
+          "site_key": "ifeng",
+          "doc_count": 518,
+          "rank": "商业媒体",
+          "relevance": "medium"
+        },
+        {
+          "id": "guancha",
+          "name_cn": "观察者网",
+          "name_en": "Guancha / Observer Network",
+          "website": "https://www.guancha.cn",
+          "site_key": "guancha",
+          "doc_count": 1092,
+          "rank": "商业媒体",
+          "relevance": "medium"
+        },
+        {
+          "id": "latepost",
+          "name_cn": "晚点LatePost",
+          "name_en": "LatePost",
+          "website": "https://www.latepost.com",
+          "site_key": "latepost",
+          "doc_count": 112,
+          "rank": "独立媒体",
+          "relevance": "high",
+          "note": "Top-tier tech investigative journalism"
+        },
+        {
+          "id": "36kr",
+          "name_cn": "36氪",
+          "name_en": "36Kr",
+          "website": "https://www.36kr.com",
+          "site_key": "36kr",
+          "doc_count": 32,
+          "rank": "科技媒体",
+          "relevance": "medium"
+        }
+      ]
+    }
+  ],
+
+  "coverage_summary": {
+    "total_central_agencies": 66,
+    "central_agencies_crawled": 13,
+    "central_coverage_pct": 20,
+    "critical_relevance_total": 11,
+    "critical_relevance_crawled": 9,
+    "critical_coverage_pct": 82,
+    "high_relevance_total": 15,
+    "high_relevance_crawled": 11,
+    "high_coverage_pct": 73,
+    "provinces_total": 31,
+    "provinces_crawled": 7,
+    "province_coverage_pct": 23,
+    "total_documents": 169597,
+    "notes": "By document count we cover the most important agencies well (NDRC, MIIT, MOST, MOF, MOFCOM, SAMR, CAC, NDA, NPC). Main gaps are in Party organs, financial regulators (PBOC, NFRA, CSRC), and research institutions (CAS, CAE, DRC)."
+  }
+}

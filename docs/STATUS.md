@@ -350,6 +350,13 @@ Anhui, Chengdu, Hebei, Henan, Hubei, Gansu, Guangxi, Inner Mongolia, Tianjin, Xi
 
 **Discovery tool:** `python3 scripts/discover_sources.py --quick` (reachability) or without flag (deep scan with AI term search)
 
+**Droplet-dependent tasks (require SSH / production access):**
+- Rsync 169k docs to production (local DB has 34k more docs than prod)
+- NPC body text backfill via Singapore droplet (CDN only reachable from Asia)
+- daily_sync.sh hybrid pipeline (host-aware crawl routing per plan)
+- SKIP_RAW_HTML env var on droplet (save disk)
+- Pull latest code to droplet (`git pull` after pushing new crawlers)
+
 ### Research Analyses
 
 Open research questions we plan to investigate over the corpus:

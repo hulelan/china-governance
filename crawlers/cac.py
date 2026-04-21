@@ -58,6 +58,21 @@ SECTIONS = {
         "channel_code": "A093703",
         "listing_path": "/zcfg/A093703index_1.htm",
     },
+    "wxan": {
+        "name": "网信@你 (征求意见稿)",
+        "channel_code": "A093802",
+        "listing_path": "/hdfw/wxan/A093802index_1.htm",
+    },
+    "zhifa": {
+        "name": "网信执法",
+        "channel_code": "A093704",
+        "listing_path": "/wxzw/wxzf/A093704index_1.htm",
+    },
+    "baogao": {
+        "name": "报告发布",
+        "channel_code": "A093706",
+        "listing_path": "/wxzw/bgfb/A093706index_1.htm",
+    },
 }
 
 

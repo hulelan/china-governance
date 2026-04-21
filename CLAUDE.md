@@ -45,6 +45,10 @@ python3 -m crawlers.sic                         # State Information Center (1,11
 python3 -m crawlers.ipc_court                   # Supreme Court IP Tribunal (~75 recent, --deep for full 5k)
 python3 -m crawlers.tsinghua_aiig               # Tsinghua AI Governance Institute
 
+python3 -m crawlers.moe                         # Ministry of Education (7 sections, WAS search system)
+python3 -m crawlers.moe --section a16            # S&T Dept only (AI+Education, ~344 docs)
+python3 -m crawlers.npc                          # National Laws Database (29k laws, metadata only)
+
 python3 -m crawlers.sz_invest                   # Shenzhen non-gkmlpt (investment news, DRC, Longgang AI)
 python3 -m crawlers.sz_invest --section fgw_xwdt  # DRC news only
 python3 -m crawlers.sz_invest --section lg_ai     # Longgang AI/robotics only
@@ -171,6 +175,7 @@ Documents are classified via DeepSeek API (`scripts/classify_documents.py`) — 
 - **`busy_timeout=30000`** (30s) is set in `crawlers/base.py`.
 - **2 parallel writers** is the safe max. 4+ writers will hit `database is locked`.
 - Web app opens DB read-only (`?mode=ro`) — never blocks crawlers.
+- **Partial index gotcha**: `idx_documents_url` is defined as `WHERE url != ''`. SQLite will NOT use this index for queries that omit that predicate. Always include `AND url != ''` in WHERE clauses that filter by URL, or expect a full table scan.
 
 ## Adding a New gkmlpt Site
 

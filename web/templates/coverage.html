@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}Coverage Map — ChinaGovernance{% endblock %}
+{% block head %}
+<style>
+    .branch-card { border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .agency-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 12px; border-radius: 6px; margin: 3px;
+        font-size: 13px; cursor: default; transition: transform 0.1s;
+        border: 1px solid transparent;
+    }
+    .agency-chip:hover { transform: scale(1.05); z-index: 10; position: relative; }
+    .agency-chip .count { font-size: 11px; font-weight: 600; opacity: 0.8; }
+
+    /* Coverage color scale: transparent → light → saturated red */
+    .cov-0 { background: #f9fafb; color: #9ca3af; border-color: #e5e7eb; }
+    .cov-1 { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+    .cov-2 { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+    .cov-3 { background: #fca5a5; color: #7f1d1d; border-color: #f87171; }
+    .cov-4 { background: #f87171; color: white; border-color: #ef4444; }
+    .cov-5 { background: #dc2626; color: white; border-color: #b91c1c; }
+
+    .legend-item { display: inline-flex; align-items: center; gap: 4px; margin-right: 12px; font-size: 11px; }
+    .legend-swatch { width: 16px; height: 16px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1); }
+
+    .branch-header { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+    .branch-header .en { font-weight: 400; color: #6b7280; font-size: 12px; margin-left: 8px; }
+    .branch-note { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+
+    .summary-stat { text-align: center; padding: 16px; }
+    .summary-stat .num { font-size: 28px; font-weight: 700; color: #991b1b; }
+    .summary-stat .label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto" x-data="coverageMap()">
+    <h1 class="font-serif text-xl text-gray-900 mb-2">Government Coverage Map</h1>
+    <p class="text-sm text-gray-500 mb-4">
+        Comprehensive map of PRC government agencies. Color saturation indicates extraction depth in our corpus.
+        Based on the 2023 State Council institutional reform structure.
+    </p>
+
+    <!-- Legend -->
+    <div class="mb-5 p-3 bg-white border border-gray-200 rounded-lg flex items-center flex-wrap gap-y-2">
+        <span class="text-xs font-semibold text-gray-500 mr-4">COVERAGE:</span>
+        <span class="legend-item"><span class="legend-swatch cov-0"></span> Not crawled</span>
+        <span class="legend-item"><span class="legend-swatch cov-1"></span> 1-99</span>
+        <span class="legend-item"><span class="legend-swatch cov-2"></span> 100-499</span>
+        <span class="legend-item"><span class="legend-swatch cov-3"></span> 500-1,999</span>
+        <span class="legend-item"><span class="legend-swatch cov-4"></span> 2,000-4,999</span>
+        <span class="legend-item"><span class="legend-swatch cov-5"></span> 5,000+</span>
+        <span class="ml-auto text-xs text-gray-400">
+            <span x-text="coveredCount"></span>/<span x-text="totalCount"></span> agencies covered
+        </span>
+    </div>
+
+    <!-- Summary stats -->
+    <div class="grid grid-cols-5 gap-4 mb-6">
+        <div class="card summary-stat">
+            <div class="num" x-text="formatNum(totalDocs)"></div>
+            <div class="label">Total Documents</div>
+        </div>
+        <div class="card summary-stat">
+            <div class="num" x-text="coveredCount"></div>
+            <div class="label">Agencies Covered</div>
+        </div>
+        <div class="card summary-stat">
+            <div class="num" x-text="criticalPct + '%'"></div>
+            <div class="label">Critical Sources</div>
+        </div>
+        <div class="card summary-stat">
+            <div class="num" x-text="highPct + '%'"></div>
+            <div class="label">High-Priority</div>
+        </div>
+        <div class="card summary-stat">
+            <div class="num" x-text="provincePct + '%'"></div>
+            <div class="label">Provinces</div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="mb-4 flex items-center gap-3">
+        <select x-model="filter" class="text-sm">
+            <option value="all">All agencies</option>
+            <option value="covered">Covered only</option>
+            <option value="uncovered">Not yet crawled</option>
+            <option value="critical">Critical relevance</option>
+            <option value="high">High relevance</option>
+        </select>
+        <span class="text-xs text-gray-400" x-text="filteredCount + ' agencies shown'"></span>
+    </div>
+
+    <!-- Branches -->
+    <template x-for="branch in filteredBranches" :key="branch.id">
+        <div class="card mb-4 overflow-hidden">
+            <div class="card-header flex items-center gap-2">
+                <span x-text="branch.name_cn" class="font-zh"></span>
+                <span class="text-gray-400" x-text="branch.name_en"></span>
+                <span class="ml-auto text-gray-400" x-text="branchStats(branch)"></span>
+            </div>
+            <div class="p-4">
+                <template x-if="branch.note">
+                    <p class="branch-note" x-text="branch.note"></p>
+                </template>
+                <div class="flex flex-wrap">
+                    <template x-for="agency in filteredAgencies(branch)" :key="agency.id">
+                        <div :class="'agency-chip ' + covClass(agency)"
+                             :title="agencyTooltip(agency)">
+                            <span class="font-zh" x-text="agency.name_cn"></span>
+                            <template x-if="getCount(agency) > 0">
+                                <span class="count" x-text="formatNum(getCount(agency))"></span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Tooltip on hover would be nice but Alpine handles it via title attr -->
+</div>
+
+<script>
+const ORG_DATA = {{ org_data_json | safe }};
+const SITE_COUNTS = {{ site_counts_json | safe }};
+
+function coverageMap() {
+    return {
+        filter: 'all',
+        get branches() { return ORG_DATA.branches || []; },
+        get totalDocs() {
+            return Object.values(SITE_COUNTS).reduce((a,b) => a+b, 0);
+        },
+        get allAgencies() {
+            let all = [];
+            for (const b of this.branches) {
+                all = all.concat(b.agencies || []);
+            }
+            return all;
+        },
+        get totalCount() { return this.allAgencies.length; },
+        get coveredCount() {
+            return this.allAgencies.filter(a => this.getCount(a) > 0).length;
+        },
+        get criticalPct() {
+            const critical = this.allAgencies.filter(a => a.relevance === 'critical');
+            const covered = critical.filter(a => this.getCount(a) > 0);
+            return critical.length ? Math.round(covered.length / critical.length * 100) : 0;
+        },
+        get highPct() {
+            const high = this.allAgencies.filter(a => a.relevance === 'high' || a.relevance === 'critical');
+            const covered = high.filter(a => this.getCount(a) > 0);
+            return high.length ? Math.round(covered.length / high.length * 100) : 0;
+        },
+        get provincePct() {
+            const provBranch = this.branches.find(b => b.id === 'provinces');
+            if (!provBranch) return 0;
+            const covered = provBranch.agencies.filter(a => this.getCount(a) > 0);
+            return Math.round(covered.length / provBranch.agencies.length * 100);
+        },
+        get filteredBranches() {
+            return this.branches.filter(b => this.filteredAgencies(b).length > 0);
+        },
+        get filteredCount() {
+            let count = 0;
+            for (const b of this.branches) {
+                count += this.filteredAgencies(b).length;
+            }
+            return count;
+        },
+        filteredAgencies(branch) {
+            const agencies = branch.agencies || [];
+            if (this.filter === 'all') return agencies;
+            if (this.filter === 'covered') return agencies.filter(a => this.getCount(a) > 0);
+            if (this.filter === 'uncovered') return agencies.filter(a => this.getCount(a) === 0);
+            if (this.filter === 'critical') return agencies.filter(a => a.relevance === 'critical');
+            if (this.filter === 'high') return agencies.filter(a => a.relevance === 'high' || a.relevance === 'critical');
+            return agencies;
+        },
+        getCount(agency) {
+            if (!agency.site_key) return 0;
+            return SITE_COUNTS[agency.site_key] || 0;
+        },
+        covClass(agency) {
+            const count = this.getCount(agency);
+            if (count === 0) return 'cov-0';
+            if (count < 100) return 'cov-1';
+            if (count < 500) return 'cov-2';
+            if (count < 2000) return 'cov-3';
+            if (count < 5000) return 'cov-4';
+            return 'cov-5';
+        },
+        branchStats(branch) {
+            const agencies = branch.agencies || [];
+            const covered = agencies.filter(a => this.getCount(a) > 0).length;
+            const total = agencies.length;
+            const docs = agencies.reduce((sum, a) => sum + this.getCount(a), 0);
+            return `${covered}/${total} covered, ${this.formatNum(docs)} docs`;
+        },
+        agencyTooltip(agency) {
+            const count = this.getCount(agency);
+            let tip = agency.name_en || agency.name_cn;
+            if (count > 0) tip += ` | ${count.toLocaleString()} documents`;
+            else tip += ' | Not yet crawled';
+            if (agency.note) tip += ` | ${agency.note}`;
+            if (agency.website) tip += ` | ${agency.website}`;
+            return tip;
+        },
+        formatNum(n) {
+            if (n >= 1000) return (n/1000).toFixed(n >= 10000 ? 0 : 1) + 'k';
+            return n.toLocaleString();
+        }
+    };
+}
+</script>
+{% endblock %}
