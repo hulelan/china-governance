@@ -357,8 +357,8 @@ async def coverage_page(request: Request):
 
     # Get live doc counts by site_key
     site_counts = {}
-    rows = await db.execute("SELECT site_key, COUNT(*) FROM documents GROUP BY site_key")
-    for row in await rows.fetchall():
+    rows = await db.fetch("SELECT site_key, COUNT(*) FROM documents GROUP BY site_key")
+    for row in rows:
         site_counts[row[0]] = row[1]
 
     return templates.TemplateResponse("coverage.html", {
