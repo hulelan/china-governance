@@ -57,7 +57,20 @@ python3 -m crawlers.stdaily                     # Science & Technology Daily (MO
 python3 -m crawlers.stdaily --deep              # Sitemap + homepage discovery
 python3 -m crawlers.guancha                     # Guancha / Observer Network (homepage only, ~185 articles)
 python3 -m crawlers.guancha --deep              # + section pages + all columnists (~400 articles)
+
+python3 -m crawlers.chinalawtranslate           # English translations of Chinese laws (~1,100 posts via WP API)
+python3 -m crawlers.chinalawtranslate --category internet  # One category only
+python3 scripts/match_clt_translations.py       # Link CLT posts to native docs by source URL
 ```
+
+### English Translations
+- CLT posts are stored under `site_key=chinalawtranslate`. Each post's `relation`
+  field holds `cn_source=<original CN URL>;lang_ratio=<0-1>` so the matcher can
+  link them to native CAC/SC/MIIT docs. About 67/466 source URLs match a native
+  doc; URL normalization strips http/https since CLT mostly uses http while
+  native crawlers use https.
+- WP API quirk: CloudFlare 502s on `per_page=100` requests that include the
+  `content` field. Drop to per_page=20 and use browser-shaped headers.
 
 ### Classification (DeepSeek API)
 ```bash
