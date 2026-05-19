@@ -29,6 +29,7 @@ from web.services.changes import (
     get_recent_changes, get_sync_runs, get_change_stats,
 )
 from web.services.chain import get_chain, TOPIC_KEYWORDS
+from web.services.structure import get_structure
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -340,6 +341,17 @@ async def changes_page(request: Request):
         "change_stats": change_stats,
         "sync_runs": sync_runs,
         "recent_changes": recent_changes,
+    })
+
+
+@router.get("/structure", response_class=HTMLResponse)
+async def structure_page(request: Request):
+    """Government structure org chart — hand-curated map of who is who."""
+    db = request.app.state.db
+    stats = await get_stats(db)
+    structure = await get_structure(db)
+    return templates.TemplateResponse("structure.html", {
+        "request": request, "stats": stats, "structure": structure,
     })
 
 

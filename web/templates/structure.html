@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% block title %}Government Structure — ChinaGovernance{% endblock %}
+
+{% block head %}
+<style>
+    /* Body cards in the chart */
+    .node {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 10px 12px;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.1s, transform 0.1s;
+    }
+    .node:hover {
+        border-color: #9ca3af;
+        text-decoration: none;
+    }
+    .node.crawled:hover { border-color: #991b1b; }
+    .node.uncrawled {
+        background: #fafafa;
+        border-style: dashed;
+        color: #6b7280;
+    }
+    .node.uncrawled:hover { border-color: #9ca3af; }
+
+    .node .name-en {
+        font-weight: 600;
+        color: #111827;
+        font-size: 13.5px;
+        line-height: 1.3;
+    }
+    .node.uncrawled .name-en { color: #6b7280; font-weight: 500; }
+    .node .name-cn {
+        font-family: 'Noto Serif SC', 'Source Han Serif SC', SimSun, serif;
+        color: #6b7280;
+        font-size: 12px;
+        margin-top: 1px;
+    }
+    .node .desc {
+        font-size: 11.5px;
+        color: #6b7280;
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+    .node .count {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 600;
+        color: #991b1b;
+        margin-left: 6px;
+    }
+    .node .rank {
+        display: inline-block;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #9ca3af;
+        margin-top: 4px;
+    }
+    .node .note {
+        font-size: 10.5px;
+        color: #b45309;
+        background: #fef3c7;
+        padding: 2px 6px;
+        border-radius: 3px;
+        margin-top: 6px;
+        display: inline-block;
+    }
+
+    /* Tree indent on children inside the State Council column */
+    .tree-child {
+        margin-left: 28px;
+        position: relative;
+    }
+    .tree-child::before {
+        content: "";
+        position: absolute;
+        left: -16px;
+        top: 18px;
+        width: 12px;
+        height: 1px;
+        background: #d1d5db;
+    }
+    .tree-child::after {
+        content: "";
+        position: absolute;
+        left: -16px;
+        top: 0;
+        bottom: 50%;
+        width: 1px;
+        background: #d1d5db;
+    }
+    .tree-child:last-child::after { bottom: 50%; }
+
+    .tier-card { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; margin-bottom: 18px; }
+    .tier-label { font-family: Georgia, serif; font-size: 18px; color: #111827; margin-bottom: 4px; }
+    .tier-intro { font-size: 12.5px; color: #6b7280; line-height: 1.55; max-width: 780px; margin-bottom: 14px; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set tiers = structure.tiers %}
+{% set t = {} %}
+{% for tier in tiers %}{% set _ = t.update({tier.id: tier}) %}{% endfor %}
+
+<div class="max-w-7xl mx-auto">
+
+    <h1 class="font-serif text-2xl text-gray-900">Government Structure</h1>
+    <p class="text-sm text-gray-500 mt-2 max-w-3xl leading-relaxed">
+        Hand-curated org chart of the bodies whose documents we crawl, placed in
+        the Chinese party-state hierarchy. Solid cards link to the corpus;
+        dashed cards are uncrawled context to make the rest of the chart make
+        sense. Recent reorganizations
+        (NDA spun out of NDRC + CAC in Oct 2023; MOST restructured 2023) are
+        reflected.
+    </p>
+    <div class="mt-3 text-xs text-gray-400 flex gap-5">
+        <span><span class="mono text-gray-800 font-semibold">{{ structure.totals.crawled }}</span> bodies crawled</span>
+        <span><span class="mono text-gray-800 font-semibold">{{ "{:,}".format(structure.totals.crawled_docs) }}</span> documents</span>
+        <span><span class="mono text-gray-800 font-semibold">{{ structure.totals.total }}</span> nodes on chart</span>
+    </div>
+
+    <!-- Macro for a single node card. `extra_class` adds tree-child indent. -->
+    {% macro node_card(n, extra_class="") -%}
+        {% set crawled = n.site_key is defined and n.site_key %}
+        <a
+          id="node-{{ n.id }}"
+          class="node {{ 'crawled' if crawled else 'uncrawled' }} {{ extra_class }}"
+          {% if crawled %}href="/browse?site_key={{ n.site_key }}"{% else %}href="#"
+          onclick="return false"
+          title="Not crawled — included for orientation"{% endif %}>
+            <div class="flex items-baseline justify-between">
+                <div class="flex-1 min-w-0">
+                    <div class="name-en">{{ n.name_en }}</div>
+                    <div class="name-cn">{{ n.name_cn }}</div>
+                </div>
+                {% if crawled and n.doc_count %}
+                    <span class="count">{{ "{:,}".format(n.doc_count) }}</span>
+                {% endif %}
+            </div>
+            {% if n.desc %}<div class="desc">{{ n.desc }}</div>{% endif %}
+            {% if n.rank %}<span class="rank">{{ n.rank }}</span>{% endif %}
+            {% if n.note %}<div><span class="note">⚐ {{ n.note }}</span></div>{% endif %}
+        </a>
+    {%- endmacro %}
+
+    <!-- ─── TOP TIER: PARTY + LEGISLATIVE + JUDICIAL in three columns ───────── -->
+    <div class="mt-6 grid grid-cols-3 gap-4">
+        {% for tier_id in ["party", "legislative", "judicial"] %}
+            {% set tier = t[tier_id] %}
+            <div class="tier-card">
+                <div class="tier-label">{{ tier.label }}</div>
+                <div class="tier-intro">{{ tier.intro }}</div>
+                {% set roots = tier.nodes | rejectattr("parent", "defined") | list %}
+                {% set parented = tier.nodes | selectattr("parent", "defined") | list %}
+                <div class="space-y-2">
+                {% for root in roots %}
+                    {{ node_card(root) }}
+                    {% for child in parented if child.parent == root.id %}
+                        {{ node_card(child, "tree-child") }}
+                    {% endfor %}
+                {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- ─── STATE COUNCIL ─────────────────────────────────────────────────────── -->
+    {% set sc = t["state_council"] %}
+    <div class="tier-card">
+        <div class="tier-label">{{ sc.label }}</div>
+        <div class="tier-intro">{{ sc.intro }}</div>
+
+        {# Pull State Council root and immediate children, plus grandchildren via NDRC/MOST #}
+        {% set sc_root = sc.nodes | selectattr("id", "equalto", "gov") | first %}
+
+        <!-- State Council root card, full width -->
+        <div class="mb-4 max-w-md">{{ node_card(sc_root) }}</div>
+
+        <!-- Ministry grid -->
+        <div class="grid grid-cols-3 gap-3">
+            {% for n in sc.nodes if n.parent == "gov" %}
+                <div>
+                    {{ node_card(n) }}
+                    {# Render NDRC and MOST sub-bodies inline #}
+                    {% if n.id in ["ndrc", "most"] %}
+                        <div class="mt-2 space-y-2">
+                        {% for sub in sc.nodes if sub.parent == n.id %}
+                            {{ node_card(sub, "tree-child") }}
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-4 text-xs text-gray-400 leading-relaxed max-w-3xl">
+            <strong class="text-gray-600">Reading the chart:</strong>
+            "Constituent" departments are the 26 cabinet-level ministries.
+            "Directly subordinate" agencies (SAMR, CAC) are ministerial-rank but
+            structured slightly differently. "National bureaus" (NDA) and "public
+            institutions" (SIC) sit under a parent ministry. The CAC has a dual
+            identity — same office, two nameplates: state-side under the State
+            Council, party-side under the Central Cyberspace Affairs Commission.
+        </div>
+    </div>
+
+    <!-- ─── PROVINCIAL ────────────────────────────────────────────────────────── -->
+    {% set prov = t["provincial"] %}
+    <div class="tier-card">
+        <div class="tier-label">{{ prov.label }}</div>
+        <div class="tier-intro">{{ prov.intro }}</div>
+        <div class="grid grid-cols-4 gap-3">
+            {% for n in prov.nodes %}{{ node_card(n) }}{% endfor %}
+        </div>
+    </div>
+
+    <!-- ─── CITIES ────────────────────────────────────────────────────────────── -->
+    {% set cities = t["cities"] %}
+    <div class="tier-card">
+        <div class="tier-label">{{ cities.label }}</div>
+        <div class="tier-intro">{{ cities.intro }}</div>
+
+        <div class="text-xs uppercase tracking-wider text-gray-400 mb-2 mt-2">Sub-provincial (vice-provincial rank)</div>
+        <div class="grid grid-cols-4 gap-3 mb-5">
+            {% for n in cities.nodes if (n.rank or "") == "sub-provincial" %}
+                {{ node_card(n) }}
+            {% endfor %}
+        </div>
+
+        <div class="text-xs uppercase tracking-wider text-gray-400 mb-2">Prefecture-level cities</div>
+        <div class="grid grid-cols-4 gap-3">
+            {% for n in cities.nodes if (n.rank or "") == "prefecture-level" %}
+                {{ node_card(n) }}
+            {% endfor %}
+        </div>
+
+        <div class="text-xs uppercase tracking-wider text-gray-400 mb-2 mt-5">Special</div>
+        <div class="grid grid-cols-4 gap-3">
+            {% for n in cities.nodes if not n.rank %}
+                {{ node_card(n) }}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ─── SHENZHEN DETAIL (DEPARTMENTS + DISTRICTS) ─────────────────────────── -->
+    {% set dept = t["shenzhen_departments"] %}
+    {% set dist = t["shenzhen_districts"] %}
+    <div class="grid grid-cols-2 gap-4">
+
+        <!-- Departments: rendered as a tiao-kuai mirror table -->
+        <div class="tier-card">
+            <div class="tier-label">{{ dept.label }}</div>
+            <div class="tier-intro">{{ dept.intro }}</div>
+            <table class="data-table mt-2 w-full">
+                <thead>
+                    <tr>
+                        <th class="text-left text-xs uppercase tracking-wider text-gray-400 pb-2">Shenzhen bureau</th>
+                        <th class="text-left text-xs uppercase tracking-wider text-gray-400 pb-2">Mirrors central</th>
+                        <th class="text-right text-xs uppercase tracking-wider text-gray-400 pb-2">Docs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for n in dept.nodes %}
+                    {% set mirror = structure.node_by_id.get(n.mirrors) if n.mirrors else None %}
+                    <tr class="border-t border-gray-100">
+                        <td class="py-2 pr-3 align-top">
+                            <a href="/browse?site_key={{ n.site_key }}" class="text-gray-900 font-semibold no-underline hover:underline">{{ n.name_en }}</a>
+                            <div class="text-xs text-gray-500 font-zh">{{ n.name_cn }}</div>
+                            {% if n.note %}<div class="text-[10.5px] text-amber-700 mt-1">⚐ {{ n.note }}</div>{% endif %}
+                        </td>
+                        <td class="py-2 pr-3 align-top text-sm">
+                            {% if mirror %}
+                                <a href="#node-{{ mirror.id }}" class="text-gray-700 no-underline hover:underline">{{ mirror.name_en }}</a>
+                                <div class="text-xs text-gray-400 font-zh">{{ mirror.name_cn }}</div>
+                            {% else %}
+                                <span class="text-gray-400">(not crawled)</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-2 text-right mono text-sm text-gray-700">{{ "{:,}".format(n.doc_count) if n.doc_count else "—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="mt-3 text-xs text-gray-400 leading-relaxed">
+                "Mirrors central" is the functional counterpart, not always a
+                strict reporting line. Most bureaus are <em>kuai</em>-led (the
+                Shenzhen government controls budget and personnel); a few
+                (Public Security, Audit) are under <em>dual leadership</em>.
+            </div>
+        </div>
+
+        <!-- Districts -->
+        <div class="tier-card">
+            <div class="tier-label">{{ dist.label }}</div>
+            <div class="tier-intro">{{ dist.intro }}</div>
+            <div class="grid grid-cols-2 gap-3">
+                {% for n in dist.nodes %}{{ node_card(n) }}{% endfor %}
+            </div>
+            <div class="mt-4 text-xs text-gray-400 leading-relaxed">
+                <strong class="text-gray-600">Coverage gap:</strong>
+                Bao'an District (the largest by population) and Qianhai
+                Authority (functional zone) are not crawled. Party-side bodies
+                (district committees, propaganda departments) are not in the
+                corpus at any sub-national level.
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── MEDIA & RESEARCH ──────────────────────────────────────────────────── -->
+    {% set media = t["media"] %}
+    <div class="tier-card">
+        <div class="tier-label">{{ media.label }}</div>
+        <div class="tier-intro">{{ media.intro }}</div>
+        <div class="grid grid-cols-4 gap-3">
+            {% for n in media.nodes %}{{ node_card(n) }}{% endfor %}
+        </div>
+    </div>
+
+    <div class="mt-6 mb-12 p-4 bg-stone-50 border border-stone-200 rounded-lg text-xs text-gray-500 leading-relaxed">
+        <strong class="text-gray-700">Sources for the structure:</strong>
+        NPC Observer (state council org chart, 2024 organic-law updates),
+        DigiChina/Stanford (NDA establishment translation), CSET/Georgetown
+        (2023 reform plan translation), Barry Naughton (UCIGCC, MOST reform
+        analysis), MERICS, CSIS, CECC, official PRC sites.
+        Last verified <span class="mono">2026-04-28</span>.
+        <br>
+        <strong class="text-gray-700 mt-2 inline-block">What's missing:</strong>
+        Party-side bodies at sub-national level, district party committees,
+        people's congresses below the central NPC, district courts,
+        procuratorates, several major Shenzhen departments (Finance, Ecology,
+        Market Supervision, SASAC, local 网信办), and Bao'an + Qianhai.
+        The corpus is government-side only at every sub-national level.
+    </div>
+
+</div>
+{% endblock %}

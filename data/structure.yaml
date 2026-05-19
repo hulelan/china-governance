@@ -1,0 +1,820 @@
+# Org chart data for /structure page.
+#
+# Edit this file to update the chart. The page joins with live `documents`
+# counts at request time, so doc counts here are authoritative-by-absence-only
+# (i.e. we don't store them — every site_key listed below is looked up live).
+#
+# A node represents a body in the party-state hierarchy. Bodies we crawl have
+# a `site_key` matching documents.site_key; bodies without are context-only
+# (rendered in gray) so the chart makes sense to someone new to the system.
+#
+# Sources: NPC Observer, DigiChina/Stanford, CSET (Georgetown), MERICS,
+# CSIS, Naughton (UCIGCC), CECC, CRS, Wikipedia (last verified 2026-04-28).
+
+tiers:
+  - id: party
+    label: "The Party — 中国共产党"
+    intro: >
+      The Chinese Communist Party runs in parallel with the state and outranks
+      it at every level. None of our 70 crawl targets are party organs — these
+      boxes are here so the rest of the chart makes sense.
+
+  - id: legislative
+    label: "Legislative — 全国人大"
+    intro: >
+      The National People's Congress is the legal-source layer. It passes laws
+      that the State Council and ministries then implement through regulations.
+
+  - id: state_council
+    label: "State Council & Ministries — 国务院"
+    intro: >
+      The central executive. Headed by the Premier (Li Qiang). Below it sit
+      26 constituent departments (ministries / commissions), a handful of
+      directly subordinate agencies at ministerial rank, and national bureaus
+      that report up through a parent ministry.
+
+  - id: judicial
+    label: "Judicial — 最高人民法院"
+    intro: >
+      The Supreme People's Court is the apex of the regular court system.
+      Reports to the NPC but operates independently of the State Council.
+
+  - id: provincial
+    label: "Provincial — 省级"
+    intro: >
+      Provinces, autonomous regions, and direct-controlled municipalities
+      (Beijing, Shanghai, Chongqing, Tianjin) are all province-rank. Each
+      mirrors the State Council's ministry structure at its own scale.
+
+  - id: cities
+    label: "Cities — 副省级市 / 地级市"
+    intro: >
+      Sub-provincial cities (vice-provincial rank, e.g. Shenzhen, Guangzhou,
+      Wuhan, Hangzhou) sit just below province-rank. Prefecture-level cities
+      (Guangdong cities, Suzhou, etc.) are one rung lower.
+
+  - id: shenzhen_departments
+    label: "Shenzhen Municipal Departments — 深圳市直机关"
+    intro: >
+      Each Shenzhen bureau is dual-aligned — locally led by the Shenzhen
+      municipal government (kuai 块) but operationally tied to a central
+      ministry (tiao 条). The "mirrors" column below names the central body
+      each bureau answers to functionally.
+
+  - id: shenzhen_districts
+    label: "Shenzhen Districts — 深圳市辖区"
+    intro: >
+      Shenzhen has 8 formal administrative districts plus Dapeng, which is a
+      functional zone (新区) without its own People's Congress. Districts run
+      day-to-day urban governance: education, sub-bureaus of public security,
+      street offices, district courts. Bao'an is a coverage gap.
+
+  - id: media
+    label: "Media & Research — 媒体 / 研究"
+    intro: >
+      Not state organs, but party-state mouthpieces and research institutions
+      whose output shapes policy interpretation. Crawled separately from
+      government docs.
+
+nodes:
+  # ─── PARTY (context only — none crawled) ─────────────────────────────────
+
+  - id: ccp_central
+    tier: party
+    name_en: "CCP Central Committee"
+    name_cn: "中国共产党中央委员会"
+    desc: "Selects the Politburo and Standing Committee. Apex of the party-state."
+
+  - id: politburo_sc
+    tier: party
+    parent: ccp_central
+    name_en: "Politburo Standing Committee"
+    name_cn: "中央政治局常务委员会"
+    desc: "7-member innermost circle. Xi Jinping is General Secretary."
+
+  - id: central_cyber_commission
+    tier: party
+    parent: ccp_central
+    name_en: "Central Cyberspace Affairs Commission"
+    name_cn: "中央网络安全和信息化委员会"
+    desc: "Sets internet and data strategy. Its general office IS the CAC."
+
+  - id: central_st_commission
+    tier: party
+    parent: ccp_central
+    name_en: "Central Science and Technology Commission"
+    name_cn: "中央科技委员会"
+    desc: "Created 2023. Sets S&T strategy. MOST serves as its admin office."
+
+  - id: central_financial_commission
+    tier: party
+    parent: ccp_central
+    name_en: "Central Financial Commission"
+    name_cn: "中央金融委员会"
+    desc: "Created 2023. Oversees financial regulation; replaces FSDC."
+
+  - id: central_reform_commission
+    tier: party
+    parent: ccp_central
+    name_en: "Central Reform Commission"
+    name_cn: "中央全面深化改革委员会"
+    desc: "Drives cross-ministry reform initiatives; chairs structural overhauls."
+
+  # ─── LEGISLATIVE ─────────────────────────────────────────────────────────
+
+  - id: npc_main
+    tier: legislative
+    name_en: "National People's Congress"
+    name_cn: "全国人民代表大会"
+    desc: "China's legislature. Meets annually; passes constitutional-level laws."
+
+  - id: npc
+    tier: legislative
+    parent: npc_main
+    site_key: npc
+    name_en: "NPC Standing Committee — Laws Database"
+    name_cn: "国家法律法规数据库"
+    desc: "Official corpus of PRC laws and administrative regulations. Enacts most laws between NPC sessions."
+
+  # ─── STATE COUNCIL & MINISTRIES ──────────────────────────────────────────
+
+  - id: gov
+    tier: state_council
+    site_key: gov
+    name_en: "State Council"
+    name_cn: "国务院"
+    desc: "Central cabinet. Issues regulations and directives; oversees ministries."
+
+  - id: ndrc
+    tier: state_council
+    parent: gov
+    site_key: ndrc
+    rank: "constituent (commission)"
+    name_en: "National Development & Reform Commission"
+    name_cn: "国家发展和改革委员会"
+    desc: "Macro-economic planner. Five-year plans, industrial policy, energy, pricing."
+
+  - id: mof
+    tier: state_council
+    parent: gov
+    site_key: mof
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Finance"
+    name_cn: "财政部"
+    desc: "Fiscal policy, central budget, tax administration, state finance."
+
+  - id: moe
+    tier: state_council
+    parent: gov
+    site_key: moe
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Education"
+    name_cn: "教育部"
+    desc: "K-12 through higher-ed policy. Oversees central universities."
+
+  - id: most
+    tier: state_council
+    parent: gov
+    site_key: most
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Science & Technology"
+    name_cn: "科学技术部"
+    note: "Also admin office of Central S&T Commission (party side)."
+    desc: "Post-2023 reform: strategic S&T planning and supervision. Lost individual-project oversight."
+
+  - id: miit
+    tier: state_council
+    parent: gov
+    site_key: miit
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Industry & Information Technology"
+    name_cn: "工业和信息化部"
+    desc: "Industry, telecom, semiconductors, AI hardware. Absorbed industrial-S&T functions in 2023."
+
+  - id: mee
+    tier: state_council
+    parent: gov
+    site_key: mee
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Ecology & Environment"
+    name_cn: "生态环境部"
+    desc: "Environmental protection, pollution, climate, eco-S&T."
+
+  - id: mofcom
+    tier: state_council
+    parent: gov
+    site_key: mofcom
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Commerce"
+    name_cn: "商务部"
+    desc: "Foreign trade, FDI, export controls, anti-dumping, WTO."
+
+  - id: samr
+    tier: state_council
+    parent: gov
+    site_key: samr
+    rank: "directly subordinate (ministerial)"
+    name_en: "State Administration for Market Regulation"
+    name_cn: "国家市场监督管理总局"
+    desc: "Antitrust, product safety, business registration, food safety, IP enforcement."
+
+  - id: cac
+    tier: state_council
+    parent: gov
+    site_key: cac
+    rank: "directly subordinate (ministerial)"
+    name_en: "Cyberspace Administration of China"
+    name_cn: "国家互联网信息办公室"
+    note: "Dual identity — same office is also 中央网信办 under the party commission."
+    desc: "Internet regulator. Content, data security, algorithm/AI rules, cybersecurity reviews."
+
+  - id: nda
+    tier: state_council
+    parent: ndrc
+    site_key: nda
+    rank: "national bureau (under NDRC)"
+    name_en: "National Data Administration"
+    name_cn: "国家数据局"
+    desc: "Data infrastructure, data-element markets, Digital China. Created Oct 2023; absorbed functions from CAC + NDRC."
+
+  - id: sic
+    tier: state_council
+    parent: ndrc
+    site_key: sic
+    rank: "public institution (under NDRC)"
+    name_en: "State Information Center"
+    name_cn: "国家信息中心"
+    desc: "Think tank under NDRC. Economic forecasting, informatization, e-government. Advisory, not regulatory."
+
+  - id: stdaily
+    tier: state_council
+    parent: most
+    site_key: stdaily
+    rank: "affiliated newspaper"
+    name_en: "Science & Technology Daily"
+    name_cn: "科技日报"
+    desc: "MOST's official newspaper. Policy coverage, research, industry news."
+
+  # ─── MIRRORED MINISTRIES (uncrawled centrally — Shenzhen end is in corpus) ──
+
+  - id: mps
+    tier: state_council
+    parent: gov
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Public Security"
+    name_cn: "公安部"
+    desc: "Police, household registration, exit/entry. Dual-leads provincial/municipal PSBs."
+
+  - id: moj
+    tier: state_council
+    parent: gov
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Justice"
+    name_cn: "司法部"
+    desc: "Lawyer regulation, prisons, legal aid, administrative reconsideration."
+
+  - id: mca
+    tier: state_council
+    parent: gov
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Civil Affairs"
+    name_cn: "民政部"
+    desc: "Marriage registration, NGOs, social assistance, elder care, disaster relief."
+
+  - id: mohrss
+    tier: state_council
+    parent: gov
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Human Resources & Social Security"
+    name_cn: "人力资源和社会保障部"
+    desc: "Pensions, unemployment insurance, labor disputes, public-sector personnel."
+
+  - id: mot
+    tier: state_council
+    parent: gov
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Transport"
+    name_cn: "交通运输部"
+    desc: "Roads, public transit, ports, civil aviation policy, taxi/rideshare frameworks."
+
+  - id: mohurd
+    tier: state_council
+    parent: gov
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Housing & Urban-Rural Development"
+    name_cn: "住房和城乡建设部"
+    desc: "Real estate policy, public housing, construction permits, urban planning."
+
+  - id: mem
+    tier: state_council
+    parent: gov
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Emergency Management"
+    name_cn: "应急管理部"
+    desc: "Workplace safety, disaster response, firefighting (post-2018 merger)."
+
+  - id: nhc
+    tier: state_council
+    parent: gov
+    rank: "constituent (commission)"
+    name_en: "National Health Commission"
+    name_cn: "国家卫生健康委员会"
+    desc: "Public health, hospitals, pandemic response, healthcare reform."
+
+  - id: cnao
+    tier: state_council
+    parent: gov
+    rank: "constituent (special status)"
+    name_en: "National Audit Office"
+    name_cn: "审计署"
+    desc: "Audits central agencies and SOEs. Dual-leads provincial/municipal audit bureaus."
+
+  # ─── JUDICIAL ────────────────────────────────────────────────────────────
+
+  - id: spc
+    tier: judicial
+    name_en: "Supreme People's Court"
+    name_cn: "最高人民法院"
+    desc: "Apex of the court system. Reports to the NPC, not the State Council."
+
+  - id: ipc_court
+    tier: judicial
+    parent: spc
+    site_key: ipc_court
+    name_en: "Supreme Court IP Tribunal"
+    name_cn: "最高人民法院知识产权法庭"
+    desc: "Specialized appellate tribunal for patents, trade secrets, software, antitrust IP. Operational since Jan 2019."
+
+  # ─── PROVINCIAL ──────────────────────────────────────────────────────────
+
+  - id: gd
+    tier: provincial
+    site_key: gd
+    name_en: "Guangdong Province"
+    name_cn: "广东省"
+    desc: "Coastal manufacturing + tech powerhouse. Supervises Shenzhen, Guangzhou, and 19 other prefecture cities."
+
+  - id: bj
+    tier: provincial
+    site_key: bj
+    name_en: "Beijing Municipality"
+    name_cn: "北京市"
+    rank: "direct-controlled"
+    desc: "National capital. Direct-controlled (province-rank); runs 16 districts directly."
+
+  - id: sh
+    tier: provincial
+    site_key: sh
+    name_en: "Shanghai Municipality"
+    name_cn: "上海市"
+    rank: "direct-controlled"
+    desc: "Financial center. Direct-controlled (province-rank); runs 16 districts directly."
+
+  - id: cq
+    tier: provincial
+    site_key: cq
+    name_en: "Chongqing Municipality"
+    name_cn: "重庆市"
+    rank: "direct-controlled"
+    desc: "Southwest megacity. Direct-controlled (province-rank), not a city under a province."
+
+  - id: js
+    tier: provincial
+    site_key: js
+    name_en: "Jiangsu Province"
+    name_cn: "江苏省"
+    desc: "Coastal industrial province. Supervises Nanjing (sub-provincial), Suzhou, Wuxi."
+
+  - id: zj
+    tier: provincial
+    site_key: zj
+    name_en: "Zhejiang Province"
+    name_cn: "浙江省"
+    desc: "Coastal province. Supervises Hangzhou and Ningbo (both sub-provincial)."
+
+  - id: hlj
+    tier: provincial
+    site_key: hlj
+    name_en: "Heilongjiang Province"
+    name_cn: "黑龙江省"
+    desc: "Northeast rust-belt, borders Russia. Capital Harbin (sub-provincial)."
+
+  # ─── CITIES (sub-provincial + prefecture-level) ──────────────────────────
+
+  - id: sz
+    tier: cities
+    parent: gd
+    site_key: sz
+    rank: "sub-provincial"
+    name_en: "Shenzhen Municipality"
+    name_cn: "深圳市"
+    desc: "Vice-provincial SEZ in Guangdong. Tech/finance hub with semi-autonomous legislative power."
+
+  - id: gz
+    tier: cities
+    parent: gd
+    site_key: gz
+    rank: "sub-provincial"
+    name_en: "Guangzhou Municipality"
+    name_cn: "广州市"
+    desc: "Vice-provincial capital of Guangdong. Traditional southern commercial center."
+
+  - id: wuhan
+    tier: cities
+    site_key: wuhan
+    rank: "sub-provincial"
+    name_en: "Wuhan Municipality"
+    name_cn: "武汉市"
+    desc: "Vice-provincial capital of Hubei. Central China transport, auto, steel hub."
+
+  - id: hangzhou
+    tier: cities
+    parent: zj
+    site_key: hangzhou
+    rank: "sub-provincial"
+    name_en: "Hangzhou Municipality"
+    name_cn: "杭州市"
+    desc: "Vice-provincial capital of Zhejiang. Alibaba HQ; digital-economy hub."
+
+  - id: suzhou
+    tier: cities
+    parent: js
+    site_key: suzhou
+    rank: "prefecture-level"
+    name_en: "Suzhou Municipality"
+    name_cn: "苏州市"
+    desc: "Largest prefecture-level city by GDP. Manufacturing + Singapore industrial park."
+
+  - id: sz_invest
+    tier: cities
+    parent: sz
+    site_key: sz_invest
+    name_en: "Shenzhen Investment Portal"
+    name_cn: "深圳投资推广"
+    desc: "Promotional/news portal run by Shenzhen's investment promotion office."
+
+  # Guangdong prefecture cities
+  - id: huizhou
+    tier: cities
+    parent: gd
+    site_key: huizhou
+    rank: "prefecture-level"
+    name_en: "Huizhou"
+    name_cn: "惠州市"
+    desc: "East of Shenzhen. Petrochemical and electronics manufacturing."
+
+  - id: jieyang
+    tier: cities
+    parent: gd
+    site_key: jieyang
+    rank: "prefecture-level"
+    name_en: "Jieyang"
+    name_cn: "揭阳市"
+    desc: "Eastern Guangdong. Metal-forging; Teochew region."
+
+  - id: zhongshan
+    tier: cities
+    parent: gd
+    site_key: zhongshan
+    rank: "prefecture-level"
+    name_en: "Zhongshan"
+    name_cn: "中山市"
+    desc: "Pearl River Delta. Light manufacturing; named for Sun Yat-sen."
+
+  - id: jiangmen
+    tier: cities
+    parent: gd
+    site_key: jiangmen
+    rank: "prefecture-level"
+    name_en: "Jiangmen"
+    name_cn: "江门市"
+    desc: "Western PRD. Chinese-diaspora hometown; manufacturing."
+
+  - id: heyuan
+    tier: cities
+    parent: gd
+    site_key: heyuan
+    rank: "prefecture-level"
+    name_en: "Heyuan"
+    name_cn: "河源市"
+    desc: "Mountainous northeast Guangdong. Reservoir city."
+
+  - id: shanwei
+    tier: cities
+    parent: gd
+    site_key: shanwei
+    rank: "prefecture-level"
+    name_en: "Shanwei"
+    name_cn: "汕尾市"
+    desc: "Coastal eastern Guangdong. Fisheries."
+
+  - id: zhuhai
+    tier: cities
+    parent: gd
+    site_key: zhuhai
+    rank: "prefecture-level"
+    name_en: "Zhuhai"
+    name_cn: "珠海市"
+    desc: "PRD SEZ across from Macau. Tourism + tech."
+
+  - id: yangjiang
+    tier: cities
+    parent: gd
+    site_key: yangjiang
+    rank: "prefecture-level"
+    name_en: "Yangjiang"
+    name_cn: "阳江市"
+    desc: "Coastal western Guangdong. Knife/cutlery industry."
+
+  - id: shaoguan
+    tier: cities
+    parent: gd
+    site_key: shaoguan
+    rank: "prefecture-level"
+    name_en: "Shaoguan"
+    name_cn: "韶关市"
+    desc: "Northern Guangdong, Hunan border. Mining and heavy industry."
+
+  - id: yunfu
+    tier: cities
+    parent: gd
+    site_key: yunfu
+    rank: "prefecture-level"
+    name_en: "Yunfu"
+    name_cn: "云浮市"
+    desc: "Western Guangdong. Stone processing."
+
+  - id: shantou
+    tier: cities
+    parent: gd
+    site_key: shantou
+    rank: "prefecture-level"
+    name_en: "Shantou"
+    name_cn: "汕头市"
+    desc: "Eastern Guangdong SEZ. Teochew commercial center."
+
+  - id: zhaoqing
+    tier: cities
+    parent: gd
+    site_key: zhaoqing
+    rank: "prefecture-level"
+    name_en: "Zhaoqing"
+    name_cn: "肇庆市"
+    desc: "Western edge of PRD. Historic prefecture seat."
+
+  # ─── SHENZHEN DEPARTMENTS (tiao-kuai) ────────────────────────────────────
+
+  - id: fgw
+    tier: shenzhen_departments
+    parent: sz
+    site_key: fgw
+    mirrors: ndrc
+    name_en: "Development & Reform Commission"
+    name_cn: "深圳市发展和改革委员会"
+    desc: "Macro planning, fixed-asset investment approval. Also keeper of Shenzhen's SEZ plans."
+
+  - id: stic
+    tier: shenzhen_departments
+    parent: sz
+    site_key: stic
+    mirrors: most
+    name_en: "Science, Technology & Innovation Commission"
+    name_cn: "深圳市科技创新委员会"
+    desc: "R&D funding, talent programs, AI/semiconductor industrial policy. Mirrors MOST + parts of MIIT."
+
+  - id: szeb
+    tier: shenzhen_departments
+    parent: sz
+    site_key: szeb
+    mirrors: moe
+    name_en: "Education Bureau"
+    name_cn: "深圳市教育局"
+    desc: "K-12 system; local oversight of universities."
+
+  - id: wjw
+    tier: shenzhen_departments
+    parent: sz
+    site_key: wjw
+    mirrors: nhc
+    name_en: "Health Commission"
+    name_cn: "深圳市卫生健康委员会"
+    desc: "Public health, hospitals, pandemic response. Local arm of NHC."
+
+  - id: ga
+    tier: shenzhen_departments
+    parent: sz
+    site_key: ga
+    mirrors: mps
+    name_en: "Public Security Bureau"
+    name_cn: "深圳市公安局"
+    note: "Dual leadership — local + MPS."
+    desc: "Police, household registration, exit/entry. MPS sets policy; mayor controls personnel + budget."
+
+  - id: sf
+    tier: shenzhen_departments
+    parent: sz
+    site_key: sf
+    mirrors: moj
+    name_en: "Justice Bureau"
+    name_cn: "深圳市司法局"
+    desc: "Legal aid, prisons, lawyer regulation, administrative reconsideration."
+
+  - id: mzj
+    tier: shenzhen_departments
+    parent: sz
+    site_key: mzj
+    mirrors: mca
+    name_en: "Civil Affairs Bureau"
+    name_cn: "深圳市民政局"
+    desc: "Marriage registration, social assistance, NGOs, elder care, disaster relief."
+
+  - id: hrss
+    tier: shenzhen_departments
+    parent: sz
+    site_key: hrss
+    mirrors: mohrss
+    name_en: "Human Resources & Social Security"
+    name_cn: "深圳市人力资源和社会保障局"
+    desc: "Pensions, unemployment insurance, labor disputes, hukou-linked benefits."
+
+  - id: swj
+    tier: shenzhen_departments
+    parent: sz
+    site_key: swj
+    mirrors: mofcom
+    name_en: "Commerce Bureau"
+    name_cn: "深圳市商务局"
+    desc: "Foreign investment, trade promotion, retail regulation."
+
+  - id: jtys
+    tier: shenzhen_departments
+    parent: sz
+    site_key: jtys
+    mirrors: mot
+    name_en: "Transport Bureau"
+    name_cn: "深圳市交通运输局"
+    desc: "Roads, public transit, ports, taxi/rideshare regulation."
+
+  - id: zjj
+    tier: shenzhen_departments
+    parent: sz
+    site_key: zjj
+    mirrors: mohurd
+    name_en: "Housing & Construction Bureau"
+    name_cn: "深圳市住房和城乡建设局"
+    desc: "Real estate, public housing, construction permits."
+
+  - id: yjgl
+    tier: shenzhen_departments
+    parent: sz
+    site_key: yjgl
+    mirrors: mem
+    name_en: "Emergency Management Bureau"
+    name_cn: "深圳市应急管理局"
+    desc: "Workplace safety, disaster response, fire (post-2018 merger)."
+
+  - id: audit
+    tier: shenzhen_departments
+    parent: sz
+    site_key: audit
+    mirrors: cnao
+    name_en: "Audit Bureau"
+    name_cn: "深圳市审计局"
+    note: "Dual leadership — local + Guangdong Audit Office."
+    desc: "Financial audits of municipal agencies and SOEs."
+
+  # ─── SHENZHEN DISTRICTS ──────────────────────────────────────────────────
+
+  - id: szft
+    tier: shenzhen_districts
+    parent: sz
+    site_key: szft
+    name_en: "Futian District"
+    name_cn: "福田区"
+    desc: "CBD; seat of Shenzhen municipal government and party committee."
+
+  - id: szlh
+    tier: shenzhen_districts
+    parent: sz
+    site_key: szlh
+    name_en: "Luohu District"
+    name_cn: "罗湖区"
+    desc: "Old downtown. HK border crossing at Luohu Port."
+
+  - id: szns
+    tier: shenzhen_districts
+    parent: sz
+    site_key: szns
+    name_en: "Nanshan District"
+    name_cn: "南山区"
+    desc: "Tech hub. HQs of Tencent, ZTE, DJI. Hosts Shenzhen Bay tech zone."
+
+  - id: szyantian
+    tier: shenzhen_districts
+    parent: sz
+    site_key: szyantian
+    name_en: "Yantian District"
+    name_cn: "盐田区"
+    desc: "Eastern coastal district. Container port. Smallest by population."
+
+  - id: szpsq
+    tier: shenzhen_districts
+    parent: sz
+    site_key: szpsq
+    name_en: "Pingshan District"
+    name_cn: "坪山区"
+    desc: "Eastern industrial. Upgraded from new district to formal status 2017."
+
+  - id: szgm
+    tier: shenzhen_districts
+    parent: sz
+    site_key: szgm
+    name_en: "Guangming District"
+    name_cn: "光明区"
+    desc: "Northern district. Upgraded from new district 2018; science-city focus."
+
+  - id: szlhq
+    tier: shenzhen_districts
+    parent: sz
+    site_key: szlhq
+    name_en: "Longhua District"
+    name_cn: "龙华区"
+    desc: "Central district. Foxconn factories. Upgraded to formal status 2017."
+
+  - id: szlg
+    tier: shenzhen_districts
+    parent: sz
+    site_key: szlg
+    name_en: "Longgang District"
+    name_cn: "龙岗区"
+    desc: "Northeast. Manufacturing + Huawei R&D campus."
+
+  - id: szdp
+    tier: shenzhen_districts
+    parent: sz
+    site_key: szdp
+    rank: "functional zone (新区)"
+    name_en: "Dapeng New District"
+    name_cn: "大鹏新区"
+    note: "Not a formal administrative division; managed by a municipal committee."
+    desc: "Eastern peninsula. Ecology + tourism focus."
+
+  # ─── MEDIA & RESEARCH ────────────────────────────────────────────────────
+
+  - id: xinhua
+    tier: media
+    site_key: xinhua
+    name_en: "Xinhua News Agency"
+    name_cn: "新华社/新华网"
+    desc: "State news agency; ministerial-rank under the State Council. Issues authoritative readings."
+
+  - id: people
+    tier: media
+    site_key: people
+    name_en: "People's Daily"
+    name_cn: "人民日报"
+    desc: "CCP Central Committee's flagship newspaper. Editorials signal party line."
+
+  - id: guancha
+    tier: media
+    site_key: guancha
+    name_en: "Guancha / Observer Network"
+    name_cn: "观察者网"
+    desc: "Nationalist-leaning current affairs outlet. Useful for elite policy commentary."
+
+  - id: ifeng
+    tier: media
+    site_key: ifeng
+    name_en: "Phoenix News"
+    name_cn: "凤凰网"
+    desc: "HK-Beijing media bridge. Mainland-licensed but more freewheeling editorial."
+
+  - id: latepost
+    tier: media
+    site_key: latepost
+    name_en: "LatePost"
+    name_cn: "晚点LatePost"
+    desc: "Tech-business outlet from Caixin alumni. Strong on AI / startup investigations."
+
+  - id: 36kr
+    tier: media
+    site_key: 36kr
+    name_en: "36Kr"
+    name_cn: "36氪"
+    desc: "Tech startup news + analysis. Roughly China's TechCrunch."
+
+  - id: chinalawtranslate
+    tier: media
+    site_key: chinalawtranslate
+    rank: "research"
+    name_en: "China Law Translate"
+    name_cn: "China Law Translate"
+    desc: "Independent project producing English translations of Chinese laws. Cross-linked to our native CN docs."
+
+  - id: tsinghua_aiig
+    tier: media
+    site_key: tsinghua_aiig
+    rank: "research"
+    name_en: "Tsinghua AIIG"
+    name_cn: "清华大学人工智能国际治理研究院"
+    desc: "Tsinghua research institute. Bridge between academic AI governance and policy."
