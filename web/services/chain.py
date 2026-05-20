@@ -5,6 +5,7 @@ from collections import Counter, defaultdict
 
 TOPIC_KEYWORDS = {
     "ai": "人工智能",
+    "robotics": "机器人",
     "digital": "数字经济",
     "carbon": "碳达峰",
     "housing": "住房",
@@ -25,6 +26,16 @@ TOPIC_MULTI_KEYWORDS = {
         "机器学习",        # machine learning
         "自动驾驶",        # autonomous driving
         "智能网联",        # intelligent connected (vehicles)
+    ],
+    "robotics": [
+        "机器人",          # robot / robotics
+        "人形机器人",      # humanoid robot
+        "具身智能",        # embodied intelligence
+        "工业机器人",      # industrial robot
+        "服务机器人",      # service robot
+        "智能制造",        # smart manufacturing
+        "无人机",          # UAV / drone
+        "自动驾驶",        # autonomous driving (overlaps with AI on purpose)
     ],
     "subsidies": ["补贴", "扶持", "奖励", "资助", "引导基金", "专项资金"],
 }
@@ -49,7 +60,7 @@ async def get_chain(db, keyword: str, topic: str = None):
 
         where_clause = " OR ".join(conditions)
         source_rows = await db.fetch(
-            f"""SELECT d.id, d.title, d.document_number, d.site_key,
+            f"""SELECT d.id, d.title, d.title_en, d.document_number, d.site_key,
                       d.date_published, d.publisher, s.admin_level
                FROM documents d
                JOIN sites s ON s.site_key = d.site_key
@@ -61,7 +72,7 @@ async def get_chain(db, keyword: str, topic: str = None):
     else:
         search_pattern = f"%{keyword}%"
         source_rows = await db.fetch(
-            """SELECT d.id, d.title, d.document_number, d.site_key,
+            """SELECT d.id, d.title, d.title_en, d.document_number, d.site_key,
                       d.date_published, d.publisher, s.admin_level
                FROM documents d
                JOIN sites s ON s.site_key = d.site_key
@@ -85,6 +96,7 @@ async def get_chain(db, keyword: str, topic: str = None):
         source_docs_by_level[level].append({
             "id": r["id"],
             "title": r["title"],
+            "title_en": r["title_en"] or "",
             "document_number": r["document_number"],
             "site_key": r["site_key"],
             "date_published": r["date_published"],
@@ -96,7 +108,8 @@ async def get_chain(db, keyword: str, topic: str = None):
     outbound_rows = await db.fetch(
         """SELECT c.target_ref, c.target_id, c.citation_type, c.target_level,
                    c.source_id,
-                   d.title as target_title, d.site_key as target_site_key,
+                   d.title as target_title, d.title_en as target_title_en,
+                   d.site_key as target_site_key,
                    d.document_number as target_docnum, d.date_published as target_date
             FROM citations c
             LEFT JOIN documents d ON d.id = c.target_id
@@ -106,7 +119,7 @@ async def get_chain(db, keyword: str, topic: str = None):
 
     # --- Inbound: docs that CITE keyword-matching docs ---
     inbound_rows = await db.fetch(
-        """SELECT c.source_id, d.title, d.document_number, d.site_key,
+        """SELECT c.source_id, d.title, d.title_en, d.document_number, d.site_key,
                   d.date_published, d.publisher, s.admin_level
            FROM citations c
            JOIN documents d ON d.id = c.source_id
@@ -127,6 +140,7 @@ async def get_chain(db, keyword: str, topic: str = None):
         source_docs_by_level[level].append({
             "id": doc_id,
             "title": r["title"],
+            "title_en": r["title_en"] or "",
             "document_number": r["document_number"],
             "site_key": r["site_key"],
             "date_published": r["date_published"],
@@ -153,6 +167,7 @@ async def get_chain(db, keyword: str, topic: str = None):
                 ref_info[ref]["corpus_match"] = {
                     "id": r["target_id"],
                     "title": r["target_title"],
+                    "title_en": r["target_title_en"] or "",
                     "document_number": r["target_docnum"],
                     "site_key": r["target_site_key"],
                     "date_published": r["target_date"],

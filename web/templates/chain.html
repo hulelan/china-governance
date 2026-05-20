@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}{{ keyword|default('Policy') }} Trace — ChinaGovernance{% endblock %}
 {% block content %}
-<div class="max-w-6xl mx-auto">
+<div class="max-w-6xl mx-auto" x-data="{ showEn: localStorage.getItem('chain_show_en') === '1' }"
+     x-init="$watch('showEn', v => localStorage.setItem('chain_show_en', v ? '1' : '0'))">
     <div class="mb-6 flex items-start justify-between">
         <div>
             <h1 class="font-serif text-xl text-gray-900">Policy Trace: {{ keyword }}</h1>
@@ -23,6 +24,20 @@
             {% endfor %}
         </div>
         {% endif %}
+    </div>
+
+    <!-- Language toggle: switches all titles between original Chinese and English translation -->
+    <div class="mb-4 flex items-center gap-3 text-sm">
+        <span class="text-gray-500">Show titles in:</span>
+        <button @click="showEn = false"
+                :class="!showEn ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'"
+                class="px-3 py-1 rounded-lg text-sm">中文</button>
+        <button @click="showEn = true"
+                :class="showEn ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'"
+                class="px-3 py-1 rounded-lg text-sm">English</button>
+        <span class="text-xs text-gray-400" x-show="showEn">
+            Translations from Google + DeepSeek; cards without a translation fall back to Chinese.
+        </span>
     </div>
 
     {% if chain.stats.source_documents == 0 %}
@@ -71,7 +86,10 @@
                             <td class="text-gray-500 mono">{{ p.citation_count }}x</td>
                             <td>
                                 {% if p.in_corpus and p.corpus_match %}
-                                    <a href="/document/{{ p.corpus_match.id }}">{{ p.name[:80] }}{% if p.name|length > 80 %}...{% endif %}</a>
+                                    <a href="/document/{{ p.corpus_match.id }}">
+                                        <span x-show="!showEn">{{ p.name[:80] }}{% if p.name|length > 80 %}...{% endif %}</span>
+                                        <span x-show="showEn" x-cloak>{% set en = p.corpus_match.title_en or p.name %}{{ en[:80] }}{% if en|length > 80 %}...{% endif %}</span>
+                                    </a>
                                     {% if p.corpus_match.document_number %}
                                         <span class="mono text-gray-400 ml-1 text-xs">{{ p.corpus_match.document_number }}</span>
                                     {% endif %}
@@ -134,7 +152,12 @@
                 {% for d in docs|sort(attribute='date_published', reverse=true) %}
                     <tr class="{{ 'font-medium' if d.document_number else '' }}">
                         <td class="text-gray-400 mono text-xs">{{ d.site_key }}</td>
-                        <td><a href="/document/{{ d.id }}">{{ d.title[:80] }}{% if d.title|length > 80 %}...{% endif %}</a></td>
+                        <td>
+                            <a href="/document/{{ d.id }}">
+                                <span x-show="!showEn">{{ d.title[:80] }}{% if d.title|length > 80 %}...{% endif %}</span>
+                                <span x-show="showEn" x-cloak>{% set en = d.title_en or d.title %}{{ en[:80] }}{% if en|length > 80 %}...{% endif %}</span>
+                            </a>
+                        </td>
                         <td class="mono text-gray-400 text-xs">{{ d.document_number or '' }}</td>
                         <td class="text-gray-400 text-xs">{{ d.date_published[:10] if d.date_published else '' }}</td>
                     </tr>
