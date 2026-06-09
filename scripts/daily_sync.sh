@@ -13,8 +13,12 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-# Load environment
+# Load environment. `set -a` marks every sourced variable for export so child
+# processes (the crawlers + classify_documents.py) inherit DEEPSEEK_API_KEY etc.
+# Without it, `source .env` only sets shell-local vars and classification fails.
+set -a
 source .env 2>/dev/null || true
+set +a
 
 # macOS doesn't have `timeout` — use gtimeout (from brew coreutils) or a bash fallback
 if ! command -v timeout &>/dev/null; then
@@ -237,10 +241,25 @@ fi
 CLASSIFIED_AFTER=$(sqlite3 documents.db "SELECT COUNT(*) FROM documents WHERE classified_at != '' AND classified_at IS NOT NULL" 2>/dev/null || echo 0)
 NEWLY_CLASSIFIED=$((CLASSIFIED_AFTER - CLASSIFIED_BEFORE))
 
-# --- Phase 3: Rsync DB to production droplet ---
+# --- Phase 3: Publish the DB to the live web app ---
+# Two modes:
+#   (a) Production droplet (marker file present): the web app reads THIS very
+#       documents.db, so there is nothing to rsync. Just checkpoint the WAL so
+#       readers see all committed data, then restart the app to clear its
+#       1-hour query cache. Rsyncing to self would corrupt the file — never do it.
+#   (b) Dev Mac (no marker): push the DB up to the droplet as before.
 RSYNC_OK=false
+REMOTE_COUNT=""
 DROPLET_IP="104.236.88.45"
-if ssh -o ConnectTimeout=5 -o BatchMode=yes root@$DROPLET_IP true 2>/dev/null; then
+if [ -f .is_production_droplet ]; then
+    log "Phase 3: Publishing locally (production droplet)..."
+    sqlite3 documents.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true
+    [ -f officials.db ] && sqlite3 officials.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true
+    systemctl restart chinagovernance >> "$LOG" 2>&1 || true
+    REMOTE_COUNT=$(sqlite3 documents.db "SELECT COUNT(*) FROM documents" 2>/dev/null || echo "?")
+    log "  Published: $REMOTE_COUNT docs (web app restarted)"
+    RSYNC_OK=true
+elif ssh -o ConnectTimeout=5 -o BatchMode=yes root@$DROPLET_IP true 2>/dev/null; then
     log "Phase 3: Rsyncing DB to droplet ($DROPLET_IP)..."
     # Checkpoint WAL so all data is in the main DB file before rsync
     sqlite3 documents.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true

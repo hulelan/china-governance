@@ -27,3 +27,4 @@ node_modules/
 random/
 raw_html/
 backups/
+.is_production_droplet
