@@ -1,6 +1,8 @@
 #!/bin/bash
 # Daily crawl + classify + sync pipeline.
-# Runs on both local Mac (via launchd) and Singapore droplet (via cron).
+# Runs on both local Mac (via launchd) and the NYC droplet (via cron).
+# On the droplet (detected via .is_production_droplet) it is the source of
+# truth: crawls write to the live DB and Phase 3 publishes in place.
 # Sends a detailed Telegram report when done.
 #
 # Usage:
@@ -12,6 +14,18 @@
 
 set -uo pipefail
 cd "$(dirname "$0")/.."
+
+# Prevent overlapping runs. A full classification drain can exceed 24h, so the
+# next day's cron must NOT start a second pipeline — two classifiers at
+# concurrency 2 each = 4 concurrent DeepSeek requests, which silently
+# rate-limits (empty responses, not errors). `mkdir` is an atomic lock on every
+# POSIX system (works on both the Mac and the Linux droplet, unlike flock).
+LOCKDIR="/tmp/china-governance-daily-sync.lock.d"
+if ! mkdir "$LOCKDIR" 2>/dev/null; then
+    echo "[$(date)] Another daily_sync is already running ($LOCKDIR). Exiting." >&2
+    exit 0
+fi
+trap 'rmdir "$LOCKDIR" 2>/dev/null' EXIT
 
 # Load environment. `set -a` marks every sourced variable for export so child
 # processes (the crawlers + classify_documents.py) inherit DEEPSEEK_API_KEY etc.
