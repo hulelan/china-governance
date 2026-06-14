@@ -16,7 +16,12 @@ Chinese government document corpus + web app. Crawls policy documents from centr
 - Media: Xinhua (1,504), People's Daily (1,102), Phoenix/凤凰网 (180, incl. tech + 9 regional channels), LatePost (94), 36Kr (10), Tsinghua AIIG (57)
 - Legal: Supreme Court IP Tribunal (ipc.court.gov.cn, crawler built, pending first deep run)
 - 227,516 cross-document citations (14,265 LLM-sourced)
-- All stored in local `documents.db` (SQLite, ~1GB)
+- Stored in `documents.db` (SQLite, ~3.9GB). **As of June 2026 the authoritative
+  copy lives on the droplet, not the Mac** — see Architecture below.
+- Title translations: ~99.7% of titles have `title_en` (free Google/deep-translator
+  pass). References: `references_source` on ~133k docs (`regex_v1` + `deepseek_v2`).
+- Corpus counts above are an April-2026 snapshot (~135k); the live total is
+  higher (~180k as of June 2026). Check `/api/v1/stats` for the current number.
 
 ## Key Commands
 
@@ -114,39 +119,49 @@ DATABASE_URL="" uvicorn web.app:app --reload --port 8001  # Local dev (SQLite)
 # Opens SQLite in read-only mode — safe to run alongside crawlers (WAL mode)
 ```
 
-### Daily Crawl + Sync
+### Daily Crawl + Sync (runs ON the droplet via cron)
 ```bash
-# Run manually (takes 4-5 hours):
-nohup ./scripts/daily_sync.sh > logs/daily_$(date +%Y%m%d_%H%M).log 2>&1 &
+# Automated: droplet cron runs daily_sync.sh at 06:00 UTC.
+#   crontab on droplet:
+#     PATH=/root/china-governance/.venv/bin:/usr/local/bin:/usr/bin:/bin
+#     0 6 * * * cd /root/china-governance && ./scripts/daily_sync.sh >> logs/cron.log 2>&1
 
-# What it does:
-# 1. Crawls all 62 sites (gkmlpt, central ministries, provinces, media)
-# 2. Backfills missing body text
-# 3. WAL checkpoint → rsync documents.db to droplet → restart web app
-# 4. Sends Telegram report
+# What daily_sync.sh does (on the droplet):
+# 0. git pull (auto-updates code on non-Mac hosts)
+# 1. Crawls all sites (gkmlpt, central ministries, provinces, media)
+# 2. Backfills body text + computes algorithmic scores
+# 3. Classifies unclassified docs via DeepSeek (Phase 2)
+# 4. Phase 3: WAL checkpoint + restart web app IN PLACE (no rsync — it's the
+#    source of truth). Detected via .is_production_droplet marker.
+# 5. Sends Telegram report
 
-# Check progress:
-tail -f logs/daily_*.log
+# Run/inspect manually on the droplet:
+ssh root@104.236.88.45 'cd /root/china-governance && \
+  PATH=/root/china-governance/.venv/bin:$PATH nohup ./scripts/daily_sync.sh \
+  > logs/manual_$(date +%Y%m%d_%H%M).log 2>&1 &'
+ssh root@104.236.88.45 'tail -f /root/china-governance/logs/daily-*.log'
 
-# Auto-run not yet working — macOS blocks cron/launchd from accessing
-# ~/Desktop without Full Disk Access for /usr/sbin/cron.
-# To fix: System Settings → Privacy & Security → Full Disk Access → add /usr/sbin/cron
-# Then: crontab -e and add:
-#   0 7 * * * cd ~/Desktop/claude_code/china-governance && ./scripts/daily_sync.sh >> logs/cron.log 2>&1
+# Lock: /tmp/china-governance-daily-sync.lock.d (mkdir-based). If a run is
+# killed -9, the lock dir can go stale — rmdir it manually before re-running.
 ```
 
 ### Deploy to Production
 ```bash
-# Production is a DigitalOcean droplet (104.236.88.45, NYC3, 2CPU/2GB).
-# Deployment = rsync the SQLite DB + restart the web app.
+# Production = the droplet (104.236.88.45, NYC3, 2 vCPU / 4GB).
+# The droplet IS the source of truth, so "deploy" is mostly just code + restart.
 
-# Manual sync (if daily_sync.sh didn't run):
+# Deploy CODE changes (the normal case):
+ssh root@104.236.88.45 'cd /root/china-governance && git pull && systemctl restart chinagovernance'
+# (daily_sync.sh also git-pulls automatically at the start of each run.)
+
+# Push DATA up from the Mac (RARE — only if you crawled/built locally, e.g.
+# a fresh officials.db). This OVERWRITES the droplet's live file, so be sure
+# the Mac copy is actually newer:
 sqlite3 documents.db "PRAGMA wal_checkpoint(TRUNCATE);"  # Flush WAL first!
 rsync -az documents.db root@104.236.88.45:/root/china-governance/documents.db
 ssh root@104.236.88.45 'systemctl restart chinagovernance'
-
-# Pull code changes to droplet:
-ssh root@104.236.88.45 'cd /root/china-governance && git pull && systemctl restart chinagovernance'
+# NOTE: macOS ships rsync 2.6.9 — do NOT use --info=progress2 (unsupported,
+# silently prints usage and transfers nothing). Use --progress or --stats.
 
 # Verify production:
 curl -s "https://www.chinagovernance.com/api/v1/stats" | python3 -m json.tool
@@ -154,20 +169,64 @@ curl -s "https://www.chinagovernance.com/api/v1/stats" | python3 -m json.tool
 
 ## Architecture
 
+**As of June 2026 the droplet is the source of truth.** The pipeline was moved
+off the Mac because macOS-specific failures (launchd not firing when the Mac
+slept, an iCloud Desktop-sync `.pyc` deadlock, and a nightly 2GB rsync across
+the Pacific) kept breaking the daily runs. See `docs/` history / git log around
+the move for the full diagnosis.
+
 ```
-Local Mac:  crawlers/ → documents.db (SQLite, source of truth, ~2GB)
-                            ↓ rsync (incremental, ~50MB delta)
-Production: DigitalOcean droplet (104.236.88.45, NYC3)
-            nginx + certbot (HTTPS) → uvicorn (2 workers) → SQLite (read-only)
+Droplet (104.236.88.45, NYC3, 2 vCPU / 4GB RAM / 2GB swap):
+   crawlers/ → documents.db (SQLite, SOURCE OF TRUTH) → uvicorn (read-only ?mode=ro)
+   cron (06:00 UTC) → scripts/daily_sync.sh → crawl + classify + publish in place
+   nginx + certbot (HTTPS) ───────────────────────────────────────┘
+
+Mac (dev only, OPTIONAL): git push code; pull a DB copy when developing locally.
 ```
 
-- **Local SQLite** is the source of truth. Crawlers write here.
-- **Droplet** serves a read-only copy synced via rsync. No Postgres.
-- Sync flow: WAL checkpoint → rsync main DB file → restart uvicorn.
-- Web app caches heavy queries (stats, sites, categories) for 1 hour in-memory.
+- **The droplet's `documents.db` is the source of truth.** Crawlers run *on the
+  droplet* (via cron) and write to the same file the web app reads. No rsync in
+  the steady state — "publish" is just a local WAL checkpoint + uvicorn restart.
+- **`daily_sync.sh` detects which machine it is** via a `.is_production_droplet`
+  marker file (gitignored, present only on the droplet):
+  - On the droplet: Phase 3 checkpoints the WAL and restarts the web app locally.
+    It must NOT rsync to itself (would corrupt the live file).
+  - On the Mac (no marker): Phase 3 rsyncs *up to* the droplet, as the old flow
+    did. This path is now a manual fallback only — the Mac launchd job is
+    disabled (`~/Library/LaunchAgents/com.claude.china-governance-sync.plist.disabled`).
+- **Cron on the droplet** runs `daily_sync.sh` at 06:00 UTC. The crontab sets
+  `PATH=/root/china-governance/.venv/bin:...` so bare `python3` resolves to the
+  venv (where crawler deps live). An atomic `mkdir` lock prevents overlapping
+  runs (a classification drain can exceed 24h; the next cron skips while locked).
+- **Env on the droplet**: `/root/china-governance/.env` holds the keys (chmod
+  600). `DATABASE_URL` is intentionally EMPTY there so the web app uses local
+  SQLite. `daily_sync.sh` does `set -a; source .env; set +a` so child processes
+  (crawlers, classifier) inherit `DEEPSEEK_API_KEY`.
+- Web app caches heavy queries (stats, sites, categories) for 1 hour in-memory;
+  the Phase 3 restart clears that cache so new docs appear.
 - SSL via Let's Encrypt (certbot auto-renews). Expires July 4, 2026.
-- Droplet: 2 vCPU / 2GB RAM / 2GB swap / $18/mo.
-- **Old Railway Postgres** still exists but is no longer used. Can be decommissioned.
+- The Mac's local `documents.db` is now a stale snapshot. To develop locally,
+  pull fresh: `rsync -az root@104.236.88.45:/root/china-governance/documents.db ./`
+- **Old Railway Postgres** still exists but is unused. Can be decommissioned.
+
+### officials.db (separate dataset — Officials page)
+
+`officials.db` (~250MB, 2,181 officials) is a SEPARATE SQLite file the web app
+opens read-only alongside `documents.db` (`web/database.py:OFFICIALS_PATH`).
+Tables: `officials`, `career_records`, `overlaps`.
+
+- **Built by `crawlers/baike.py`** — crawls Baidu Baike (baike.baidu.com) bios
+  of CPC Central Committee members, extracts career text.
+  - `python3 -m crawlers.baike` (crawl) → `--parse` (extract career_records)
+  - `scripts/compute_overlaps.py` builds the `overlaps` table
+  - `scripts/fix_baike_collisions.py` fixes name-collision mismatches
+- **Seed input**: `~/Downloads/CPC_Elite_Leadership_Database.xlsx` (manual,
+  Mac-local, NOT in the repo). The crawler reads this list to know whom to crawl.
+- **NOT part of the daily pipeline** — `daily_sync.sh` only checkpoints it, never
+  rebuilds it. The live copy is a static April-7 snapshot. To refresh: rebuild on
+  the Mac (needs the Excel seed), then manually push:
+  `rsync -az officials.db root@104.236.88.45:/root/china-governance/officials.db`
+  and restart the web app.
 
 ### Scoring Pipeline (no LLM)
 
@@ -180,7 +239,7 @@ Browse page supports filtering by doc type, AI relevance threshold, and sorting 
 
 ### Classification (DeepSeek API)
 
-Documents are classified via DeepSeek API (`scripts/classify_documents.py`) — adds English title, summary, doc_type, policy_significance, references_json. Paused at 24k/135k. Cost: ~$0.50/1k docs, concurrency 2 max.
+Documents are classified via DeepSeek API (`scripts/classify_documents.py`) — adds English title, summary, doc_type, policy_significance, references_json. Cost: ~$0.50/1k docs, concurrency 2 max (higher silently rate-limits with empty responses, not 429s). As of June 2026 the droplet's nightly `daily_sync.sh` Phase 2 runs this UNBOUNDED (no `--limit`), so it drains the full backlog (~156k docs, ~$78, ~40h) on the first reliable run, then only touches new docs. The `mkdir` lock keeps the next day's cron from piling a second classifier on top.
 
 ## SQLite Concurrency Rules
 
@@ -206,6 +265,30 @@ Then: `python3 -m crawlers.gkmlpt --site newcity`
 
 Requires a new crawler module. See `crawlers/mof.py` or `crawlers/mee.py` as templates.
 Guide: `docs/implementation/new-province-crawler-guide.md`
+
+## Open Questions / Unknowns
+
+> **Practice:** whenever a question comes up that we can't answer from the code
+> or current knowledge, log it here (with the date and what we *do* know). When
+> it gets resolved, move the answer into the relevant section above and delete
+> the entry. This is the project's running "things we're unsure about" list.
+
+- **(2026-06) Can the NYC droplet crawl `gd`, `huizhou`, `yangjiang`?**
+  `daily_sync.sh` still treats these gkmlpt sites as Mac-only (a leftover from
+  when the droplet was assumed to be in Singapore). A quick test showed
+  `gd.gov.cn` returns HTTP 200 from the droplet, so it *probably* can now — but a
+  full crawl (gd needs a browser UA) hasn't been verified from NYC. Until
+  confirmed, those three sites only get crawled if `daily_sync.sh` runs on the
+  Mac. TODO: test `python3 -m crawlers.gkmlpt --site gd` on the droplet, and if
+  it works, move them out of the `IS_MAC`-only block.
+- **(2026-06) Is DeepSeek `references_json` worth the cost over regex refs?**
+  We have regex-extracted `references_source` on ~133k docs (`regex_v1`). A
+  sample comparison found ~72% overlap with DeepSeek's refs. Open question
+  whether the DeepSeek pass adds enough citation quality to justify classifying
+  the long tail for references specifically (vs. other classification fields).
+- **(2026-06) Can the old Railway Postgres be deleted?** Marked "unused" but not
+  confirmed that nothing (old scripts, the `DATABASE_URL` in the Mac's `.env`)
+  still points at it. Verify, then decommission to stop paying for it.
 
 ## Known Issues
 
