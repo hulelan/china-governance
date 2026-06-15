@@ -9,7 +9,7 @@
 #   ./scripts/daily_sync.sh          # Run full pipeline
 #   ./scripts/daily_sync.sh --crawl  # Crawl only (no classify/sync)
 #
-# Required env vars: DEEPSEEK_API_KEY, DATABASE_URL
+# Required env vars: DEEPSEEK_API_KEY
 # Optional env vars: TELEGRAM_BOT_TOKEN, TELEGRAM_USER_ID
 
 set -uo pipefail

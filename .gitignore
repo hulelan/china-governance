@@ -21,8 +21,14 @@ documents_new.db-wal
 documents.db
 documents.db-shm
 documents.db-wal
+documents_pdf_extract.db
+officials.db
+officials.db-shm
+officials.db-wal
 log/
+logs/
 logs.*.json
+scripts/check_*.py
 node_modules/
 random/
 raw_html/

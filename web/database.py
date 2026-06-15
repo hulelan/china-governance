@@ -1,42 +1,16 @@
 """Database connection management for the web app.
 
-Supports two backends:
-  - PostgreSQL (asyncpg) — used in production (Railway). Set DATABASE_URL env var.
-  - SQLite (aiosqlite) — used for local development. Set SQLITE_PATH env var
-    or leave unset to default to documents.db.
+Backend: SQLite (aiosqlite), opened read-only. The path comes from SQLITE_PATH
+or defaults to documents.db. Queries throughout the routers use Postgres-style
+$1/$2 placeholders (a holdover from the old Railway Postgres deployment, removed
+June 2026); `_pg_to_sqlite` translates them to SQLite `?` at query time.
 """
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
-SQLITE_PATH = os.environ.get("SQLITE_PATH")
-
-# Default to SQLite if no DATABASE_URL is set
-if not DATABASE_URL and not SQLITE_PATH:
-    SQLITE_PATH = str(Path(__file__).parent.parent / "documents.db")
-
-
-class PostgresDB:
-    """Thin wrapper around asyncpg pool to provide a consistent interface."""
-
-    def __init__(self, pool):
-        self.pool = pool
-
-    async def fetch(self, query, *args):
-        return await self.pool.fetch(query, *args)
-
-    async def fetchrow(self, query, *args):
-        return await self.pool.fetchrow(query, *args)
-
-    async def fetchval(self, query, *args):
-        return await self.pool.fetchval(query, *args)
-
-    async def execute(self, query, *args):
-        return await self.pool.execute(query, *args)
-
-    async def close(self):
-        await self.pool.close()
+SQLITE_PATH = os.environ.get("SQLITE_PATH") or str(
+    Path(__file__).parent.parent / "documents.db")
 
 
 class SQLiteDB:
@@ -131,17 +105,12 @@ OFFICIALS_PATH = str(Path(__file__).parent.parent / "officials.db")
 
 @asynccontextmanager
 async def lifespan(app):
-    """FastAPI lifespan: open database connection pool."""
-    if DATABASE_URL:
-        import asyncpg
-        pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
-        app.state.db = PostgresDB(pool)
-    else:
-        import aiosqlite
-        conn = await aiosqlite.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
-        conn.row_factory = aiosqlite.Row
-        await conn.execute("PRAGMA cache_size = -32000")
-        app.state.db = SQLiteDB(conn)
+    """FastAPI lifespan: open the read-only SQLite connection."""
+    import aiosqlite
+    conn = await aiosqlite.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
+    conn.row_factory = aiosqlite.Row
+    await conn.execute("PRAGMA cache_size = -32000")
+    app.state.db = SQLiteDB(conn)
 
     # Open officials.db (separate read-only connection) if it exists
     app.state.officials_db = None

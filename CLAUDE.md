@@ -113,10 +113,10 @@ python3 scripts/merge_db.py documents_new.db         # Merge into documents.db
 
 ### Web App (local)
 ```bash
-DATABASE_URL="" uvicorn web.app:app --reload --port 8001  # Local dev (SQLite)
-# IMPORTANT: blank DATABASE_URL forces SQLite. If .env has DATABASE_URL set,
-# the app will try to connect to Postgres (slow/broken for local dev).
-# Opens SQLite in read-only mode — safe to run alongside crawlers (WAL mode)
+uvicorn web.app:app --reload --port 8001  # Local dev (SQLite, read-only)
+# The app is SQLite-only (Postgres/Railway support removed June 2026). It opens
+# documents.db read-only (?mode=ro) — safe to run alongside crawlers (WAL mode).
+# Override the DB path with SQLITE_PATH if needed.
 ```
 
 ### Daily Crawl + Sync (runs ON the droplet via cron)
@@ -207,7 +207,11 @@ Mac (dev only, OPTIONAL): git push code; pull a DB copy when developing locally.
 - SSL via Let's Encrypt (certbot auto-renews). Expires July 4, 2026.
 - The Mac's local `documents.db` is now a stale snapshot. To develop locally,
   pull fresh: `rsync -az root@104.236.88.45:/root/china-governance/documents.db ./`
-- **Old Railway Postgres** still exists but is unused. Can be decommissioned.
+- **Railway Postgres removed (June 2026).** The web app is SQLite-only; all the
+  Postgres sync scripts and the asyncpg dependency were deleted. NOTE: the
+  Railway DB credential was committed to this PUBLIC repo's history (in the old
+  `scripts/setup_droplet.sh`), so it must be considered compromised — the Railway
+  project should be deleted/rotated to invalidate it.
 
 ### officials.db (separate dataset — Officials page)
 
@@ -286,9 +290,6 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   sample comparison found ~72% overlap with DeepSeek's refs. Open question
   whether the DeepSeek pass adds enough citation quality to justify classifying
   the long tail for references specifically (vs. other classification fields).
-- **(2026-06) Can the old Railway Postgres be deleted?** Marked "unused" but not
-  confirmed that nothing (old scripts, the `DATABASE_URL` in the Mac's `.env`)
-  still points at it. Verify, then decommission to stop paying for it.
 
 ## Known Issues
 
