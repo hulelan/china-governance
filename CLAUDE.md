@@ -116,6 +116,11 @@ python3 scripts/merge_db.py documents_new.db         # Merge into documents.db
 uvicorn web.app:app --reload --port 8001  # Local dev (SQLite, read-only)
 # The app is SQLite-only (Postgres/Railway support removed June 2026). It opens
 # documents.db read-only (?mode=ro) — safe to run alongside crawlers (WAL mode).
+# UI redesigned July 2026 to an "Archive/Record" aesthetic — the design system
+# lives in web/templates/base.html (IBM Plex + Noto Serif SC, paper/teal/oxblood,
+# ruled catalog tables). The former Inbox/Changes/Coverage pages are consolidated
+# into /admin (old routes still work, off the primary nav). In production uvicorn
+# serves on port 8001 behind nginx.
 # Override the DB path with SQLITE_PATH if needed.
 ```
 
@@ -166,6 +171,20 @@ ssh root@104.236.88.45 'systemctl restart chinagovernance'
 # Verify production:
 curl -s "https://www.chinagovernance.com/api/v1/stats" | python3 -m json.tool
 ```
+
+## Scripts Layout (reorganized July 2026)
+
+- **`scripts/*.py` / `*.sh` (flat)** = ACTIVE — wired into `daily_sync.sh` or a
+  documented command here (`daily_sync.sh`, `backfill_from_html.py`,
+  `compute_scores.py`, `classify_documents.py`, `extract_pdf_text.py`,
+  `merge_db.py`, `match_clt_translations.py`, + officials.db builders
+  `compute_overlaps.py` / `fix_baike_collisions.py`).
+- **`scripts/rnd/<theme>/`** = R&D / one-off tools, NOT in the pipeline (citations,
+  references, translation, subsidies, discovery, backfill, eval, crawl-runners).
+  These resolve the repo root via `Path(__file__).parents[3]`.
+- **`scripts/README.md`** is the index (ACTIVE vs R&D + what each does).
+- `analyze.py` (repo root) is a shared analysis library (citation regexes), used
+  by tests + `rnd/citations/`. Not a runnable script.
 
 ## Architecture
 
@@ -277,14 +296,31 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
 > it gets resolved, move the answer into the relevant section above and delete
 > the entry. This is the project's running "things we're unsure about" list.
 
-- **(2026-06) Can the NYC droplet crawl `gd`, `huizhou`, `yangjiang`?**
-  `daily_sync.sh` still treats these gkmlpt sites as Mac-only (a leftover from
-  when the droplet was assumed to be in Singapore). A quick test showed
-  `gd.gov.cn` returns HTTP 200 from the droplet, so it *probably* can now — but a
-  full crawl (gd needs a browser UA) hasn't been verified from NYC. Until
-  confirmed, those three sites only get crawled if `daily_sync.sh` runs on the
-  Mac. TODO: test `python3 -m crawlers.gkmlpt --site gd` on the droplet, and if
-  it works, move them out of the `IS_MAC`-only block.
+- **(mostly RESOLVED 2026-07) Droplet reachability of `gd`/`huizhou`/`yangjiang`.**
+  `gd.gov.cn` IS reachable from the NYC droplet (HTTP 200) and is already covered
+  by nightly `gkmlpt --sync` (which iterates ALL `SITES`, applying the browser UA
+  for `gd`). **`huizhou` + `yangjiang` are hard-blocked from the droplet's
+  DigitalOcean IP** (connection refused / blackholed, even with browser UA +
+  https) — classic "CN gov site blocks datacenter IPs, allows residential." Only
+  a residential IP could reach them. The Mac's nightly cron was BROKEN anyway
+  (relative-path bug → hadn't run since ~May 26) and is being removed, so the
+  `IS_MAC` block in `daily_sync.sh` is now effectively dead. **DECISION NEEDED:**
+  accept the huizhou/yangjiang gap, crawl them occasionally from a residential IP,
+  or proxy. (See `docs/working/todos.md` §1a.)
+- **(2026-07) Citations table is NOT rebuilt nightly → Policy Trace / Network lag.**
+  The `citations` table (source of `/chain`, the citation network, "cited by",
+  and `citation_rank`) is populated ONLY by
+  `scripts/rnd/citations/extract_citations.py`, which is NOT in `daily_sync.sh`
+  (`compute_scores.py` only READS it). So new docs' citation edges don't appear
+  until it's re-run. Automating it costs ~$0 in API (both inputs — body text via
+  regex + `references_json` via the nightly classifier — already exist; it's pure
+  CPU). TODO: check if `extract_citations.py` is incremental, then add a nightly
+  phase.
+- **(2026-07) Crawler timeouts.** `CRAWLER_TIMEOUT=1800` (30 min/crawler). Recent
+  runs see ~11 crawlers hit the cap (cac, samr, mofcom, beijing, shanghai,
+  jiangsu, suzhou, heilongjiang, xinhua, miit, most) → ~10h total run. Likely
+  US→China latency from NYC. TODO: confirm each runs incremental/`--sync`, time
+  the worst offenders, raise the cap selectively or optimize.
 - **(2026-06) Is DeepSeek `references_json` worth the cost over regex refs?**
   We have regex-extracted `references_source` on ~133k docs (`regex_v1`). A
   sample comparison found ~72% overlap with DeepSeek's refs. Open question
@@ -300,3 +336,10 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   one if it recovers. (Meizhou/Maoming/Qingyuan were removed from the SITES dict.)
 - **Per-crawler quirks** (MIIT/MOST/SAMR US-timeouts, CAC zcfg 404, CLT WP 502,
   etc.) now live in each crawler's docstring, not here — grep the crawler file.
+- **`daily_sync.sh` report says `rsync: true` on the droplet even though NO rsync
+  happens.** Marker-gated Phase 3 publishes in place (WAL checkpoint + restart);
+  the `RSYNC_OK` variable is just a mislabeled "publish succeeded" flag. Cosmetic
+  — rename `RSYNC_OK` → `PUBLISH_OK`. (No actual self-rsync, so no corruption risk.)
+- **A broken Mac `crontab` line** (`0 7 * * * ./scripts/daily_sync.sh …`) used a
+  relative path and silently failed for weeks (cron CWD = `$HOME`). Being removed
+  — the droplet is the sole runner. The Mac is dev-only; nothing schedules there.
