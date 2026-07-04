@@ -262,7 +262,7 @@ NEWLY_CLASSIFIED=$((CLASSIFIED_AFTER - CLASSIFIED_BEFORE))
 #       readers see all committed data, then restart the app to clear its
 #       1-hour query cache. Rsyncing to self would corrupt the file — never do it.
 #   (b) Dev Mac (no marker): push the DB up to the droplet as before.
-RSYNC_OK=false
+PUBLISH_OK=false
 REMOTE_COUNT=""
 DROPLET_IP="104.236.88.45"
 if [ -f .is_production_droplet ]; then
@@ -272,7 +272,7 @@ if [ -f .is_production_droplet ]; then
     systemctl restart chinagovernance >> "$LOG" 2>&1 || true
     REMOTE_COUNT=$(sqlite3 documents.db "SELECT COUNT(*) FROM documents" 2>/dev/null || echo "?")
     log "  Published: $REMOTE_COUNT docs (web app restarted)"
-    RSYNC_OK=true
+    PUBLISH_OK=true
 elif ssh -o ConnectTimeout=5 -o BatchMode=yes root@$DROPLET_IP true 2>/dev/null; then
     log "Phase 3: Rsyncing DB to droplet ($DROPLET_IP)..."
     # Checkpoint WAL so all data is in the main DB file before rsync
@@ -285,7 +285,7 @@ elif ssh -o ConnectTimeout=5 -o BatchMode=yes root@$DROPLET_IP true 2>/dev/null;
         ssh root@$DROPLET_IP 'systemctl restart chinagovernance' >> "$LOG" 2>&1 || true
         REMOTE_COUNT=$(ssh root@$DROPLET_IP 'sqlite3 /root/china-governance/documents.db "SELECT COUNT(*) FROM documents"' 2>/dev/null || echo "?")
         log "  Synced: $REMOTE_COUNT docs on droplet"
-        RSYNC_OK=true
+        PUBLISH_OK=true
     else
         log "  ERROR: rsync failed"
     fi
@@ -355,7 +355,7 @@ $(echo -e "$CRAWL_RESULTS")
 
 🗄 *Database:*
 • SQLite total: $DOC_COUNT_FINAL docs
-• Droplet: ${REMOTE_COUNT:-?} docs (rsync: $RSYNC_OK)
+• Droplet: ${REMOTE_COUNT:-?} docs (published: $PUBLISH_OK)
 • 🔴 High: $HIGH | 🟡 Medium: $MEDIUM | ⚪ Low: $LOW
 $([ -n "$TOP_SITES" ] && echo "
 📍 *Top sites today:*
