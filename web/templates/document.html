@@ -1,234 +1,178 @@
 {% extends "base.html" %}
-{% block title %}{{ doc.title[:60] }} — ChinaGovernance{% endblock %}
+{% block title %}{{ doc.title[:60] }} — Governance Archive{% endblock %}
 {% block head %}
 <script src="https://d3js.org/d3.v7.min.js"></script>
 {% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <!-- Header -->
-    <div class="mb-5">
-        <div class="flex items-center gap-2 mb-2 text-sm flex-wrap">
-            {% if doc.algo_doc_type and doc.algo_doc_type != 'other' and doc.algo_doc_type != 'unknown' %}
-            <span class="badge badge-municipal">{{ doc.algo_doc_type|replace('_', ' ') }}</span>
-            {% endif %}
-            {% if doc.ai_relevance and doc.ai_relevance >= 0.2 %}
-            <span class="badge {% if doc.ai_relevance >= 0.5 %}badge-central{% else %}badge-provincial{% endif %}">AI {{ "%.0f"|format(doc.ai_relevance * 100) }}%</span>
-            {% endif %}
-            {% if doc.citation_rank and doc.citation_rank >= 3 %}
-            <span class="badge badge-district">{{ "%.0f"|format(doc.citation_rank) }} citations</span>
-            {% endif %}
-            {% if doc.importance %}
-            <span class="badge {% if doc.importance == 'high' %}badge-central{% elif doc.importance == 'medium' %}badge-provincial{% else %}badge-unknown{% endif %}">{{ doc.importance }}</span>
-            {% endif %}
-            <span class="text-gray-400 text-xs">{{ doc.date_published or '' }}</span>
+
+    <!-- Catalog record header -->
+    <div class="border border-rule bg-panel">
+        <div class="bg-teal text-[#e8f0ed] px-4 py-1.5 flex justify-between text-[11px] tracking-[0.16em] uppercase">
+            <span>Record · {{ (doc.publisher or doc.site_key) }}</span>
+            <span class="mono">ACC. {{ doc.id }}</span>
         </div>
-        {% if doc.title_en %}
-        <h1 class="font-serif text-xl text-gray-900 mb-1">{{ doc.title_en }}</h1>
-        {% endif %}
-        <h2 class="font-zh text-lg text-gray-700 {% if not doc.title_en %}text-xl text-gray-900{% endif %}">{{ doc.title }}</h2>
-        <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
-            <span>{{ doc.publisher }}</span>
+        <div class="px-6 py-5">
             {% if doc.document_number %}
-            <span class="mono text-red-700">{{ doc.document_number }}</span>
+            <div class="mono level-central text-sm">{{ doc.document_number }}</div>
             {% endif %}
-            <a href="/browse?site={{ doc.site_key }}" class="text-gray-400">{{ doc.site_key }}</a>
+            {% if doc.title_en %}
+            <h1 class="text-2xl font-semibold text-ink leading-snug mt-1.5">{{ doc.title_en }}</h1>
+            {% endif %}
+            <h2 class="font-zh text-xl {% if not doc.title_en %}text-2xl text-ink{% else %}text-[#38332c] mt-0.5{% endif %}">{{ doc.title }}</h2>
+
+            <!-- Field strip -->
+            <div class="grid grid-cols-4 border-t border-b border-rule mt-4">
+                <div class="px-4 py-2.5 border-r border-rule">
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Issuer</div>
+                    <div class="font-medium mt-0.5">{{ doc.publisher or '—' }}</div>
+                </div>
+                <div class="px-4 py-2.5 border-r border-rule">
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Date</div>
+                    <div class="font-medium mt-0.5 mono">{{ doc.date_published or doc.date_written or '—' }}</div>
+                </div>
+                <div class="px-4 py-2.5 border-r border-rule">
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Instrument</div>
+                    <div class="font-medium mt-0.5">{{ (doc.algo_doc_type or 'document')|replace('_',' ') }}</div>
+                </div>
+                <div class="px-4 py-2.5">
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Cited by</div>
+                    <div class="font-medium mt-0.5 mono">{{ cited_by|length }}</div>
+                </div>
+            </div>
+
+            {% if doc.summary_en %}
+            <div class="mt-4 px-4 py-3 border-l-2 border-teal bg-[#e7efe9] text-[#2c2b26] max-w-4xl leading-relaxed">
+                {{ doc.summary_en }}
+            </div>
+            {% endif %}
         </div>
-        {% if doc.summary_en %}
-        <div class="mt-3 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-sm text-gray-700 max-w-4xl">
-            {{ doc.summary_en }}
-        </div>
-        {% endif %}
     </div>
 
-    <div class="grid grid-cols-3 gap-6">
-        <!-- Left: body text (2 cols) -->
-        <div class="col-span-2">
-            <div class="card">
-                <div class="card-header flex justify-between items-center">
-                    <span>Document Text</span>
-                    {% if doc.body_text_cn %}
-                    <span class="text-gray-400 normal-case tracking-normal">{{ "{:,}".format(doc.body_text_cn|length) }} characters</span>
-                    {% endif %}
-                </div>
-                <div class="p-5 max-h-[80vh] overflow-y-auto">
-                    {% if doc.body_text_cn %}
-                        <div class="font-zh text-base leading-[1.9] text-gray-800">{{ doc.body_text_cn|e|replace('\n', '<br>\n')|safe }}</div>
-                    {% else %}
-                        <div class="text-gray-400 italic py-8 text-center">Body text not yet extracted. <a href="{{ doc.url }}" target="_blank">View on original site</a></div>
-                    {% endif %}
-                </div>
+    <!-- Body + sidebar -->
+    <div class="grid grid-cols-3 gap-0 border-t border-rule mt-6">
+        <article class="col-span-2 border-r border-rule pr-9 pt-6 pb-10">
+            <div class="flex justify-between items-baseline mb-4">
+                <span class="lab" style="margin-bottom:0">Full text · 原文</span>
+                {% if doc.body_text_cn %}<span class="text-muted text-xs mono">{{ "{:,}".format(doc.body_text_cn|length) }} 字</span>{% endif %}
             </div>
-        </div>
+            {% if doc.body_text_cn %}
+                <div class="font-zh text-[17px] leading-[2.0] text-[#2a271f] text-justify">{{ doc.body_text_cn|e|replace('\n', '<br>\n')|safe }}</div>
+            {% else %}
+                <div class="text-muted italic py-10 text-center border border-dashed border-rule">
+                    Body text not extracted for this record.<br>
+                    <a href="{{ doc.url }}" target="_blank" rel="noopener">View on the original government site →</a>
+                </div>
+            {% endif %}
+        </article>
 
-        <!-- Right: metadata + citations (1 col) -->
-        <div class="space-y-4">
-            <!-- Classification -->
+        <aside class="pl-8 pt-6 pb-10 space-y-7">
+            <!-- Catalog record -->
+            <div>
+                <span class="lab">Catalog record</span>
+                <table class="w-full text-[13px]">
+                    {% if doc.document_number %}<tr class="border-b border-rule"><td class="py-1.5 text-muted text-[10px] uppercase tracking-wider w-24">文号</td><td class="py-1.5 mono level-central">{{ doc.document_number }}</td></tr>{% endif %}
+                    <tr class="border-b border-rule"><td class="py-1.5 text-muted text-[10px] uppercase tracking-wider">Site key</td><td class="py-1.5"><a href="/browse?site={{ doc.site_key }}" class="mono">{{ doc.site_key }}</a></td></tr>
+                    {% if doc.policy_area %}<tr class="border-b border-rule"><td class="py-1.5 text-muted text-[10px] uppercase tracking-wider">Policy area</td><td class="py-1.5 font-zh">{{ doc.policy_area }}</td></tr>{% endif %}
+                    {% if doc.category %}<tr class="border-b border-rule"><td class="py-1.5 text-muted text-[10px] uppercase tracking-wider">Category</td><td class="py-1.5">{{ doc.category }}</td></tr>{% endif %}
+                    {% if doc.classify_main_name %}<tr class="border-b border-rule"><td class="py-1.5 text-muted text-[10px] uppercase tracking-wider">CMS</td><td class="py-1.5">{{ doc.classify_main_name }}</td></tr>{% endif %}
+                    {% if doc.ai_relevance and doc.ai_relevance >= 0.2 %}<tr class="border-b border-rule"><td class="py-1.5 text-muted text-[10px] uppercase tracking-wider">AI score</td><td class="py-1.5 mono text-teal">{{ "%.2f"|format(doc.ai_relevance) }}</td></tr>{% endif %}
+                </table>
+            </div>
+
             {% if doc.topics and doc.topics != '[]' %}
-            <div class="card">
-                <div class="card-header">Topics</div>
-                <div class="p-3 flex flex-wrap gap-1.5">
+            <div>
+                <span class="lab">Topics</span>
+                <div class="flex flex-wrap gap-1.5">
                     {% for topic in doc.topics | fromjson %}
-                    <span class="inline-block bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full text-xs">{{ topic }}</span>
+                    <span class="inline-block bg-[#e3ddcf] text-[#4a453b] px-2 py-0.5 text-[11px]">{{ topic }}</span>
                     {% endfor %}
                 </div>
             </div>
             {% endif %}
 
-            <!-- Metadata -->
-            <div class="card">
-                <div class="card-header">Metadata</div>
-                <table class="data-table">
-                    {% if doc.document_number %}
-                    <tr>
-                        <td class="text-gray-400 w-24">文号</td>
-                        <td class="mono text-red-700 font-medium">{{ doc.document_number }}</td>
-                    </tr>
-                    {% endif %}
-                    <tr>
-                        <td class="text-gray-400 w-24">Publisher</td>
-                        <td>{{ doc.publisher }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-gray-400">Site</td>
-                        <td><a href="/browse?site={{ doc.site_key }}">{{ doc.site_key }}</a></td>
-                    </tr>
-                    <tr>
-                        <td class="text-gray-400">Date</td>
-                        <td class="mono">{{ doc.date_published or 'N/A' }}</td>
-                    </tr>
-                    {% if doc.category %}
-                    <tr>
-                        <td class="text-gray-400">Category</td>
-                        <td>{{ doc.category }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if doc.policy_area %}
-                    <tr>
-                        <td class="text-gray-400">Policy Area</td>
-                        <td>{{ doc.policy_area }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if doc.classify_main_name %}
-                    <tr>
-                        <td class="text-gray-400">CMS Category</td>
-                        <td>{{ doc.classify_main_name }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if doc.keywords %}
-                    <tr>
-                        <td class="text-gray-400">Keywords</td>
-                        <td class="text-sm">{{ doc.keywords }}</td>
-                    </tr>
-                    {% endif %}
-                </table>
+            {% if cites %}
+            <div>
+                <span class="lab">Cites ({{ cites|length }})</span>
+                <div class="max-h-72 overflow-y-auto">
+                {% for c in cites %}
+                    <div class="grid grid-cols-[auto_1fr] gap-2 py-2 border-b border-rule items-baseline">
+                        <span class="badge badge-{{ c.level }}">{{ c.level[:3] }}</span>
+                        <div>
+                            {% if c.type == 'formal' %}<span class="mono level-{{ c.level }} text-[12px]">{{ c.ref }}</span>
+                            {% else %}<span class="text-[#38332c] text-[13px]">{{ c.ref[:46] }}</span>{% endif %}
+                            {% if c.resolved %}<a href="/document/{{ c.resolved.id }}" class="block text-xs text-muted">{{ c.resolved.title[:50] }}</a>{% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
             </div>
+            {% endif %}
+
+            {% if cited_by %}
+            <div>
+                <span class="lab">Cited by ({{ cited_by|length }})</span>
+                <div class="max-h-56 overflow-y-auto">
+                {% for cb in cited_by %}
+                    <div class="grid grid-cols-[auto_1fr] gap-2 py-2 border-b border-rule items-baseline">
+                        <span class="badge badge-{{ cb.level }}">{{ cb.level[:3] }}</span>
+                        <a href="/document/{{ cb.id }}" class="font-zh text-[13px] text-ink">{{ cb.title[:50] }}<span class="block text-muted text-[11px]" style="font-family:'IBM Plex Sans'">{{ cb.site_key }}</span></a>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Verification -->
-            <div class="card">
-                <div class="card-header">Verification</div>
-                <div class="p-3 text-sm space-y-2">
+            <div>
+                <span class="lab">Verification</span>
+                <div class="text-[13px] space-y-2.5">
                     {% if doc.url %}
-                    <div>
-                        <span class="text-gray-400 text-xs">Original URL</span><br>
-                        <a href="{{ doc.url }}" target="_blank" rel="noopener" class="mono text-xs break-all">{{ doc.url }}</a>
-                    </div>
+                    <div><span class="text-muted text-[10px] uppercase tracking-wider">Original source</span><br>
+                        <a href="{{ doc.url }}" target="_blank" rel="noopener" class="mono text-[11px] break-all">{{ doc.url }}</a></div>
                     {% endif %}
                     {% if doc.raw_html_sha256 %}
-                    <div>
-                        <span class="text-gray-400 text-xs">SHA-256</span><br>
-                        <span class="mono text-[11px] text-gray-400 break-all">{{ doc.raw_html_sha256 }}</span>
-                    </div>
+                    <div><span class="text-muted text-[10px] uppercase tracking-wider">SHA-256 of capture</span><br>
+                        <span class="mono text-[11px] text-muted break-all">{{ doc.raw_html_sha256 }}</span></div>
                     {% endif %}
                     {% if doc.raw_html_path %}
-                    <a href="/compare/{{ doc.id }}" class="block mt-2 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg no-underline text-sm">
-                        Compare with archived HTML
-                    </a>
+                    <a href="/compare/{{ doc.id }}" class="block mt-1 text-center border border-rule bg-[#fdfcf9] hover:bg-panel px-3 py-2 no-underline text-sm">Compare with archived HTML</a>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- References this doc makes -->
-            {% if cites %}
-            <div class="card">
-                <div class="card-header flex justify-between">
-                    <span>References ({{ cites|length }})</span>
-                </div>
-                <div class="max-h-72 overflow-y-auto">
-                <table class="data-table">
-                    {% for c in cites %}
-                    <tr>
-                        <td>
-                            <span class="badge badge-{{ c.level }}">{{ c.level[:4] }}</span>
-                            {% if c.type == 'formal' %}
-                            <span class="mono level-{{ c.level }}">{{ c.ref }}</span>
-                            {% else %}
-                            <span class="text-gray-600">{{ c.ref[:50] }}{% if c.ref|length > 50 %}...{% endif %}</span>
-                            {% endif %}
-                            {% if c.resolved %}
-                            <br><a href="/document/{{ c.resolved.id }}" class="text-xs text-gray-400 ml-4">{{ c.resolved.title[:55] }}</a>
-                            {% endif %}
-                        </td>
-                        <td class="text-right text-gray-400 w-12 text-xs">{{ c.type }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Referenced by -->
-            {% if cited_by %}
-            <div class="card">
-                <div class="card-header">Referenced By ({{ cited_by|length }})</div>
-                <div class="max-h-48 overflow-y-auto">
-                <table class="data-table">
-                    {% for cb in cited_by %}
-                    <tr>
-                        <td>
-                            <span class="badge badge-{{ cb.level }}">{{ cb.level[:4] }}</span>
-                            <a href="/document/{{ cb.id }}">{{ cb.title[:55] }}</a>
-                        </td>
-                        <td class="text-gray-400 w-16 text-xs">{{ cb.site_key }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Citation Network -->
+            <!-- Citation network -->
             {% if cites or cited_by %}
-            <div class="card">
-                <div class="card-header flex justify-between items-center">
-                    <span>Citation Network</span>
-                    <a href="/network" class="text-xs text-gray-400 hover:text-gray-600 no-underline normal-case tracking-normal">Full network &rarr;</a>
+            <div>
+                <div class="flex justify-between items-baseline">
+                    <span class="lab" style="margin-bottom:8px">Citation graph</span>
+                    <a href="/network" class="text-xs text-muted">full →</a>
                 </div>
-                <div style="height: 320px;" class="relative">
+                <div style="height: 300px;" class="relative border border-rule bg-panel">
                     <svg id="mini-network" width="100%" height="100%"></svg>
                 </div>
             </div>
             {% endif %}
-        </div>
+        </aside>
     </div>
 </div>
 {% endblock %}
 {% block scripts %}
 {% if cites or cited_by %}
 <script>
-const COLORS = {central:'#dc2626', provincial:'#ea580c', municipal:'#2563eb', district:'#16a34a', unknown:'#9ca3af'};
+const COLORS = {central:'#6d2b2b', provincial:'#9a5a20', municipal:'#1f4e46', district:'#4a5a2c', unknown:'#9a948a'};
 
 document.addEventListener('DOMContentLoaded', async () => {
     const svg = d3.select('#mini-network');
     if (!svg.node()) return;
     const {width, height} = svg.node().getBoundingClientRect();
     const g = svg.append('g');
-
     svg.call(d3.zoom().scaleExtent([0.3, 5]).on('zoom', (e) => g.attr('transform', e.transform)));
 
     const data = await fetch('/api/v1/documents/{{ doc.id }}/network').then(r => r.json());
     if (!data.nodes.length) {
         g.append('text').attr('x', width/2).attr('y', height/2)
-         .attr('text-anchor', 'middle').attr('fill', '#9ca3af').attr('font-size', 12)
+         .attr('text-anchor', 'middle').attr('fill', '#9a948a').attr('font-size', 12)
          .text('No citation data');
         return;
     }
@@ -241,21 +185,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     g.append('defs').append('marker')
         .attr('id', 'arrow').attr('viewBox', '0 0 10 10')
-        .attr('refX', 18).attr('refY', 5)
-        .attr('markerWidth', 5).attr('markerHeight', 5)
-        .attr('orient', 'auto')
-        .append('path').attr('d', 'M0,0 L10,5 L0,10 Z').attr('fill', '#d1d5db');
+        .attr('refX', 18).attr('refY', 5).attr('markerWidth', 5).attr('markerHeight', 5)
+        .attr('orient', 'auto').append('path').attr('d', 'M0,0 L10,5 L0,10 Z').attr('fill', '#c3bcab');
 
     const link = g.append('g').selectAll('line')
         .data(data.edges).join('line')
-        .attr('stroke', '#e5e7eb').attr('stroke-width', 1)
-        .attr('marker-end', 'url(#arrow)');
+        .attr('stroke', '#c3bcab').attr('stroke-width', 1).attr('marker-end', 'url(#arrow)');
 
     const node = g.append('g').selectAll('circle')
         .data(data.nodes).join('circle')
         .attr('r', d => d.center ? 8 : 5)
         .attr('fill', d => COLORS[d.level] || COLORS.unknown)
-        .attr('stroke', d => d.center ? '#1f2937' : '#fff')
+        .attr('stroke', d => d.center ? '#23201b' : '#f4f1e9')
         .attr('stroke-width', d => d.center ? 2.5 : 1.5)
         .attr('cursor', 'pointer')
         .call(d3.drag()
@@ -264,21 +205,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             .on('end', (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
 
     node.append('title').text(d => `${d.id}${d.title ? ': ' + d.title : ''}`);
-
-    node.on('click', (e, d) => {
-        if (d.doc_id && !d.center) window.location.href = '/document/' + d.doc_id;
-    });
+    node.on('click', (e, d) => { if (d.doc_id && !d.center) window.location.href = '/document/' + d.doc_id; });
 
     const labels = g.append('g').selectAll('text')
         .data(data.nodes).join('text')
         .text(d => { const lbl = d.id; return lbl.length > 18 ? lbl.slice(0, 18) + '...' : lbl; })
         .attr('font-size', d => d.center ? 9 : 7)
-        .attr('fill', d => d.center ? '#1f2937' : '#9ca3af')
+        .attr('fill', d => d.center ? '#23201b' : '#9a948a')
         .attr('dx', d => d.center ? 10 : 7).attr('dy', 3);
 
     sim.on('tick', () => {
-        link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
-            .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+        link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
         node.attr('cx',d=>d.x).attr('cy',d=>d.y);
         labels.attr('x',d=>d.x).attr('y',d=>d.y);
     });

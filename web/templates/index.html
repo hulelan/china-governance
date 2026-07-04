@@ -1,110 +1,125 @@
 {% extends "base.html" %}
-{% block title %}ChinaGovernance — Chinese Government Document Corpus{% endblock %}
+{% block title %}Governance Archive · 中国政策档案{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <!-- Header -->
-    <div class="mb-6">
-        <h1 class="font-serif text-2xl text-gray-900 mb-1">Chinese Government Document Corpus</h1>
-        <p class="text-gray-500 text-sm">Policy documents from central ministries through provincial and municipal governments to district implementation.</p>
-    </div>
 
-    <!-- Stats row -->
-    <div class="grid grid-cols-5 gap-4 mb-6">
-        <div class="card px-4 py-3">
-            <div class="text-2xl font-bold text-gray-900">{{ "{:,}".format(stats.total) }}</div>
-            <div class="text-gray-400 text-xs mt-0.5">Documents</div>
-        </div>
-        <div class="card px-4 py-3">
-            <div class="text-2xl font-bold text-gray-900">{{ stats.site_count }}</div>
-            <div class="text-gray-400 text-xs mt-0.5">Government Sites</div>
-        </div>
-        <div class="card px-4 py-3">
-            <div class="text-2xl font-bold text-gray-900">{{ "{:,}".format(stats.with_docnum) }}</div>
-            <div class="text-gray-400 text-xs mt-0.5">With Document Number</div>
-        </div>
-        <div class="card px-4 py-3">
-            <div class="text-2xl font-bold text-gray-900">{{ "{:,}".format(stats.with_body) }}</div>
-            <div class="text-gray-400 text-xs mt-0.5">With Body Text</div>
-        </div>
-        <div class="card px-4 py-3">
-            <div class="text-2xl font-bold text-brand">{{ "{:.0f}%".format(stats.with_body / stats.total * 100) }}</div>
-            <div class="text-gray-400 text-xs mt-0.5">Text Coverage</div>
-        </div>
+    <!-- Banner -->
+    <div class="border-b border-rule pb-5 mb-6">
+        <h1 class="text-xl font-semibold tracking-tight text-ink">Catalog of Chinese government policy documents</h1>
+        <p class="text-muted mt-1 max-w-3xl leading-relaxed">A structured record of policy issuances from central ministries through provincial and municipal governments to district implementation — indexed by reference number, issuer, and citation lineage.</p>
     </div>
 
     <!-- Search -->
-    <form action="/search" method="get" class="mb-6">
-        <input type="text" name="q" placeholder="Search documents... (Chinese titles, document numbers, keywords)"
-               class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+    <form action="/search" method="get" class="mb-7 max-w-3xl">
+        <input type="search" name="q" placeholder="Search the catalog — Chinese titles, 文号, keywords…" class="w-full px-4 py-2.5 text-sm">
     </form>
 
-    <div class="grid grid-cols-3 gap-6">
-        <!-- Sites panel -->
-        <div class="card">
-            <div class="card-header">Sites ({{ sites|length }})</div>
-            <div class="max-h-[600px] overflow-y-auto">
+    <div class="grid grid-cols-12 gap-8">
+        <!-- Left rail: holdings -->
+        <aside class="col-span-4">
+            <span class="lab">Holdings by level</span>
+            {% set levels = {'central':0,'provincial':0,'municipal':0,'district':0,'department':0,'media':0,'research':0} %}
+            {% for s in sites %}{% if s.admin_level in levels %}{% set _ = levels.update({s.admin_level: levels[s.admin_level] + s.doc_count}) %}{% endif %}{% endfor %}
+            <table class="w-full mb-7">
+                {% for lvl, n in levels.items() %}{% if n > 0 %}
+                <tr class="border-b border-rule">
+                    <td class="py-2"><span class="badge badge-{{ lvl }}">{{ lvl }}</span></td>
+                    <td class="py-2 text-right mono">{{ "{:,}".format(n) }}</td>
+                </tr>
+                {% endif %}{% endfor %}
+            </table>
+
+            <span class="lab">Principal fonds</span>
+            <div class="max-h-[380px] overflow-y-auto">
             <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Site</th>
-                        <th class="text-right">Docs</th>
-                        <th class="text-right">Body</th>
-                        <th class="text-right">文号</th>
-                    </tr>
-                </thead>
                 <tbody>
-                {% for site in sites %}
+                {% for site in sites[:24] %}
                     <tr>
                         <td>
-                            <span class="badge badge-{{ site.admin_level }}">{{ site.admin_level[:4] }}</span>
-                            <a href="/browse?site={{ site.site_key }}">{{ site.name }}</a>
+                            <a href="/browse?site={{ site.site_key }}" class="text-ink hover:text-brand">{{ site.name }}</a>
+                            <span class="mono text-muted text-[11px] ml-1">{{ site.site_key }}</span>
                         </td>
-                        <td class="text-right mono text-gray-500">{{ "{:,}".format(site.doc_count) }}</td>
-                        <td class="text-right mono text-gray-500">{{ "{:,}".format(site.body_count) }}</td>
-                        <td class="text-right mono text-gray-400">{{ "{:,}".format(site.docnum_count) }}</td>
+                        <td class="text-right mono text-muted">{{ "{:,}".format(site.doc_count) }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
             </div>
-        </div>
+        </aside>
 
-        <!-- Timeline panel -->
-        <div class="card">
-            <div class="card-header">Publication Timeline</div>
-            <div class="p-4">
-                {% set max_count = stats.by_year|map(attribute='count')|max %}
-                {% for yr in stats.by_year %}
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="mono text-gray-400 w-10 text-xs">{{ yr.year }}</span>
-                    <div class="flex-1 bg-gray-100 rounded h-4">
-                        <div class="bg-blue-500 h-4 rounded text-[10px] leading-4 px-1.5 text-white font-medium"
-                             style="width: {{ (yr.count / max_count * 100)|round }}%">
-                            {% if yr.count / max_count > 0.15 %}{{ "{:,}".format(yr.count) }}{% endif %}
-                        </div>
-                    </div>
-                    <span class="mono text-gray-400 w-12 text-right text-xs">{{ "{:,}".format(yr.count) }}</span>
+        <!-- Right: figures + accessions -->
+        <section class="col-span-8">
+            <!-- Figures strip -->
+            <div class="flex border border-rule bg-panel mb-7">
+                <div class="flex-1 px-5 py-4 border-r border-rule">
+                    <div class="text-2xl font-semibold text-ink">{{ "{:,}".format(stats.total) }}</div>
+                    <div class="lab" style="border:0;margin:0;padding:0;margin-top:2px">Documents</div>
                 </div>
-                {% endfor %}
+                <div class="flex-1 px-5 py-4 border-r border-rule">
+                    <div class="text-2xl font-semibold text-ink">{{ stats.site_count }}</div>
+                    <div class="lab" style="border:0;margin:0;padding:0;margin-top:2px">Fonds</div>
+                </div>
+                <div class="flex-1 px-5 py-4 border-r border-rule">
+                    <div class="text-2xl font-semibold text-ink">{{ "{:,}".format(stats.with_docnum) }}</div>
+                    <div class="lab" style="border:0;margin:0;padding:0;margin-top:2px">With 文号</div>
+                </div>
+                <div class="flex-1 px-5 py-4">
+                    <div class="text-2xl font-semibold text-teal">{{ "{:.0f}%".format(stats.with_body / stats.total * 100) }}</div>
+                    <div class="lab" style="border:0;margin:0;padding:0;margin-top:2px">Body coverage</div>
+                </div>
             </div>
-        </div>
 
-        <!-- Categories panel -->
-        <div class="card">
-            <div class="card-header">Categories</div>
-            <div class="max-h-[600px] overflow-y-auto">
-            <table class="data-table">
+            <span class="lab">Recent accessions</span>
+            <table class="data-table mb-7">
+                <thead><tr><th style="width:120px">Ref. / Level</th><th>Title</th><th class="text-right" style="width:92px">Date</th></tr></thead>
                 <tbody>
-                {% for cat in categories[:20] %}
+                {% for d in recent %}
                     <tr>
-                        <td><a href="/browse?category={{ cat.classify_main_name }}">{{ cat.classify_main_name }}</a></td>
-                        <td class="text-right mono text-gray-400">{{ "{:,}".format(cat.count) }}</td>
+                        <td>
+                            {% if d.document_number %}<span class="mono level-central text-[12px]">{{ d.document_number }}</span>
+                            {% else %}<span class="badge badge-{{ d.site_key and 'unknown' or 'unknown' }}">{{ (d.classify_main_name or 'doc')[:6] }}</span>{% endif %}
+                        </td>
+                        <td>
+                            <a href="/document/{{ d.id }}" class="font-zh text-ink hover:text-brand">{{ d.title[:52] }}</a>
+                            {% if d.title_en %}<span class="block text-muted text-[12px]">{{ d.title_en[:70] }}</span>{% endif %}
+                        </td>
+                        <td class="text-right mono text-muted">{{ d.date_published or '—' }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            <a href="/browse" class="text-sm">Full catalog →</a>
+
+            <!-- Timeline + categories -->
+            <div class="grid grid-cols-2 gap-8 mt-7">
+                <div>
+                    <span class="lab">Accession by year</span>
+                    {% set max_count = stats.by_year|map(attribute='count')|max %}
+                    {% for yr in stats.by_year %}
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <span class="mono text-muted w-9 text-xs">{{ yr.year }}</span>
+                        <div class="flex-1 bg-panel border border-rule h-3.5">
+                            <div class="bg-teal h-full" style="width: {{ (yr.count / max_count * 100)|round }}%"></div>
+                        </div>
+                        <span class="mono text-muted w-12 text-right text-xs">{{ "{:,}".format(yr.count) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div>
+                    <span class="lab">Categories</span>
+                    <table class="data-table">
+                        <tbody>
+                        {% for cat in categories[:14] %}
+                            <tr>
+                                <td><a href="/browse?category={{ cat.classify_main_name }}">{{ cat.classify_main_name }}</a></td>
+                                <td class="text-right mono text-muted">{{ "{:,}".format(cat.count) }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 {% endblock %}

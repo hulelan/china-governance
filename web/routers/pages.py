@@ -43,8 +43,10 @@ async def homepage(request: Request):
     stats = await get_stats(db)
     sites = await get_sites(db)
     categories = await get_categories(db)
+    recent, _ = await get_documents(db, page=1)  # default sort: date_written DESC
     return templates.TemplateResponse("index.html", {
         "request": request, "stats": stats, "sites": sites, "categories": categories,
+        "recent": recent[:9], "active_nav": "",
     })
 
 
@@ -377,4 +379,38 @@ async def coverage_page(request: Request):
         "request": request, "stats": stats,
         "org_data_json": json.dumps(org_data, ensure_ascii=False),
         "site_counts_json": json.dumps(site_counts),
+    })
+
+
+@router.get("/admin", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    """Operations console — consolidates the former Inbox (recent additions),
+    Changes (sync-run diffs), and Coverage (body-text gaps) pages."""
+    db = request.app.state.db
+    stats = await get_stats(db)
+    sites = await get_sites(db)
+
+    # Recent additions (formerly /inbox)
+    inbox_dates = await get_inbox_dates(db, limit=14)
+
+    # Sync-run diffs (formerly /changes) — the change table may not exist yet
+    try:
+        change_stats = await get_change_stats(db)
+        sync_runs = await get_sync_runs(db)
+        recent_changes = await get_recent_changes(db, limit=40)
+    except Exception:
+        change_stats = {"total": 0, "added": 0, "modified": 0, "deleted": 0, "runs": 0}
+        sync_runs, recent_changes = [], []
+
+    # Body-text coverage (formerly /coverage) — worst-covered sites first
+    coverage = sorted(
+        [dict(s) for s in sites if s["doc_count"]],
+        key=lambda s: s["body_count"] / s["doc_count"],
+    )
+
+    return templates.TemplateResponse("admin.html", {
+        "request": request, "stats": stats, "active_nav": "admin",
+        "inbox_dates": inbox_dates, "change_stats": change_stats,
+        "sync_runs": sync_runs, "recent_changes": recent_changes,
+        "coverage": coverage,
     })

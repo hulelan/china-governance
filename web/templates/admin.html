@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Admin · Governance Archive{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto">
+
+    <div class="border-b border-rule pb-4 mb-6">
+        <h1 class="text-xl font-semibold tracking-tight text-ink">Operations console</h1>
+        <p class="text-muted mt-1">Recent additions, sync-run changes, and body-text coverage — the former Inbox, Changes, and Coverage views in one ledger.</p>
+    </div>
+
+    <!-- Summary figures -->
+    <div class="flex border border-rule bg-panel mb-8">
+        <div class="flex-1 px-5 py-4 border-r border-rule">
+            <div class="text-2xl font-semibold text-ink">{{ "{:,}".format(stats.total) }}</div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Documents</div>
+        </div>
+        <div class="flex-1 px-5 py-4 border-r border-rule">
+            <div class="text-2xl font-semibold text-teal">{{ "{:.1f}%".format(stats.with_body / stats.total * 100) }}</div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Body coverage</div>
+        </div>
+        <div class="flex-1 px-5 py-4 border-r border-rule">
+            <div class="text-2xl font-semibold text-ink">{{ "{:,}".format(change_stats.runs) }}</div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Sync runs</div>
+        </div>
+        <div class="flex-1 px-5 py-4">
+            <div class="text-2xl font-semibold text-ink">{{ "{:,}".format(change_stats.total) }}</div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Recorded changes</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-8">
+        <!-- Recent additions -->
+        <section>
+            <span class="lab">Recent additions</span>
+            {% if inbox_dates %}
+            {% set maxc = inbox_dates|map(attribute='count')|max %}
+            {% for d in inbox_dates %}
+            <a href="/browse?date_start={{ d.date }}&date_end={{ d.date }}" class="flex items-center gap-2 mb-1.5 no-underline group">
+                <span class="mono text-muted w-20 text-xs group-hover:text-brand">{{ d.date }}</span>
+                <div class="flex-1 bg-panel border border-rule h-3.5">
+                    <div class="bg-teal h-full" style="width: {{ (d.count / maxc * 100)|round }}%"></div>
+                </div>
+                <span class="mono text-muted w-10 text-right text-xs">{{ d.count }}</span>
+            </a>
+            {% endfor %}
+            <a href="/inbox" class="text-xs mt-2 inline-block">Full inbox →</a>
+            {% else %}
+            <p class="text-muted text-sm italic">No dated additions found.</p>
+            {% endif %}
+        </section>
+
+        <!-- Sync changes -->
+        <section>
+            <span class="lab">Sync-run changes</span>
+            <div class="flex gap-4 mb-3 text-sm">
+                <span><span class="mono text-teal">+{{ change_stats.added }}</span> <span class="text-muted text-xs">added</span></span>
+                <span><span class="mono level-provincial">~{{ change_stats.modified }}</span> <span class="text-muted text-xs">modified</span></span>
+                <span><span class="mono level-central">−{{ change_stats.deleted }}</span> <span class="text-muted text-xs">deleted</span></span>
+            </div>
+            {% if sync_runs %}
+            <table class="data-table">
+                <thead><tr><th>Run</th><th class="text-right">+</th><th class="text-right">~</th><th class="text-right">−</th></tr></thead>
+                <tbody>
+                {% for r in sync_runs[:12] %}
+                <tr>
+                    <td class="mono text-[11px] text-muted">{{ (r.sync_run_id or '—')[:16] }}</td>
+                    <td class="text-right mono text-teal">{{ r.added }}</td>
+                    <td class="text-right mono level-provincial">{{ r.modified }}</td>
+                    <td class="text-right mono level-central">{{ r.deleted }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <a href="/changes" class="text-xs mt-2 inline-block">Full change log →</a>
+            {% else %}
+            <p class="text-muted text-sm italic">No sync-run history recorded yet (the change tracker starts logging on the next sync).</p>
+            {% endif %}
+        </section>
+
+        <!-- Coverage gaps -->
+        <section>
+            <span class="lab">Body-text coverage — gaps first</span>
+            <div class="max-h-[440px] overflow-y-auto">
+            <table class="data-table">
+                <thead><tr><th>Site</th><th class="text-right">Docs</th><th class="text-right">Body</th></tr></thead>
+                <tbody>
+                {% for s in coverage[:24] %}
+                {% set pct = (s.body_count / s.doc_count * 100) if s.doc_count else 0 %}
+                <tr>
+                    <td>
+                        <a href="/browse?site={{ s.site_key }}" class="text-ink hover:text-brand">{{ s.name }}</a>
+                        <span class="mono text-muted text-[11px] ml-1">{{ s.site_key }}</span>
+                    </td>
+                    <td class="text-right mono text-muted">{{ "{:,}".format(s.doc_count) }}</td>
+                    <td class="text-right mono {% if pct < 60 %}level-central{% elif pct < 90 %}level-provincial{% else %}text-muted{% endif %}">{{ "%.0f"|format(pct) }}%</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            <a href="/coverage" class="text-xs mt-2 inline-block">Org-map coverage view →</a>
+        </section>
+    </div>
+</div>
+{% endblock %}
