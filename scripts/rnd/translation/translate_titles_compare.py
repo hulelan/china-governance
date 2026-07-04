@@ -21,7 +21,7 @@ import time
 from pathlib import Path
 
 # Load .env so DEEPSEEK_API_KEY is available
-ENV_PATH = Path(__file__).parent.parent / ".env"
+ENV_PATH = Path(__file__).parents[3] / ".env"
 if ENV_PATH.exists():
     for line in ENV_PATH.read_text().splitlines():
         line = line.strip()
@@ -32,7 +32,7 @@ if ENV_PATH.exists():
 from deep_translator import GoogleTranslator   # noqa: E402
 from openai import OpenAI                       # noqa: E402
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 # Sample N titles from each of these representative site buckets, so the
 # comparison spans laws, municipal notices, media headlines, and central

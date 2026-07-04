@@ -36,9 +36,12 @@ DeepSeek silently rate-limits at higher concurrency — returns empty responses 
 
 ## After classification
 
-Sync classifications to production:
+Nothing to sync — classifications are written straight into `documents.db`, which
+the web app reads directly. On the droplet, publish in place:
+
 ```bash
-DATABASE_URL="postgresql://..." python3 scripts/sync_classifications.py
+sqlite3 documents.db "PRAGMA wal_checkpoint(TRUNCATE);" && systemctl restart chinagovernance
 ```
 
-This pushes the classification fields without re-syncing all documents.
+(The nightly `daily_sync.sh` Phase 2 runs classification automatically for
+unclassified docs, then publishes. See CLAUDE.md → Architecture.)

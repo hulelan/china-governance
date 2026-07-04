@@ -31,7 +31,7 @@ from deep_translator.exceptions import (
     RequestError, TranslationNotFound, NotValidPayload,
 )
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 
 def has_chinese(s: str) -> bool:

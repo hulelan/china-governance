@@ -293,7 +293,10 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
 
 ## Known Issues
 
-- **Dongguan, Foshan, Meizhou, Maoming, Qingyuan, Bao'an**: gkmlpt endpoints unreachable (DNS/timeout/Cloudflare). Added to SITES dict but will fail.
-- **Shantou**: Only 49 docs crawled (interrupted). Needs re-run.
-- **Zhaoqing, Zhanjiang, Chaozhou, Yantian**: 0 docs — crawl failed due to SQLite lock contention. Need sequential re-run.
-- **Guangdong Province (gd)**: Partial crawl (6,169 docs). Needs browser UA for full corpus.
+- **Broken/unreliable gkmlpt sites** (Dongguan, Foshan, Bao'an, Shantou, Zhaoqing,
+  Zhanjiang, Chaozhou, Yantian, gd-partial): the authoritative list with per-site
+  reasons now lives in code — `crawlers/gkmlpt.py` → `KNOWN_BROKEN`. A bulk
+  `--sync` still attempts them and they simply fail; a manual `--site X` can retry
+  one if it recovers. (Meizhou/Maoming/Qingyuan were removed from the SITES dict.)
+- **Per-crawler quirks** (MIIT/MOST/SAMR US-timeouts, CAC zcfg 404, CLT WP 502,
+  etc.) now live in each crawler's docstring, not here — grep the crawler file.

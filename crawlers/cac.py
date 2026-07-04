@@ -8,6 +8,10 @@ Sections crawled:
   - wxfb:  网信发布   (Cyberspace releases)
   - zcfg:  政策法规   (Policies & regulations)
 
+Known quirk: the zcfg HTML listing page returns 404 in a browser, but the JSON
+API returns it fine — so this crawler hits the API and is unaffected. Don't
+"fix" a zcfg 404 by switching to HTML scraping.
+
 Usage:
     python -m crawlers.cac                    # Crawl all sections
     python -m crawlers.cac --section wxfb     # Crawl only releases

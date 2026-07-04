@@ -741,7 +741,7 @@ def main():
 
     if args.save:
         from pathlib import Path
-        log_dir = Path(__file__).parent.parent / "logs"
+        log_dir = Path(__file__).parents[3] / "logs"
         log_dir.mkdir(exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         log_path = log_dir / f"discover_{ts}.json"

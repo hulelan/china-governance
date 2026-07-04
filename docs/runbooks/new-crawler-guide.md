@@ -263,10 +263,9 @@ uvicorn web.app:app --port 8080
    python -m analysis.citations --site your_site_key
    ```
 
-3. To add to the production Postgres DB, the crawler needs a Postgres mode or
-   you can export from SQLite and import. Currently crawlers only write to
-   SQLite (`documents.db`), and the web app reads from Postgres in production
-   via `DATABASE_URL` env var.
+3. Nothing else to wire up for production: crawlers write to `documents.db` and
+   the web app reads that same file directly (SQLite, read-only). On the droplet,
+   new docs go live after the nightly publish (WAL checkpoint + web-app restart).
 
 ## Common Patterns by Province
 

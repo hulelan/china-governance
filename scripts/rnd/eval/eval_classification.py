@@ -13,7 +13,7 @@ from pathlib import Path
 
 from openai import OpenAI
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 PROMPT_V2 = """You are classifying Chinese government and policy documents for a Western analyst research database.
 Given the document below, output a JSON object with these fields:

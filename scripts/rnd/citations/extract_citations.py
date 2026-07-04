@@ -16,13 +16,13 @@ import time
 from collections import Counter
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parents[3]))
 from analyze import (
     REF_PATTERN, get_admin_level,
     NAMED_REF_PATTERN, is_policy_document, classify_named_ref_level,
 )
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 # Normalize site-level "department" to "municipal" for 4-level hierarchy
 LEVEL_NORMALIZE = {"department": "municipal"}

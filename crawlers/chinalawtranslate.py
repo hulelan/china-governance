@@ -3,6 +3,10 @@
 Pulls posts from chinalawtranslate.com via the WordPress REST API and stores
 them as standalone documents under site_key="chinalawtranslate".
 
+Known quirk: CloudFlare returns 502 on per_page=100 requests that include the
+`content` field. Use per_page=20 and browser-shaped headers (this crawler
+already does). Don't bump per_page back up to save round-trips — it 502s.
+
 Each post's structure:
   - title.rendered           = Chinese title of the underlying law
   - slug                     = English-friendly handle (e.g. "facial-recognition-draft")

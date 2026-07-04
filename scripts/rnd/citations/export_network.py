@@ -5,7 +5,7 @@ import sqlite3
 from collections import Counter, defaultdict
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 REF_PATTERN = re.compile(
     r"([\u4e00-\u9fff]+[\u3014\u3008\u300a\uff08\u2018\u301a]"
@@ -33,7 +33,7 @@ rows = conn.execute(
 ).fetchall()
 
 # Export edges: source_doc -> cited_doc
-output_path = Path(__file__).parent / "citation_edges.csv"
+output_path = Path(__file__).parents[3] / "citation_edges.csv"
 with open(output_path, "w", newline="", encoding="utf-8") as f:
     writer = csv.writer(f)
     writer.writerow([
@@ -60,7 +60,7 @@ with open(output_path, "w", newline="", encoding="utf-8") as f:
 print(f"Exported {edge_count} citation edges to {output_path}")
 
 # Export nodes: all documents
-nodes_path = Path(__file__).parent / "document_nodes.csv"
+nodes_path = Path(__file__).parents[3] / "document_nodes.csv"
 with open(nodes_path, "w", newline="", encoding="utf-8") as f:
     writer = csv.writer(f)
     writer.writerow([

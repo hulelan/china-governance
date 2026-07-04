@@ -18,14 +18,14 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parents[3]))
 from analyze import (
     REF_PATTERN, classify_issuer, get_admin_level,
     NAMED_REF_PATTERN, POLICY_KEYWORDS, EXCLUDE_KEYWORDS,
     is_policy_document, classify_named_ref_level,
 )
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 AI_QUERY = """
 SELECT id, site_key, title, document_number, date_published,
@@ -212,7 +212,7 @@ def main():
     if args.json:
         print(json.dumps(chain, ensure_ascii=False, indent=2))
     elif args.save:
-        out_dir = Path(__file__).parent.parent / "data"
+        out_dir = Path(__file__).parents[3] / "data"
         out_dir.mkdir(exist_ok=True)
         out_path = out_dir / "ai_chain.json"
         with open(out_path, "w") as f:

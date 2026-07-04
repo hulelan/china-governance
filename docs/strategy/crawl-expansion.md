@@ -179,7 +179,7 @@ The eventual goal is cross-referencing: when LatePost writes about 国发〔2025
 2. **Semantic linking** — use embeddings or keyword overlap to suggest related government documents for each media article
 
 ### Volume Management
-Current corpus: ~112k docs, ~1GB SQLite. Adding the proposed sources could reach 150-200k. SQLite handles this fine; Postgres production sync will take longer but remains viable.
+Current corpus: ~180k docs, ~4GB SQLite. Adding the proposed sources could reach 200k+. SQLite handles this fine on the droplet (the app reads it read-only in WAL mode).
 
 ---
 

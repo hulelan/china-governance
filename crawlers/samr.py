@@ -11,6 +11,9 @@ competition, standards, metrology, certification, and market order --
 highly relevant to AI product standards, algorithm regulation, and
 platform governance.
 
+Known quirk: connection resets from US IPs on some pages. The retry loop
+usually recovers, but prefer the droplet (NYC) for a full crawl.
+
 Sections crawled:
   - zjwj:  总局文件 (Bureau documents / policy releases, ~2,000 docs)
   - zcjd:  政策解读 (Policy interpretations, ~470 docs)

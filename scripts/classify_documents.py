@@ -20,7 +20,14 @@ Usage:
     --site SITE_KEY             Only classify docs from this site
     --limit N                   Max docs to process
     --dry-run                   Print results without saving
-    --concurrency N             Parallel requests for DeepSeek (default: 15)
+    --concurrency N             Parallel DeepSeek requests (default: 2 — see warning)
+
+⚠️  DeepSeek concurrency: 2 is the HARD MAX. Above ~2 the API does NOT return
+    429s — it silently returns EMPTY responses, so docs look "processed" but get
+    no classification and you burn spend for nothing. This bit us in production;
+    the nightly daily_sync.sh Phase 2 runs at concurrency 2 for this reason. Do
+    not raise the default. (Previously this defaulted to 5, and the docstring
+    even claimed 15 — both wrong; fixed June 2026.)
 """
 import argparse
 import json
@@ -316,7 +323,10 @@ def main():
     parser.add_argument("--site", help="Only classify docs from this site_key")
     parser.add_argument("--limit", type=int, help="Max docs to process")
     parser.add_argument("--dry-run", action="store_true", help="Print results without saving")
-    parser.add_argument("--concurrency", type=int, default=5, help="Parallel requests (DeepSeek only)")
+    parser.add_argument("--concurrency", type=int, default=2,
+                        help="Parallel DeepSeek requests. 2 is the HARD MAX — "
+                             "higher silently returns empty responses (not 429s). "
+                             "Do not raise.")
     args = parser.parse_args()
 
     # Default models per backend
@@ -368,6 +378,10 @@ def main():
     print(f"Backend: {args.backend} | Model: {args.model}", end="")
     if args.backend == "deepseek":
         print(f" | Concurrency: {args.concurrency}")
+        if args.concurrency > 2:
+            print(f"⚠️  WARNING: concurrency {args.concurrency} > 2. DeepSeek silently "
+                  "returns EMPTY responses above ~2 (not 429s) — docs get marked "
+                  "processed with no classification. Recommend --concurrency 2.")
     else:
         print()
 

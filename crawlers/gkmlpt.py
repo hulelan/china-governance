@@ -35,6 +35,22 @@ from crawlers.base import (
 BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 SITES_NEEDING_BROWSER_UA = {"gd"}  # site keys that need browser UA to avoid connection reset
 
+# Known-broken / unreliable site keys and WHY. These are still in SITES so a
+# manual `--site X` can retry them if the site recovers, but a bulk run will
+# just fail on them. (Consolidated from CLAUDE.md "Known Issues", June 2026 —
+# keep this the single source of truth; the docs point here.)
+KNOWN_BROKEN = {
+    "dongguan": "endpoint unreachable (DNS/timeout/Cloudflare)",
+    "foshan":   "endpoint unreachable (DNS/timeout/Cloudflare)",
+    "szba":     "Bao'an endpoint unreachable (DNS/timeout/Cloudflare)",
+    "shantou":  "interrupted mid-crawl — only ~49 docs; needs a clean re-run",
+    "zhaoqing": "0 docs — crawl failed on SQLite lock contention; run sequentially",
+    "zhanjiang":"0 docs — crawl failed on SQLite lock contention; run sequentially",
+    "chaozhou": "0 docs — crawl failed on SQLite lock contention; run sequentially",
+    "szyantian":"Yantian: 0 docs — failed on SQLite lock contention; run sequentially",
+    "gd":       "partial (~6,169 docs) — needs browser UA + a full re-run for the whole corpus",
+}
+
 SITES = {
     # Municipal
     "sz": {
@@ -140,7 +156,7 @@ SITES = {
         "admin_level": "district",
     },
     # Provincial
-    "gd": {
+    "gd": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Guangdong Province",
         "base_url": "http://www.gd.gov.cn",
         "admin_level": "provincial",
@@ -171,12 +187,12 @@ SITES = {
         "base_url": "http://www.zs.gov.cn",
         "admin_level": "municipal",
     },
-    "shantou": {
+    "shantou": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Shantou",
         "base_url": "http://www.shantou.gov.cn",
         "admin_level": "municipal",
     },
-    "zhaoqing": {
+    "zhaoqing": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Zhaoqing",
         "base_url": "http://www.zhaoqing.gov.cn",
         "admin_level": "municipal",
@@ -201,12 +217,12 @@ SITES = {
         "base_url": "http://www.yangjiang.gov.cn",
         "admin_level": "municipal",
     },
-    "zhanjiang": {
+    "zhanjiang": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Zhanjiang",
         "base_url": "http://www.zhanjiang.gov.cn",
         "admin_level": "municipal",
     },
-    "chaozhou": {
+    "chaozhou": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Chaozhou",
         "base_url": "http://www.chaozhou.gov.cn",
         "admin_level": "municipal",
@@ -222,7 +238,7 @@ SITES = {
         "admin_level": "municipal",
     },
     # More Shenzhen districts
-    "szyantian": {
+    "szyantian": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Yantian District",
         "base_url": "http://www.yantian.gov.cn",
         "admin_level": "district",
@@ -237,18 +253,18 @@ SITES = {
         "base_url": "http://www.dpxq.gov.cn",
         "admin_level": "district",
     },
-    "szba": {
+    "szba": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Bao'an District",
         "base_url": "http://www.baoan.gov.cn",
         "admin_level": "district",
     },
     # Remaining Guangdong municipal
-    "dongguan": {
+    "dongguan": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Dongguan",
         "base_url": "http://www.dg.gov.cn",
         "admin_level": "municipal",
     },
-    "foshan": {
+    "foshan": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Foshan",
         "base_url": "http://www.foshan.gov.cn",
         "admin_level": "municipal",

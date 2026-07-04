@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # Add project root to path so we can import from crawler
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parents[3]))
 from crawler import fetch_document_body, save_raw_html, DB_PATH, REQUEST_DELAY
 
 logging.basicConfig(

@@ -9,7 +9,7 @@ import argparse
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS citations (

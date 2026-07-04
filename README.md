@@ -1,165 +1,117 @@
 # CNGOV — Chinese Government Document Corpus
 
-A searchable archive of **46,600+ Chinese government documents** spanning central government to district level, with **14,800+ cross-level citation links** traced between policies. Built for Western China analysts and researchers.
+A searchable archive of **180,000+ Chinese government documents** spanning central
+government to district level, with **220,000+ cross-document citation links** traced
+between policies. Built for Western China analysts and researchers.
 
-**Live at [chinagovernance.com](https://chinagovernance.com)**
+**Live at [chinagovernance.com](https://www.chinagovernance.com)** ·
+live counts: [`/api/v1/stats`](https://www.chinagovernance.com/api/v1/stats)
+
+> Corpus size changes daily (the crawlers run nightly), so this README doesn't
+> hardcode an exact total — `/api/v1/stats` is the source of truth. `CLAUDE.md`
+> keeps a dated snapshot for operators.
 
 ## What's in the corpus
 
-| Layer | Sites | Documents | Source |
-|-------|-------|-----------|--------|
-| **Central** | State Council, NDRC | 1,500 | gov.cn, ndrc.gov.cn |
-| **Municipal** | Shenzhen (14 departments) | 37,384 | gkmlpt API |
-| **District** | 6 Shenzhen districts | 16,091 | gkmlpt API |
-| **Total** | **22 sites** | **46,600+** | |
+Central ministries (State Council, NDRC, MOF, MEE, CAC, MIIT, MOST, SAMR, MOFCOM,
+NDA, SIC, MOE…), provinces and municipalities (Guangdong + 16 GD cities, Beijing,
+Shanghai, Jiangsu, Zhejiang, Chongqing, Wuhan, Suzhou, Hangzhou, Heilongjiang),
+Shenzhen down to the district + department level, plus curated media (Xinhua,
+People's Daily, Phoenix, LatePost, 36Kr) and legal sources. ~60 sites total.
 
-Documents span 2015–2026 and cover 20+ categories. **14,834 citation links** connect documents across administrative levels — central policies referenced by provincial directives, cited by municipal implementation plans, enacted at the district level.
+Documents span 2015–2026 across 20+ categories, connected by cross-level citation
+links — central policies referenced by provincial directives, cited by municipal
+implementation plans, enacted at the district level.
 
 ## Key features
 
-- **Cross-level policy chains** — Trace how a central government policy (e.g., State Council AI strategy) cascades down through provincial, municipal, and district implementations
-- **Citation network** — Interactive D3.js force-directed graph showing which documents cite which, colored by admin level
-- **Full-text search** — Search across 46K documents in Chinese
-- **Topic chains** — Browse policy chains for AI, digital economy, carbon, housing, education, and health
-- **Document detail** — Full metadata, body text, formal + named references with admin level badges, "Referenced By" backlinks
-- **Verification** — Every document links to its original government source URL with SHA-256 content hashes
+- **Cross-level policy chains** — trace how a central policy cascades down through
+  provincial, municipal, and district implementations
+- **Citation network** — interactive D3.js graph of which documents cite which,
+  colored by admin level
+- **Full-text search** across the Chinese corpus
+- **Algorithmic + LLM enrichment** — citation_rank, AI-relevance scoring, English
+  titles/summaries, document-type classification
+- **Verification** — every document links to its original government source URL
 
 ## Quick start
-
-### Local development (SQLite)
 
 ```bash
 pip install -r requirements.txt
 
-# Run the web interface (uses local documents.db)
+# Run the web interface (opens documents.db read-only)
 uvicorn web.app:app --port 8000
 # Open http://localhost:8000
 ```
 
-### Production (Railway + PostgreSQL)
-
-The app is deployed on [Railway](https://railway.com) with PostgreSQL. Set `DATABASE_URL` to use Postgres, or leave unset to fall back to local SQLite.
-
-```bash
-# Push local SQLite data to Postgres
-export DATABASE_URL="postgresql://user:pass@host:port/dbname"
-pip install psycopg2-binary
-python scripts/sqlite_to_postgres.py
-```
+The web app is **SQLite-only** and opens the DB read-only (`?mode=ro`), so it's
+safe to run alongside the crawlers (WAL mode). Override the path with
+`SQLITE_PATH` if needed. See `CLAUDE.md` for the full architecture — in
+production the app and crawlers both live on a DigitalOcean droplet, and the
+droplet's `documents.db` is the source of truth.
 
 ## Project structure
 
 ```
 china-governance/
-├── crawlers/                   # Multi-platform crawler package
-│   ├── base.py                 #   Shared: init_db, fetch, store_document
-│   ├── gkmlpt.py               #   Guangdong gkmlpt platform (25 sites)
-│   ├── ndrc.py                 #   NDRC static HTML crawler
-│   └── gov.py                  #   State Council JSON feed crawler
+├── crawlers/                   # One module per site; base.py = shared infra
+│   ├── base.py                 #   Shared: fetch, init_db, next_id + authoring gotchas
+│   ├── gkmlpt.py               #   Guangdong gkmlpt platform (many GD sites)
+│   └── …                       #   gov, ndrc, mof, mee, cac, miit, most, beijing, …
 │
-├── analyze.py                  # Citation analysis, named ref patterns
-├── export_network.py           # Export citation graph as CSV
+├── analyze.py                  # Shared citation-analysis library (imported by tests + rnd)
 │
 ├── web/                        # FastAPI web application
 │   ├── app.py                  #   Entry point
-│   ├── database.py             #   Dual-mode: asyncpg (Postgres) / aiosqlite (SQLite)
-│   ├── routers/
-│   │   ├── api.py              #   JSON API (/api/v1/...)
-│   │   └── pages.py            #   Server-rendered HTML routes
-│   ├── services/
-│   │   ├── documents.py        #   Document queries, search, citations
-│   │   └── chain.py            #   Policy chain builder (cross-level)
-│   └── templates/              #   Jinja2 templates (Tailwind, dark theme)
+│   ├── database.py             #   SQLite (aiosqlite), read-only
+│   ├── routers/  services/  templates/
 │
-├── scripts/
-│   ├── sqlite_to_postgres.py   #   Migrate data from SQLite → Postgres
-│   ├── extract_citations.py    #   Build citations table from body text
-│   ├── build_ai_chain.py       #   AI policy chain analysis
-│   ├── translate_chain.py      #   LLM translation (GPT / Qwen backends)
-│   ├── backfill_ai.py          #   Fetch missing body text for AI docs
-│   └── migrate_*.py            #   Database migrations
+├── scripts/                    # ACTIVE ops scripts (see scripts/README.md)
+│   ├── daily_sync.sh           #   Nightly crawl → score → classify → publish
+│   ├── classify_documents.py   #   DeepSeek classification
+│   ├── compute_scores.py       #   citation_rank / algo_doc_type / ai_relevance
+│   └── rnd/                     #   R&D / one-off tools (not the live pipeline)
 │
-├── Dockerfile                  # Production container
-├── railway.json                # Railway deployment config
-├── requirements.txt            # Python dependencies
-└── documents.db                # (gitignored) Local SQLite database
+├── requirements.txt
+└── documents.db                # (gitignored) SQLite DB — source of truth on the droplet
 ```
+
+See **`scripts/README.md`** for which scripts are load-bearing vs. R&D.
 
 ## Web interface
 
-Dark-themed, data-dense web app for exploring Chinese government documents.
+**Pages:** Homepage (stats), Browse (filterable table), Document detail (metadata,
+body, citations, backlinks), Search, Chain (cross-level policy chains), Network
+(D3.js citation graph), Dashboard, Analysis.
 
-**Pages:**
-
-- **Homepage** (`/`) — Corpus stats, site list, category breakdown
-- **Browse** (`/browse`) — Paginated document table with filters (site, category, year, has 文号)
-- **Document** (`/document/{id}`) — Full metadata, body text, formal + named citations with admin level badges, "Referenced By" backlinks
-- **Search** (`/search?q=`) — Full-text search across the corpus
-- **Chain** (`/chain/{topic}`) — Cross-level policy chains for 6 topics (AI, digital economy, carbon, housing, education, health)
-- **Network** (`/network`) — Interactive D3.js citation network, nodes colored by admin level
-- **Dashboard** (`/dashboard`) — Publication timeline, citation hierarchy, body text coverage
-- **Analysis** (`/analysis/ai`) — AI policy case study write-up
-
-**API** (all under `/api/v1/`):
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /documents` | Paginated, filterable document list |
-| `GET /documents/{id}` | Single document with all fields |
-| `GET /documents/{id}/citations` | Forward + reverse citation links |
-| `GET /search?q=` | Full-text search |
-| `GET /sites` | All 22 crawled sites |
-| `GET /stats` | Corpus statistics |
-| `GET /network` | Citation graph for D3.js |
+**API** (all under `/api/v1/`): `GET /documents`, `/documents/{id}`,
+`/documents/{id}/citations`, `/search?q=`, `/sites`, `/stats`, `/network`.
 
 ## Citation analysis
 
-Two types of citations are extracted from document body text:
+Two citation types are extracted from body text (see `analyze.py`):
 
-- **Formal citations** (文号) — e.g., `国发〔2023〕15号` — extracted via regex, classified by admin level prefix
-- **Named references** (《》) — e.g., `《新一代人工智能发展规划》` — matched against corpus titles
-
-**Admin level hierarchy:**
-- **Central** (国发, 国办, 中发, ...) — State Council / central ministries
-- **Provincial** (粤府, 粤办, ...) — Guangdong Province
-- **Municipal** (深府, 深发, ...) — Shenzhen City
-- **District** (深坪, 深光, ...) — Shenzhen districts
+- **Formal citations** (文号) — e.g. `国发〔2023〕15号` — regex-extracted, classified
+  by admin-level prefix (国发/中发 = central, 粤府 = provincial, 深府 = municipal, …)
+- **Named references** (《》) — e.g. `《新一代人工智能发展规划》` — matched against corpus titles
 
 ## Crawlers
 
-Three platform-specific crawlers write to the same database. The `site_key` and `admin_level` fields distinguish sources.
+Each crawler writes to the same `documents.db`; `site_key` + `admin_level`
+distinguish sources. Per-site quirks live in each crawler's docstring; the full
+command list is in `CLAUDE.md`.
 
 ```bash
-# Guangdong gkmlpt platform (25 sites)
-python -m crawlers.gkmlpt --site sz
-python -m crawlers.gkmlpt --backfill-bodies --policy-first
-
-# NDRC (5 policy sections)
-python -m crawlers.ndrc
-
-# State Council (~1,000 docs)
-python -m crawlers.gov
+python -m crawlers.gkmlpt --site sz     # one Guangdong gkmlpt site
+python -m crawlers.ndrc                 # NDRC
+python -m crawlers.gov                  # State Council
 ```
-
-## Translation
-
-LLM translation with two backends:
-
-```bash
-# OpenAI (GPT-4o-mini) — cheap batch API
-python scripts/translate_chain.py --backend openai
-
-# Local open-weights (Qwen 2.5 via Ollama) — free
-python scripts/translate_chain.py --backend ollama
-```
-
-Both use rich government terminology glossaries and structured JSON output.
 
 ## Tech stack
 
 - **Backend**: FastAPI, Python 3.12
-- **Database**: PostgreSQL (production), SQLite (local dev)
-- **Frontend**: Jinja2 templates, Tailwind CSS, Chart.js, D3.js
-- **Hosting**: Railway
-- **Crawlers**: aiohttp, BeautifulSoup
-- **Translation**: OpenAI API / Ollama (Qwen 2.5)
+- **Database**: SQLite (WAL, read-only in the app)
+- **Frontend**: Jinja2, Tailwind CSS, Chart.js, D3.js
+- **Hosting**: DigitalOcean droplet (nginx + certbot + systemd + cron)
+- **Crawlers**: requests/aiohttp, BeautifulSoup
+- **Enrichment**: DeepSeek API (classification), deep-translator (titles)

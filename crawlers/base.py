@@ -1,4 +1,30 @@
-"""Shared crawler utilities: database, HTTP, storage."""
+"""Shared crawler utilities: database, HTTP, storage.
+
+Every crawler imports from here (fetch, init_db, next_id, save_raw_html, ...).
+The cross-cutting gotchas below apply when writing or debugging ANY crawler —
+they used to live scattered across SKILL.md / docs runbooks; consolidated here
+(June 2026) so the rules sit next to the code they govern.
+
+Crawler-authoring gotchas:
+  • --section is single-valued: `--section A --section B` silently keeps only B
+    (argparse `choices=` overwrites). Run one section per invocation.
+  • Duplicate docs across machines: next_id() = MAX(id)+1 is computed locally, so
+    two hosts assign different ids to the same URL. The partial UNIQUE index on
+    `url` (WHERE url != '') + IntegrityError-skip on insert is what prevents dupes
+    — don't remove it.
+  • Partial-index gotcha: `idx_documents_url` is `WHERE url != ''`. SQLite won't
+    use it unless the query ALSO says `AND url != ''`. Include that predicate or
+    expect a full table scan.
+  • Body extraction returns 0 → the CSS/id selector doesn't match this site's
+    HTML. Verify with repr() of the RAW bytes from fetch(), never a WebFetch/AI
+    summary (they mis-report <div> vs <p>, span-wrapped dates, etc.).
+  • Regex hangs on big pages → re.DOTALL with `.*?` backtracks O(n²). Slice the
+    target container out first, then run patterns on the smaller substring.
+  • Old .gov.cn TLS: Python's ssl may reject the handshake (BAD_ECPOINT / rc=35).
+    Shell out to `curl -sk` as a fallback (see sz_invest.py for the pattern).
+  • Pagination is usually 0-indexed static HTML: page 0 = index.html, page 1 =
+    index_1.html, ...  Normalize dates to YYYY-MM-DD — site formats vary.
+"""
 
 import json
 import logging

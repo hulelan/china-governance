@@ -2,7 +2,8 @@
 
 Chinese government document corpus + web app. Crawls policy documents from central through provincial to municipal and district level, plus media sources. Live at [chinagovernance.com](https://www.chinagovernance.com).
 
-**Current corpus:** ~114,000 documents from 48 sites, ~91% body text coverage.
+**Current corpus:** see [`/api/v1/stats`](https://www.chinagovernance.com/api/v1/stats)
+for the live count (it grows nightly). `CLAUDE.md` holds a dated operator snapshot.
 
 ## How this folder is organized
 

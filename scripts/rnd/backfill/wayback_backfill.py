@@ -41,7 +41,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parents[3]))
 
 from crawlers.base import (
     REQUEST_DELAY,

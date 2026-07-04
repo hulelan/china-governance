@@ -32,7 +32,7 @@ import sys
 import time
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 logging.basicConfig(
     level=logging.INFO,

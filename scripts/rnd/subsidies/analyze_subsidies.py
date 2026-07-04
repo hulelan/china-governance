@@ -15,8 +15,8 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
-OUTPUT_PATH = Path(__file__).parent.parent / "data" / "subsidy_analysis.json"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
+OUTPUT_PATH = Path(__file__).parents[3] / "data" / "subsidy_analysis.json"
 
 
 def analyze(conn):

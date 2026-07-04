@@ -18,7 +18,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 # --- Subsidy document identification ---
 

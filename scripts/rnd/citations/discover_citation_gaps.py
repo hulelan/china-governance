@@ -26,7 +26,7 @@ from datetime import datetime
 from pathlib import Path
 
 # Import issuer classification functions from analyze.py
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parents[3]))
 from analyze import (
     ISSUER_LEVELS,
     classify_issuer,
@@ -35,7 +35,7 @@ from analyze import (
     REF_PATTERN,
 )
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 # ---------------------------------------------------------------------------
 # Known crawled sources — maps issuing body labels to site_keys we already have.

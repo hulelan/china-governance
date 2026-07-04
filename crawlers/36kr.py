@@ -7,6 +7,9 @@ pages.
 
 The RSS feed returns ~30 recent items. Run regularly for incremental capture.
 
+Known quirk: the homepage is behind a WAF, but the RSS feed + article pages work
+with a browser UA. Newsflashes (快讯) are skipped — article pages only.
+
 Usage:
     python -m crawlers.36kr                    # Crawl all available articles
     python -m crawlers.36kr --stats            # Show database stats

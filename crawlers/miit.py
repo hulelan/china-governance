@@ -10,6 +10,10 @@ Sections crawled (by category ID):
   - zcfb:   政策发布    (Policy releases, category=183)
   - zcjd:   政策解读    (Policy interpretations, category=163)
 
+Known quirk: the Elasticsearch API frequently TIMES OUT from US IPs. Run this
+from the droplet (NYC) for a reliable full crawl, or expect intermittent
+failures locally. (Largest section is wjfb, ~2,600 docs.)
+
 Usage:
     python -m crawlers.miit                    # Crawl all sections
     python -m crawlers.miit --section wjfb     # Crawl only document releases

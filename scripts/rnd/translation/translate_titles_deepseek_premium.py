@@ -29,7 +29,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 # Load .env so DEEPSEEK_API_KEY is available
-ENV_PATH = Path(__file__).parent.parent / ".env"
+ENV_PATH = Path(__file__).parents[3] / ".env"
 if ENV_PATH.exists():
     for line in ENV_PATH.read_text().splitlines():
         line = line.strip()
@@ -39,7 +39,7 @@ if ENV_PATH.exists():
 
 from openai import OpenAI                        # noqa: E402
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
+DB_PATH = Path(__file__).parents[3] / "documents.db"
 
 PROMPT_SYSTEM = (
     "You translate Chinese government document titles to English. "

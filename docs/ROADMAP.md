@@ -1,5 +1,11 @@
 # CNGOV Roadmap
 
+> **Note:** For current architecture and corpus stats, `CLAUDE.md` and
+> [`/api/v1/stats`](https://www.chinagovernance.com/api/v1/stats) are
+> authoritative. This roadmap is vision/planning; some "What We Have Now"
+> figures below are historical snapshots (the app is now SQLite-on-a-droplet,
+> not Railway/Postgres).
+
 ## Target Audience
 
 **Western China analysts and researchers** — people at think tanks (MERICS, CSIS, Brookings), in academia (political science, comparative politics, development economics), and in corporate government affairs roles at multinationals operating in China.
@@ -49,8 +55,8 @@ Backed by a verified, archived corpus with direct links to original government s
 - **JSON API** under `/api/v1/` with 9 endpoints
 - **Citation hierarchy classified** by administrative level (central/provincial/municipal/district)
 - **Verification infrastructure**: SHA-256 hashes, direct links to originals, side-by-side comparison
-- **Live deployment** at [chinagovernance.com](https://www.chinagovernance.com) on Railway (PostgreSQL + Docker)
-- **Dual-mode database**: PostgreSQL in production, SQLite for local development. Sync via `scripts/sqlite_to_postgres.py`.
+- **Live deployment** at [chinagovernance.com](https://www.chinagovernance.com) on a DigitalOcean droplet (nginx + uvicorn + SQLite; Railway/Postgres retired June 2026)
+- **SQLite source of truth**: the droplet's `documents.db` is authoritative; the web app reads it read-only and crawlers write to it via nightly cron
 - **AI policy case study**: end-to-end proof of concept — backfill, citation extraction, chain view, analytical write-up
 - **Subsidy analysis pipeline**: multi-keyword matching, regex extraction of yuan amounts, sector attribution, report page at `/analysis/subsidies`
 - **Incremental sync**: `--sync` flag detects new/changed/deleted documents without overwriting originals; change history at `/changes`

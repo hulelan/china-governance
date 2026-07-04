@@ -11,6 +11,11 @@ Sections crawled:
   - tztg:   通知通告    (Notices, ~500 docs)
   - kjbgz:  科技部工作  (Ministry work updates, ~500 docs)
 
+Known quirks:
+  • tztg and kjbgz body fetching HANGS from US IPs (timeout) — run from droplet.
+  • Body extraction must handle TRS_UEDITOR / <div class="text wide"> containers,
+    not just id=Zoom (older selector missed those).
+
 Usage:
     python -m crawlers.most                    # Crawl all sections
     python -m crawlers.most --section gfxwj    # Crawl only normative documents

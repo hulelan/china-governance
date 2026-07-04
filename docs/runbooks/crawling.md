@@ -240,38 +240,25 @@ The `--section` flag uses `choices=list(SECTIONS.keys())` with single value. Pas
 
 ### Timeouts on MIIT/MOST
 **Cause:** US→China network latency.
-**Fix:** Run from the droplet (Singapore, lower latency to .gov.cn sites).
+**Fix:** Run from the droplet (NYC). The per-crawler US-timeout quirks are now
+documented in each crawler's docstring (see `crawlers/miit.py`, `crawlers/most.py`).
 
 ### Duplicate documents from multiple machines
-**Cause:** `next_id()` generates MAX(id)+1 locally, so Mac and droplet can assign different IDs to the same document.
-**Fix:** A partial unique index on `url` (`WHERE url != ''`) prevents duplicates. `store_document()` catches the `IntegrityError` and silently skips. The Postgres schema has the same unique index. Safe to run the same crawler from multiple machines.
+**Cause:** `next_id()` generates MAX(id)+1 locally, so two hosts can assign different IDs to the same document.
+**Fix:** A partial unique index on `url` (`WHERE url != ''`) + `IntegrityError`-skip in `store_document()` prevents duplicates. (Full explanation now lives in `crawlers/base.py`.) In the current single-writer droplet setup this rarely matters, but it's safe.
 
 ### Geo-blocked sites
-Sites behind WAF (Zhejiang main, Anhui, Hefei) or with DNS that doesn't resolve outside China.
-**Fix:** Run from a China-adjacent or China-based IP. The Singapore droplet works for some but not all.
+Sites behind WAF (Zhejiang main, etc.) or with DNS that doesn't resolve outside China.
+**Fix:** Run from the droplet or a China-adjacent IP. See each crawler's docstring for site-specific notes.
 
 ## Production Pipeline
 
-Both the Mac and the Singapore droplet run `scripts/daily_sync.sh` on a schedule. Each crawls what it can reach and pushes directly to Railway Postgres. No manual merge needed.
-
-### How it works
-1. **Droplet** (daily cron, 6 AM UTC): Runs `git pull`, crawls all universal sites + droplet-only sites (miit, most, zhejiang), classifies, pushes to Postgres.
-2. **Mac** (launchd, 7:03 AM ET): Crawls all universal sites + Mac-only sites (gd, huizhou, yangjiang), classifies, pushes to Postgres.
-3. **Dedup:** URL uniqueness index in both SQLite and Postgres prevents duplicates. `ON CONFLICT DO NOTHING` skips existing docs.
-4. **Postgres is source of truth.** Local SQLite files are caches for crawling.
-
-### Location constraints
-| Crawler | Mac (US) | Droplet (SG) |
-|---------|----------|-------------|
-| miit, most, zhejiang | Timeout/partial | Works |
-| gkmlpt (gd, huizhou, yangjiang) | Works | Connection reset |
-| Everything else | Works | Works |
-
-### Safety net
-- **Daily manifest** (`backups/manifest_YYYYMMDD.csv`): Lightweight snapshot of every doc's id, url, site_key, and body length (~9MB). Compared against yesterday's — if doc count drops, a warning appears in the log and Telegram report. Kept for 14 days.
-- **Body text backfill** (`scripts/backfill_bodies.py`): Runs after every Postgres sync. Pushes body text for docs that were originally synced before bodies were fetched.
-- **Post-sync verification**: Compares local SQLite count vs Postgres count. Warns on mismatch.
-- **Recovery**: Every doc has a URL — if data is lost, re-crawl from the manifest. No need for full DB backups.
+> **Source of truth: `CLAUDE.md` → Architecture.** The droplet's `documents.db`
+> is authoritative; crawlers run *on the droplet* via nightly cron
+> (`scripts/daily_sync.sh`) and "publish" is a local WAL checkpoint + web-app
+> restart. There is no Postgres and no cross-machine push anymore (removed June
+> 2026). This section is kept only as a pointer — don't re-add the old dual-machine
+> / Railway flow here.
 
 ### Adding a new crawler
 1. Write the crawler module
