@@ -102,7 +102,7 @@
                 </div>
 
                 <div class="p-3">
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium">Apply</button>
+                    <button type="submit" class="w-full bg-teal hover:bg-teal text-white px-3 py-2 rounded-none text-sm font-medium">Apply</button>
                 </div>
             </form>
         </div>
@@ -154,19 +154,19 @@
             <!-- Pagination -->
             <div class="flex items-center gap-2 mt-3 text-sm">
                 {% if page > 1 %}
-                <a href="/browse?{{ pagination_qs }}&page={{ page - 1 }}" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 no-underline text-gray-600">Prev</a>
+                <a href="/browse?{{ pagination_qs }}&page={{ page - 1 }}" class="px-3 py-1.5 bg-panel border border-gray-200 rounded-none hover:bg-panel no-underline text-gray-600">Prev</a>
                 {% endif %}
                 {% set total_pages = ((total - 1) // 50 + 1) %}
                 {% for p in range(1, total_pages + 1) %}
                     {% if p <= 5 or p > total_pages - 3 or (p >= page - 2 and p <= page + 2) %}
                 <a href="/browse?{{ pagination_qs }}&page={{ p }}"
-                   class="px-3 py-1.5 rounded-lg no-underline {{ 'bg-blue-600 text-white' if p == page else 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-600' }}">{{ p }}</a>
+                   class="px-3 py-1.5 rounded-none no-underline {{ 'bg-teal text-white' if p == page else 'bg-panel border border-gray-200 hover:bg-panel text-gray-600' }}">{{ p }}</a>
                     {% elif p == 6 or p == total_pages - 3 %}
                 <span class="text-gray-400">...</span>
                     {% endif %}
                 {% endfor %}
                 {% if page < total_pages %}
-                <a href="/browse?{{ pagination_qs }}&page={{ page + 1 }}" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 no-underline text-gray-600">Next</a>
+                <a href="/browse?{{ pagination_qs }}&page={{ page + 1 }}" class="px-3 py-1.5 bg-panel border border-gray-200 rounded-none hover:bg-panel no-underline text-gray-600">Next</a>
                 {% endif %}
             </div>
         </div>

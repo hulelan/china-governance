@@ -10,7 +10,7 @@
             {{ "%.1f"|format(subsidy_stats.total_amount_yi) }} billion yuan identified
         </p>
 
-        <div class="bg-blue-50 border border-blue-100 rounded-lg px-5 py-4 mb-6 text-sm text-gray-600">
+        <div class="bg-panel border border-rule rounded-none px-5 py-4 mb-6 text-sm text-gray-600">
             <span class="font-semibold text-gray-700">Summary:</span>
             We extracted structured subsidy data from {{ subsidy_stats.documents_with_amounts }} government documents
             across Shenzhen's districts and departments. Total identifiable subsidies:
@@ -239,7 +239,7 @@
                 Many subsidy details are in PDF attachments, WeChat announcements, or unpublished internal documents.</li>
         </ol>
 
-        <div class="bg-gray-50 border border-gray-200 rounded-lg px-5 py-4 mt-8 text-sm text-gray-500">
+        <div class="bg-panel border border-gray-200 rounded-none px-5 py-4 mt-8 text-sm text-gray-500">
             <span class="font-semibold text-gray-600">About this analysis:</span>
             Based on {{ subsidy_stats.documents_with_amounts }} subsidy-relevant documents from
             {{ stats.site_count|default(0) }} government sites, extracted via the

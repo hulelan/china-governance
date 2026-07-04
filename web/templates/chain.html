@@ -17,8 +17,8 @@
         <div class="flex gap-1.5 flex-wrap">
             {% for t_key, t_keyword in topics.items() %}
             <a href="/chain/{{ t_key }}"
-               class="px-3 py-1.5 rounded-lg text-sm no-underline
-                      {% if t_key == topic %}bg-blue-600 text-white{% else %}bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700{% endif %}">
+               class="px-3 py-1.5 rounded-none text-sm no-underline
+                      {% if t_key == topic %}bg-teal text-white{% else %}bg-panel border border-gray-200 text-gray-500 hover:bg-panel hover:text-gray-700{% endif %}">
                 {{ t_keyword }}
             </a>
             {% endfor %}
@@ -30,11 +30,11 @@
     <div class="mb-4 flex items-center gap-3 text-sm">
         <span class="text-gray-500">Show titles in:</span>
         <button @click="showEn = false"
-                :class="!showEn ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'"
-                class="px-3 py-1 rounded-lg text-sm">中文</button>
+                :class="!showEn ? 'bg-gray-900 text-white' : 'bg-panel border border-gray-200 text-gray-600 hover:bg-panel'"
+                class="px-3 py-1 rounded-none text-sm">中文</button>
         <button @click="showEn = true"
-                :class="showEn ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'"
-                class="px-3 py-1 rounded-lg text-sm">English</button>
+                :class="showEn ? 'bg-gray-900 text-white' : 'bg-panel border border-gray-200 text-gray-600 hover:bg-panel'"
+                class="px-3 py-1 rounded-none text-sm">English</button>
         <span class="text-xs text-gray-400" x-show="showEn">
             Translations from Google + DeepSeek; cards without a translation fall back to Chinese.
         </span>
