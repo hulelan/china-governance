@@ -209,12 +209,9 @@ NEW_DOCS=$((DOC_COUNT_AFTER_CRAWL - DOC_COUNT_BEFORE))
 
 log "Phase 1 done. $DOC_COUNT_AFTER_CRAWL total docs (+$NEW_DOCS new)"
 
-# --- Phase 1b: Body backfill + algorithmic scoring ---
+# --- Phase 1b: Body backfill (scoring moved to Phase 2b, after citations built) ---
 log "Phase 1b: Body backfill from saved HTML..."
 timeout 600 python3 scripts/backfill_from_html.py >> "$LOG" 2>&1 || log "  backfill_from_html had errors"
-
-log "Phase 1b: Algorithmic scoring (citation_rank, algo_doc_type, ai_relevance)..."
-timeout 600 python3 scripts/compute_scores.py >> "$LOG" 2>&1 || log "  compute_scores had errors"
 
 if [ "${1:-}" = "--crawl" ]; then
     log "=== Crawl-only mode, stopping ==="
@@ -254,6 +251,17 @@ fi
 
 CLASSIFIED_AFTER=$(sqlite3 documents.db "SELECT COUNT(*) FROM documents WHERE classified_at != '' AND classified_at IS NOT NULL" 2>/dev/null || echo 0)
 NEWLY_CLASSIFIED=$((CLASSIFIED_AFTER - CLASSIFIED_BEFORE))
+
+# --- Phase 2b: Rebuild citations, then score (must run AFTER classification) ---
+# extract_citations rebuilds the citations table from body text (regex 文号 + 《》)
+# AND the LLM references_json column that Phase 2 just filled. compute_scores'
+# citation_rank then reads the fresh table. CPU-only, no API cost. This is what
+# keeps Policy Trace / Network / "cited by" current with new docs.
+log "Phase 2b: Rebuilding citations table (formal + named + LLM refs)..."
+timeout 1800 python3 scripts/rnd/citations/extract_citations.py >> "$LOG" 2>&1 || log "  extract_citations had errors"
+
+log "Phase 2b: Algorithmic scoring (citation_rank, algo_doc_type, ai_relevance)..."
+timeout 600 python3 scripts/compute_scores.py >> "$LOG" 2>&1 || log "  compute_scores had errors"
 
 # --- Phase 3: Publish the DB to the live web app ---
 # Two modes:
