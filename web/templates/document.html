@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-{% block title %}{{ doc.title[:60] }} — Governance Archive{% endblock %}
+{% block title %}{{ doc.title_en or doc.title[:60] }} — Governance Archive{% endblock %}
+{% block og_title %}{{ doc.title_en or doc.title }} — Governance Archive{% endblock %}
+{% block meta_description %}{% if doc.summary_en %}{{ doc.summary_en[:220] }}{% else %}{{ doc.publisher or doc.site_key }}{% if doc.document_number %} · {{ doc.document_number }}{% endif %}{% if doc.date_published %} ({{ doc.date_published }}){% endif %} — {{ doc.title[:140] }}{% endif %}{% endblock %}
 {% block head %}
 <script src="https://d3js.org/d3.v7.min.js"></script>
 {% endblock %}

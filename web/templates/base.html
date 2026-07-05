@@ -12,6 +12,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Governance Archive · 中国政策档案{% endblock %}</title>
+
+    <!-- SEO / social -->
+    <meta name="description" content="{% block meta_description %}A searchable archive of 180,000+ Chinese government policy documents — from central ministries down to district implementation, linked by the citations between them.{% endblock %}">
+    <link rel="canonical" href="{{ request.url }}">
+    <meta property="og:site_name" content="Governance Archive · 中国政策档案">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+    <meta property="og:description" content="{{ self.meta_description() }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ self.og_title() }}">
+    <meta name="twitter:description" content="{{ self.meta_description() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
