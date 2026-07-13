@@ -307,6 +307,23 @@ if [ "$(date +%u)" = "7" ] && [ "$IS_MAC" != "true" ]; then
     sqlite3 documents.db "VACUUM;" >> "$LOG" 2>&1 || true
 fi
 
+# --- Phase 3c: Off-droplet backup to DigitalOcean Spaces ---
+# Runs AFTER publish so it snapshots the just-checkpointed DB. VACUUM INTO gives a
+# consistent copy; the script gzips + uploads documents.db + officials.db and prunes
+# to 7 daily / 4 weekly. Needs SPACES_KEY/SPACES_SECRET (already in .env). Skipped if
+# creds are absent, so a Mac run without them is a no-op, not a failure.
+BACKUP_OK=false
+if [ -n "$SPACES_KEY" ] && [ -n "$SPACES_SECRET" ]; then
+    log "Phase 3c: Backing up DB to Spaces..."
+    if timeout 1800 python3 scripts/backup_db.py >> "$LOG" 2>&1; then
+        BACKUP_OK=true
+    else
+        log "  backup_db had errors"
+    fi
+else
+    log "Phase 3c: SKIPPED (SPACES_KEY/SPACES_SECRET not set)"
+fi
+
 # --- Phase 4: Generate report ---
 ELAPSED=$(( $(date +%s) - START_TIME ))
 DOC_COUNT_FINAL=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
@@ -364,6 +381,7 @@ $(echo -e "$CRAWL_RESULTS")
 🗄 *Database:*
 • SQLite total: $DOC_COUNT_FINAL docs
 • Droplet: ${REMOTE_COUNT:-?} docs (published: $PUBLISH_OK)
+• Backup → Spaces: $BACKUP_OK
 • 🔴 High: $HIGH | 🟡 Medium: $MEDIUM | ⚪ Low: $LOW
 $([ -n "$TOP_SITES" ] && echo "
 📍 *Top sites today:*

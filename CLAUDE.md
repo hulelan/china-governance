@@ -232,6 +232,31 @@ Mac (dev only, OPTIONAL): git push code; pull a DB copy when developing locally.
   `scripts/setup_droplet.sh`), so it must be considered compromised — the Railway
   project should be deleted/rotated to invalidate it.
 
+### Off-droplet backups (DigitalOcean Spaces)
+
+The droplet's `documents.db` is the ONLY full copy of the corpus (the Mac copy
+was deleted; `backups/*.csv` are recovery *manifests*, not the data). To remove
+that single point of failure, `daily_sync.sh` Phase 3c backs both DBs up
+off-droplet after each publish:
+
+- **`scripts/backup_db.py`** — `VACUUM INTO` (consistent snapshot, not a torn
+  `cp` of the live WAL DB) → gzip → upload to **DO Spaces** (`china-governance-backups`,
+  nyc3, S3-compatible). Backs up BOTH `documents.db` (~4GB → ~1.9GB gz) and
+  `officials.db` (the hardest to reproduce — needs the Mac Excel seed).
+- **Retention:** `daily/` keeps 7, `weekly/` keeps 4 (Monday promotes to weekly).
+  Pruning needs the Spaces key to have **Delete** perm (it's a Limited-Access key
+  scoped to this one bucket).
+- **Creds:** `SPACES_KEY` / `SPACES_SECRET` in the droplet `.env` (chmod 600);
+  `SPACES_REGION` (default nyc3) / `SPACES_BUCKET` (default `china-governance-backups`)
+  optional. Phase 3c SKIPS cleanly if the keys are absent (so a Mac run is a no-op).
+- **Report:** the nightly Telegram report shows `Backup → Spaces: true/false`.
+- **Restore:** download `daily/documents-YYYYMMDD.db.gz` → `gunzip` → it's a plain
+  SQLite file. Point `SQLITE_PATH` at it, or replace `documents.db` + restart.
+  Verified 2026-07-13: a downloaded backup passes `PRAGMA quick_check` and matches
+  the live row count.
+- Manual run: `set -a; source .env; set +a; python3 scripts/backup_db.py`
+  (`--dry-run` = VACUUM+gzip locally, no upload; `--db documents.db` = one DB).
+
 ### officials.db (separate dataset — Officials page)
 
 `officials.db` (~250MB, 2,181 officials) is a SEPARATE SQLite file the web app
