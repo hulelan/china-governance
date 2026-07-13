@@ -19,8 +19,12 @@ Usage:
 """
 
 import argparse
+import json
 import re
 import time
+import urllib.parse
+import urllib.request
+from datetime import datetime
 
 from crawlers.base import (
     REQUEST_DELAY,
@@ -42,7 +46,166 @@ SITE_CFG = {
     "admin_level": "central",
 }
 
+# The "latest policies" rolling feed — recent docs only, NO history.
 JSON_FEED_URL = "https://www.gov.cn/zhengce/zuixin/ZUIXINZHENGCE.json"
+
+# ---------------------------------------------------------------------------
+# Historical archive: the State Council Policy Document Library (政策文件库).
+# The rolling JSON feed above only covers recent docs, so old 国发/国办/国函
+# documents (cited thousands of times but aged out of the feed) were never
+# captured. This paginated search API is the full archive.
+#
+# API (reverse-engineered from the zcwjk SPA's app.js, 2026-07):
+#   https://sousuo.www.gov.cn/search-gov/data?t=<category>&p=<page>&n=<size>&...
+# Each category `t` returns searchVO.listVO[] with title / url / pcode (文号) /
+# puborg / pubtime, plus searchVO.totalCount + totalpage. The `url` is a normal
+# gov.cn content page the body/metadata extractors below already parse, and
+# `pcode` gives the 文号 up front (so citations resolve even before body fetch).
+# ---------------------------------------------------------------------------
+LIBRARY_API = "https://sousuo.www.gov.cn/search-gov/data"
+LIBRARY_CATEGORIES = {
+    "gw": "zhengcelibrary_gw",   # 国务院公文 — State Council formal docs (~6.2k)
+    "bm": "zhengcelibrary_bm",   # 部门文件 — central ministry docs (~12.7k)
+}
+
+
+def _library_page(category_t: str, page: int, n: int = 50) -> dict | None:
+    """Fetch one page of the policy-document-library search API."""
+    params = {
+        "t": category_t, "q": "", "timetype": "timezd", "mintime": "", "maxtime": "",
+        "sort": "", "sortType": "1", "searchfield": "", "pcodeJiguan": "", "childtype": "",
+        "subchildtype": "", "tsbq": "", "pubtimeyear": "", "pubtimeqarter": "",
+        "pcodeYear": "", "pcodeNum": "", "filetype": "", "p": str(page), "n": str(n),
+        "inpro": "", "bmfl": "", "dup": "", "orpro": "",
+    }
+    url = LIBRARY_API + "?" + urllib.parse.urlencode(params)
+    req = urllib.request.Request(url, headers={
+        "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"),
+        "Referer": "https://sousuo.www.gov.cn/zcwjk/policyDocumentLibrary",
+        "Accept": "application/json, text/plain, */*",
+    })
+    for attempt in range(3):
+        try:
+            raw = urllib.request.urlopen(req, timeout=45).read().decode("utf-8", "replace")
+            return json.loads(raw)
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(3 * (attempt + 1))
+            else:
+                log.warning(f"  library page {page} ({category_t}) failed: {e}")
+                return None
+
+
+def _ms_to_date(ms) -> str:
+    """Convert a millisecond epoch (pubtime/ptime) to 'YYYY-MM-DD'."""
+    try:
+        return datetime.fromtimestamp(int(ms) / 1000).strftime("%Y-%m-%d")
+    except (ValueError, TypeError, OSError):
+        return ""
+
+
+def crawl_library(conn, categories=("gw",), n: int = 50, deep: bool = False,
+                  limit: int = 0, fetch_bodies: bool = True):
+    """Crawl the historical policy-document library (archival backfill).
+
+    Sorted newest-first. `deep=True` walks every page (initial full backfill);
+    otherwise it stops after 2 consecutive pages of already-held docs (cheap
+    incremental catch-up). `pcode` (文号) is stored as document_number up front,
+    so citations resolve even when a body fetch fails.
+    """
+    store_site(conn, SITE_KEY, SITE_CFG)
+    total_stored = 0
+
+    for cat in categories:
+        cat_t = LIBRARY_CATEGORIES.get(cat, cat)
+        first = _library_page(cat_t, 1, n)
+        if not first or "searchVO" not in first:
+            log.warning(f"Library [{cat}]: no data, skipping")
+            continue
+        sv = first["searchVO"]
+        total, total_pages = sv.get("totalCount", 0), sv.get("totalpage", 0)
+        log.info(f"Library [{cat}={cat_t}]: {total} docs across {total_pages} pages (n={n})")
+
+        consecutive_all_seen = 0
+        for p in range(1, total_pages + 1):
+            page = first if p == 1 else _library_page(cat_t, p, n)
+            items = (page or {}).get("searchVO", {}).get("listVO") or []
+            if not items:
+                log.info(f"  page {p}: empty — stopping")
+                break
+
+            new_on_page = 0
+            for it in items:
+                url = it.get("url", "")
+                if not url:
+                    continue
+                existing = conn.execute(
+                    "SELECT id, body_text_cn FROM documents WHERE url = ?", (url,)
+                ).fetchone()
+                if existing and existing[1]:
+                    continue  # already have body — skip
+                new_on_page += 1
+
+                doc_id = existing[0] if existing else next_id(conn)
+                pcode = (it.get("pcode") or it.get("wenhao") or it.get("fwzh") or "").strip()
+                title = re.sub(r"<[^>]+>", "", it.get("title", "")).strip()
+                publisher = it.get("puborg", "")
+                date_published = _ms_to_date(it.get("pubtime"))
+
+                body_text, raw_html_path = "", ""
+                doc_number = pcode
+                if fetch_bodies:
+                    try:
+                        doc_html = fetch(url)
+                        table_info = _extract_metadata_table(doc_html)
+                        doc_number = table_info.get("document_number", "") or pcode
+                        publisher = table_info.get("publisher", "") or publisher
+                        if table_info.get("title"):
+                            title = table_info["title"]
+                        body_text = _extract_body(doc_html)
+                        if doc_html:
+                            raw_html_path = save_raw_html(SITE_KEY, doc_id, doc_html)
+                    except Exception as e:
+                        log.warning(f"  body fetch failed {url}: {e}")
+                    time.sleep(REQUEST_DELAY)
+
+                store_document(conn, SITE_KEY, {
+                    "id": doc_id,
+                    "title": title,
+                    "document_number": doc_number,
+                    "publisher": publisher,
+                    "date_published": date_published,
+                    "body_text_cn": body_text,
+                    "url": url,
+                    "classify_main_name": "政策文件",
+                    "raw_html_path": raw_html_path,
+                })
+                total_stored += 1
+                if limit and total_stored >= limit:
+                    conn.commit()
+                    log.info(f"Library crawl: hit limit {limit} ({total_stored} stored)")
+                    return total_stored
+
+            if p % 10 == 0:
+                conn.commit()
+                log.info(f"  page {p}/{total_pages}: {total_stored} stored")
+
+            # Incremental early-exit (skip during a deep full backfill)
+            if not deep:
+                if new_on_page == 0:
+                    consecutive_all_seen += 1
+                    if consecutive_all_seen >= 2:
+                        log.info(f"  2 consecutive all-held pages — stopping (incremental)")
+                        break
+                else:
+                    consecutive_all_seen = 0
+            time.sleep(REQUEST_DELAY)
+
+        conn.commit()
+
+    log.info(f"=== Library crawl total: {total_stored} documents stored ===")
+    return total_stored
 
 
 def _extract_meta(html: str) -> dict:
@@ -244,16 +407,33 @@ def main():
     parser.add_argument("--stats", action="store_true", help="Show database stats")
     parser.add_argument("--list-only", action="store_true",
                         help="List document URLs without fetching bodies")
+    parser.add_argument("--library", action="store_true",
+                        help="Crawl the historical policy-document library (archival backfill) "
+                             "instead of the rolling 'latest' feed")
+    parser.add_argument("--categories", default="gw",
+                        help="Comma-separated library categories: gw (国务院公文), bm (部门文件). "
+                             "Default: gw")
+    parser.add_argument("--deep", action="store_true",
+                        help="With --library: walk EVERY page (full backfill). Without it, the "
+                             "library crawl stops after 2 all-held pages (incremental).")
+    parser.add_argument("--limit", type=int, default=0,
+                        help="With --library: stop after N stored docs (0 = no cap)")
+    parser.add_argument("--db", type=str, help="Path to SQLite database (default: documents.db)")
     args = parser.parse_args()
 
-    conn = init_db()
+    conn = init_db(args.db) if args.db else init_db()
 
     if args.stats:
         show_stats(conn)
         conn.close()
         return
 
-    crawl_all(conn, fetch_bodies=not args.list_only)
+    if args.library:
+        cats = [c.strip() for c in args.categories.split(",") if c.strip()]
+        crawl_library(conn, categories=cats, deep=args.deep, limit=args.limit,
+                      fetch_bodies=not args.list_only)
+    else:
+        crawl_all(conn, fetch_bodies=not args.list_only)
     show_stats(conn)
     conn.close()
 

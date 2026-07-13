@@ -145,6 +145,91 @@ def get_admin_level(doc_number: str) -> str:
     return "unknown"
 
 
+# ---------------------------------------------------------------------------
+# Formal 文号 normalization
+#
+# REF_PATTERN is greedy on the leading [一-鿿]+, so it folds two kinds of
+# noise into the captured 文号:
+#   1. Lead-in words  — "按照财库〔2022〕3号"   (按照 = "in accordance with")
+#   2. Prepended issuer NAME — "苏州市住房和城乡建设局苏住建规〔2011〕4号"
+# Both make one document fragment into 2-3 distinct target_refs, inflating the
+# "missing" counts and suppressing resolution. Normalizing collapses the dupes
+# and lets more refs resolve to held documents.
+# ---------------------------------------------------------------------------
+
+# Lead-in words to strip from the head of a 文号 (longest alternatives first so
+# e.g. 按照 wins over 按, 参见 over 见). None of these begins a real issuer code.
+_REF_LEADIN = re.compile(
+    r"^(?:按照|依照|遵照|参照|对照|根据|依据|参见|详见|另见|结合|贯彻|落实|"
+    r"执行|适用|符合|违反|按|据|见)+"
+)
+
+# The trailing 〔YYYY〕N号 core of a formal reference (anchored to end).
+_REF_CORE = re.compile(
+    r"[〔〈《（‘〚](?:19|20)\d{2}"
+    r"[〕〉》）’〛]\d+号$"
+)
+
+# Characters that mark a full agency NAME (vs. a short 文号 abbreviation). If the
+# head we'd strip contains one of these, we're confident it's a prepended issuer
+# name and not part of the abbreviation itself.
+_ORG_MARKERS = "局厅委办部院府署会处站队团市省区县镇乡街道政"
+
+
+def split_formal_ref(ref: str):
+    """Split a 文号 into (issuer_prefix, core) where core == 〔YYYY〕N号.
+    Returns None if `ref` doesn't end in a valid core."""
+    m = _REF_CORE.search(ref)
+    if not m:
+        return None
+    return ref[: m.start()], ref[m.start():]
+
+
+def normalize_formal_ref(ref: str) -> str:
+    """Strip lead-in words the greedy regex folded into a 文号 (Layer 1).
+    Pure/structural — no corpus needed. '按照财库〔2022〕3号' -> '财库〔2022〕3号'."""
+    return _REF_LEADIN.sub("", ref).strip()
+
+
+def build_known_abbrevs(doc_numbers, refs, max_short_len: int = 6) -> set:
+    """Collect trustworthy issuer abbreviations for Layer-2 canonicalization:
+      - issuer prefixes of documents we HOLD (authoritative, clean 文号), and
+      - short (<= max_short_len char) prefixes seen on standalone references.
+    Lead-in-prefixed ISSUER_LEVELS keys (依据.../依照...) are excluded."""
+    known = {k for k in ISSUER_LEVELS if not _REF_LEADIN.match(k)}
+    for dn in doc_numbers:
+        parts = split_formal_ref(dn)
+        if parts:
+            known.add(parts[0])
+    for r in refs:
+        parts = split_formal_ref(normalize_formal_ref(r))
+        if parts and 2 <= len(parts[0]) <= max_short_len:
+            known.add(parts[0])
+    return known
+
+
+def canonicalize_formal_ref(ref: str, known_abbrevs: set) -> str:
+    """Full normalization: Layer 1 (lead-ins) + Layer 2 (prepended agency name).
+    Layer 2 only fires when the prefix is long (>8 chars, i.e. hiding a name), it
+    ends with an *attested* abbreviation, and the stripped head looks like an
+    agency name — the three-way gate that prevents merging distinct documents."""
+    ref = normalize_formal_ref(ref)
+    parts = split_formal_ref(ref)
+    if not parts:
+        return ref
+    prefix, core = parts
+    if prefix in known_abbrevs or len(prefix) <= 8:
+        return ref
+    best = None
+    for a in known_abbrevs:
+        if 2 <= len(a) < len(prefix) and prefix.endswith(a):
+            head = prefix[: len(prefix) - len(a)]
+            if any(mk in head for mk in _ORG_MARKERS):
+                if best is None or len(a) > len(best):
+                    best = a
+    return (best + core) if best else ref
+
+
 # Named 《》 references (policy documents cited by name)
 NAMED_REF_PATTERN = re.compile(r"《([^》]{8,100})》")
 

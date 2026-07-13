@@ -20,17 +20,31 @@ the body-coverage query at the bottom of this file.
 | `npc` alone | **29,204 / 29,208 → 0%** | metadata-only *by design* |
 
 ### A1. NPC full text — 29,204 laws, 0% body ⭐ THE "law" gap
-The National Laws Database (`crawlers/npc.py`) was built metadata-only (title,
-document_number, publisher — no body). This is the single biggest full-text
-opportunity in the corpus and the "law" gap.
-- **First step (verify feasibility):** confirm `npc.gov.cn` exposes each law's full
-  text on a per-law page / API (some entries are scanned PDFs; some are HTML). Pull
-  one law end-to-end before committing to 29k.
-- **Then:** extend the npc crawler with a body-fetch pass (or a dedicated
-  `--backfill-bodies` mode like gkmlpt has). ~29k fetches — stage it, it's large.
-- **Decision:** is full statutory text in-scope for this project, or is the laws DB
-  intentionally a metadata index? (If the latter, close this and note it as
-  deliberate so the 78.7% number stops looking like a defect.)
+The National Laws Database (`crawlers/npc.py`) is metadata-only. Full text IS in
+scope (user confirmed 2026-07-14) — but there's a hard blocker.
+
+**VERIFIED BLOCKER (2026-07-14): NPC full text is CHINA-IP-gated.**
+The detail API `flfgDetails?bbbs=<id>` returns metadata (title/dates/publisher)
+worldwide, but the `content` and `ossFile` fields (the actual law text / DOCX)
+come back **empty from every non-China IP**. Probed from BOTH the NYC droplet AND
+a residential US IP (the Mac) — `content_len=0`, `ossFile=''` on all sampled laws.
+So this is NOT the datacenter-only block that hits huizhou/yangjiang (which a
+residential IP bypasses); the body is withheld from any foreign IP. The old
+crawler docstring's "internal CDN, needs Chinese IP" note is essentially correct.
+- **Consequence:** the crawler code is easy; the body is unreachable from any
+  machine we currently control. Getting the 29,730 texts needs a **request origin
+  inside mainland China** (Hong Kong is often treated as foreign by CN gov sites —
+  unverified here). This is an INFRASTRUCTURE decision, same family as
+  huizhou/yangjiang (see `todos.md` §1a / CLAUDE.md Open Questions).
+- **Options:** (a) a small mainland-China VPS or China residential proxy to run an
+  NPC body-fetch pass; (b) a China-based collaborator runs it once and ships the
+  rows; (c) accept metadata-only and instead harvest the *high-value* law texts
+  from reachable republishers (gov.cn / State Council / ministry sites we already
+  crawl) — many frequently-cited national laws are republished there in full.
+- **Value note:** NPC metadata ALREADY resolves citations (title match needs no
+  body). Full text buys readable statutory content + full-text search, not better
+  citation coverage. So prioritize (c) for the cited laws; (a)/(b) only if the
+  complete 29k statutory corpus is a goal in itself.
 
 ### A2. Failed body fetches — the long tail (try FREE backfill first)
 These are docs whose body fetch failed or was skipped — many may re-extract from
@@ -82,7 +96,35 @@ These underpin the entire GD/Shenzhen municipal corpus (most-cited named titles)
 
 ---
 
-## C. Data quality — normalize `target_ref` before ranking (do this FIRST)
+## TOOLING (built 2026-07-14)
+
+- **`analyze.py` — 文号 normalization** (`normalize_formal_ref`, `canonicalize_formal_ref`,
+  `build_known_abbrevs`): strips lead-in words + prepended agency names from formal
+  refs. Wired into `extract_citations.py`. Measured impact on the live corpus:
+  distinct missing refs **40,246 → 38,485** (-1,761), duplicate refs collapsed
+  -1,635, +259 newly resolved. (§C — DONE.)
+- **`crawlers/gov.py --library` — State Council archival backfill.** Reverse-engineered
+  gov.cn's policy-document-library API (`/search-gov/data?t=zhengcelibrary_gw`).
+  `--library --deep --categories gw` walks all ~6,201 State Council 公文 (国发/国办/国函)
+  with 文号 + body text; `--categories bm` reaches ~12,735 ministry docs (MOF, NDRC,
+  MOHURD, MOHRSS, …). One endpoint feeds many clusters. (§B1/B2 — mechanism DONE,
+  deep run pending.)
+- **`scripts/rnd/citations/cluster_frontier.py` — the frontier ranker.** Buckets
+  dangling refs by issuer, joins a reachability map (which crawler reaches it, deep
+  or recent), ranks by recoverable refs. `--unreachable` = candidate new sources.
+  **Run after every crawl round** to see the frontier move. This is the loop's engine.
+
+### The iterative loop (frontier expansion)
+1. `cluster_frontier.py` → top reachable cluster.
+2. Crawl it (extend existing crawler / `gov --library` / new source).
+3. `extract_citations.py` → new bodies' citations fold in (nightly Phase 2b does this).
+4. `cluster_frontier.py` again → new clusters surface. Repeat until yield flattens.
+
+Current frontier (pre-deep-run): State Council 6,153 refs (FULL), Guangdong 5,272,
+other GD cities 4,996, Shanghai 4,764, Shenzhen 4,331, Suzhou/Jiangsu 3,838,
+Chongqing 2,912, Beijing 2,717, MOF 1,727 (FULL). Reachable 39,975 / unmapped 16,046.
+
+## C. Data quality — normalize `target_ref` before ranking (DONE 2026-07-14)
 
 The greedy `REF_PATTERN` folds lead-in words ("按照"/"根据") and issuer names into
 the 文号, so **one doc fragments into 2-3 "missing" entries** and inflates counts:

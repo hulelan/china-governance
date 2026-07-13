@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).parents[3]))
 from analyze import (
     REF_PATTERN, get_admin_level,
     NAMED_REF_PATTERN, is_policy_document, classify_named_ref_level,
+    build_known_abbrevs, canonicalize_formal_ref,
 )
 
 DB_PATH = Path(__file__).parents[3] / "documents.db"
@@ -74,18 +75,28 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
     ).fetchall()
     print(f"Documents with body text or references: {len(docs)}")
 
+    # --- Pre-scan: build the issuer-abbreviation vocabulary for 文号 normalization ---
+    # (held doc numbers are authoritative; short standalone ref prefixes fill gaps)
+    raw_formal = []
+    for _d in docs:
+        raw_formal.extend(REF_PATTERN.findall(_d[4] or ""))
+    known_abbrevs = build_known_abbrevs(docnum_to_id.keys(), raw_formal)
+    print(f"Known issuer abbreviations: {len(known_abbrevs)} (from {len(docnum_to_id)} held numbers + short refs)")
+
     # --- Extract citations ---
     citations = []  # list of (source_id, target_ref, target_id, citation_type, source_level, target_level)
     stats = Counter()
+    missing_formal_refs = set()  # distinct unresolved 文号 (for dedup-impact metric)
 
     for doc_id, site_key, title, doc_number, body, refs_json in docs:
         source_level = get_source_level(doc_number, site_levels.get(site_key, ""))
         body = body or ""
 
-        # Formal 文号 citations
+        # Formal 文号 citations (normalized: strip lead-ins + prepended agency names)
         formal_refs = REF_PATTERN.findall(body)
         seen_formal = set()
         for ref in formal_refs:
+            ref = canonicalize_formal_ref(ref, known_abbrevs)
             if ref == doc_number:  # skip self-reference
                 continue
             if ref in seen_formal:
@@ -98,6 +109,8 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
             stats["formal"] += 1
             if target_id:
                 stats["formal_resolved"] += 1
+            else:
+                missing_formal_refs.add(ref)
 
         # Named 《》 citations
         named_refs = NAMED_REF_PATTERN.findall(body)
@@ -164,7 +177,8 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
 
     # --- Report ---
     print(f"\nExtracted {len(citations)} citations in {elapsed:.1f}s:")
-    print(f"  Formal (文号): {stats['formal']} ({stats['formal_resolved']} resolved)")
+    print(f"  Formal (文号): {stats['formal']} ({stats['formal_resolved']} resolved, "
+          f"{len(missing_formal_refs)} distinct missing after normalization)")
     print(f"  Named  (《》): {stats['named']} ({stats['named_resolved']} resolved)")
     print(f"  LLM  (refs):   {stats['llm']} ({stats['llm_resolved']} resolved)")
     total_resolved = stats['formal_resolved'] + stats['named_resolved'] + stats['llm_resolved']
