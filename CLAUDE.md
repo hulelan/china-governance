@@ -332,15 +332,19 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   `IS_MAC` block in `daily_sync.sh` is now effectively dead. **DECISION NEEDED:**
   accept the huizhou/yangjiang gap, crawl them occasionally from a residential IP,
   or proxy. (See `docs/working/todos.md` §1a.)
-- **(2026-07) Citations table is NOT rebuilt nightly → Policy Trace / Network lag.**
-  The `citations` table (source of `/chain`, the citation network, "cited by",
-  and `citation_rank`) is populated ONLY by
-  `scripts/rnd/citations/extract_citations.py`, which is NOT in `daily_sync.sh`
-  (`compute_scores.py` only READS it). So new docs' citation edges don't appear
-  until it's re-run. Automating it costs ~$0 in API (both inputs — body text via
-  regex + `references_json` via the nightly classifier — already exist; it's pure
-  CPU). TODO: check if `extract_citations.py` is incremental, then add a nightly
-  phase.
+- **(RESOLVED 2026-07) Citations rebuilt nightly** — `extract_citations.py` is now
+  wired into `daily_sync.sh` Phase 2b (after classification), so `/chain`, the
+  network, "cited by", and `citation_rank` stay current. Pure CPU, ~$0.
+- **(2026-07-14) Citation rebuild is TOO SLOW → was timing out.** `extract_citations.py`'s
+  named/LLM resolution is **O(docs × titles)** — each `《》`/LLM ref substring-scans
+  ALL ~200k titles (`extract_citations.py` ~line 116). At ~208k docs a full rebuild
+  takes ~1.5-2h, so the old `timeout 1800` (30 min) in Phase 2b silently killed it
+  before it saved — leaving `citations`/`citation_rank` STALE (this is why the live
+  table sat at the pre-normalization baseline even after backfills). Stopgap applied:
+  raised Phase 2b timeout to 10800s (3h). **Real fix (TODO): index the title matching**
+  (exact-match dict fast path + an inverted index / prefix map for the fuzzy cases)
+  so a rebuild drops from hours back to minutes. Until then the nightly citation
+  phase adds ~2h to the run.
 - **(2026-07) Crawler timeouts.** `CRAWLER_TIMEOUT=1800` (30 min/crawler). Recent
   runs see ~11 crawlers hit the cap (cac, samr, mofcom, beijing, shanghai,
   jiangsu, suzhou, heilongjiang, xinhua, miit, most) → ~10h total run. Likely

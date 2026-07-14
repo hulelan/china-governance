@@ -257,11 +257,16 @@ NEWLY_CLASSIFIED=$((CLASSIFIED_AFTER - CLASSIFIED_BEFORE))
 # AND the LLM references_json column that Phase 2 just filled. compute_scores'
 # citation_rank then reads the fresh table. CPU-only, no API cost. This is what
 # keeps Policy Trace / Network / "cited by" current with new docs.
+# NOTE: extract_citations' named/LLM resolution is O(docs × titles); at ~200k docs
+# a full rebuild takes ~1.5-2h, so the timeout must be generous or the rebuild is
+# killed before it saves (leaving citations/citation_rank stale). See the
+# "citations rebuild too slow" open question — the real fix is to index the title
+# matching so this drops back to minutes.
 log "Phase 2b: Rebuilding citations table (formal + named + LLM refs)..."
-timeout 1800 python3 scripts/rnd/citations/extract_citations.py >> "$LOG" 2>&1 || log "  extract_citations had errors"
+timeout 10800 python3 scripts/rnd/citations/extract_citations.py >> "$LOG" 2>&1 || log "  extract_citations had errors"
 
 log "Phase 2b: Algorithmic scoring (citation_rank, algo_doc_type, ai_relevance)..."
-timeout 600 python3 scripts/compute_scores.py >> "$LOG" 2>&1 || log "  compute_scores had errors"
+timeout 1800 python3 scripts/compute_scores.py >> "$LOG" 2>&1 || log "  compute_scores had errors"
 
 # --- Phase 3: Publish the DB to the live web app ---
 # Two modes:
