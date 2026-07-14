@@ -114,6 +114,23 @@ These underpin the entire GD/Shenzhen municipal corpus (most-cited named titles)
   or recent), ranks by recoverable refs. `--unreachable` = candidate new sources.
   **Run after every crawl round** to see the frontier move. This is the loop's engine.
 
+### Round results (frontier expansion in practice)
+- **Round 1 (2026-07-14):** State Council `gw` + central-ministry `bm` backfill via
+  `gov --library`. Corpus 192,687 → 208,947 (+16,260). State Council cluster
+  6,003 → 1,473 dangling. Citations 252k → 352k. Formal resolved 13,450 → 24,327.
+  Exposed the O(n²) rebuild (4.4h) → fixed with the indexed resolver (5.3 min).
+- **Round 2 (2026-07-14):** bm tail (+2,239 docs) + full untimed Shanghai crawl.
+  **KEY NEGATIVE RESULT: the Shanghai crawl added only +5 docs.** The ~4,250
+  dangling 沪府发/沪府办发 refs are NOT in the listing pages `crawlers/shanghai.py`
+  reads — an untimed re-run finds what it already had. So the provincial/municipal
+  gap is NOT a timeout/depth problem; those docs live in a different Shanghai system
+  (gazette / document-library backend). **Implication:** unlike the central tier
+  (one clean gov.cn `zhengcewenjianku` API resolved State Council + all ministries),
+  each province/city needs its OWN source reverse-engineered or a crawler-parsing
+  fix. Don't re-run provincial crawlers expecting depth — investigate their doc
+  libraries. TODO: find Shanghai's 沪府发 document-library/search API (gov.cn-style
+  probe) before crawling; same pattern for GD cities (gkmlpt), Shenzhen, Suzhou.
+
 ### The iterative loop (frontier expansion)
 1. `cluster_frontier.py` → top reachable cluster.
 2. Crawl it (extend existing crawler / `gov --library` / new source).
