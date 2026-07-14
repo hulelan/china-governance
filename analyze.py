@@ -175,6 +175,16 @@ _REF_CORE = re.compile(
 # name and not part of the abbreviation itself.
 _ORG_MARKERS = "局厅委办部院府署会处站队团市省区县镇乡街道政"
 
+# Tokens that appear in a prepended SENTENCE/TITLE fragment but NEVER inside a 文号
+# issuer code. When the head we'd strip contains one of these, it's title text
+# glued onto the real ref by the greedy regex (e.g. "...的通知国发〔2009〕12号"),
+# not part of a legitimate provincial prefix like "广东证监". Kept conservative:
+# every token here is grammatically impossible inside an issuer abbreviation.
+_HEAD_NOISE = re.compile(
+    r"的|关于|通知|意见|通报|决定|公告|办法|方案|表彰|调整|印发|转发|征收|"
+    r"批复|精神|国务院|人民政府|办公厅|[，、。；：（）“”]|[0-9]"
+)
+
 
 def split_formal_ref(ref: str):
     """Split a 文号 into (issuer_prefix, core) where core == 〔YYYY〕N号.
@@ -203,28 +213,35 @@ def build_known_abbrevs(doc_numbers, refs, max_short_len: int = 6) -> set:
             known.add(parts[0])
     for r in refs:
         parts = split_formal_ref(normalize_formal_ref(r))
-        if parts and 2 <= len(parts[0]) <= max_short_len:
+        # Skip noise prefixes (e.g. "的通知国发") so they don't pollute the
+        # vocabulary — otherwise they'd be "known" and escape canonicalization.
+        if (parts and 2 <= len(parts[0]) <= max_short_len
+                and not _HEAD_NOISE.search(parts[0])):
             known.add(parts[0])
     return known
 
 
 def canonicalize_formal_ref(ref: str, known_abbrevs: set) -> str:
-    """Full normalization: Layer 1 (lead-ins) + Layer 2 (prepended agency name).
-    Layer 2 only fires when the prefix is long (>8 chars, i.e. hiding a name), it
-    ends with an *attested* abbreviation, and the stripped head looks like an
-    agency name — the three-way gate that prevents merging distinct documents."""
+    """Full normalization: Layer 1 (lead-ins) + Layer 2 (prepended agency name /
+    sentence fragment). Layer 2 finds the longest *attested* abbreviation the
+    prefix ends with and strips the head IFF the head looks like an agency name
+    (org marker), a title/sentence fragment (的/通知/…), or is long (>8) — the
+    gate that recovers "...的通知国发〔2009〕12号" while preserving legitimate
+    provincial prefixes like "广东证监" (head "广东" has no such marker)."""
     ref = normalize_formal_ref(ref)
     parts = split_formal_ref(ref)
     if not parts:
         return ref
     prefix, core = parts
-    if prefix in known_abbrevs or len(prefix) <= 8:
+    if prefix in known_abbrevs:
         return ref
     best = None
     for a in known_abbrevs:
         if 2 <= len(a) < len(prefix) and prefix.endswith(a):
             head = prefix[: len(prefix) - len(a)]
-            if any(mk in head for mk in _ORG_MARKERS):
+            if (any(mk in head for mk in _ORG_MARKERS)
+                    or _HEAD_NOISE.search(head)
+                    or len(prefix) > 8):
                 if best is None or len(a) > len(best):
                     best = a
     return (best + core) if best else ref

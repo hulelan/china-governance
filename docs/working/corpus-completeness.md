@@ -124,6 +124,29 @@ Current frontier (pre-deep-run): State Council 6,153 refs (FULL), Guangdong 5,27
 other GD cities 4,996, Shanghai 4,764, Shenzhen 4,331, Suzhou/Jiangsu 3,838,
 Chongqing 2,912, Beijing 2,717, MOF 1,727 (FULL). Reachable 39,975 / unmapped 16,046.
 
+### Mapping the unmapped frontier (2026-07-14)
+Investigated the 16k "unmapped" refs. It is mostly NOT new sources:
+- **Already reachable, just missing from the REACH regex** (now fixed): central
+  ministries 国卫/民发/银发 (NHC/Civil-Affairs/PBOC) are all in gov.cn's 部门文件
+  (bm) library — verified 1,554 / 6,468 / 1,440 docs. Plus 中府=Zhongshan,
+  黑政=Heilongjiang, 国市监=SAMR, 国科=MOST, 环办=MEE. → reachable 42,371 / unmapped 13,650.
+- **Extraction noise** (~2,900 refs): 的通/关于/字/的批/年度/房屋 — the greedy
+  REF_PATTERN gluing title fragments onto real 文号. Fixed by normalization v2
+  (strip trailing-clause prefixes) — recovers real central/GD refs. NOT crawling.
+- **Genuinely new source — CPC Central Committee** (中发/中办发, ~560 refs):
+  **investigated, NO clean public source.** gov.cn's library is a *government*
+  (State Council + ministry) repository; pure Party Central docs follow Party
+  disclosure rules and aren't published there by issuer (fuzzy `q=中共中央` returns
+  govt docs that *mention* CPC, not 中发-issued docs). Like NPC full text, the
+  obstacle is source availability, not a missing crawler. Co-issued 中办国办发 docs
+  arrive incidentally via the gov library. DE-SCOPED unless a source (e.g.
+  12371.cn) proves crawlable and worth ~560 refs.
+
+### Queued round (launched 2026-07-14, `scripts/rnd/citations/frontier_queue.sh` on droplet)
+After the State Council gw backfill: bm backfill (all central ministries) → rebuild
+citations (v2) → score → publish → print new frontier. Holds the daily-sync lock so
+the nightly skips (no contention). This closes the reachable central-government gap.
+
 ## C. Data quality — normalize `target_ref` before ranking (DONE 2026-07-14)
 
 The greedy `REF_PATTERN` folds lead-in words ("按照"/"根据") and issuer names into
