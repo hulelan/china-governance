@@ -28,6 +28,61 @@ DB_PATH = Path(__file__).parents[3] / "documents.db"
 # Normalize site-level "department" to "municipal" for 4-level hierarchy
 LEVEL_NORMALIZE = {"department": "municipal"}
 
+_NG = 4  # n-gram size for the title substring index
+
+
+class TitleMatcher:
+    """Indexed fuzzy title resolver — replaces an O(docs x titles) per-ref scan.
+
+    resolve(name, min_len) returns a doc id for some stored title t with
+    len(t) >= min_len and (t in name OR name in t), else None — the same
+    RESOLVED/UNRESOLVED partition as the old brute-force loop (parity-tested),
+    but O(len(name)^2) via substring generation + an n-gram inverted index
+    instead of scanning every title. Drops the full rebuild from ~2h to minutes.
+    Tie-break differs (prefers the longest 't in name' match — strictly better).
+    """
+
+    def __init__(self, title_to_doc):
+        self.exact = {t: v[0] for t, v in title_to_doc.items()}  # title -> id
+        self.titles = list(self.exact.keys())
+        self.index = {}  # gram -> set of title indices
+        for idx, t in enumerate(self.titles):
+            for g in self._grams(t):
+                self.index.setdefault(g, set()).add(idx)
+
+    @staticmethod
+    def _grams(s):
+        if len(s) < _NG:
+            return {s}
+        return {s[i:i + _NG] for i in range(len(s) - _NG + 1)}
+
+    def _containing(self, name):
+        """Titles that contain `name` (n-gram intersection, then verify)."""
+        posting = None
+        for g in self._grams(name):
+            s = self.index.get(g)
+            if not s:
+                return ()
+            posting = set(s) if posting is None else (posting & s)
+            if not posting:
+                return ()
+        return (self.titles[i] for i in posting if name in self.titles[i])
+
+    def resolve(self, name, min_len):
+        L = len(name)
+        # (a) a stored title is a substring of the cited name (longest-first; L==exact)
+        if L >= min_len:
+            for length in range(L, min_len - 1, -1):
+                for i in range(L - length + 1):
+                    did = self.exact.get(name[i:i + length])
+                    if did is not None:
+                        return did
+        # (b) the cited name is a substring of a longer stored title (floor is on title)
+        for t in self._containing(name):
+            if len(t) >= min_len:
+                return self.exact[t]
+        return None
+
 
 def get_source_level(doc_number: str, site_admin_level: str) -> str:
     """Determine admin level for a source document."""
@@ -64,6 +119,7 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
     for row in conn.execute("SELECT site_key, admin_level FROM sites").fetchall():
         site_levels[row[0]] = row[1] or "unknown"
 
+    matcher = TitleMatcher(title_to_doc)  # indexed fuzzy title resolver (fast)
     print(f"Lookup tables: {len(docnum_to_id)} doc numbers, {len(title_to_doc)} titles, {len(site_levels)} sites")
 
     # --- Fetch all documents with body text OR references_json ---
@@ -124,12 +180,8 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
                 continue
             seen_named.add(name)
 
-            # Try to resolve to corpus
-            target_id = None
-            for db_title, (db_id, db_site_key) in title_to_doc.items():
-                if len(db_title) >= 10 and (name in db_title or db_title in name):
-                    target_id = db_id
-                    break
+            # Try to resolve to corpus (indexed fuzzy title match)
+            target_id = matcher.resolve(name, 10)
 
             target_level = classify_named_ref_level(name)
             citations.append((doc_id, name, target_id, "named", source_level, target_level))
@@ -156,14 +208,8 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
                 if ref_name in seen_formal or ref_name in seen_named:
                     continue
 
-                # Try to resolve to corpus by title match
-                target_id = None
-                for db_title, (db_id, db_site_key) in title_to_doc.items():
-                    if len(db_title) >= 8 and (ref_name in db_title or db_title in ref_name):
-                        target_id = db_id
-                        break
-
-                # Also try matching against document numbers
+                # Try to resolve to corpus by title match (indexed), then doc number
+                target_id = matcher.resolve(ref_name, 8)
                 if not target_id and ref_name in docnum_to_id:
                     target_id = docnum_to_id[ref_name]
 

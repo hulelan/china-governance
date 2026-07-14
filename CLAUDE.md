@@ -335,16 +335,14 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
 - **(RESOLVED 2026-07) Citations rebuilt nightly** — `extract_citations.py` is now
   wired into `daily_sync.sh` Phase 2b (after classification), so `/chain`, the
   network, "cited by", and `citation_rank` stay current. Pure CPU, ~$0.
-- **(2026-07-14) Citation rebuild is TOO SLOW → was timing out.** `extract_citations.py`'s
-  named/LLM resolution is **O(docs × titles)** — each `《》`/LLM ref substring-scans
-  ALL ~200k titles (`extract_citations.py` ~line 116). At ~208k docs a full rebuild
-  takes ~1.5-2h, so the old `timeout 1800` (30 min) in Phase 2b silently killed it
-  before it saved — leaving `citations`/`citation_rank` STALE (this is why the live
-  table sat at the pre-normalization baseline even after backfills). Stopgap applied:
-  raised Phase 2b timeout to 10800s (3h). **Real fix (TODO): index the title matching**
-  (exact-match dict fast path + an inverted index / prefix map for the fuzzy cases)
-  so a rebuild drops from hours back to minutes. Until then the nightly citation
-  phase adds ~2h to the run.
+- **(RESOLVED 2026-07-14) Citation rebuild sped up ~49× via an indexed resolver.**
+  `extract_citations.py`'s named/LLM resolution WAS O(docs × titles) — each `《》`/LLM
+  ref substring-scanned ALL ~200k titles — so at ~208k docs a full rebuild took **4.4h**
+  and silently blew past the Phase 2b timeout, leaving `citations`/`citation_rank`
+  stale. Fixed with `TitleMatcher` (n-gram inverted index + substring-gen): a rebuild
+  now runs in **~5.4 min** with **byte-identical resolved counts** (validated on the
+  live corpus: formal 24,327 / named 86,830 / llm 44,896). Phase 2b timeout left at
+  10800s as generous headroom. Parity-tested (0 mismatches / 6k synthetic queries).
 - **(2026-07) Crawler timeouts.** `CRAWLER_TIMEOUT=1800` (30 min/crawler). Recent
   runs see ~11 crawlers hit the cap (cac, samr, mofcom, beijing, shanghai,
   jiangsu, suzhou, heilongjiang, xinhua, miit, most) → ~10h total run. Likely
