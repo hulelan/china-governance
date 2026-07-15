@@ -198,6 +198,9 @@ SITES = {
     "gdlyj": {"name": "Guangdong Forestry Bureau (林业局)", "base_url": "https://lyj.gd.gov.cn", "admin_level": "provincial"},
     "gdhsa": {"name": "Guangdong Healthcare Security Bureau (医保局)", "base_url": "https://hsa.gd.gov.cn", "admin_level": "provincial"},
     "gddrc": {"name": "Guangdong Development & Reform Commission (发改委)", "base_url": "https://drc.gd.gov.cn", "admin_level": "provincial"},
+    "gdstats": {"name": "Guangdong Statistics Bureau (统计局)", "base_url": "https://stats.gd.gov.cn", "admin_level": "provincial"},
+    # GD provincial depts still TODO (correct domain or non-gkmlpt): 水利厅/市场监管局/
+    # 司法厅/审计厅. Provincial-dept batch at diminishing returns (20 added).
     # Other Guangdong municipal
     "gz": {
         "name": "Guangzhou",
