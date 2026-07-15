@@ -27,10 +27,27 @@ department/agency subdomains, add all that pass.
 1. **GD ecosystem (gkmlpt)** — provincial depts (done), municipal depts, agencies.
    All bulk-discoverable. Nearly free.
 2. **Other provinces' portals** — each is a DIFFERENT CMS (Shanghai = static year-
-   archives; Jiangsu = jpage API; Beijing/Chongqing/Zhejiang = their own). For each:
+   archives; Jiangsu = jpaas jpage; Beijing/Chongqing/Zhejiang = their own). For each:
    probe the province portal + its departments, characterize the mechanism, build/
    adapt one crawler, then batch its departments the same way. Prioritize by frontier
    rank (Beijing 2,749, Suzhou/Jiangsu 3,962, Chongqing 2,928, …).
+
+   **JIANGSU (investigated 2026-07-15):** provincial portal + departments ALL run the
+   **jpaas `/art/` CMS** (财政厅/发改委/工信厅/交通厅 verified; NOT gkmlpt). Our
+   `crawlers/jiangsu.py` handles the provincial portal via the jpage `dataproxy.jsp`
+   API keyed by `columnid`+`unitid`+`webid` (hardcoded unitid=356383, webid=1 for
+   www). To batch DEPARTMENTS: refactor jiangsu.py to a multi-site config. Discovery
+   status: `webid` IS extractable from each dept homepage (财政厅=35, 发改委=3,
+   工信厅=23), column ids are in `/col/colNNNN/` links, but **`unitid` is NOT on the
+   homepage** — it's the missing piece (likely in the column-page JS or a config
+   include; direct `/col/colN/index.html` fetch returned HTTPError, needs the right
+   URL/referer). Also several dept domains 404'd (jsjs/jse/jss/zrzy) — find correct
+   hosts. So Jiangsu depts are batchable but need: (a) solve unitid discovery, (b)
+   identify each dept's policy-doc column id, (c) multi-site refactor of jiangsu.py.
+   **The provincial 苏政发/苏政办发 cluster (bulk of the 苏 frontier) is already handled
+   by the queued [BACKFILL]** (js → 991 docnums); dept regs (苏住建规) need this work.
+   NOTE: gkmlpt's clean auto-discovery was a Guangdong luxury; jpaas needs per-site
+   config extraction. Beijing next — characterize its CMS the same way before building.
 3. **Central** — gov.cn library (`gov --library`) covers State Council + ministries;
    add dedicated crawlers only for bodies the library misses.
 4. **[BLOCKED]** — huizhou/yangjiang/NPC need a China/residential vantage point.
