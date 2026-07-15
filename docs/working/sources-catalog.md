@@ -1,0 +1,125 @@
+# Sources catalog — what we don't fully have yet, and the plan
+
+Snapshot 2026-07-15. Purpose: label every gap by HOW we close it, so work is a
+matter of execution, not rediscovery. Built from three inputs: the site inventory
+(`documents`/`sites`), the formal frontier (`cluster_frontier.py`), and the
+policy-trace hunt (top missing named 《》 articles). Regenerate the numbers with
+the queries at the bottom.
+
+Legend for the plan label on each source:
+- **[BACKFILL]** — we already HOLD the docs; they just lack `document_number`.
+  Fix = `scripts/rnd/backfill/backfill_docnums.py` (masthead 文号, jurisdiction-
+  guarded). No crawling. MUST dry-run per site: only works if docs lead with their
+  OWN 文号 (Shanghai/Jiangsu/gov yes; Zhongshan mostly no).
+- **[LIBRARY]** — reachable via gov.cn's policy-document library
+  (`gov --library --deep --categories gw|bm`). Central only.
+- **[CRAWLER+]** — we have a crawler but it needs deepening or department subsites.
+- **[BLOCKED]** — source is IP-gated from the droplet (datacenter/foreign IP).
+  Needs a residential/China vantage point or a proxy.
+- **[NEW]** — no crawler yet; a new source to build or investigate.
+
+---
+
+## A. [BACKFILL] Metadata gap — docs held, `document_number` empty
+
+The biggest single lever. Many crawlers saved bodies without parsing the masthead
+文号, so citations to these docs can't resolve even though we hold them. Extend
+`SITE_PREFIX` with each site's jurisdiction stem, dry-run, then backfill + rebuild.
+
+**Validated / done:**
+- `sh` Shanghai (沪) — DONE: +3,295 → dangling 4,799→948.
+- `gov` (国), `js` (苏), `bj` (京), `zhuhai` (珠), `mofcom` (商), `ndrc` (发改),
+  `mof` (财), `zhongshan` (中府, low yield) — queued (all-site backfill after nightly).
+
+**Candidates to add to SITE_PREFIX (high empty-docnum counts — dry-run each):**
+| site | docs | w/ docnum | jurisdiction stem (guess) |
+|---|---|---|---|
+| `szdp` Shenzhen depts | 8,586 | 3 | 深 (per-dept varies) |
+| `szlhq` Longhua | 6,280 | 104 | 深龙华/深华 |
+| `mzj` | 4,847 | 225 | (identify dept) |
+| `miit` | 4,057 | 159 | 工信部 |
+| `szlg` Longgang | 3,893 | 182 | 深龙岗/深龙 |
+| `heyuan` | 3,777 | 181 | 河/河府 |
+| `hrss` | 3,106 | 211 | 人社 |
+| `swj` `jtys` `zjj` `stic` `yjgl` `szeb` `fgw` `wjw` | ~2–3k each | ~2–5% | per-dept |
+| `samr` | 2,689 | 636 | 国市监 |
+| `cac` | 2,259 | 77 | 网信 |
+| `gz` Guangzhou | 3,656 | 2,049 | 穗 |
+- **CAVEAT:** GD municipal/district docs often DON'T lead with their own 文号
+  (Zhongshan yielded only 74/3,416). Dry-run first; low yield = these stay a real
+  gap (their 文号 sits elsewhere in the doc, or not at all).
+- **NOT backfillable:** media (`guancha`/`xinhua`/`ifeng`/`people`/`stdaily`) have
+  0 docnum by nature — news articles, not 文号 docs. They're citation SOURCES, not
+  targets. Leave empty. `npc` (29k laws) is metadata-only (names, not 文号).
+
+## B. [LIBRARY] Central — reachable via gov.cn policy-document library
+
+From the article hunt, these top missing articles are central and in the library:
+- 城市、镇控制性详细规划编制审批办法 (×915), 建设用地容积率管理办法 (×371) — **住建部 (MOHURD)**
+- 公务员录用体检通用标准 (×133), 事业单位公开招聘违纪违规… (×123) — **人社部**
+- 律师事务所年度检查考核办法 (×97) — **司法部**
+- 粤港澳大湾区发展规划纲要 (×318), 健康中国2030 (×115),
+  国家中长期科技发展规划纲要 (×105), 法治政府建设实施纲要 (×81) — **State Council / 中办国办**
+- COVID directives (新冠…防控方案第九版 ×174, 优化防控措施 ×213) — **国务院联防联控/卫健委**
+- **Plan:** `gov --library --deep --categories bm` (ministries) + `gw` (State Council).
+  Already built; the nightly + backfill rounds keep chipping these. The flagship
+  中办国办 plans may need a targeted fetch (co-issued docs surface irregularly).
+
+## C. [CRAWLER+] Existing crawler, needs department subsites / deepening
+
+The article hunt's dominant cluster is **Guangdong provincial DEPARTMENT regs** we
+don't reach — we crawl the GD main portal (`gd`), not each 厅/局 subsite:
+- 广东省城乡规划条例 (×975), 广东省控制性详细规划管理条例 (×340),
+  广东省自然资源厅…控制性详细规划管理指导意见 (×287),
+  广东省征地补偿保护标准 (×268) — **广东省自然资源厅** (gdnr.gov.cn or dept subsite)
+- 广东省事业单位公开招聘人员体检实施细则 (×244),
+  广东省公务员录用体检工作实施细则 (×81) — **广东省人社厅**
+- 广东省律师执业年度考核管理办法 (×92) — **广东省司法厅**
+- 深圳市科技计划项目管理办法 (×246), 深圳市财政局政府采购… (×166),
+  深圳市行政听证办法 (×109), 深圳市城市规划标准与准则 (×88) — **深圳市 depts**
+- **Plan:** add provincial/municipal DEPARTMENT subsites (自然资源厅, 人社厅, 司法厅,
+  住建厅) to the GD/Shenzhen crawlers. INVESTIGATE each dept's portal (gov.cn-style
+  probe) — likely a listing/search API. Highest-value NEW crawling target.
+
+## D. [BLOCKED] IP-gated from the droplet
+
+- `huizhou` 惠州 — article 惠州市加强建设项目征地拆迁管理规定 (×513) + others.
+  Datacenter-IP blocked (KNOWN, CLAUDE.md Open Questions). We hold 3,826 huizhou
+  docs (from earlier residential crawls) but can't refresh from the droplet.
+- `yangjiang` 阳江 — article 阳江市…征地青苗补偿规定 (×79). Same block. Hold 2,355.
+- `npc` full statutory text — China-IP gated (only metadata worldwide). Articles
+  中华人民共和国治安管理处罚条例 (×80), 粮食流通管理条例 (×78) are NPC admin regs.
+- **Plan:** residential-IP / China VPS / proxy, or accept the gap. Decision pending
+  (same as the NPC full-text decision). Note: many blocked-city regs are ALSO
+  republished on gd.gov.cn / gov.cn — may be reachable there without the proxy.
+
+## E. [NEW] / unknown — investigate
+
+- Any dept subsite from §C once probed becomes a concrete [CRAWLER+] or [NEW].
+- Sources the frontier's `--unreachable` families point to that aren't yet mapped
+  (run `cluster_frontier.py --unreachable`).
+
+---
+
+## Priority order
+1. **[BACKFILL] the high-yield sites** (gov/js/bj done-or-queued; then dry-run
+   miit/samr/gz/szdp and add those that lead with 文号). Cheapest, biggest.
+2. **[LIBRARY] targeted central fetches** for the flagship plans (大湾区纲要, etc.).
+3. **[CRAWLER+] GD provincial department subsites** (自然资源厅 first — resolves the
+   ×975/×340/×287 planning cluster). The main NEW crawling investment.
+4. **[BLOCKED] decision** on huizhou/yangjiang/NPC (proxy vs accept vs republisher).
+
+## Regenerate
+```sql
+-- site inventory + docnum coverage
+SELECT d.site_key, s.admin_level, COUNT(*) docs,
+       SUM(d.document_number!='') w_docnum
+FROM documents d LEFT JOIN sites s ON s.site_key=d.site_key
+GROUP BY d.site_key ORDER BY docs DESC;
+
+-- top missing articles (named 《》)
+SELECT COUNT(*) c, target_ref FROM citations
+WHERE target_id IS NULL AND citation_type='named'
+  AND LENGTH(target_ref) BETWEEN 8 AND 44
+GROUP BY target_ref ORDER BY c DESC LIMIT 50;
+```
