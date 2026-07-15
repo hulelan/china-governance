@@ -48,6 +48,20 @@ department/agency subdomains, add all that pass.
    by the queued [BACKFILL]** (js → 991 docnums); dept regs (苏住建规) need this work.
    NOTE: gkmlpt's clean auto-discovery was a Guangdong luxury; jpaas needs per-site
    config extraction. Beijing next — characterize its CMS the same way before building.
+
+   **BEIJING (probed 2026-07-15):** distinct CMS — NOT gkmlpt, NOT clearly jpaas.
+   `www.beijing.gov.cn`/住建委/发改委 show no platform markers on the homepage;
+   人社局 (`rsj.beijing.gov.cn`) uses `/col/col` (column-based, jpaas-family?). Needs
+   its own characterization (probe the listing/pagination mechanism) + crawler.
+   Provincial 京政发/京政办发 cluster already handled by queued [BACKFILL] (bj → 744).
+
+   **META-CONCLUSION:** each province runs a DIFFERENT CMS, so "full coverage" past
+   Guangdong is a per-province ENGINEERING program (characterize CMS → build/adapt
+   one crawler → batch that province's departments), NOT free batching. Guangdong's
+   gkmlpt was the one universal-auto-discovery ecosystem. GOOD NEWS: the provincial
+   *core* of every top cluster (苏政发, 京政发, 沪府发) is resolved by the [BACKFILL]
+   metadata fix on docs we ALREADY hold — so the expensive per-province crawler work
+   is only needed for the DEPARTMENT long tail, which is lower-volume per ref.
 3. **Central** — gov.cn library (`gov --library`) covers State Council + ministries;
    add dedicated crawlers only for bodies the library misses.
 4. **[BLOCKED]** — huizhou/yangjiang/NPC need a China/residential vantage point.
