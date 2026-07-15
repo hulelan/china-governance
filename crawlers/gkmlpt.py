@@ -161,6 +161,24 @@ SITES = {
         "base_url": "http://www.gd.gov.cn",
         "admin_level": "provincial",
     },
+    # Provincial departments (gkmlpt — SID auto-discovered; added 2026-07-15 to
+    # reach the 广东省自然资源厅/人社厅 regs that dominate the missing-article
+    # frontier, e.g. 广东省...控制性详细规划管理指导意见 ×287, 招聘体检细则 ×244).
+    "gdnr": {
+        "name": "Guangdong Natural Resources Dept (自然资源厅)",
+        "base_url": "https://nr.gd.gov.cn",
+        "admin_level": "provincial",
+    },
+    "gdhrss": {
+        "name": "Guangdong Human Resources Dept (人社厅)",
+        "base_url": "https://hrss.gd.gov.cn",
+        "admin_level": "provincial",
+    },
+    "gdzjst": {
+        "name": "Guangdong Housing & Construction Dept (住建厅)",
+        "base_url": "https://zfcxjst.gd.gov.cn",
+        "admin_level": "provincial",
+    },
     # Other Guangdong municipal
     "gz": {
         "name": "Guangzhou",

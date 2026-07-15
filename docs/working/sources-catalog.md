@@ -68,18 +68,30 @@ From the article hunt, these top missing articles are central and in the library
 ## C. [CRAWLER+] Existing crawler, needs department subsites / deepening
 
 The article hunt's dominant cluster is **Guangdong provincial DEPARTMENT regs** we
-don't reach — we crawl the GD main portal (`gd`), not each 厅/局 subsite:
-- 广东省城乡规划条例 (×975), 广东省控制性详细规划管理条例 (×340),
-  广东省自然资源厅…控制性详细规划管理指导意见 (×287),
-  广东省征地补偿保护标准 (×268) — **广东省自然资源厅** (gdnr.gov.cn or dept subsite)
-- 广东省事业单位公开招聘人员体检实施细则 (×244),
-  广东省公务员录用体检工作实施细则 (×81) — **广东省人社厅**
-- 广东省律师执业年度考核管理办法 (×92) — **广东省司法厅**
-- 深圳市科技计划项目管理办法 (×246), 深圳市财政局政府采购… (×166),
-  深圳市行政听证办法 (×109), 深圳市城市规划标准与准则 (×88) — **深圳市 depts**
-- **Plan:** add provincial/municipal DEPARTMENT subsites (自然资源厅, 人社厅, 司法厅,
-  住建厅) to the GD/Shenzhen crawlers. INVESTIGATE each dept's portal (gov.cn-style
-  probe) — likely a listing/search API. Highest-value NEW crawling target.
+don't reach — we crawl the GD main portal (`gd`), not each 厅/局 subsite.
+
+**HOW TO CRAWL — SOLVED (2026-07-15): the GD dept subsites run on `gkmlpt`.**
+Verified: `nr.gd.gov.cn` (SID=153, 27 cats), `hrss.gd.gov.cn` (SID=186),
+`zfcxjst.gd.gov.cn` (SID=233, 13 cats) all serve `/gkmlpt/index` and pass
+`crawlers.gkmlpt.discover_site()` — the SID + category tree auto-discover, so this
+is our EXISTING crawler, no new code. **Added to `SITES`** as `gdnr` / `gdhrss` /
+`gdzjst` (distinct keys — existing `hrss` is Shenzhen's `hrss.sz.gov.cn`, a
+different body). All reachable from the droplet. Run: `python3 -m crawlers.gkmlpt
+--site gdnr` (etc.), then citations rebuild. → resolves the 自然资源厅 (×287),
+人社厅 (×244/×81) clusters.
+- `司法厅` (`sft.gd.gov.cn`) returned HTTPError on the bare host — probe the right
+  path / try `www.` before adding `gdsft`.
+- **深圳市 dept docs** (深圳市科技计划项目管理办法 ×246, 深圳市财政局… ×166,
+  深圳市城市规划标准与准则 ×88): Shenzhen depts are ALREADY gkmlpt sites we crawl
+  (`szdp`, `stic`, …). These specific gaps are likely **[BACKFILL]** (metadata) or a
+  missing sub-dept — check after the docnum backfill lands before adding crawlers.
+
+**Provincial REGULATIONS (条例) — different source.** 广东省城乡规划条例 (×975),
+广东省控制性详细规划管理条例 (×340) are 省人大 acts, NOT 厅 docs — issued by the
+Provincial People's Congress. Candidate sources (both reachable): `rd.gd.cn`
+(GD 人大) and the GD 规章库 under `gd.gov.cn/gkmlpt`. TODO: locate 广东省城乡规划条例
+on one of them and confirm the listing mechanism (likely gkmlpt or a static
+regulations index). This single 条例 is the #1 missing article — worth a targeted fetch.
 
 ## D. [BLOCKED] IP-gated from the droplet
 
