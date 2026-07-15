@@ -179,6 +179,25 @@ SITES = {
         "base_url": "https://zfcxjst.gd.gov.cn",
         "admin_level": "provincial",
     },
+    # More GD provincial departments — all verified gkmlpt (SID auto-discovered,
+    # 2026-07-15 batch probe). 16/20 candidates crawlable; 水利厅/市场监管局/司法厅/
+    # 审计厅 need the correct domain (HTTPError on the guessed host).
+    "gdedu": {"name": "Guangdong Education Dept (教育厅)", "base_url": "https://edu.gd.gov.cn", "admin_level": "provincial"},
+    "gdstc": {"name": "Guangdong Science & Tech Dept (科技厅)", "base_url": "https://gdstc.gd.gov.cn", "admin_level": "provincial"},
+    "gdii": {"name": "Guangdong Industry & IT Dept (工信厅)", "base_url": "https://gdii.gd.gov.cn", "admin_level": "provincial"},
+    "gdga": {"name": "Guangdong Public Security Dept (公安厅)", "base_url": "https://gdga.gd.gov.cn", "admin_level": "provincial"},
+    "gdmz": {"name": "Guangdong Civil Affairs Dept (民政厅)", "base_url": "https://smzt.gd.gov.cn", "admin_level": "provincial"},
+    "gdczt": {"name": "Guangdong Finance Dept (财政厅)", "base_url": "https://czt.gd.gov.cn", "admin_level": "provincial"},
+    "gdee": {"name": "Guangdong Ecology & Environment Dept (生态环境厅)", "base_url": "https://gdee.gd.gov.cn", "admin_level": "provincial"},
+    "gdjt": {"name": "Guangdong Transport Dept (交通运输厅)", "base_url": "https://td.gd.gov.cn", "admin_level": "provincial"},
+    "gdny": {"name": "Guangdong Agriculture & Rural Affairs Dept (农业农村厅)", "base_url": "https://dara.gd.gov.cn", "admin_level": "provincial"},
+    "gdcom": {"name": "Guangdong Commerce Dept (商务厅)", "base_url": "https://com.gd.gov.cn", "admin_level": "provincial"},
+    "gdct": {"name": "Guangdong Culture & Tourism Dept (文旅厅)", "base_url": "https://whly.gd.gov.cn", "admin_level": "provincial"},
+    "gdwjw": {"name": "Guangdong Health Commission (卫健委)", "base_url": "https://wsjkw.gd.gov.cn", "admin_level": "provincial"},
+    "gdyjt": {"name": "Guangdong Emergency Management Dept (应急管理厅)", "base_url": "https://yjgl.gd.gov.cn", "admin_level": "provincial"},
+    "gdlyj": {"name": "Guangdong Forestry Bureau (林业局)", "base_url": "https://lyj.gd.gov.cn", "admin_level": "provincial"},
+    "gdhsa": {"name": "Guangdong Healthcare Security Bureau (医保局)", "base_url": "https://hsa.gd.gov.cn", "admin_level": "provincial"},
+    "gddrc": {"name": "Guangdong Development & Reform Commission (发改委)", "base_url": "https://drc.gd.gov.cn", "admin_level": "provincial"},
     # Other Guangdong municipal
     "gz": {
         "name": "Guangzhou",
