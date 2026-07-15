@@ -6,6 +6,35 @@ matter of execution, not rediscovery. Built from three inputs: the site inventor
 policy-trace hunt (top missing named 《》 articles). Regenerate the numbers with
 the queries at the bottom.
 
+## Coverage-expansion program (toward full coverage of CN gov sites)
+
+**Method that scales — gkmlpt batch discovery.** A huge share of Chinese gov sites
+run the `公开目录平台` (gkmlpt) CMS that `crawlers/gkmlpt.py` already handles: each
+is a free scraper (a `SITES` dict entry; SID + category tree auto-discover via
+`discover_site()`). So "build a scraper" for these = probe a candidate domain, and
+if `discover_site()` passes, add the entry. Batch-probe a list of a jurisdiction's
+department/agency subdomains, add all that pass.
+
+**Progress:**
+- **GD provincial departments — 19 added (2026-07-15):** 自然资源厅/人社厅/住建厅 +
+  教育厅/科技厅/工信厅/公安厅/民政厅/财政厅/生态环境厅/交通运输厅/农业农村厅/商务厅/
+  文旅厅/卫健委/应急管理厅/林业局/医保局/发改委. (`gdnr`, `gdedu`, … in `SITES`.)
+  Crawl queued via `coverage_round.sh`.
+- Still TODO in GD ecosystem: 水利厅/市场监管局/司法厅/审计厅 (find correct domains);
+  GD *municipal* departments; the broken/removed GD cities (Dongguan, Foshan, …).
+
+**Roadmap for full coverage (by platform, highest-volume first):**
+1. **GD ecosystem (gkmlpt)** — provincial depts (done), municipal depts, agencies.
+   All bulk-discoverable. Nearly free.
+2. **Other provinces' portals** — each is a DIFFERENT CMS (Shanghai = static year-
+   archives; Jiangsu = jpage API; Beijing/Chongqing/Zhejiang = their own). For each:
+   probe the province portal + its departments, characterize the mechanism, build/
+   adapt one crawler, then batch its departments the same way. Prioritize by frontier
+   rank (Beijing 2,749, Suzhou/Jiangsu 3,962, Chongqing 2,928, …).
+3. **Central** — gov.cn library (`gov --library`) covers State Council + ministries;
+   add dedicated crawlers only for bodies the library misses.
+4. **[BLOCKED]** — huizhou/yangjiang/NPC need a China/residential vantage point.
+
 Legend for the plan label on each source:
 - **[BACKFILL]** — we already HOLD the docs; they just lack `document_number`.
   Fix = `scripts/rnd/backfill/backfill_docnums.py` (masthead 文号, jurisdiction-
