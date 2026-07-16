@@ -76,9 +76,42 @@ The critical list. These are unreachable from the droplet's NYC datacenter IP:
 - **Anti-bot (403/412 — maybe fixable with headers):** 河南, 湖北.
 - **GD cities:** 惠州, 阳江 (datacenter-IP blocked; we hold older docs from residential crawls).
 - **NPC full statutory text** — China-IP gated (metadata worldwide).
-- **DECISION:** a mainland-China VPS or residential proxy unblocks the hard-blocked
-  majority in ONE move. Same decision pending for NPC full-text. This is the gating
-  factor for NATIONAL coverage — not crawler code.
+- **DECISION:** a China vantage point unblocks the hard-blocked majority in ONE move.
+  This is the gating factor for NATIONAL coverage — not crawler code.
+
+### Track 2 — China vantage point: options evaluation (2026-07-16)
+
+**Constraint:** DigitalOcean has NO mainland-China region (nearest is Singapore),
+so we can't just spin up a "China droplet." The gov sites block by IP
+(datacenter/foreign), so we need requests to *originate* from a China-friendly IP.
+Ranked by practicality for our use case (OUTBOUND crawling, low bandwidth — text):
+
+1. **DO Singapore droplet — cheapest test, DO IT FIRST (~$6/mo).** We already use DO;
+   spin up an SGP1 droplet and re-run `coverage_probe.py`. Singapore has better routing
+   to China than NYC and *may* be less throttled — but it's still a datacenter IP, so
+   it might not bypass the geo-block. ~1h to test, near-zero commitment. Could partially
+   help (better latency even where not blocked → also eases the timeout problem).
+2. **China residential proxy (Bright Data / Oxylabs / Smartproxy) — most likely to WORK.**
+   Real China *residential* IPs bypass both the datacenter-IP block AND the geo-block.
+   No ICP/account hassle. Pay per GB — and our crawls are text (low bandwidth), so cost
+   is modest (est. $5-15/GB; a full provincial crawl is maybe hundreds of MB). Architecture:
+   route only the BLOCKED-site requests through the proxy (a per-site proxy setting in
+   `base.fetch`) — small code change, main pipeline stays on the droplet. **Recommended
+   for the blocked set + NPC full-text.**
+3. **Mainland China VPS (Alibaba/Tencent/Huawei Cloud) — cheapest + fastest IF we can sign up.**
+   ~$5-15/mo, sub-second to gov sites. Outbound crawling does NOT need ICP filing (ICP is
+   for HOSTING a public site). Barrier: account creation needs China real-name (phone/ID/
+   payment). Run the crawler there, sync the DB back (rsync) or write to a shared DB.
+   - **Hong Kong region** (Alibaba/Tencent HK): international-friendly signup, no ICP —
+     BUT HK is often treated as FOREIGN by mainland gov sites, so it may NOT bypass the
+     block. Cheap to test if we go this route.
+4. **China-based collaborator** runs the crawler from a residential connection, ships the
+   rows. Free, real residential IP, but manual/not automated (like the officials.db seed).
+
+**Recommendation:** (a) test the DO Singapore droplet first (cheap, informative, also
+helps timeouts), then (b) if still blocked, stand up a China residential proxy scoped to
+the blocked-site list — smallest architecture change, no account barrier, pay-as-you-go.
+Avoid the mainland-VPS account hassle unless we want the full-speed option long-term.
 
 ## 6. Build queue (reachable, do now)
 1. **jpaas multi-site crawler** — unblocks Jiangsu depts + Shandong (+ likely more). Highest multiplier.
