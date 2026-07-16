@@ -273,10 +273,25 @@ def crawl_main_section(conn, fetch_bodies: bool = True):
 
     all_items = list(items)
 
+    # Incremental: stop once a full page is all already held (reverse-chron →
+    # older held). MOFCOM_DEEP=1 forces a full walk.
+    import os
+    deep = os.environ.get("MOFCOM_DEEP") == "1"
+
+    def _held(u):
+        return bool(u) and conn.execute(
+            "SELECT 1 FROM documents WHERE url = ?", (u,)).fetchone() is not None
+
+    keep_walking = deep or (bool(all_items) and not all(_held(i["url"]) for i in all_items))
     for page in range(2, total_pages + 1):
+        if not keep_walking:
+            log.info(f"  page {page-1} all already held — stopping walk (older held)")
+            break
         try:
             page_items, _ = _fetch_main_listing(page)
             all_items.extend(page_items)
+            if not deep and page_items and all(_held(i["url"]) for i in page_items):
+                keep_walking = False
         except Exception as e:
             log.warning(f"  Failed page {page}: {e}")
         time.sleep(REQUEST_DELAY)

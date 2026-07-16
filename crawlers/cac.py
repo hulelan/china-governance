@@ -337,6 +337,15 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
     else:
         total_pages = 50  # Conservative max if we can't determine total
 
+    # Incremental: stop once a full page is all already held (reverse-chron →
+    # older held). CAC_DEEP=1 forces a full walk.
+    import os
+    deep = os.environ.get("CAC_DEEP") == "1"
+
+    def _held(u):
+        return bool(u) and conn.execute(
+            "SELECT 1 FROM documents WHERE url = ?", (u,)).fetchone() is not None
+
     for page in range(1, total_pages + 1):
         try:
             data = _post_json_list(channel_code, page, per_page)
@@ -348,6 +357,9 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
                 log.info(f"  No items on page {page}, stopping pagination.")
                 break
             all_items.extend(page_items)
+            if not deep and all(_held(i["url"]) for i in page_items):
+                log.info(f"  page {page} all already held — stopping (older held)")
+                break
             if page % 5 == 0:
                 log.info(f"  Fetched JSON page {page}/{total_pages}, running total: {len(all_items)} items")
         except Exception as e:

@@ -326,10 +326,26 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
 
     all_items = list(items)
 
+    # Incremental: stop once a full page is all already held (reverse-chron →
+    # older held). This also avoids re-walking down to the dead 2023 URLs that
+    # 404. SAMR_DEEP=1 forces a full walk.
+    import os
+    deep = os.environ.get("SAMR_DEEP") == "1"
+
+    def _held(u):
+        return bool(u) and conn.execute(
+            "SELECT 1 FROM documents WHERE url = ?", (u,)).fetchone() is not None
+
+    keep_walking = deep or (bool(all_items) and not all(_held(i["url"]) for i in all_items))
     for page in range(2, total_pages + 1):
+        if not keep_walking:
+            log.info(f"  page {page-1} all already held — stopping walk (older held)")
+            break
         try:
             page_items, _ = _fetch_listing_page(page_id, page, referer)
             all_items.extend(page_items)
+            if not deep and page_items and all(_held(i["url"]) for i in page_items):
+                keep_walking = False
         except Exception as e:
             log.warning(f"  Failed page {page}: {e}")
         time.sleep(REQUEST_DELAY)
@@ -355,13 +371,13 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
             continue
 
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id FROM documents WHERE url = ?", (doc_url,)
         ).fetchone()
-        if existing and existing[1]:
+        if existing:  # skip ANY held doc, incl. body-less/404'd ones — don't re-fetch
             stored += 1
             continue
 
-        doc_id = existing[0] if existing else next_id(conn)
+        doc_id = next_id(conn)
         body_text = ""
         raw_html_path = ""
         doc_number = ""
