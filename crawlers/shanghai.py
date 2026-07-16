@@ -266,6 +266,17 @@ def crawl_section(
 
     log.info(f"  Found {len(archives)} year archives: {', '.join(y for y, _ in archives)}")
 
+    # Incremental early-exit: listings are reverse-chronological and old years are
+    # static, so we (a) stop paginating a year once a page has 0 new docs, and
+    # (b) stop the whole section once a year yields 0 new docs (older years held).
+    # This turns a full-history re-walk (~hundreds of 14.5s/page fetches → timeout)
+    # into a few recent-page fetches. Set SHANGHAI_DEEP=1 to force a full backfill.
+    import os
+    deep = os.environ.get("SHANGHAI_DEEP") == "1"
+
+    def _held(url: str) -> bool:
+        return conn.execute("SELECT 1 FROM documents WHERE url = ?", (url,)).fetchone() is not None
+
     all_items = []
     for year, archive_url in archives:
         try:
@@ -275,22 +286,32 @@ def crawl_section(
             continue
 
         total_pages = _get_total_pages(html)
-        items = _parse_listing(html, archive_url)
-
-        for page in range(2, total_pages + 1):
-            page_url = _page_url(archive_url, page)
+        page_items = _parse_listing(html, archive_url)
+        year_new, page = [], 1
+        while page_items is not None:
+            new_on_page = [it for it in page_items if not _held(it["url"])]
+            year_new.extend(new_on_page)
+            if not deep and not new_on_page:
+                break  # full page already held → older pages of this year are held
+            page += 1
+            if page > total_pages:
+                break
             try:
-                page_html = fetch(page_url)
-                items.extend(_parse_listing(page_html, page_url))
+                pu = _page_url(archive_url, page)
+                page_items = _parse_listing(fetch(pu), pu)
             except Exception as e:
                 log.warning(f"  Failed {year} page {page}: {e}")
+                break
             time.sleep(REQUEST_DELAY)
 
-        log.info(f"  {year}: {len(items)} docs ({total_pages} pages)")
-        all_items.extend(items)
+        log.info(f"  {year}: {len(year_new)} new ({total_pages} pages available)")
+        all_items.extend(year_new)
+        if not deep and not year_new:
+            log.info(f"  {year} fully held — stopping section (older years held)")
+            break
         time.sleep(REQUEST_DELAY)
 
-    log.info(f"  Total: {len(all_items)} document links")
+    log.info(f"  Total: {len(all_items)} new document links")
 
     stored = 0
     bodies = 0
