@@ -230,15 +230,36 @@ def init_db(db_path: Path = None) -> sqlite3.Connection:
 
 # --- HTTP ---
 
+# Permissive TLS context: many CN gov servers use legacy ciphers / curves / renego
+# that modern OpenSSL rejects (SSLV3_ALERT_HANDSHAKE_FAILURE, BAD_ECPOINT). We only
+# READ public pages, so relaxing cipher security level + cert checks is safe here and
+# unblocks servers like Shandong/Hunan. Built once, reused by fetch/fetch_json.
+import ssl as _ssl
+
+def _permissive_ssl_ctx():
+    ctx = _ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = _ssl.CERT_NONE
+    try:
+        ctx.set_ciphers("DEFAULT:@SECLEVEL=1")   # allow legacy ciphers
+    except _ssl.SSLError:
+        pass
+    ctx.options |= getattr(_ssl, "OP_LEGACY_SERVER_CONNECT", 0x4)  # legacy renegotiation
+    return ctx
+
+_SSL_CTX = _permissive_ssl_ctx()
+
+
 def fetch(url: str, timeout: int = 20, retries: int = 3, headers: dict = None) -> str:
     """Fetch a URL and return the response body as a string."""
     hdrs = {"User-Agent": USER_AGENT}
     if headers:
         hdrs.update(headers)
     req = urllib.request.Request(url, headers=hdrs)
+    _ctx = _SSL_CTX if url.startswith("https") else None
     for attempt in range(retries):
         try:
-            resp = urllib.request.urlopen(req, timeout=timeout)
+            resp = urllib.request.urlopen(req, timeout=timeout, context=_ctx)
             return resp.read().decode("utf-8", errors="replace")
         except urllib.error.HTTPError as e:
             if e.code in (404, 410, 550):
