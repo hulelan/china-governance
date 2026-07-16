@@ -211,6 +211,10 @@ def crawl_section(
     if total == 0:
         return 0
 
+    # Incremental: stop once a page has no new docs (reverse-chron → older held).
+    # HLJ_DEEP=1 forces a full walk.
+    import os
+    deep = os.environ.get("HLJ_DEEP") == "1"
     stored = 0
     bodies = 0
 
@@ -223,6 +227,7 @@ def crawl_section(
                 continue
 
         results = data.get("results") or []
+        new_on_page = 0
         for result in results:
             doc_url = result.get("url", "")
             if doc_url and not doc_url.startswith("http"):
@@ -240,6 +245,8 @@ def crawl_section(
             if existing and existing[1]:
                 stored += 1
                 continue
+            if not existing:
+                new_on_page += 1
 
             doc_id = existing[0] if existing else next_id(conn)
 
@@ -306,6 +313,9 @@ def crawl_section(
                 log.info(f"  Progress: {stored}/{total} stored, {bodies} bodies")
 
         conn.commit()
+        if not deep and new_on_page == 0:
+            log.info(f"  page {page} no new docs — stopping (older held)")
+            break
 
     log.info(f"  Done: {stored} documents stored, {bodies} bodies from API")
     return stored

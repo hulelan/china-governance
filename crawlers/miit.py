@@ -200,6 +200,15 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
     category = section["category"]
     log.info(f"--- Section: {name} ({section_key}, category={category}) ---")
 
+    # Incremental: stop once a full page's docs are all already held (reverse-chron
+    # → older held). MIIT is slow from NYC (~11s/page), so re-walking all history
+    # times out; this fetches only recent pages. MIIT_DEEP=1 forces a full walk.
+    import os
+    deep = os.environ.get("MIIT_DEEP") == "1"
+
+    def _held(u):
+        return conn.execute("SELECT 1 FROM documents WHERE url = ?", (u,)).fetchone() is not None
+
     all_items = []
     page = 1
     max_pages = 200  # Safety limit
@@ -211,6 +220,9 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
             if not page_items:
                 break
             all_items.extend(page_items)
+            if not deep and all(_held(i["url"]) for i in page_items):
+                log.info(f"  page {page} all already held — stopping (older held)")
+                break
             if page % 10 == 0:
                 log.info(f"  Page {page}: {len(all_items)} items so far")
         except Exception as e:

@@ -258,8 +258,21 @@ def crawl_section(
 
     all_items = resp["data"].get("list", [])
 
-    # Fetch remaining pages
+    # Incremental: stop the listing walk once a full page's docs are all already
+    # held. Listings are reverse-chronological, so older pages are held too — no need
+    # to re-fetch the whole back-catalog every night. SUZHOU_DEEP=1 forces a full walk.
+    import os
+    deep = os.environ.get("SUZHOU_DEEP") == "1"
+
+    def _held(u):
+        return bool(u) and conn.execute(
+            "SELECT 1 FROM documents WHERE url = ?", (u,)).fetchone() is not None
+
+    keep_walking = deep or (bool(all_items) and not all(_held(i.get("URL", "")) for i in all_items))
     for page in range(2, total_pages + 1):
+        if not keep_walking:
+            log.info(f"  page {page-1} all already held — stopping walk (older held)")
+            break
         resp = _fetch_api_page(page, channel_id)
         if not resp or not resp.get("data"):
             log.warning(f"  Failed page {page}/{total_pages}")
@@ -269,6 +282,8 @@ def crawl_section(
             log.info(f"  Empty page {page} — stopping")
             break
         all_items.extend(page_items)
+        if not deep and all(_held(i.get("URL", "")) for i in page_items):
+            keep_walking = False
 
         if page % 20 == 0:
             log.info(f"  Listing progress: {page}/{total_pages} pages, {len(all_items)} items")
