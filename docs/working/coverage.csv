@@ -1,0 +1,138 @@
+level,name,jurisdiction,domain,cms,http,status,site_key,docs
+municipality,北京,北京,beijing.gov.cn,-,-,CRAWLED,bj,1918
+municipality,天津,天津,tj.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+municipality,上海,上海,shanghai.gov.cn,-,-,CRAWLED,sh,3852
+municipality,重庆,重庆,cq.gov.cn,-,-,CRAWLED,cq,703
+province,河北,河北,hebei.gov.cn,,000,BLOCKED,,
+province,山西,山西,shanxi.gov.cn,,000,BLOCKED,,
+province,内蒙古,内蒙古,nmg.gov.cn,,000,BLOCKED,,
+province,辽宁,辽宁,ln.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+province,吉林,吉林,jl.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+province,黑龙江,黑龙江,hlj.gov.cn,-,-,CRAWLED,hlj,2274
+province,江苏,江苏,jiangsu.gov.cn,-,-,CRAWLED,js,1083
+province,浙江,浙江,zj.gov.cn,-,-,CRAWLED,zj,313
+province,安徽,安徽,ah.gov.cn,,000,BLOCKED,,
+province,福建,福建,fujian.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+province,江西,江西,jiangxi.gov.cn,,000,BLOCKED,,
+province,山东,山东,shandong.gov.cn,jpaas,200,BUILDABLE,,
+province,河南,河南,henan.gov.cn,,403,ANTI-BOT,,
+province,湖北,湖北,hubei.gov.cn,,000,BLOCKED,,
+province,湖南,湖南,hunan.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+province,广东,广东,gd.gov.cn,-,-,CRAWLED,gd,6213
+province,广西,广西,gxzf.gov.cn,,000,BLOCKED,,
+province,海南,海南,hainan.gov.cn,,000,BLOCKED,,
+province,四川,四川,sc.gov.cn,,000,BLOCKED,,
+province,贵州,贵州,guizhou.gov.cn,,000,BLOCKED,,
+province,云南,云南,yn.gov.cn,col/,200,BUILDABLE,,
+province,西藏,西藏,xizang.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+province,陕西,陕西,shaanxi.gov.cn,,000,BLOCKED,,
+province,甘肃,甘肃,gansu.gov.cn,,412,ANTI-BOT,,
+province,青海,青海,qh.gov.cn,,000,BLOCKED,,
+province,宁夏,宁夏,nx.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+province,新疆,新疆,xinjiang.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+prefecture-city,石家庄,石家庄,sjz.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+prefecture-city,太原,太原,taiyuan.gov.cn,,000,BLOCKED,,
+prefecture-city,呼和浩特,呼和浩特,huhhot.gov.cn,,422,BLOCKED,,
+prefecture-city,沈阳,沈阳,shenyang.gov.cn,col/,200,BUILDABLE,,
+prefecture-city,长春,长春,changchun.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+prefecture-city,南京,南京,nanjing.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+prefecture-city,杭州,杭州,hangzhou.gov.cn,,000,BLOCKED,,
+prefecture-city,合肥,合肥,hefei.gov.cn,,000,BLOCKED,,
+prefecture-city,福州,福州,fuzhou.gov.cn,col/,200,BUILDABLE,,
+prefecture-city,南昌,南昌,nc.gov.cn,,000,BLOCKED,,
+prefecture-city,济南,济南,jinan.gov.cn,jpaas,200,BUILDABLE,,
+prefecture-city,郑州,郑州,zhengzhou.gov.cn,col/,200,BUILDABLE,,
+prefecture-city,武汉,武汉,wuhan.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+prefecture-city,长沙,长沙,changsha.gov.cn,,000,BLOCKED,,
+prefecture-city,南宁,南宁,nanning.gov.cn,,000,BLOCKED,,
+prefecture-city,海口,海口,haikou.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+prefecture-city,成都,成都,chengdu.gov.cn,,412,ANTI-BOT,,
+prefecture-city,贵阳,贵阳,guiyang.gov.cn,,000,BLOCKED,,
+prefecture-city,昆明,昆明,km.gov.cn,,000,BLOCKED,,
+prefecture-city,拉萨,拉萨,lasa.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+prefecture-city,西安,西安,xa.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+prefecture-city,兰州,兰州,lanzhou.gov.cn,,000,BLOCKED,,
+prefecture-city,西宁,西宁,xining.gov.cn,,000,BLOCKED,,
+prefecture-city,银川,银川,yinchuan.gov.cn,col/,200,BUILDABLE,,
+prefecture-city,乌鲁木齐,乌鲁木齐,urumqi.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+provincial-dept,Guangdong Natural Resources Dept (自然资源厅),广东,nr.gd.gov.cn,gkmlpt,200,CRAWLED,gdnr,299
+provincial-dept,Guangdong Human Resources Dept (人社厅),广东,hrss.gd.gov.cn,gkmlpt,200,BUILDABLE,gdhrss,
+provincial-dept,Guangdong Housing & Construction Dept (住建厅),广东,zfcxjst.gd.gov.cn,gkmlpt,200,CRAWLED,gdzjst,299
+provincial-dept,Guangdong Education Dept (教育厅),广东,edu.gd.gov.cn,gkmlpt,200,CRAWLED,gdedu,350
+provincial-dept,Guangdong Science & Tech Dept (科技厅),广东,gdstc.gd.gov.cn,gkmlpt,200,CRAWLED,gdstc,200
+provincial-dept,Guangdong Industry & IT Dept (工信厅),广东,gdii.gd.gov.cn,gkmlpt,200,BUILDABLE,gdii,
+provincial-dept,Guangdong Public Security Dept (公安厅),广东,gdga.gd.gov.cn,gkmlpt,200,BUILDABLE,gdga,
+provincial-dept,Guangdong Civil Affairs Dept (民政厅),广东,smzt.gd.gov.cn,gkmlpt,200,BUILDABLE,gdmz,
+provincial-dept,Guangdong Finance Dept (财政厅),广东,czt.gd.gov.cn,gkmlpt,200,BUILDABLE,gdczt,
+provincial-dept,Guangdong Ecology & Environment Dept (生态环境厅),广东,gdee.gd.gov.cn,gkmlpt,200,BUILDABLE,gdee,
+provincial-dept,Guangdong Transport Dept (交通运输厅),广东,td.gd.gov.cn,gkmlpt,200,BUILDABLE,gdjt,
+provincial-dept,Guangdong Agriculture & Rural Affairs Dept (农业农村厅),广东,dara.gd.gov.cn,gkmlpt,200,BUILDABLE,gdny,
+provincial-dept,Guangdong Commerce Dept (商务厅),广东,com.gd.gov.cn,gkmlpt,200,BUILDABLE,gdcom,
+provincial-dept,Guangdong Culture & Tourism Dept (文旅厅),广东,whly.gd.gov.cn,gkmlpt,200,BUILDABLE,gdct,
+provincial-dept,Guangdong Health Commission (卫健委),广东,wsjkw.gd.gov.cn,gkmlpt,200,BUILDABLE,gdwjw,
+provincial-dept,Guangdong Emergency Management Dept (应急管理厅),广东,yjgl.gd.gov.cn,gkmlpt,200,BUILDABLE,gdyjt,
+provincial-dept,Guangdong Forestry Bureau (林业局),广东,lyj.gd.gov.cn,gkmlpt,200,BUILDABLE,gdlyj,
+provincial-dept,Guangdong Healthcare Security Bureau (医保局),广东,hsa.gd.gov.cn,gkmlpt,200,BUILDABLE,gdhsa,
+provincial-dept,Guangdong Development & Reform Commission (发改委),广东,drc.gd.gov.cn,gkmlpt,200,BUILDABLE,gddrc,
+provincial-dept,Guangdong Statistics Bureau (统计局),广东,stats.gd.gov.cn,gkmlpt,200,BUILDABLE,gdstats,
+other-crawled,npc,,,,-,CRAWLED,npc,29208
+other-crawled,gov,,,,-,CRAWLED,gov,20155
+other-crawled,szdp,,,,-,CRAWLED,szdp,8586
+other-crawled,guancha,,,,-,CRAWLED,guancha,6403
+other-crawled,szlhq,,,,-,CRAWLED,szlhq,6280
+other-crawled,stdaily,,,,-,CRAWLED,stdaily,6010
+other-crawled,jieyang,,,,-,CRAWLED,jieyang,5872
+other-crawled,zhongshan,,,,-,CRAWLED,zhongshan,5152
+other-crawled,ga,,,,-,CRAWLED,ga,5093
+other-crawled,mzj,,,,-,CRAWLED,mzj,4847
+other-crawled,suzhou,,,,-,CRAWLED,suzhou,4842
+other-crawled,miit,,,,-,CRAWLED,miit,4265
+other-crawled,jiangmen,,,,-,CRAWLED,jiangmen,4241
+other-crawled,xinhua,,,,-,CRAWLED,xinhua,3921
+other-crawled,szlg,,,,-,CRAWLED,szlg,3893
+other-crawled,huizhou,,,,-,CRAWLED,huizhou,3826
+other-crawled,heyuan,,,,-,CRAWLED,heyuan,3777
+other-crawled,gz,,,,-,CRAWLED,gz,3656
+other-crawled,shanwei,,,,-,CRAWLED,shanwei,3610
+other-crawled,zhuhai,,,,-,CRAWLED,zhuhai,3540
+other-crawled,ifeng,,,,-,CRAWLED,ifeng,3470
+other-crawled,hrss,,,,-,CRAWLED,hrss,3106
+other-crawled,mofcom,,,,-,CRAWLED,mofcom,2978
+other-crawled,swj,,,,-,CRAWLED,swj,2920
+other-crawled,jtys,,,,-,CRAWLED,jtys,2903
+other-crawled,sz_invest,,,,-,CRAWLED,sz_invest,2761
+other-crawled,samr,,,,-,CRAWLED,samr,2689
+other-crawled,zjj,,,,-,CRAWLED,zjj,2388
+other-crawled,stic,,,,-,CRAWLED,stic,2362
+other-crawled,yangjiang,,,,-,CRAWLED,yangjiang,2355
+other-crawled,cac,,,,-,CRAWLED,cac,2260
+other-crawled,sf,,,,-,CRAWLED,sf,2033
+other-crawled,yjgl,,,,-,CRAWLED,yjgl,2018
+other-crawled,szeb,,,,-,CRAWLED,szeb,2012
+other-crawled,fgw,,,,-,CRAWLED,fgw,1953
+other-crawled,ndrc,,,,-,CRAWLED,ndrc,1644
+other-crawled,szpsq,,,,-,CRAWLED,szpsq,1635
+other-crawled,shaoguan,,,,-,CRAWLED,shaoguan,1613
+other-crawled,most,,,,-,CRAWLED,most,1573
+other-crawled,people,,,,-,CRAWLED,people,1490
+other-crawled,mof,,,,-,CRAWLED,mof,1297
+other-crawled,wjw,,,,-,CRAWLED,wjw,1262
+other-crawled,sic,,,,-,CRAWLED,sic,1154
+other-crawled,chinalawtranslate,,,,-,CRAWLED,chinalawtranslate,1103
+other-crawled,sz,,,,-,CRAWLED,sz,1024
+other-crawled,wuhan,,,,-,CRAWLED,wuhan,1001
+other-crawled,szgm,,,,-,CRAWLED,szgm,913
+other-crawled,szlh,,,,-,CRAWLED,szlh,762
+other-crawled,yunfu,,,,-,CRAWLED,yunfu,658
+other-crawled,mee,,,,-,CRAWLED,mee,586
+other-crawled,audit,,,,-,CRAWLED,audit,475
+other-crawled,nda,,,,-,CRAWLED,nda,457
+other-crawled,36kr,,,,-,CRAWLED,36kr,352
+other-crawled,moe,,,,-,CRAWLED,moe,343
+other-crawled,szns,,,,-,CRAWLED,szns,309
+other-crawled,ipc_court,,,,-,CRAWLED,ipc_court,298
+other-crawled,latepost,,,,-,CRAWLED,latepost,257
+other-crawled,szft,,,,-,CRAWLED,szft,211
+other-crawled,tsinghua_aiig,,,,-,CRAWLED,tsinghua_aiig,71
+other-crawled,hangzhou,,,,-,CRAWLED,hangzhou,49
+other-crawled,shantou,,,,-,CRAWLED,shantou,49
