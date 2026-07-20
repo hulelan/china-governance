@@ -20,11 +20,6 @@ from web.services.documents import (
     REF_PATTERN, get_admin_level,
 )
 from web.services.inbox import get_inbox_dates, get_documents_for_date
-from web.services.subsidies import (
-    get_subsidy_stats, get_subsidy_by_district, get_subsidy_by_sector,
-    get_subsidy_timeline, get_top_subsidy_programs, get_top_subsidy_documents,
-    get_central_subsidy_linkage,
-)
 from web.services.changes import (
     get_recent_changes, get_sync_runs, get_change_stats,
 )
@@ -247,19 +242,6 @@ async def chain_default(request: Request):
     return await chain_page(request, "ai")
 
 
-@router.get("/analysis/ai", response_class=HTMLResponse)
-async def analysis_ai(request: Request):
-    """Static write-up on AI governance with live document count."""
-    db = request.app.state.db
-    stats = await get_stats(db)
-    doc_count = await db.fetchval(
-        "SELECT COUNT(*) FROM documents WHERE title LIKE '%人工智能%' OR keywords LIKE '%人工智能%' OR abstract LIKE '%人工智能%'"
-    )
-    return templates.TemplateResponse("writeup.html", {
-        "request": request, "stats": stats, "doc_count": doc_count,
-    })
-
-
 @router.get("/officials", response_class=HTMLResponse)
 async def officials_page(request: Request):
     """Officials network — CCP elite career overlaps from Baidu Baike."""
@@ -270,39 +252,6 @@ async def officials_page(request: Request):
     })
 
 
-@router.get("/analysis/subsidies", response_class=HTMLResponse)
-async def analysis_subsidies(request: Request):
-    """Subsidy analysis report with district, sector, and timeline breakdowns."""
-    db = request.app.state.db
-    stats = await get_stats(db)
-    try:
-        subsidy_stats = await get_subsidy_stats(db)
-        by_district = await get_subsidy_by_district(db)
-        by_sector = await get_subsidy_by_sector(db)
-        timeline = await get_subsidy_timeline(db)
-        top_programs = await get_top_subsidy_programs(db)
-        top_docs = await get_top_subsidy_documents(db)
-        central_linkage = await get_central_subsidy_linkage(db)
-    except Exception:
-        # subsidy_items table may not exist yet
-        subsidy_stats = {"documents_with_amounts": 0, "total_items": 0, "total_amount_wan": 0, "total_amount_yi": 0}
-        by_district = []
-        by_sector = []
-        timeline = []
-        top_programs = []
-        top_docs = []
-        central_linkage = []
-
-    return templates.TemplateResponse("subsidies_writeup.html", {
-        "request": request, "stats": stats,
-        "subsidy_stats": subsidy_stats,
-        "by_district": by_district,
-        "by_sector": by_sector,
-        "timeline": timeline,
-        "top_programs": top_programs,
-        "top_docs": top_docs,
-        "central_linkage": central_linkage,
-    })
 
 
 @router.get("/inbox", response_class=HTMLResponse)

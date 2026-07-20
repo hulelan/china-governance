@@ -12,8 +12,6 @@ Routes:
     /network            D3.js citation network visualization
     /dashboard          Charts and corpus statistics
     /chain/{topic}      Cross-level policy chain explorer
-    /analysis/ai        AI governance write-up
-    /analysis/subsidies Subsidy analysis report
     /changes            Document change tracker (sync diffs)
     /api/v1/...         JSON API mirrors of the above
 
