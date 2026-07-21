@@ -46,7 +46,7 @@ CENTRAL = [
     ("税务总局 STA", "chinatax.gov.cn", "", "agency"),
     ("市场监管总局 SAMR", "samr.gov.cn", "samr", "agency"),
     ("金融监管总局 NFRA", "nfra.gov.cn", "", "agency"),
-    ("证监会 CSRC", "csrc.gov.cn", "", "agency"),
+    ("证监会 CSRC", "csrc.gov.cn", "csrc", "agency"),
     ("统计局 NBS", "stats.gov.cn", "", "agency"),
     ("知识产权局 CNIPA", "cnipa.gov.cn", "", "agency"),
     ("医保局 NHSA", "nhsa.gov.cn", "nhsa", "agency"),
@@ -62,7 +62,7 @@ CENTRAL = [
     ("全国人大 NPC", "npc.gov.cn", "npc", "power-organ"),
     ("全国政协 CPPCC", "cppcc.gov.cn", "", "power-organ"),
     ("最高法 SPC", "court.gov.cn", "ipc_court", "judiciary"),
-    ("最高检 SPP", "spp.gov.cn", "", "judiciary"),
+    ("最高检 SPP", "spp.gov.cn", "spp", "judiciary"),
     ("中央政法委", "chinapeace.gov.cn", "", "cpc"),
     ("共产党员网(中组部) 12371", "12371.cn", "", "cpc"),
 ]

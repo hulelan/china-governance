@@ -118,3 +118,35 @@ Avoid the mainland-VPS account hassle unless we want the full-speed option long-
 2. **Reachable unknown-CMS provinces** — characterize + build: 湖南/福建/辽宁/吉林/天津/云南(col)/新疆/宁夏/西藏.
 3. **GD leftover depts** — 水利厅/市场监管局/司法厅/审计厅 (find domains).
 4. **Anti-bot retry** — 河南/湖北 with browser headers+cookies.
+
+## 7. Central-apparatus build-out (2026-07-21)
+
+Probed all 46 reachable-uncrawled entities in `coverage.csv` by CMS. Reachability
+was never the blocker — all return HTTP 200 — but the central bodies are
+deliberately **heterogeneous** (no single discovery unlocks them like gkmlpt does
+Guangdong / jpaas does Jiangsu). CMS split: ~27 custom, ~11 col-based, ~8 TRS/WCM.
+
+**Built this round:**
+- `crawlers/trs.py` (generic TRS "recordset" dialect: list embedded in
+  `/col/colN/index.html`, encrypted-param `<nextgroup>` pagination) →
+  **医保局 nhsa (150)**, **广电总局 nrta (45)**. The ~9 col-based sites (全国政协,
+  济南, 郑州, 无锡, 沈阳, 福州, 银川, 云南) are reachable via this crawler but each
+  needs a small per-site fix (CPPCC = cert hostname mismatch [now handled by
+  base.py's TLS ctx, but returns transient 502]; 济南 = slow multi-column discover).
+- `crawlers/spp.py` — 最高检 法律法规库, static `.shtml`, date-in-URL, body in
+  `<div id="fontzoom">`. **40 docs** (Constitution, major laws, 2026 judicial
+  interpretations), all with body. Live + nightly.
+- `crawlers/csrc.py` — 证监会 政策法规库, per-article extraction from the zcfgk hub
+  (~150 links). **CSRC throttles bursts** (serves the 208 KB index after a fast
+  run); crawler uses browser UA + 2 s delay and safe-skips throttled responses.
+  Initial backfill deferred to the nightly (fresh IP, few new docs/day stays under
+  the throttle). Live + nightly.
+
+**Remaining high-value bespoke (harder — API/JS reverse-engineering each):**
+- **税务总局 chinatax** — the 法规库 (`fgk.chinatax.gov.cn`) is a **search-API DB**;
+  list loads via `search5/html/searchResult.html?searchWord=…` (JSON endpoint).
+  TODO: find + call the search JSON API, page through results.
+- **央行 PBOC** — hardest. Node-path structure (`/tiaofasi/NNN/index.html`); the
+  document list is **not adjacent to anchors in the static HTML** (likely a
+  companion data file or unusual markup). TODO: capture the real list source
+  (network trace) before writing a parser.
