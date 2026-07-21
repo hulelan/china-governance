@@ -137,7 +137,7 @@ def _body_of(html):
     return "\n".join(p for p in ps if len(p) >= 8)
 
 
-def crawl(conn, fetch_bodies=True, max_docs=None):
+def crawl(conn, fetch_bodies=True, max_docs=None, full=False):
     store_site(conn, SITE_KEY, CFG)
     sess = _Session()
     stored = 0
@@ -202,7 +202,9 @@ def crawl(conn, fetch_bodies=True, max_docs=None):
                     break
             conn.commit()
             # Incremental: a full page all-held means we've reached known docs.
-            if all_held and len(rows) == 30:
+            # --full disables this so a resumed backfill pages through the gap
+            # (skip-held dedups already-crawled docs) instead of stopping early.
+            if not full and all_held and len(rows) == 30:
                 break
             page += 1
             if page > (total // 30 + 2):
@@ -215,10 +217,11 @@ def main():
     ap = argparse.ArgumentParser(description="国家税务总局 (STA) 政策法规库 crawler")
     ap.add_argument("--list-only", action="store_true", help="metadata only, skip bodies")
     ap.add_argument("--max-docs", type=int, help="cap docs this run (bounded backfill)")
+    ap.add_argument("--full", action="store_true", help="page every category fully (resumable backfill; no early-exit)")
     ap.add_argument("--db")
     args = ap.parse_args()
     conn = init_db(args.db) if args.db else init_db()
-    crawl(conn, fetch_bodies=not args.list_only, max_docs=args.max_docs)
+    crawl(conn, fetch_bodies=not args.list_only, max_docs=args.max_docs, full=args.full)
     show_stats(conn)
 
 
