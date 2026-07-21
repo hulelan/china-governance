@@ -150,3 +150,18 @@ Guangdong / jpaas does Jiangsu). CMS split: ~27 custom, ~11 col-based, ~8 TRS/WC
   document list is **not adjacent to anchors in the static HTML** (likely a
   companion data file or unusual markup). TODO: capture the real list source
   (network trace) before writing a parser.
+
+### Update — all 4 high-value bespoke bodies built (2026-07-21)
+
+- **最高检 SPP** (`crawlers/spp.py`): 40 docs. ✓
+- **证监会 CSRC** (`crawlers/csrc.py`): 143 docs. ✓
+- **央行 PBOC** (`crawlers/pbc.py`): 27 docs (条法司 规范性文件 + 部门规章; date from
+  URL node-id, body in `<div id="zoom">`). ✓
+- **税务总局 chinatax** (`crawlers/chinatax.py`): 3-layer defense decoded (C3VK
+  cookie + layui + `getFileListByCodeId` JSON API keyed by UUID channelId). ~9,900
+  docs across 8 listflfg categories; **initial backfill runs in the background**
+  (bodies via C3VK, ~hours). If it dies, resume with `python -m crawlers.chinatax
+  --full` (pages every category fully + skip-held dedup — a plain restart would
+  early-exit at the newest held docs). Nightly runs incremental (early-exit). ✓
+
+All wired into daily_sync.sh Phase 1 (sequential — no writer contention) + CLAUDE.md.
