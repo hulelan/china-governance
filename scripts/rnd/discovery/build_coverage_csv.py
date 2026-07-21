@@ -43,7 +43,7 @@ CENTRAL = [
     ("审计署 CNAO", "audit.gov.cn", "", "ministry"),
     # State Council direct agencies / administrations
     ("海关总署 GACC", "customs.gov.cn", "", "agency"),
-    ("税务总局 STA", "chinatax.gov.cn", "", "agency"),
+    ("税务总局 STA", "chinatax.gov.cn", "chinatax", "agency"),
     ("市场监管总局 SAMR", "samr.gov.cn", "samr", "agency"),
     ("金融监管总局 NFRA", "nfra.gov.cn", "", "agency"),
     ("证监会 CSRC", "csrc.gov.cn", "csrc", "agency"),
