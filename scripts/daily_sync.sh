@@ -166,7 +166,7 @@ log "Phase 1: Crawling..."
 
 run_crawler "gkmlpt (40+ sites)" python3 -m crawlers.gkmlpt --sync
 
-for crawler in gov ndrc mof mee cac nda sic samr mofcom ipc_court spp csrc chinatax; do
+for crawler in gov ndrc mof mee cac nda sic samr mofcom ipc_court spp csrc chinatax pbc; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 

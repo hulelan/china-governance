@@ -52,6 +52,7 @@ python3 -m crawlers.spp                          # Supreme People's Procuratorat
 python3 -m crawlers.csrc                         # Securities regulator 证监会 (政策法规库, ~150 docs)
 python3 -m crawlers.chinatax                     # Tax admin 税务总局 政策法规库 (~9,900 docs; C3VK cookie + JSON API)
 python3 -m crawlers.chinatax --max-docs 500      # Bounded backfill chunk
+python3 -m crawlers.pbc                          # People's Bank of China 央行 条法司 (规范性文件+部门规章)
 python3 -m crawlers.trs --site nhsa             # TRS WCM central bodies (医保局 NHSA, 广电 NRTA)
 python3 -m crawlers.trs --list-sites            # Generic TRS "recordset" crawler (encrypted-param dialect)
 python3 -m crawlers.tsinghua_aiig               # Tsinghua AI Governance Institute

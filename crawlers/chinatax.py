@@ -75,12 +75,22 @@ _DOCNUM_RE = re.compile(r"([一-鿿]{2,12}〔\d{4}〕\d+号|国税发〔\d{4}〕
 
 
 class _Session:
-    """Fetches through the C3VK challenge, caching the domain-wide cookie."""
+    """Fetches through the C3VK challenge, caching the domain-wide cookie.
+
+    The cookie is max-age=300; we refresh it proactively (every 240 s) so body
+    fetches don't each pay a re-challenge round trip once it expires, and the API
+    (which doesn't return a shell) doesn't silently fail on an expired cookie.
+    """
 
     def __init__(self):
         self.cookie = ""
+        self.cookie_at = 0.0
 
-    def get(self, url, tries=2):
+    def _fresh(self):
+        return self.cookie and (time.time() - self.cookie_at) < 240
+
+    def get(self, url, tries=3):
+        body = ""
         for _ in range(tries):
             hdr = {"User-Agent": UA, "Referer": FGK + "/"}
             if self.cookie:
@@ -89,11 +99,17 @@ class _Session:
             m = _C3VK_RE.search(body)
             if m and len(body) < 1500:          # a challenge shell, not real content
                 self.cookie = "C3VK=" + m.group(1)
+                self.cookie_at = time.time()
                 continue
             return body
         return body
 
+    def ensure_cookie(self):
+        if not self._fresh():
+            self.get(FGK + "/")               # re-solves + stamps cookie_at
+
     def api(self, channel_id, page, size=30):
+        self.ensure_cookie()
         data = urllib.parse.urlencode(
             {"codeId": "", "channelId": channel_id, "page": page, "size": size}).encode()
         hdr = {"User-Agent": UA, "Content-Type": "application/x-www-form-urlencoded",

@@ -39,7 +39,7 @@ CENTRAL = [
     ("卫健委 NHC", "nhc.gov.cn", "", "ministry"),
     ("应急管理部 MEM", "mem.gov.cn", "", "ministry"),
     ("退役军人部 MVA", "mva.gov.cn", "", "ministry"),
-    ("央行 PBOC", "pbc.gov.cn", "", "ministry"),
+    ("央行 PBOC", "pbc.gov.cn", "pbc", "ministry"),
     ("审计署 CNAO", "audit.gov.cn", "", "ministry"),
     # State Council direct agencies / administrations
     ("海关总署 GACC", "customs.gov.cn", "", "agency"),
