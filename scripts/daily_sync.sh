@@ -170,6 +170,11 @@ for crawler in gov ndrc mof mee cac nda sic samr mofcom ipc_court; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
+# TRS WCM central bodies (recordset dialect — see crawlers/trs.py)
+for site in nhsa nrta; do
+    run_crawler "trs ($site)" python3 -m crawlers.trs --site $site
+done
+
 for crawler in beijing shanghai jiangsu chongqing wuhan suzhou heilongjiang; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
