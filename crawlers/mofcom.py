@@ -280,7 +280,7 @@ def crawl_main_section(conn, fetch_bodies: bool = True):
 
     def _held(u):
         return bool(u) and conn.execute(
-            "SELECT 1 FROM documents WHERE url = ?", (u,)).fetchone() is not None
+            "SELECT 1 FROM documents WHERE url = ? AND url != ''", (u,)).fetchone() is not None
 
     keep_walking = deep or (bool(all_items) and not all(_held(i["url"]) for i in all_items))
     for page in range(2, total_pages + 1):
@@ -306,7 +306,7 @@ def crawl_main_section(conn, fetch_bodies: bool = True):
     for item in all_items:
         doc_url = item["url"]
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
         if existing and existing[1]:
             stored += 1
@@ -533,7 +533,7 @@ def crawl_ec_list_section(conn, section_key: str, section: dict,
             continue
 
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
         if existing and existing[1]:
             stored += 1
@@ -644,7 +644,7 @@ def crawl_ec_zcfg_section(conn, fetch_bodies: bool = True):
             continue
 
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
         if existing and existing[1]:
             stored += 1

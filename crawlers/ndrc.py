@@ -169,7 +169,7 @@ def crawl_section(conn, section: str, section_name: str, fetch_bodies: bool = Tr
 
         # Check if already stored with body text
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
         if existing and existing[1]:
             stored += 1

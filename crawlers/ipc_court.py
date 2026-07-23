@@ -155,7 +155,7 @@ def crawl(conn, list_only: bool = False, deep: bool = False):
         url = f"{BASE_URL}/zh-cn/news/view-{aid}.html"
 
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (url,)
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (url,)
         ).fetchone()
         if existing and existing[1]:
             skipped += 1

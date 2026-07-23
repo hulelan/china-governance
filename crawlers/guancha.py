@@ -379,7 +379,7 @@ def crawl(conn, deep: bool = False, list_only: bool = False) -> int:
         # Skip only if we already have body OR a known redirect label —
         # rerunning the crawler should not re-fetch a known dead link.
         existing = conn.execute(
-            "SELECT id, body_text_cn, classify_genre_name FROM documents WHERE url = ?",
+            "SELECT id, body_text_cn, classify_genre_name FROM documents WHERE url = ? AND url != ''",
             (url,),
         ).fetchone()
         if existing and (existing[1] or existing[2]):

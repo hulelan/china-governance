@@ -207,7 +207,7 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
     deep = os.environ.get("MIIT_DEEP") == "1"
 
     def _held(u):
-        return conn.execute("SELECT 1 FROM documents WHERE url = ?", (u,)).fetchone() is not None
+        return conn.execute("SELECT 1 FROM documents WHERE url = ? AND url != ''", (u,)).fetchone() is not None
 
     all_items = []
     page = 1
@@ -253,7 +253,7 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
             continue
 
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
         if existing and existing[1]:
             skipped += 1

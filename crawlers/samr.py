@@ -334,7 +334,7 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
 
     def _held(u):
         return bool(u) and conn.execute(
-            "SELECT 1 FROM documents WHERE url = ?", (u,)).fetchone() is not None
+            "SELECT 1 FROM documents WHERE url = ? AND url != ''", (u,)).fetchone() is not None
 
     keep_walking = deep or (bool(all_items) and not all(_held(i["url"]) for i in all_items))
     for page in range(2, total_pages + 1):
@@ -371,7 +371,7 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
             continue
 
         existing = conn.execute(
-            "SELECT id FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
         if existing:  # skip ANY held doc, incl. body-less/404'd ones — don't re-fetch
             stored += 1

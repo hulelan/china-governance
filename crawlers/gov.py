@@ -141,7 +141,7 @@ def crawl_library(conn, categories=("gw",), n: int = 50, deep: bool = False,
                 if not url:
                     continue
                 existing = conn.execute(
-                    "SELECT id, body_text_cn FROM documents WHERE url = ?", (url,)
+                    "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (url,)
                 ).fetchone()
                 if existing and existing[1]:
                     continue  # already have body — skip
@@ -323,7 +323,7 @@ def crawl_all(conn, fetch_bodies: bool = True):
 
         # Check if already stored with body text
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
         if existing and existing[1]:
             stored += 1

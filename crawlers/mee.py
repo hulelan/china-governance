@@ -240,7 +240,7 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
     for item in all_items:
         doc_url = item["url"]
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
         if existing and existing[1]:
             stored += 1

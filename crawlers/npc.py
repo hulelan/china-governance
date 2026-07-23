@@ -239,7 +239,7 @@ def crawl(conn, search_content: str = "", limit: int = 0, fetch_bodies: bool = T
             doc_url = f"https://flk.npc.gov.cn/detail?id={law_id}"
 
             existing = conn.execute(
-                "SELECT id FROM documents WHERE url = ?", (doc_url,)
+                "SELECT id FROM documents WHERE url = ? AND url != ''", (doc_url,)
             ).fetchone()
             if existing:
                 skipped += 1

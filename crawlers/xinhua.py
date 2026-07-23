@@ -383,7 +383,7 @@ def crawl(conn, sections: list[str] = None, list_only: bool = False):
 
             # Skip if already crawled with body text
             existing = conn.execute(
-                "SELECT id, body_text_cn FROM documents WHERE url = ?", (url,)
+                "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (url,)
             ).fetchone()
             if existing and existing[1]:
                 skipped += 1

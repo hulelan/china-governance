@@ -344,7 +344,7 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
 
     def _held(u):
         return bool(u) and conn.execute(
-            "SELECT 1 FROM documents WHERE url = ?", (u,)).fetchone() is not None
+            "SELECT 1 FROM documents WHERE url = ? AND url != ''", (u,)).fetchone() is not None
 
     for page in range(1, total_pages + 1):
         try:
@@ -376,7 +376,7 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
     for item in all_items:
         doc_url = item["url"]
         existing = conn.execute(
-            "SELECT id, body_text_cn FROM documents WHERE url = ?", (doc_url,)
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
         if existing and existing[1]:
             skipped += 1
