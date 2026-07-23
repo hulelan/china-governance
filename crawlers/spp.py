@@ -76,7 +76,7 @@ def crawl(conn, fetch_bodies=True):
             if url in seen:
                 continue
             seen.add(url)
-            if conn.execute("SELECT 1 FROM documents WHERE url=?", (url,)).fetchone():
+            if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''", (url,)).fetchone():
                 continue
             date_pub = f"{d8[:4]}-{d8[4:6]}-{d8[6:8]}"
             doc_id = next_id(conn)

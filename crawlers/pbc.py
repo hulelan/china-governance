@@ -88,7 +88,7 @@ def crawl(conn, fetch_bodies=True):
         log.info(f"[{SITE_KEY}] {label} ({section}): {len(rows)} docs")
         for nid, title in rows:
             url = f"{BASE}/{section}/{nid}/index.html"
-            if conn.execute("SELECT 1 FROM documents WHERE url=?", (url,)).fetchone():
+            if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''", (url,)).fetchone():
                 continue
             if not title:
                 continue

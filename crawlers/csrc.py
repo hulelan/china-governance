@@ -86,7 +86,7 @@ def crawl(conn, fetch_bodies=True):
             if url in seen:
                 continue
             seen.add(url)
-            if conn.execute("SELECT 1 FROM documents WHERE url=?", (url,)).fetchone():
+            if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''", (url,)).fetchone():
                 continue
             doc_id = next_id(conn)
             try:

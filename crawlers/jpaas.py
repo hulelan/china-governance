@@ -118,7 +118,7 @@ def crawl_site(conn, site_key, cfg, fetch_bodies=True, max_empty=2):
             items = _parse_listing(html, base)
             new = 0
             for it in items:
-                if conn.execute("SELECT 1 FROM documents WHERE url=?", (it["url"],)).fetchone():
+                if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''", (it["url"],)).fetchone():
                     continue
                 new += 1
                 doc_id = next_id(conn)

@@ -178,7 +178,7 @@ def crawl(conn, fetch_bodies=True, max_docs=None, full=False):
                 url = _fgk_url(it.get("url", ""))
                 if not url or "content" not in url:
                     continue
-                if conn.execute("SELECT 1 FROM documents WHERE url=?", (url,)).fetchone():
+                if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''", (url,)).fetchone():
                     continue
                 all_held = False
                 title = H.unescape(it.get("title", "")).strip()

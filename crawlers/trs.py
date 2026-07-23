@@ -106,7 +106,7 @@ def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=40)
                 break
             all_held, new = True, 0
             for it in recs:
-                if conn.execute("SELECT 1 FROM documents WHERE url=?", (it["url"],)).fetchone():
+                if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''", (it["url"],)).fetchone():
                     continue
                 all_held, new = False, new + 1
                 doc_id = next_id(conn)
