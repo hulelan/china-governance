@@ -165,3 +165,37 @@ Guangdong / jpaas does Jiangsu). CMS split: ~27 custom, ~11 col-based, ~8 TRS/WC
   early-exit at the newest held docs). Nightly runs incremental (early-exit). ✓
 
 All wired into daily_sync.sh Phase 1 (sequential — no writer contention) + CLAUDE.md.
+
+---
+
+## 8. Generic gov "t-date" crawler + fleet perf fixes (2026-07-23)
+
+**`crawlers/govcms.py` — NEW generic crawler** for the central-ministry "t-date
+list" dialect (`/SECTION/YYYYMM/tYYYYMMDD_ID.html`, server-rendered list pages).
+The central-cluster analog of gkmlpt: add a site via `SITES` config, `--discover`
+maps its sub-sections, and a general "innermost `<div>` with the most `<p>`-text"
+body extractor handles per-template container variation (TRS_Editor / TRS_UEDITOR /
+xxgk / #UCAP-CONTENT). Reuses `gov._extract_metadata_table`.
+
+**5 central bodies live (wired into nightly + coverage):**
+- 水利部 MWR (`/zw/zcfg/{fl,bmgz,gfxwj}/`) — 56 docs, 95% body
+- 农业部 MARA (`/gk/zcfg/`) — 25 docs, 100% body
+- 文旅部 MCT (`/whzx/ggtz/`) — 20 docs (公告通知, short)
+- 统计局 NBS (`/xw/tjxw/tzgg/`, `/sj/zxfb/`) — 18 docs, 89% (misses = cross-domain)
+- 退役军人部 MVA (`/gongkai/zfxxgkpt/zhengce/gfxwj/`) — 15 docs, 100% body
+
+**Central bodies still to add** (JS-nav / different scheme — need section discovery
+via article-URL derivation): MOT, MOHRSS, CNIPA, GAS, MEM, NIA, CPPCC, 中央政法委,
+12371. One-offs (not t-date): NEA (hash-urls), NFGA (.jhtml), NFRA (SPA).
+
+**Fleet perf/correctness fixes (the daily-run killers):**
+- **Partial-index dedup fix, fleet-wide (41 queries / 31 crawlers).** Every
+  incremental crawler's `WHERE url = ?` pre-check omitted `AND url != ''`, so it
+  full-scanned the 224k-row table (SQLite won't use the partial `idx_documents_url`
+  without the predicate). Proven `SCAN → SEARCH USING INDEX`. This was the dominant
+  cost behind the ~8.7h daily run + 1800s crawler timeouts. Fixed (cd5c586, 40b82f3).
+- **gkmlpt IntegrityError fix (785ef2d).** A same-URL-under-new-id collision threw an
+  uncaught `IntegrityError` that aborted the whole 40-site sweep (→ 0 docs nightly).
+  Now caught + skipped.
+- **chinatax --full backfill** completing (2,567 → ~9,900) after the dedup fix
+  un-stalled it.
