@@ -71,6 +71,16 @@ SITES = {
         "base_url": "http://www.moa.gov.cn", "admin_level": "central",
         "sections": ["/gk/zcfg/"],
     },
+    "mot": {
+        "name": "Ministry of Transport (交通运输部)",
+        "base_url": "http://www.mot.gov.cn", "admin_level": "central",
+        "sections": ["/gongkai/zcjd/", "/xinwen/jiaotongyaowen/"],
+    },
+    "cppcc": {
+        "name": "CPPCC National Committee (全国政协)",
+        "base_url": "http://www.cppcc.gov.cn", "admin_level": "central",
+        "sections": ["/llyj/", "/wylz/wyjy/"],
+    },
 }
 
 # an article link ending in tYYYYMMDD_ID.html (relative or absolute; the /YYYYMM/
@@ -249,6 +259,8 @@ def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30)
                     "admin_level": cfg["admin_level"],
                 })
                 stored += 1
+                if stored % 20 == 0:      # commit periodically so a long section
+                    conn.commit()         # (e.g. MOT's ~477) is resumable, not lost
             conn.commit()
             log.info(f"  {section} [{page_url.split('/')[-1]}]: +{new}")
             if not deep:

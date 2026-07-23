@@ -31,7 +31,7 @@ CENTRAL = [
     ("自然资源部 MNR", "mnr.gov.cn", "", "ministry"),
     ("生态环境部 MEE", "mee.gov.cn", "mee", "ministry"),
     ("住建部 MOHURD", "mohurd.gov.cn", "", "ministry"),
-    ("交通运输部 MOT", "mot.gov.cn", "", "ministry"),
+    ("交通运输部 MOT", "mot.gov.cn", "mot", "ministry"),
     ("水利部 MWR", "mwr.gov.cn", "mwr", "ministry"),
     ("农业农村部 MARA", "moa.gov.cn", "mara", "ministry"),
     ("商务部 MOFCOM", "mofcom.gov.cn", "mofcom", "ministry"),
@@ -60,7 +60,7 @@ CENTRAL = [
     ("体育总局 GAS", "sport.gov.cn", "", "agency"),
     # power organs / judiciary / CPC
     ("全国人大 NPC", "npc.gov.cn", "npc", "power-organ"),
-    ("全国政协 CPPCC", "cppcc.gov.cn", "", "power-organ"),
+    ("全国政协 CPPCC", "cppcc.gov.cn", "cppcc", "power-organ"),
     ("最高法 SPC", "court.gov.cn", "ipc_court", "judiciary"),
     ("最高检 SPP", "spp.gov.cn", "spp", "judiciary"),
     ("中央政法委", "chinapeace.gov.cn", "", "cpc"),
