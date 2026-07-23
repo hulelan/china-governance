@@ -176,7 +176,7 @@ for site in nhsa nrta; do
 done
 
 # Generic gov t-date list crawlers (central ministries — see crawlers/govcms.py)
-for site in mwr; do
+for site in mwr nbs mva mct mara; do
     run_crawler "govcms ($site)" python3 -m crawlers.govcms --site $site
 done
 

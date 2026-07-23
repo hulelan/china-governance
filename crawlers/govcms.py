@@ -54,7 +54,22 @@ SITES = {
     "mct": {
         "name": "Ministry of Culture & Tourism (文旅部)",
         "base_url": "http://www.mct.gov.cn", "admin_level": "central",
-        "sections": ["/zwgk/zcfg/", "/zwgk/zfxxgkml/"],
+        "sections": ["/whzx/ggtz/"],
+    },
+    "nbs": {
+        "name": "National Bureau of Statistics (国家统计局)",
+        "base_url": "http://www.stats.gov.cn", "admin_level": "central",
+        "sections": ["/xw/tjxw/tzgg/", "/sj/zxfb/"],
+    },
+    "mva": {
+        "name": "Ministry of Veterans Affairs (退役军人事务部)",
+        "base_url": "http://www.mva.gov.cn", "admin_level": "central",
+        "sections": ["/gongkai/zfxxgkpt/zhengce/gfxwj/"],
+    },
+    "mara": {
+        "name": "Ministry of Agriculture & Rural Affairs (农业农村部)",
+        "base_url": "http://www.moa.gov.cn", "admin_level": "central",
+        "sections": ["/gk/zcfg/"],
     },
 }
 
@@ -64,15 +79,19 @@ _ART_RE = re.compile(r'<a\s+[^>]*href="([^"]*?t(\d{8})_\d+\.s?html?)"[^>]*>(.*?)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
+# Known tight content containers, tried first (fast path for common templates).
 _BODY_CONTAINERS = [
-    (r'id="UCAP-CONTENT"', r'</div>'),
-    (r'class="TRS_Editor"', r'</div>'),
-    (r'id="zoom"', r'</div>'),
-    (r'class="[^"]*\bview\b[^"]*TRS', r'</div>'),
-    (r'class="[^"]*article[-_]?con', r'</div>'),
-    (r'class="[^"]*content[-_]?(?:box|main|body)', r'</div>'),
-    (r'class="content"', r'</div>'),
+    r'id="UCAP-CONTENT"',
+    r'class="[^"]*trs_editor_view',          # TRS UEditor (mva etc.)
+    r'class="[^"]*TRS_UEDITOR',
+    r'class="[^"]*TRS_Editor',
+    r'id="zoom"', r'id="Zoom"',
+    r'class="[^"]*\bview\b[^"]*TRS',
+    r'class="[^"]*xxgk[-_]?content',
+    r'class="[^"]*article[-_]?(?:con|content|text)',
+    r'class="[^"]*content[-_]?(?:box|main|body|text)',
 ]
+_FOOT_CUT = re.compile(r'(相关(?:附件|链接|文件|报道)|扫一扫|打印本页|class="[^"]*(?:foot|share|xglj|fujian|print))')
 
 
 def _clean(t: str) -> str:
@@ -81,25 +100,40 @@ def _clean(t: str) -> str:
     return re.sub(r"\s+", " ", t).strip()
 
 
+def _region_text(region: str) -> str:
+    region = _FOOT_CUT.split(region, 1)[0]
+    region = re.sub(r"<br\s*/?>", "\n", region)
+    region = re.sub(r"</p>", "\n", region)
+    text = H.unescape(re.sub(r"<[^>]+>", "", region))
+    text = re.sub(r"[ \t]+", " ", text)
+    return re.sub(r"\n\s*\n+", "\n", text).strip()
+
+
 def _extract_body(html: str) -> str:
-    """Try common gov content containers; return the longest plausible text."""
-    best = ""
-    for pat, _ in _BODY_CONTAINERS:
+    """Extract article body. Try known containers first; else fall back to the
+    INNERMOST <div> carrying the most <p>-text (deepest wins on nested ties, so
+    we skip wrapper divs that also contain the sidebar/nav)."""
+    for pat in _BODY_CONTAINERS:
         m = re.search(pat, html)
-        if not m:
-            continue
-        region = html[m.start():m.start() + 120_000]
-        # cut at footer / attachments / share widgets
-        region = re.split(r'(相关(?:附件|链接|文件|报道)|class="[^"]*(?:foot|share|xglj|fujian))',
-                          region, 1)[0]
-        region = re.sub(r"<br\s*/?>", "\n", region)
-        region = re.sub(r"</p>", "\n", region)
-        text = H.unescape(re.sub(r"<[^>]+>", "", region))
-        text = re.sub(r"[ \t]+", " ", text)
-        text = re.sub(r"\n\s*\n+", "\n", text).strip()
-        if len(text) > len(best):
-            best = text
-    return best if len(best) > 40 else ""
+        if m:
+            t = _region_text(html[m.start():m.start() + 120_000])
+            if len(t) > 80:
+                return t
+    # fallback: score every div by the <p>-text immediately inside it
+    cands = []
+    for m in re.finditer(r"<div\b[^>]*>", html):
+        region = html[m.end():m.end() + 80_000]
+        ptext = sum(len(re.sub(r"<[^>]+>", "", x))
+                    for x in re.findall(r"<p[^>]*>(.*?)</p>", region, re.S))
+        if ptext > 200:
+            cands.append((ptext, m.end(), region))
+    if cands:
+        top = max(c[0] for c in cands)
+        # among near-top scorers, the innermost (largest start offset) is the
+        # actual content div, not an enclosing wrapper.
+        _, _, region = max((c for c in cands if c[0] >= top * 0.9), key=lambda c: c[1])
+        return _region_text(region)
+    return ""
 
 
 def _list_articles(page_html: str, page_url: str) -> list:
