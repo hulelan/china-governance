@@ -81,6 +81,29 @@ SITES = {
         "base_url": "http://www.cppcc.gov.cn", "admin_level": "central",
         "sections": ["/llyj/", "/wylz/wyjy/"],
     },
+    # --- provincial / municipal portals (t-date dialect) ---
+    "jilin": {
+        "name": "Jilin Province (吉林省)",
+        "base_url": "http://www.jl.gov.cn", "admin_level": "provincial",
+        "sections": ["/yaowen/", "/szyw/zwlb/"],
+    },
+    "fujian": {
+        "name": "Fujian Province (福建省)",
+        "base_url": "http://www.fujian.gov.cn", "admin_level": "provincial",
+        "sections": ["/zwgk/tzgg/", "/xwdt/mszx/"],
+    },
+    "hunan": {
+        "name": "Hunan Province (湖南省)",
+        "base_url": "http://www.hunan.gov.cn", "admin_level": "provincial",
+        "sections": ["/hnszf/xxgk/zfgz/", "/hnszf/xxgk/tzgg/swszf/"],
+    },
+    "shenyang": {
+        "name": "Shenyang (沈阳市)",
+        "base_url": "http://www.shenyang.gov.cn", "admin_level": "municipal",
+        "sections": ["/zwgk/zwdt/szfxx/zydt/", "/zwgk/zwdt/bmdt/"],
+    },
+    # TODO: qingdao (青岛) + tianjin (天津) expose t-date on the homepage but the
+    # derived section dirs aren't browsable list pages — need section rediscovery.
 }
 
 # an article link ending in tYYYYMMDD_ID.html (relative or absolute; the /YYYYMM/
