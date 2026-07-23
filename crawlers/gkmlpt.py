@@ -14,6 +14,7 @@ Usage:
 import argparse
 import json
 import re
+import sqlite3
 import time
 from datetime import datetime, timezone
 
@@ -493,7 +494,8 @@ def store_categories(conn, site_key: str, tree: list, parent_id: int = 0):
 
 def store_gkmlpt_document(conn, site_key: str, article: dict, body_text: str, raw_html_path: str):
     """Insert or update a document record from gkmlpt API data."""
-    conn.execute(
+    try:
+        conn.execute(
         """INSERT INTO documents (
             id, site_key, category_id, title, document_number, identifier,
             publisher, keywords, date_written, date_published, display_publish_time,
@@ -531,7 +533,13 @@ def store_gkmlpt_document(conn, site_key: str, article: dict, body_text: str, ra
             raw_html_path,
             datetime.now(timezone.utc).isoformat(),
         ),
-    )
+        )
+    except sqlite3.IntegrityError:
+        # Same article URL already stored under a different gkmlpt id
+        # (cross-post / re-index across category feeds). We already have the
+        # doc — skip rather than abort the whole multi-site sweep. Mirrors
+        # base.store_document's designed "IntegrityError-skip on insert".
+        pass
 
 
 # --- Main Crawl Loop ---
