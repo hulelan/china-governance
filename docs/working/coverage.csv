@@ -21,20 +21,20 @@ central:ministry,文旅部 MCT,中央,mct.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:ministry,卫健委 NHC,中央,nhc.gov.cn,,000,BLOCKED,,
 central:ministry,应急管理部 MEM,中央,mem.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:ministry,退役军人部 MVA,中央,mva.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-central:ministry,央行 PBOC,中央,pbc.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+central:ministry,央行 PBOC,中央,pbc.gov.cn,-,-,CRAWLED,pbc,27
 central:ministry,审计署 CNAO,中央,audit.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:agency,海关总署 GACC,中央,customs.gov.cn,,000,BLOCKED,,
-central:agency,税务总局 STA,中央,chinatax.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+central:agency,税务总局 STA,中央,chinatax.gov.cn,-,-,CRAWLED,chinatax,2567
 central:agency,市场监管总局 SAMR,中央,samr.gov.cn,-,-,CRAWLED,samr,3650
 central:agency,金融监管总局 NFRA,中央,nfra.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-central:agency,证监会 CSRC,中央,csrc.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+central:agency,证监会 CSRC,中央,csrc.gov.cn,-,-,CRAWLED,csrc,144
 central:agency,统计局 NBS,中央,stats.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:agency,知识产权局 CNIPA,中央,cnipa.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-central:agency,医保局 NHSA,中央,nhsa.gov.cn,col/,200,BUILDABLE,,
+central:agency,医保局 NHSA,中央,nhsa.gov.cn,-,-,CRAWLED,nhsa,153
 central:agency,国家网信办 CAC,中央,cac.gov.cn,-,-,CRAWLED,cac,2266
 central:agency,国家数据局 NDA,中央,nda.gov.cn,-,-,CRAWLED,nda,458
 central:agency,国家能源局 NEA,中央,nea.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-central:agency,广电总局 NRTA,中央,nrta.gov.cn,col/,200,BUILDABLE,,
+central:agency,广电总局 NRTA,中央,nrta.gov.cn,-,-,CRAWLED,nrta,45
 central:agency,药监局 NMPA,中央,nmpa.gov.cn,,000,BLOCKED,,
 central:agency,林草局 NFGA,中央,forestry.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:agency,移民局 NIA,中央,nia.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
@@ -42,7 +42,7 @@ central:agency,体育总局 GAS,中央,sport.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,
 central:power-organ,全国人大 NPC,中央,npc.gov.cn,-,-,CRAWLED,npc,29208
 central:power-organ,全国政协 CPPCC,中央,cppcc.gov.cn,col/,200,BUILDABLE,,
 central:judiciary,最高法 SPC,中央,court.gov.cn,-,-,CRAWLED,ipc_court,298
-central:judiciary,最高检 SPP,中央,spp.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+central:judiciary,最高检 SPP,中央,spp.gov.cn,-,-,CRAWLED,spp,40
 central:cpc,中央政法委,中央,chinapeace.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:cpc,共产党员网(中组部) 12371,中央,12371.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 municipality,北京,北京,beijing.gov.cn,-,-,CRAWLED,bj,1920
