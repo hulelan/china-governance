@@ -71,6 +71,12 @@ CATEGORY_PATHS = [
 
 _C3VK_RE = re.compile(r"C3VK=([a-z0-9]+)")
 _CHANNEL_RE = re.compile(r"channelId\s*=\s*[\"']?([a-f0-9]{32})")
+
+# List page size. The API serves up to 500/page fast; 200 keeps each response
+# modest while cutting a 5000-doc category from 167 list-calls to 25 — fewer
+# round trips = less chance of the fgk server throttling our IP (which is what
+# stalled the earlier deep-offset backfill: concurrent clients, not a real cap).
+PAGE_SIZE = 200
 _DOCNUM_RE = re.compile(r"([一-鿿]{2,12}〔\d{4}〕\d+号|国税发〔\d{4}〕\d+号|财税〔\d{4}〕\d+号)")
 
 
@@ -160,7 +166,7 @@ def crawl(conn, fetch_bodies=True, max_docs=None, full=False):
         page, done = 1, False
         while not done:
             try:
-                d = sess.api(channel, page, 30)
+                d = sess.api(channel, page, PAGE_SIZE)
             except Exception as e:
                 log.warning(f"  api page {page}: {e}")
                 break
@@ -204,10 +210,10 @@ def crawl(conn, fetch_bodies=True, max_docs=None, full=False):
             # Incremental: a full page all-held means we've reached known docs.
             # --full disables this so a resumed backfill pages through the gap
             # (skip-held dedups already-crawled docs) instead of stopping early.
-            if not full and all_held and len(rows) == 30:
+            if not full and all_held and len(rows) == PAGE_SIZE:
                 break
             page += 1
-            if page > (total // 30 + 2):
+            if page > (total // PAGE_SIZE + 2):
                 break
     log.info(f"[{SITE_KEY}] done: {stored} new docs")
     return stored
