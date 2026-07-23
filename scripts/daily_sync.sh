@@ -175,6 +175,11 @@ for site in nhsa nrta; do
     run_crawler "trs ($site)" python3 -m crawlers.trs --site $site
 done
 
+# Generic gov t-date list crawlers (central ministries — see crawlers/govcms.py)
+for site in mwr; do
+    run_crawler "govcms ($site)" python3 -m crawlers.govcms --site $site
+done
+
 for crawler in beijing shanghai jiangsu chongqing wuhan suzhou heilongjiang; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done

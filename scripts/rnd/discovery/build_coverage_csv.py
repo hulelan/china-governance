@@ -32,7 +32,7 @@ CENTRAL = [
     ("生态环境部 MEE", "mee.gov.cn", "mee", "ministry"),
     ("住建部 MOHURD", "mohurd.gov.cn", "", "ministry"),
     ("交通运输部 MOT", "mot.gov.cn", "", "ministry"),
-    ("水利部 MWR", "mwr.gov.cn", "", "ministry"),
+    ("水利部 MWR", "mwr.gov.cn", "mwr", "ministry"),
     ("农业农村部 MARA", "moa.gov.cn", "", "ministry"),
     ("商务部 MOFCOM", "mofcom.gov.cn", "mofcom", "ministry"),
     ("文旅部 MCT", "mct.gov.cn", "", "ministry"),
