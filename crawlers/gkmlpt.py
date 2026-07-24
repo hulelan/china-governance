@@ -534,12 +534,15 @@ def store_gkmlpt_document(conn, site_key: str, article: dict, body_text: str, ra
             datetime.now(timezone.utc).isoformat(),
         ),
         )
+        return True
     except sqlite3.IntegrityError:
         # Same article URL already stored under a different gkmlpt id
         # (cross-post / re-index across category feeds). We already have the
         # doc — skip rather than abort the whole multi-site sweep. Mirrors
         # base.store_document's designed "IntegrityError-skip on insert".
-        pass
+        # Return False so the caller skips _record_change too (its FK to
+        # documents(id) would fail for a doc that was never inserted).
+        return False
 
 
 # --- Main Crawl Loop ---
@@ -764,9 +767,9 @@ def sync_site(conn, site_key: str, site_cfg: dict):
                 raw_html_path = save_raw_html(site_key, article["id"], raw_html)
             time.sleep(REQUEST_DELAY)
 
-        store_gkmlpt_document(conn, site_key, article, body_text, raw_html_path)
-        _record_change(conn, doc_id, site_key, "added", None, None, None, sync_run_id)
-        added += 1
+        if store_gkmlpt_document(conn, site_key, article, body_text, raw_html_path):
+            _record_change(conn, doc_id, site_key, "added", None, None, None, sync_run_id)
+            added += 1
 
         if added % 20 == 0:
             conn.commit()
