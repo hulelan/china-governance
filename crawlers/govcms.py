@@ -109,16 +109,28 @@ SITES = {
         "base_url": "http://www.shandong.gov.cn", "admin_level": "provincial",
         "sections": ["/col/col305145/", "/col/col305158/"],
     },
+    "jinan": {
+        # Hanweb CMS: news + 政策解读 columns server-render hash /art/ links; the
+        # 通知公告/政府文件 columns render client-side (Hanweb datacall) — TODO those.
+        "name": "Jinan (济南市)",
+        "base_url": "http://www.jinan.gov.cn", "admin_level": "municipal",
+        "sections": ["/col/col118736/", "/col/col121799/"],  # 政策解读 (policy)
+    },
     # TODO: qingdao (青岛) + tianjin (天津) expose t-date on the homepage but the
     # derived section dirs aren't browsable list pages — need section rediscovery.
+    # TODO: jinan 通知公告/政府文件 columns use Hanweb client-side datacall — need
+    # browser network inspection to find the list endpoint.
 }
 
 # article link dialects:
 #  (A) t-date:  …/tYYYYMMDD_ID.html  (most central ministries)
 #  (B) /art/:   …/art/YYYY/M/D/art_COL_ID.html  (Shandong & many /col/ provinces)
 _ART_RE = re.compile(r'<a\s+[^>]*href="([^"]*?t(\d{8})_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+# /art/ comes in two shapes: /art/YYYY/M/D/art_NUM_NUM.html (Shandong) and
+# /art/YYYY/art_<hex>.html (Jinan/Hanweb). M/D are optional; art_ id is digits+_
+# or a hex hash.
 _ART_ART_RE = re.compile(
-    r'<a\s+[^>]*href="([^"]*?/art/(\d{4})/(\d{1,2})/(\d{1,2})/art_\d+_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+    r'<a\s+[^>]*href="([^"]*?/art/(\d{4})(?:/(\d{1,2})/(\d{1,2}))?/art_[0-9a-f_]+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
@@ -189,7 +201,8 @@ def _list_articles(page_html: str, page_url: str) -> list:
         matches.append((m, m.group(1), m.group(3), f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}"))
     for m in _ART_ART_RE.finditer(page_html):
         y, mo, d = m.group(2), m.group(3), m.group(4)
-        matches.append((m, m.group(1), m.group(5), f"{y}-{int(mo):02d}-{int(d):02d}"))
+        url_date = f"{y}-{int(mo):02d}-{int(d):02d}" if mo and d else f"{y}-01-01"
+        matches.append((m, m.group(1), m.group(5), url_date))
     out, seen = [], set()
     for m, href, inner, url_date in matches:
         url = urljoin(page_url, H.unescape(href))
