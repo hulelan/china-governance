@@ -10,7 +10,7 @@ crawlers.gkmlpt.discover_site does for Guangdong:
   -> fetch one column page -> the embedded dataproxy.jsp call carries unitid+webid.
 
 So adding a jpaas site is just a SITES entry (base_url); everything else discovers.
-Confirmed jpaas: Jiangsu (provincial + depts), Shandong, and likely more provinces
+Confirmed jpaas: Jiangsu (provincial + depts) and likely more provinces
 (see docs/working/coverage-tracker.md). Parsing/body extraction is reused from
 crawlers.jiangsu (same jpaas HTML).
 
@@ -47,8 +47,7 @@ SITES = {
     "js_fzggw": {"name": "Jiangsu DRC (江苏发改委)", "base_url": "https://fzggw.jiangsu.gov.cn", "admin_level": "provincial"},
     "js_gxt": {"name": "Jiangsu Industry & IT (江苏工信厅)", "base_url": "https://gxt.jiangsu.gov.cn", "admin_level": "provincial"},
     "js_jtyst": {"name": "Jiangsu Transport (江苏交通厅)", "base_url": "https://jtyst.jiangsu.gov.cn", "admin_level": "provincial"},
-    # Shandong provincial portal (jpaas)
-    "shandong": {"name": "Shandong Province (山东省)", "base_url": "http://www.shandong.gov.cn", "admin_level": "provincial"},  # https fails SSL handshake; http works
+    # Shandong: NOT jpaas — dataproxy returns empty; crawled by crawlers.govcms (/art/ dialect).
     # NOTE: 国家医保局 (nhsa) and 广电总局 (nrta) look jpaas (their homepages show /col/
     # links) but paginate via ENCRYPTED-param dataproxy and embed the listing as a TRS
     # <recordset>; they are crawled by crawlers.trs, not here.

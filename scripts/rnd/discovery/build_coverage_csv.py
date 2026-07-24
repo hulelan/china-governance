@@ -75,7 +75,7 @@ PROVINCES = [
     ("吉林", "jl.gov.cn", "province", "jilin"), ("黑龙江", "hlj.gov.cn", "province", "hlj"),
     ("江苏", "jiangsu.gov.cn", "province", "js"), ("浙江", "zj.gov.cn", "province", "zj"),
     ("安徽", "ah.gov.cn", "province", ""), ("福建", "fujian.gov.cn", "province", "fujian"),
-    ("江西", "jiangxi.gov.cn", "province", ""), ("山东", "shandong.gov.cn", "province", ""),
+    ("江西", "jiangxi.gov.cn", "province", ""), ("山东", "shandong.gov.cn", "province", "shandong"),
     ("河南", "henan.gov.cn", "province", ""), ("湖北", "hubei.gov.cn", "province", ""),
     ("湖南", "hunan.gov.cn", "province", "hunan"), ("广东", "gd.gov.cn", "province", "gd"),
     ("广西", "gxzf.gov.cn", "province", ""), ("海南", "hainan.gov.cn", "province", ""),

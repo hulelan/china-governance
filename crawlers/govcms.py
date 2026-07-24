@@ -102,13 +102,23 @@ SITES = {
         "base_url": "http://www.shenyang.gov.cn", "admin_level": "municipal",
         "sections": ["/zwgk/zwdt/szfxx/zydt/", "/zwgk/zwdt/bmdt/"],
     },
+    "shandong": {
+        # /art/ dialect: dataproxy.jsp returns empty; the /col/ index HTML lists
+        # /art/YYYY/M/D/art_C_D.html directly. (Not jpaas — see crawlers/jpaas.py note.)
+        "name": "Shandong Province (山东省)",
+        "base_url": "http://www.shandong.gov.cn", "admin_level": "provincial",
+        "sections": ["/col/col305145/", "/col/col305158/"],
+    },
     # TODO: qingdao (青岛) + tianjin (天津) expose t-date on the homepage but the
     # derived section dirs aren't browsable list pages — need section rediscovery.
 }
 
-# an article link ending in tYYYYMMDD_ID.html (relative or absolute; the /YYYYMM/
-# dir is common but not universal, so match on the t-date filename itself)
+# article link dialects:
+#  (A) t-date:  …/tYYYYMMDD_ID.html  (most central ministries)
+#  (B) /art/:   …/art/YYYY/M/D/art_COL_ID.html  (Shandong & many /col/ provinces)
 _ART_RE = re.compile(r'<a\s+[^>]*href="([^"]*?t(\d{8})_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+_ART_ART_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/art/(\d{4})/(\d{1,2})/(\d{1,2})/art_\d+_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
@@ -170,10 +180,18 @@ def _extract_body(html: str) -> str:
 
 
 def _list_articles(page_html: str, page_url: str) -> list:
-    """Extract [{url,title,date}] from a section list page (t-date anchors)."""
-    out, seen = [], set()
+    """Extract [{url,title,date}] from a section list page. Handles both article
+    URL dialects (t-date and /art/); date comes from the row if present, else the
+    URL itself (tYYYYMMDD or /art/YYYY/M/D/)."""
+    matches = []
     for m in _ART_RE.finditer(page_html):
-        href, ymd, inner = m.group(1), m.group(2), m.group(3)
+        ymd = m.group(2)
+        matches.append((m, m.group(1), m.group(3), f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}"))
+    for m in _ART_ART_RE.finditer(page_html):
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        matches.append((m, m.group(1), m.group(5), f"{y}-{int(mo):02d}-{int(d):02d}"))
+    out, seen = [], set()
+    for m, href, inner, url_date in matches:
         url = urljoin(page_url, H.unescape(href))
         if url in seen:
             continue
@@ -182,11 +200,9 @@ def _list_articles(page_html: str, page_url: str) -> list:
         title = _clean(ta.group(1) if ta else inner)
         if not title:
             continue
-        # date: prefer one in the same <li> row; fall back to the URL's tYYYYMMDD
         row = page_html[max(0, m.start() - 240):m.end() + 60]
         dm = _DATE_NEAR.search(row)
-        date = dm.group(1) if dm else f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}"
-        out.append({"url": url, "title": title, "date": date})
+        out.append({"url": url, "title": title, "date": dm.group(1) if dm else url_date})
     return out
 
 
