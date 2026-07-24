@@ -192,3 +192,8 @@ govcms EXPANSION TODO (reachable central bodies still needing sections found):
   - govcms section rediscovery: qingdao tianjin (t-date on homepage, wrong section dirs)
   - other provinces/cities: 辽宁 新疆 南京 西安 (no-tdate)
   - elsewhere.news/zh (Next.js JSON API — media)
+
+## elsewhere.news DONE (2026-07-24, e939fc9)
+- crawlers/elsewhere.py: 64 docs, 97% body. Next.js+Supabase (anon 401 → scrape server-rendered HTML). Technique proven: inspect framework → find data path → crawl. Live + nightly.
+- JS-site playbook: curl HTML → detect framework (_next/supabase/etc.) → check if server-rendered (scrape) vs client-fetched (find JSON API in bundles / browser network tab).
+- Next JS targets: 济南/郑州/无锡 (gov, likely need browser network inspection for their list API); other media.
