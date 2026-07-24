@@ -182,3 +182,13 @@ govcms EXPANSION TODO (reachable central bodies still needing sections found):
 - coverage.csv regenerated: CRAWLED 100->110, central 20->27.
 - shandong: jpaas discover fixed (http not https) but crawl=0 docs — jpaas.discover finds 政务公开 meta-columns not the 省政府文件 doc list (col 320658). NEEDS jpaas column-depth fix before wiring. NOT in nightly.
 - STILL TODO: qingdao/tianjin/mohrss govcms section rediscovery; 济南/郑州/无锡 col (bespoke); non-t-date central (cnipa/gas/mem/nia/政法委/12371/nea/nfga/nfra); elsewhere.news; jpaas depth fix (unlocks shandong + more provinces).
+
+## Session 2026-07-24 — govcms /art/ + col-city findings
+- govcms +/art/ dialect (ee44a57): unlocked 山东 (490 docs, ~80% body). govcms now 12 sites.
+- 济南/郑州/无锡 are NOT quick govcms adds: their policy columns list via JS (static /col/ index HTML has 0 /art/ or t-date links). 济南's 16-art cols are NEWS feeds not policy. Need browser network inspection to find the JSON list API → bespoke crawler.
+- REMAINING (all need bespoke reverse-engineering, no quick wins left):
+  - JS-list col cities: 济南 郑州 无锡 (find data API)
+  - non-t-date central bodies: MOHRSS(人社部,major) CNIPA GAS MEM NIA 政法委 12371 NEA NFGA NFRA
+  - govcms section rediscovery: qingdao tianjin (t-date on homepage, wrong section dirs)
+  - other provinces/cities: 辽宁 新疆 南京 西安 (no-tdate)
+  - elsewhere.news/zh (Next.js JSON API — media)
