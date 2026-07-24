@@ -292,6 +292,7 @@ nodes:
   - id: mot
     tier: state_council
     parent: gov
+    site_key: mot
     rank: "constituent (ministry)"
     name_en: "Ministry of Transport"
     name_cn: "交通运输部"
@@ -818,3 +819,130 @@ nodes:
     name_en: "Tsinghua AIIG"
     name_cn: "清华大学人工智能国际治理研究院"
     desc: "Tsinghua research institute. Bridge between academic AI governance and policy."
+
+  # --- Added 2026-07-24: newly-crawled central bodies, provinces, media ---
+  - id: mwr
+    tier: state_council
+    parent: gov
+    site_key: mwr
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Water Resources"
+    name_cn: "水利部"
+    desc: "Water resources, river basins, flood control, hydropower policy."
+  - id: mct
+    tier: state_council
+    parent: gov
+    site_key: mct
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Culture & Tourism"
+    name_cn: "文化和旅游部"
+    desc: "Culture, tourism, cultural industry, heritage."
+  - id: mara
+    tier: state_council
+    parent: gov
+    site_key: mara
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Agriculture & Rural Affairs"
+    name_cn: "农业农村部"
+    desc: "Agriculture, rural development, food security, rural revitalization."
+  - id: mva
+    tier: state_council
+    parent: gov
+    site_key: mva
+    rank: "constituent (ministry)"
+    name_en: "Ministry of Veterans Affairs"
+    name_cn: "退役军人事务部"
+    desc: "Veterans' benefits, resettlement, services."
+  - id: nbs
+    tier: state_council
+    parent: gov
+    site_key: nbs
+    rank: "directly-administered (agency)"
+    name_en: "National Bureau of Statistics"
+    name_cn: "国家统计局"
+    desc: "Official economic and demographic statistics."
+  - id: chinatax
+    tier: state_council
+    parent: gov
+    site_key: chinatax
+    rank: "directly-administered (agency)"
+    name_en: "State Taxation Administration"
+    name_cn: "国家税务总局"
+    desc: "Tax collection, tax policy administration."
+  - id: nhsa
+    tier: state_council
+    parent: gov
+    site_key: nhsa
+    rank: "directly-administered (agency)"
+    name_en: "National Healthcare Security Admin"
+    name_cn: "国家医疗保障局"
+    desc: "Medical insurance, drug pricing, healthcare reimbursement."
+  - id: nrta
+    tier: state_council
+    parent: gov
+    site_key: nrta
+    rank: "directly-administered (agency)"
+    name_en: "Radio & Television Administration"
+    name_cn: "国家广播电视总局"
+    desc: "Broadcasting, online audiovisual content regulation."
+  - id: pbc
+    tier: state_council
+    parent: gov
+    site_key: pbc
+    rank: "constituent (central bank)"
+    name_en: "People's Bank of China"
+    name_cn: "中国人民银行"
+    desc: "Central bank. Monetary policy, financial stability, payments."
+  - id: csrc
+    tier: state_council
+    parent: gov
+    site_key: csrc
+    rank: "directly-administered (agency)"
+    name_en: "Securities Regulatory Commission"
+    name_cn: "中国证券监督管理委员会"
+    desc: "Securities and futures market regulation."
+  - id: spp
+    tier: judicial
+    site_key: spp
+    name_en: "Supreme People's Procuratorate"
+    name_cn: "最高人民检察院"
+    desc: "Highest procuratorial (prosecution + legal supervision) organ."
+  - id: cppcc
+    tier: legislative
+    site_key: cppcc
+    rank: "consultative (两会)"
+    name_en: "CPPCC National Committee"
+    name_cn: "全国政协"
+    desc: "Political consultative body. Proposals, united front, advisory."
+  - id: jilin
+    tier: provincial
+    site_key: jilin
+    name_en: "Jilin"
+    name_cn: "吉林省"
+  - id: fujian
+    tier: provincial
+    site_key: fujian
+    name_en: "Fujian"
+    name_cn: "福建省"
+  - id: hunan
+    tier: provincial
+    site_key: hunan
+    name_en: "Hunan"
+    name_cn: "湖南省"
+  - id: shandong
+    tier: provincial
+    site_key: shandong
+    name_en: "Shandong"
+    name_cn: "山东省"
+  - id: shenyang
+    tier: cities
+    site_key: shenyang
+    name_en: "Shenyang"
+    name_cn: "沈阳市"
+  - id: elsewhere
+    tier: media
+    site_key: elsewhere
+    rank: "media"
+    name_en: "Elsewhere"
+    name_cn: "别处"
+    desc: "Chinese VC / AI-tech news and analysis platform."
