@@ -73,7 +73,7 @@
     </div>
   </div>
 
-  {% for it in annotation.items %}
+  {% for it in annotation['items'] %}
   <div class="an-mast" style="margin-top:22px;border-bottom:none;">
     <h1 class="an-h1"><span class="idx">{{ it.index_label }}</span><span class="zh">{{ it.heading_cn }}</span></h1>
     <div class="an-sub">{{ it.subhead }}</div>
@@ -108,7 +108,7 @@
   <!-- WHERE MENTIONED -->
   {% if it.breakdown %}
   <div class="an-sec">
-    <div class="an-seclab"><span class="an-lab">Where “{{ annotation.items[0].mentions[0].label if false else it.mentions[0].label }}” appears</span><span class="an-lab">{{ "{:,}".format(it.breakdown.total) }} mentions · by source</span></div>
+    <div class="an-seclab"><span class="an-lab">Where “{{ it.mentions[0].label }}” appears</span><span class="an-lab">{{ "{:,}".format(it.breakdown.total) }} mentions · by source</span></div>
     <div class="an-bars">
       {% for r in it.breakdown.rows %}
       <div class="an-bar {{ 'gov' if r.src.level in ['central','provincial','municipal'] else '' }}">

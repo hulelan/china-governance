@@ -40,7 +40,7 @@
       <div class="no">{{ a.doc_number }}</div>
     </div>
     <div class="anx-items">
-      {% for it in a.items %}
+      {% for it in a['items'] %}
       <div class="anx-item"><span class="id">{{ it.id }}</span><span class="h zh">{{ it.heading_cn }}</span><span class="he">{{ it.heading_en }}</span></div>
       {% endfor %}
     </div>
