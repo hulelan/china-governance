@@ -197,3 +197,14 @@ govcms EXPANSION TODO (reachable central bodies still needing sections found):
 - crawlers/elsewhere.py: 64 docs, 97% body. Next.js+Supabase (anon 401 → scrape server-rendered HTML). Technique proven: inspect framework → find data path → crawl. Live + nightly.
 - JS-site playbook: curl HTML → detect framework (_next/supabase/etc.) → check if server-rendered (scrape) vs client-fetched (find JSON API in bundles / browser network tab).
 - Next JS targets: 济南/郑州/无锡 (gov, likely need browser network inspection for their list API); other media.
+
+## Jinan (2026-07-24, 4a2ec44) — PARTIAL
+- Jinan runs Hanweb CMS. Extended govcms /art/ regex to match Hanweb's
+  /art/YYYY/art_<hex>.html (durable generalization; shandong regression clean).
+- Wired jinan 政策解读 columns (col118736/col121799) — server-rendered, small.
+- NOT DONE: jinan's high-value policy columns (通知公告 col44545, 政府文件, 政府公报)
+  are 4KB shells that render lists CLIENT-SIDE via Hanweb datacall (ColId meta,
+  no list in static HTML, list endpoint constructed at runtime by layui/hanweb JS).
+  → NEXT: browser network inspection (Chrome tools) to capture the datacall list
+  endpoint, then build a Hanweb-datacall crawler (would generalize to many Hanweb
+  gov sites — a big unlock).
