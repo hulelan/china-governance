@@ -73,6 +73,7 @@ python3 -m crawlers.stdaily --deep              # Sitemap + homepage discovery
 python3 -m crawlers.guancha                     # Guancha / Observer Network (homepage only, ~185 articles)
 python3 -m crawlers.guancha --deep              # + section pages + all columnists (~400 articles)
 
+python3 -m crawlers.elsewhere                    # elsewhere.news 别处 (VC/AI-tech news; Next.js+Supabase, HTML-scraped)
 python3 -m crawlers.chinalawtranslate           # English translations of Chinese laws (~1,100 posts via WP API)
 python3 -m crawlers.chinalawtranslate --category internet  # One category only
 python3 scripts/match_clt_translations.py       # Link CLT posts to native docs by source URL

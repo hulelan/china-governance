@@ -190,7 +190,7 @@ run_crawler "tsinghua_aiig" python3 -m crawlers.tsinghua_aiig
 run_crawler "sz_invest (9 sections)" python3 -m crawlers.sz_invest
 
 # Media / tech news crawlers
-for crawler in 36kr latepost ifeng xinhua people stdaily; do
+for crawler in 36kr latepost ifeng xinhua people stdaily elsewhere; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
 
