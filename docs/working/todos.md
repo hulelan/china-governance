@@ -175,3 +175,10 @@ govcms EXPANSION TODO (reachable central bodies still needing sections found):
 - JS-nav / different URL scheme (need deeper probe): MOT, MOHRSS, CNIPA, GAS, MEM, NIA, CPPCC, 中央政法委, 12371, NEA(hash-urls), NFGA(.jhtml), NFRA(SPA)
 - Then provinces/cities tier (26 reachable): 山东 辽宁 吉林 福建 湖南 云南 西藏 新疆 + capitals (济南 郑州 沈阳 福州 长春 南京 西安 拉萨 乌鲁木齐 银川 海口 天津 石家庄) + 无锡 青岛
 - elsewhere.news/zh (media crawler, Next.js JSON API)
+
+## Session 2026-07-23/24 continued
+- Daily run 521m -> 188m (dedup index fix confirmed in 07-23 report). Still ~3h — more headroom (network latency).
+- gkmlpt FK fix (cb1db78): url-collision skip now also skips _record_change (FK to documents.id). Was aborting the sweep.
+- coverage.csv regenerated: CRAWLED 100->110, central 20->27.
+- shandong: jpaas discover fixed (http not https) but crawl=0 docs — jpaas.discover finds 政务公开 meta-columns not the 省政府文件 doc list (col 320658). NEEDS jpaas column-depth fix before wiring. NOT in nightly.
+- STILL TODO: qingdao/tianjin/mohrss govcms section rediscovery; 济南/郑州/无锡 col (bespoke); non-t-date central (cnipa/gas/mem/nia/政法委/12371/nea/nfga/nfra); elsewhere.news; jpaas depth fix (unlocks shandong + more provinces).

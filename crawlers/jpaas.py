@@ -48,7 +48,7 @@ SITES = {
     "js_gxt": {"name": "Jiangsu Industry & IT (江苏工信厅)", "base_url": "https://gxt.jiangsu.gov.cn", "admin_level": "provincial"},
     "js_jtyst": {"name": "Jiangsu Transport (江苏交通厅)", "base_url": "https://jtyst.jiangsu.gov.cn", "admin_level": "provincial"},
     # Shandong provincial portal (jpaas)
-    "shandong": {"name": "Shandong Province (山东省)", "base_url": "https://www.shandong.gov.cn", "admin_level": "provincial"},
+    "shandong": {"name": "Shandong Province (山东省)", "base_url": "http://www.shandong.gov.cn", "admin_level": "provincial"},  # https fails SSL handshake; http works
     # NOTE: 国家医保局 (nhsa) and 广电总局 (nrta) look jpaas (their homepages show /col/
     # links) but paginate via ENCRYPTED-param dataproxy and embed the listing as a TRS
     # <recordset>; they are crawled by crawlers.trs, not here.
