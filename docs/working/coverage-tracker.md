@@ -199,3 +199,28 @@ via article-URL derivation): MOT, MOHRSS, CNIPA, GAS, MEM, NIA, CPPCC, 中央政
   Now caught + skipped.
 - **chinatax --full backfill** completing (2,567 → ~9,900) after the dedup fix
   un-stalled it.
+
+## 9. Remaining-target CMS survey (2026-07-24) — "are there more Jinan-like cases?"
+
+Fingerprinted + article-URL-derived every remaining reachable-uncrawled target.
+**Yes — client-rendered (browser-needed) cases are common.** Three tiers:
+
+**A. STATIC, date-in-URL → buildable now (per-site regex):**
+- 无锡: `/doc/YYYY/MM/DD/<id>.shtml` (46 homepage links) + `/fzlm/zfgb/` 政府公报
+- 12371 党员网: `/YYYY/MM/DD/ARTI<id>.shtml` (21 links)
+- 西安: `/xw/.../<id>.html`, `/gk/zcfg/szfbgtwj/<id>.html` (no date in URL — row date needed)
+- 辽宁: `/web/.../<id>/index.shtml` (92 links, no date in URL; homepage has API marker)
+
+**B. CLIENT-RENDERED / SPA shells → need browser network inspection (Jinan-class):**
+- 天津 (homepage aggregates 37 t-date links but every section list = client-rendered)
+- 郑州 (0 static links), MOHRSS (987 B shell), NFRA (215 B), 南京 (618 B),
+  CNIPA (10 KB), MEM, NIA, 新疆
+- NFGA 林草局 = Hanweb (same as Jinan)
+
+**C. Server-rendered homepage but 0 recognized article links → unknown format, inspect:**
+- GAS 体育, NEA 能源, 政法委 (big homepages, no t-date/art/doc links found — likely
+  their own URL scheme in sections; needs per-site format discovery)
+
+**Takeaway:** the generic-crawler tail is exhausted; each remaining site is its own
+regex (tier A) or needs the browser step (tier B, Hanweb/SPA). Tier A ≈ 4 quick
+bespoke builds; tier B waits on the Chrome extension being connected.
