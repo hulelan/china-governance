@@ -1,0 +1,45 @@
+# Annotations — annotated readings of policy documents against the corpus.
+#
+# Each annotation targets a source document and breaks it into items. Every
+# NUMBER shown on the page is computed live from the corpus by
+# web/services/annotations.py from the `queries` below — nothing here is prose
+# except `clauses` (the verbatim source text) and `reading` (curated, may be empty).
+#
+# query spec per item:
+#   mentions:  list of {term, label}  -> COUNT docs where body LIKE %term%
+#   breakdown: a single term          -> COUNT by site_key (the "where mentioned" bars)
+#   linked:    {title_any:[...], body_all:[...], min_rank}  -> the linked-doc catalog
+annotations:
+  - slug: aiplus
+    doc_number: "国发〔2025〕11号"
+    title_cn: "国务院关于深入实施“人工智能+”行动的意见"
+    title_en: "Opinions on Deeply Implementing the “AI Plus” Action"
+    date: "2025-08-26"
+    items:
+      - id: "1.3"
+        path: ["二 加快实施重点行动", "（一）“人工智能+”科学技术", "3 创新哲学社会科学研究方法"]
+        index_label: "一 · 3"
+        heading_cn: "创新哲学社会科学研究方法"
+        heading_en: "Innovating the methods of philosophy & the social sciences"
+        subhead: "科学技术 · item 3"
+        clauses:
+          - num: 1
+            text: "推动哲学社会科学研究方法向{人机协同}模式转变，探索建立适应人工智能时代的新型哲学社会科学研究组织形式，拓展研究视野和观察视域。"
+            gloss: "shift humanities research methods to human–machine collaboration; new research organization."
+          - num: 2
+            text: "深入研究人工智能对人类{认知判断、伦理规范}等方面的深层次影响和作用机理，"
+            gloss: "study AI's deep effects on human cognition and ethical norms."
+          - num: 3
+            text: "探索形成{智能向善理论体系}，促进人工智能更好造福人类。"
+            gloss: "form a “智能向善 / intelligence-toward-good” theoretical system."
+        queries:
+          mentions:
+            - {term: "智能向善", label: "智能向善"}
+            - {term_all: ["哲学社会科学", "人工智能"], label: "哲学社会科学 + AI"}
+          breakdown: "智能向善"
+          linked:
+            title_any: ["科技伦理", "向善"]
+            title_all_pairs: [["伦理", "人工智能"]]
+            min_rank: 0.1
+            limit: 12
+        reading: ""   # curated text goes here

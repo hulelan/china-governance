@@ -25,6 +25,7 @@ from web.services.changes import (
 )
 from web.services.chain import get_chain, TOPIC_KEYWORDS
 from web.services.structure import get_structure
+from web.services.annotations import list_annotations, get_annotation
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -240,6 +241,30 @@ async def chain_page(request: Request, topic: str = "ai"):
 async def chain_default(request: Request):
     """Redirect /chain to /chain/ai (default Policy Trace topic)."""
     return await chain_page(request, "ai")
+
+
+@router.get("/annotations", response_class=HTMLResponse)
+async def annotations_index(request: Request):
+    """Annotations hub — annotated readings of policy documents against the corpus."""
+    stats = await get_stats(request.app.state.db)
+    return templates.TemplateResponse("annotations.html", {
+        "request": request, "stats": stats,
+        "annotations": list_annotations(), "nav": "annotations",
+    })
+
+
+@router.get("/annotations/{slug}", response_class=HTMLResponse)
+async def annotation_page(request: Request, slug: str):
+    """A single annotated reading (e.g. the 'AI+' Opinions)."""
+    db = request.app.state.db
+    stats = await get_stats(db)
+    annotation = await get_annotation(db, slug)
+    if not annotation:
+        return HTMLResponse("<h1>Not found</h1>", status_code=404)
+    return templates.TemplateResponse("annotation.html", {
+        "request": request, "stats": stats,
+        "annotation": annotation, "nav": "annotations",
+    })
 
 
 @router.get("/officials", response_class=HTMLResponse)
