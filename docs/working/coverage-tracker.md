@@ -205,22 +205,26 @@ via article-URL derivation): MOT, MOHRSS, CNIPA, GAS, MEM, NIA, CPPCC, 中央政
 Fingerprinted + article-URL-derived every remaining reachable-uncrawled target.
 **Yes — client-rendered (browser-needed) cases are common.** Three tiers:
 
-**A. STATIC, date-in-URL → buildable now (per-site regex):**
-- 无锡: `/doc/YYYY/MM/DD/<id>.shtml` (46 homepage links) + `/fzlm/zfgb/` 政府公报
+**A. Static ARTICLE urls, but CLIENT-RENDERED section lists → homepage-snapshot only:**
+- 无锡: `/doc/YYYY/MM/DD/<id>.shtml` (46 homepage links; sections 404 or 3-byte stubs)
 - 12371 党员网: `/YYYY/MM/DD/ARTI<id>.shtml` (21 links)
-- 西安: `/xw/.../<id>.html`, `/gk/zcfg/szfbgtwj/<id>.html` (no date in URL — row date needed)
-- 辽宁: `/web/.../<id>/index.shtml` (92 links, no date in URL; homepage has API marker)
+- 西安: `/xw/.../<id>.html`, `/gk/zcfg/szfbgtwj/<id>.html`
+- 辽宁: `/web/.../<id>/index.shtml` (92 links; homepage has API marker)
+- 天津: `/YYYYMM/tYYYYMMDD_<id>` (37 homepage links; sections client-rendered)
+  → These are crawlable ONLY as a rolling homepage snapshot (~20-90 recent docs,
+    no pagination/history) unless the browser reveals the section list API.
 
 **B. CLIENT-RENDERED / SPA shells → need browser network inspection (Jinan-class):**
-- 天津 (homepage aggregates 37 t-date links but every section list = client-rendered)
 - 郑州 (0 static links), MOHRSS (987 B shell), NFRA (215 B), 南京 (618 B),
-  CNIPA (10 KB), MEM, NIA, 新疆
-- NFGA 林草局 = Hanweb (same as Jinan)
+  CNIPA (10 KB), MEM, NIA, 新疆; NFGA 林草局 = Hanweb (same as Jinan)
 
 **C. Server-rendered homepage but 0 recognized article links → unknown format, inspect:**
-- GAS 体育, NEA 能源, 政法委 (big homepages, no t-date/art/doc links found — likely
-  their own URL scheme in sections; needs per-site format discovery)
+- GAS 体育, NEA 能源, 政法委 (big homepages; their own URL scheme in sections)
 
-**Takeaway:** the generic-crawler tail is exhausted; each remaining site is its own
-regex (tier A) or needs the browser step (tier B, Hanweb/SPA). Tier A ≈ 4 quick
-bespoke builds; tier B waits on the Chrome extension being connected.
+**TAKEAWAY (answers "are there more Jinan-like cases?"): YES — nearly all of them.**
+The generic static-crawler tail is EXHAUSTED. Every remaining reachable target either
+renders its section lists client-side (tiers A/B — need the browser network-inspection
+step, ideally once to crack a shared CMS like Hanweb) or uses an undiscovered per-site
+URL scheme (tier C). Only shallow homepage-snapshot crawls are possible without the
+browser. Recommended next: connect the Chrome extension, crack Hanweb's datacall once
+(unlocks Jinan + NFGA + others), then tackle tier C by format.
