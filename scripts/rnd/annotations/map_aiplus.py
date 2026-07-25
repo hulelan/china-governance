@@ -30,7 +30,7 @@ import yaml
 ROOT = Path(__file__).parents[3]
 DB = ROOT / "documents.db"
 TAXO = ROOT / "data" / "aiplus_taxonomy.yaml"
-MODEL = "deepseek-chat"
+MODEL = "deepseek-v4-flash"   # deepseek-chat was retired; v4-flash/v4-pro are current
 MIN_AI = 0.3
 NONE = "__none__"
 
