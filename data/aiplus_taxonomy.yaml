@@ -1,0 +1,31 @@
+# AI+ taxonomy — the 25 leaf items of 国发〔2025〕11号 (《关于深入实施"人工智能+"行动的意见》).
+# Canonical list used by (a) the DeepSeek mapping pass and (b) the Annotations display.
+# id: stable slug · group: 应用领域 (domain) | 基础支撑 (foundation) · cn/en headings · desc for the prompt.
+items:
+  # ---- 二 加快实施重点行动 (application domains) ----
+  - {id: sci-discovery,  group: "科学技术", cn: "加速科学发现进程",           en: "Accelerate scientific discovery",        desc: "AI-driven research paradigm; science large-models; smart research infrastructure & data."}
+  - {id: sci-rd,         group: "科学技术", cn: "驱动技术研发模式创新和效能提升", en: "AI-driven R&D and engineering",          desc: "AI in tech R&D/engineering; biomanufacturing, quantum, 6G co-innovation; smart R&D tools."}
+  - {id: sci-philosophy, group: "科学技术", cn: "创新哲学社会科学研究方法",     en: "Philosophy & social-science methods",    desc: "Human-machine humanities research; AI ethics/cognition study; 智能向善 theory."}
+  - {id: ind-native,     group: "产业发展", cn: "培育智能原生新模式新业态",     en: "AI-native business models",              desc: "AI-native firms, products, services; new business models; industry-wide intelligentization."}
+  - {id: ind-industry,   group: "产业发展", cn: "推进工业全要素智能化发展",     en: "Smart industry / manufacturing",         desc: "Smart manufacturing, industrial software, AI + industrial internet, smart equipment."}
+  - {id: ind-agri,       group: "产业发展", cn: "加快农业数智化转型升级",       en: "Smart agriculture",                      desc: "AI breeding, smart agri-machinery/drones/robots, farm management."}
+  - {id: ind-services,   group: "产业发展", cn: "创新服务业发展新模式",         en: "Smart services sector",                  desc: "AI in software, finance, law, transport, logistics, commerce; smart terminals in services."}
+  - {id: con-services,   group: "消费提质", cn: "拓展服务消费新场景",           en: "New service-consumption scenarios",      desc: "Smart assistants, culture/e-commerce/eldercare/childcare/mobility life-services, experiential consumption."}
+  - {id: con-products,   group: "消费提质", cn: "培育产品消费新业态",           en: "New smart-product consumption",          desc: "Smart terminals: connected vehicles, AI phones/PCs, robots, smart home/wearables; BCI, metaverse, low-altitude."}
+  - {id: liv-work,       group: "民生福祉", cn: "创造更加智能的工作方式",       en: "Smarter ways of working",                desc: "Human-machine work, AI agents, jobs in scarce/high-risk roles, AI skills training, employment-risk assessment."}
+  - {id: liv-learn,      group: "民生福祉", cn: "推行更富成效的学习方式",       en: "More effective learning",                desc: "AI in education, smart tutors/teachers, personalized teaching, lifelong AI learning."}
+  - {id: liv-life,       group: "民生福祉", cn: "打造更有品质的美好生活",       en: "Higher-quality daily life",              desc: "AI health assistant, diagnosis/health-mgmt/medical-insurance; culture; eldercare/childcare, 'good houses'."}
+  - {id: gov-social,     group: "治理能力", cn: "开创社会治理人机共生新图景",   en: "Social governance",                      desc: "Smart municipal infra, urban planning/governance, AI social experiments, smart government services, e-bidding."}
+  - {id: gov-security,   group: "治理能力", cn: "打造安全治理多元共治新格局",   en: "Public-security governance",             desc: "AI in work-safety, disaster response, public-security warning, policing; national security; cyberspace governance."}
+  - {id: gov-eco,        group: "治理能力", cn: "共绘美丽中国生态治理新画卷",   en: "Ecological / environmental governance",  desc: "Space-air-ground sensing, land-space planning, AI monitoring of air/water/soil/carbon-market."}
+  - {id: glo-inclusive,  group: "全球合作", cn: "推动人工智能普惠共享",         en: "Inclusive global AI (public good)",      desc: "AI as global public good, open ecosystem, help Global South, bridge the intelligence divide."}
+  - {id: glo-governance, group: "全球合作", cn: "共建人工智能全球治理体系",     en: "Global AI governance system",            desc: "UN main-channel, global governance framework, rules/standards alignment, AI risk response."}
+  # ---- 三 强化基础支撑能力 (enabling foundations) ----
+  - {id: found-model,     group: "基础支撑", cn: "提升模型基础能力",   en: "Model capabilities",     desc: "Foundational AI theory, model architecture innovation, efficient training/inference, model evaluation."}
+  - {id: found-data,      group: "基础支撑", cn: "加强数据供给创新",   en: "Data supply",            desc: "High-quality datasets, data property/copyright rules, data annotation/synthesis, data services industry."}
+  - {id: found-compute,   group: "基础支撑", cn: "强化智能算力统筹",   en: "Computing power",        desc: "AI chips, intelligent-compute clusters, national compute network, 东数西算, compute-power services."}
+  - {id: found-app,       group: "基础支撑", cn: "优化应用发展环境",   en: "Application environment", desc: "AI application pilot bases, MaaS/agent-as-a-service, scenario指引, IP protection, AI standards."}
+  - {id: found-opensource,group: "基础支撑", cn: "促进开源生态繁荣",   en: "Open-source ecosystem",  desc: "Open-source communities, models/tools/datasets sharing, open-source incentives, global open-source projects."}
+  - {id: found-talent,    group: "基础支撑", cn: "加强人才队伍建设",   en: "Talent",                 desc: "AI education (all levels + general), leading talent, discipline layout, industry-education, incentives."}
+  - {id: found-policy,    group: "基础支撑", cn: "强化政策法规保障",   en: "Policy & legal safeguards", desc: "State-capital investment rules, finance/fiscal support, patient/strategic capital, AI legislation, ethics review."}
+  - {id: found-safety,    group: "基础支撑", cn: "提升安全能力水平",   en: "AI safety",              desc: "Model/data/infra/application security, guard against black-box/hallucination/algorithmic discrimination, risk monitoring, AI governance."}
