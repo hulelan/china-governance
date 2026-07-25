@@ -68,12 +68,12 @@
 <div class="an-wrap">
   <div class="an-mast">
     <div class="an-kick">
-      <a href="/annotations" class="an-lab">← Annotations · <span class="zh" style="color:var(--ink)">{{ annotation.title_cn }}</span></a>
+      <a href="/annotations/{{ annotation.slug }}" class="an-lab">← <span class="zh" style="color:var(--ink)">{{ annotation.title_cn }}</span></a>
       <span class="an-lab doc-no">{{ annotation.doc_number }}</span>
     </div>
   </div>
 
-  {% for it in annotation['items'] %}
+  {% set it = item %}
   <div class="an-mast" style="margin-top:22px;border-bottom:none;">
     <h1 class="an-h1"><span class="idx">{{ it.index_label }}</span><span class="zh">{{ it.heading_cn }}</span></h1>
     <div class="an-sub">{{ it.subhead }}</div>
@@ -87,9 +87,10 @@
     </div>
   </div>
 
+  {% if it.curated %}
   <!-- THE TEXT -->
   <div class="an-sec">
-    <div class="an-seclab"><span class="an-lab">The text</span><span class="an-lab">clause {{ it.id }}</span></div>
+    <div class="an-seclab"><span class="an-lab">The text</span><span class="an-lab">clause {{ it.index_label }}</span></div>
     <blockquote class="an-src zh">
       {% for c in it.clauses %}
       <span class="an-clause"><span class="an-cnum">{{ c.num }}</span>{% for part in c.parts %}{% if part[1] %}<mark>{{ part[0] }}</mark>{% else %}{{ part[0] }}{% endif %}{% endfor %}</span>
@@ -104,6 +105,7 @@
     {% if it.reading %}<div class="an-reading">{{ it.reading|safe }}</div>
     {% else %}<div class="an-note">Annotation to be written — this slot holds curated text.</div>{% endif %}
   </div>
+  {% endif %}
 
   <!-- WHERE MENTIONED -->
   {% if it.breakdown %}
@@ -144,9 +146,8 @@
       </tbody>
     </table>
     </div>
-    <div class="an-note-q">Every figure on this page is query-derived from the corpus; the reading slot holds curated text.</div>
+    <div class="an-note-q">{% if it.curated %}Every figure on this page is query-derived from the corpus.{% else %}Documents mapped to this item by DeepSeek over the AI-relevance corpus; counts recompute live.{% endif %}</div>
   </div>
-  {% endfor %}
 
   <div class="an-foot">
     <b>Annotated reading.</b> Source: <span class="zh">{{ annotation.title_cn }}</span> ({{ annotation.doc_number }}, {{ annotation.date }}).

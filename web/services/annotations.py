@@ -136,43 +136,102 @@ def _src(site_key):
     return {"name": name, "level": level}
 
 
-async def get_annotation(db, slug):
+_TAXO_PATH = Path(__file__).parent.parent.parent / "data" / "aiplus_taxonomy.yaml"
+_TAXO = None
+
+
+def _load_taxonomy():
+    global _TAXO
+    if _TAXO is None:
+        with _TAXO_PATH.open(encoding="utf-8") as f:
+            _TAXO = yaml.safe_load(f)["items"]
+    return _TAXO
+
+
+def _meta(a):
+    return {"slug": a["slug"], "doc_number": a.get("doc_number", ""),
+            "title_cn": a.get("title_cn", ""), "title_en": a.get("title_en", ""),
+            "date": a.get("date", "")}
+
+
+async def _build_curated_item(db, it):
+    q = it.get("queries", {})
+    mentions = []
+    for m in q.get("mentions", []):
+        n = await _count(db, term=m.get("term"), term_all=m.get("term_all"))
+        mentions.append({"label": m["label"], "count": n})
+    breakdown = await _breakdown(db, q["breakdown"]) if q.get("breakdown") else None
+    tax_id = it.get("taxonomy_id")
+    if q.get("linked"):                               # hand-curated keyword query wins
+        linked = await _linked(db, q["linked"]); linked_count = len(linked)
+    elif tax_id:                                      # else the DeepSeek map
+        linked = await _linked_from_map(db, tax_id, 12); linked_count = await _map_count(db, tax_id)
+    else:
+        linked, linked_count = [], 0
+    for d in linked:
+        d["src"] = _src(d["site_key"])
+    return {
+        "id": it.get("taxonomy_id") or it["id"], "index_label": it.get("index_label", it["id"]),
+        "path": it.get("path", []), "heading_cn": it["heading_cn"],
+        "heading_en": it.get("heading_en", ""), "subhead": it.get("subhead", ""),
+        "clauses": [{"num": c["num"], "parts": _parse_marks(c["text"]), "gloss": c.get("gloss", "")}
+                    for c in it.get("clauses", [])],
+        "mentions": mentions, "breakdown": breakdown, "linked": linked,
+        "linked_count": linked_count, "top_rank": max((d["rank"] for d in linked), default=0),
+        "reading": (it.get("reading") or "").strip(), "curated": True,
+    }
+
+
+async def _build_taxo_item(db, t):
+    linked = await _linked_from_map(db, t["id"], 24)
+    for d in linked:
+        d["src"] = _src(d["site_key"])
+    count = await _map_count(db, t["id"])
+    return {
+        "id": t["id"], "index_label": t["id"], "path": [t["group"], t["cn"]],
+        "heading_cn": t["cn"], "heading_en": t["en"], "subhead": t["group"] + " · mapped from the corpus",
+        "clauses": [], "mentions": [], "breakdown": None, "linked": linked,
+        "linked_count": count, "top_rank": max((d["rank"] for d in linked), default=0),
+        "reading": "", "curated": False,
+    }
+
+
+async def get_overview(db, slug):
+    """Coverage map: every taxonomy item + its live document count from the map."""
     a = _get(slug)
     if not a:
         return None
-    items = []
+    taxo = _load_taxonomy()
+    rows = await db.fetch("SELECT item_id, COUNT(*) c FROM aiplus_map "
+                          "WHERE item_id != $1 GROUP BY item_id", NONE)
+    counts = {r[0]: r[1] for r in rows}
+    none_count = await db.fetchval("SELECT COUNT(*) FROM aiplus_map WHERE item_id = $1", NONE)
+    total_tagged = await db.fetchval(
+        "SELECT COUNT(DISTINCT doc_id) FROM aiplus_map WHERE item_id != $1", NONE)
+    curated_ids = {it.get("taxonomy_id") for it in a.get("items", []) if it.get("taxonomy_id")}
+    maxc = max(counts.values(), default=1)
+    order, gmap = [], {}
+    for t in taxo:
+        g = t["group"]
+        if g not in gmap:
+            gmap[g] = []; order.append(g)
+        c = counts.get(t["id"], 0)
+        gmap[g].append({"id": t["id"], "cn": t["cn"], "en": t["en"], "count": c,
+                        "pct": round(c / maxc * 100), "curated": t["id"] in curated_ids})
+    groups = [{"name": g, "items": gmap[g]} for g in order]
+    return {**_meta(a), "groups": groups, "maxc": maxc, "n_items": len(taxo),
+            "total_tagged": total_tagged, "none_count": none_count}
+
+
+async def get_item(db, slug, item_id):
+    """One item detail: curated (clauses/reading) if authored, else the mapped docs."""
+    a = _get(slug)
+    if not a:
+        return None
     for it in a.get("items", []):
-        q = it.get("queries", {})
-        mentions = []
-        for m in q.get("mentions", []):
-            n = await _count(db, term=m.get("term"), term_all=m.get("term_all"))
-            mentions.append({"label": m["label"], "count": n})
-        breakdown = await _breakdown(db, q["breakdown"]) if q.get("breakdown") else None
-        tax_id = it.get("taxonomy_id")
-        if tax_id:                                    # auto-populated from the DeepSeek map
-            limit = (q.get("linked") or {}).get("limit", 12)
-            linked = await _linked_from_map(db, tax_id, limit)
-            linked_count = await _map_count(db, tax_id)
-        elif q.get("linked"):                         # hand-curated keyword query
-            linked = await _linked(db, q["linked"])
-            linked_count = len(linked)
-        else:
-            linked, linked_count = [], 0
-        for d in linked:
-            d["src"] = _src(d["site_key"])
-        top_rank = max((d["rank"] for d in linked), default=0)
-        items.append({
-            "id": it["id"], "index_label": it.get("index_label", it["id"]),
-            "path": it.get("path", []), "heading_cn": it["heading_cn"],
-            "heading_en": it.get("heading_en", ""), "subhead": it.get("subhead", ""),
-            "clauses": [{"num": c["num"], "parts": _parse_marks(c["text"]),
-                         "gloss": c.get("gloss", "")} for c in it.get("clauses", [])],
-            "mentions": mentions, "breakdown": breakdown, "linked": linked,
-            "linked_count": linked_count, "top_rank": top_rank,
-            "reading": (it.get("reading") or "").strip(),
-        })
-    return {
-        "slug": a["slug"], "doc_number": a.get("doc_number", ""),
-        "title_cn": a.get("title_cn", ""), "title_en": a.get("title_en", ""),
-        "date": a.get("date", ""), "items": items,
-    }
+        if it.get("taxonomy_id") == item_id or it.get("id") == item_id:
+            return {"annotation": _meta(a), "item": await _build_curated_item(db, it)}
+    t = next((x for x in _load_taxonomy() if x["id"] == item_id), None)
+    if not t:
+        return None
+    return {"annotation": _meta(a), "item": await _build_taxo_item(db, t)}

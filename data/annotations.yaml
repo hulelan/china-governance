@@ -17,6 +17,7 @@ annotations:
     date: "2025-08-26"
     items:
       - id: "1.3"
+        taxonomy_id: sci-philosophy
         path: ["二 加快实施重点行动", "（一）“人工智能+”科学技术", "3 创新哲学社会科学研究方法"]
         index_label: "一 · 3"
         heading_cn: "创新哲学社会科学研究方法"

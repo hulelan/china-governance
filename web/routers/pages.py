@@ -25,7 +25,7 @@ from web.services.changes import (
 )
 from web.services.chain import get_chain, TOPIC_KEYWORDS
 from web.services.structure import get_structure
-from web.services.annotations import list_annotations, get_annotation
+from web.services.annotations import list_annotations, get_overview, get_item
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -254,16 +254,30 @@ async def annotations_index(request: Request):
 
 
 @router.get("/annotations/{slug}", response_class=HTMLResponse)
-async def annotation_page(request: Request, slug: str):
-    """A single annotated reading (e.g. the 'AI+' Opinions)."""
+async def annotation_overview(request: Request, slug: str):
+    """A document's coverage map — every AI+ item + its live doc count."""
     db = request.app.state.db
     stats = await get_stats(db)
-    annotation = await get_annotation(db, slug)
-    if not annotation:
+    overview = await get_overview(db, slug)
+    if not overview:
+        return HTMLResponse("<h1>Not found</h1>", status_code=404)
+    return templates.TemplateResponse("annotation_overview.html", {
+        "request": request, "stats": stats,
+        "ov": overview, "nav": "annotations",
+    })
+
+
+@router.get("/annotations/{slug}/{item_id}", response_class=HTMLResponse)
+async def annotation_item(request: Request, slug: str, item_id: str):
+    """One item's detail — curated reading if authored, else its mapped documents."""
+    db = request.app.state.db
+    stats = await get_stats(db)
+    data = await get_item(db, slug, item_id)
+    if not data:
         return HTMLResponse("<h1>Not found</h1>", status_code=404)
     return templates.TemplateResponse("annotation.html", {
         "request": request, "stats": stats,
-        "annotation": annotation, "nav": "annotations",
+        "annotation": data["annotation"], "item": data["item"], "nav": "annotations",
     })
 
 
