@@ -146,7 +146,9 @@ def classify_deepseek(doc: dict, model: str) -> dict | None:
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
-                max_tokens=500,
+                max_tokens=2000,   # v4 is a reasoning model — reasoning tokens
+                                   # consumed the old 500 budget, leaving empty
+                                   # content (the nightly "classification errors")
             )
             raw = (resp.choices[0].message.content or "").strip()
             if not raw:
@@ -331,7 +333,7 @@ def main():
 
     # Default models per backend
     if args.model is None:
-        args.model = "deepseek-chat" if args.backend == "deepseek" else "qwen2.5:14b"
+        args.model = "deepseek-v4-flash" if args.backend == "deepseek" else "qwen2.5:14b"
 
     # Validate backend availability
     if args.backend == "deepseek":
