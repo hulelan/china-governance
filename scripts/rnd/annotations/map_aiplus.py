@@ -93,7 +93,7 @@ def _map_one(doc: dict, model: str):
     for attempt in range(3):
         try:
             resp = client.chat.completions.create(
-                model=model, temperature=0.0, max_tokens=120,
+                model=model, temperature=0.0, max_tokens=600,   # v4 is a reasoning model — leave room for reasoning + answer
                 messages=[{"role": "user", "content": _build_prompt(doc)}])
             raw = (resp.choices[0].message.content or "").strip()
             return doc["id"], _parse(raw)
