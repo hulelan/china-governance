@@ -11,6 +11,7 @@ import yaml
 
 _YAML_PATH = Path(__file__).parent.parent.parent / "data" / "annotations.yaml"
 _CACHED = None
+NONE = "__none__"   # aiplus_map sentinel for docs that map to no specific item
 
 
 def _load():
