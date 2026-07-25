@@ -44,3 +44,83 @@ annotations:
             min_rank: 0.1
             limit: 12
         reading: ""   # curated text goes here
+      - id: "5.1"
+        taxonomy_id: gov-social
+        path: ["二 加快实施重点行动", "（五）“人工智能+”治理能力", "1 开创社会治理人机共生新图景"]
+        index_label: "五 · 1"
+        heading_cn: "开创社会治理人机共生新图景"
+        heading_en: "Social governance — human-machine symbiosis"
+        subhead: "治理能力 · item 1"
+        clauses:
+          - num: 1
+            text: "有序推动市政基础设施智能化改造升级，探索面向新一代智能终端发展的{城市规划、建设与治理}，提升城市运行智能化水平。加快人工智能产品和服务向乡村延伸，推动{城乡智能普惠}。深入开展{人工智能社会实验}。安全稳妥有序推进人工智能在政务领域应用，打造精准识别需求、主动规划服务、全程智能办理的{政务服务}新模式。加快人工智能在各类公共资源招标投标活动中的应用，提升智能交易服务和监管水平。"
+            gloss: "Smart municipal infra; urban planning/governance; rural AI; AI social experiments; smart government services; e-bidding."
+        queries:
+          mentions:
+            - {term: "智慧城市", label: "智慧城市"}
+            - {term: "政务服务", label: "政务服务"}
+        reading: ""
+      - id: "5.2"
+        taxonomy_id: gov-security
+        path: ["二 加快实施重点行动", "（五）“人工智能+”治理能力", "2 打造安全治理多元共治新格局"]
+        index_label: "五 · 2"
+        heading_cn: "打造安全治理多元共治新格局"
+        heading_en: "Public-security governance"
+        subhead: "治理能力 · item 2"
+        clauses:
+          - num: 1
+            text: "推动构建面向自然人、数字人、智能机器人等多元一体的{公共安全治理体系}，加强人工智能在安全生产监管、防灾减灾救灾、公共安全预警、社会治安管理等方面的应用，提升监测预警、监管执法、指挥决策、现场救援、社会动员等工作水平，增强应用人工智能维护和塑造{国家安全}的能力。加快推动人工智能赋能{网络空间治理}，强化信息精准识别、态势主动研判、风险实时处置等能力。"
+            gloss: "Multi-actor public-safety system; work-safety/disaster/policing; national security; AI-enabled cyberspace governance."
+        queries:
+          mentions:
+            - {term: "公共安全", label: "公共安全"}
+            - {term: "国家安全", label: "国家安全"}
+        reading: ""
+      - id: "5.3"
+        taxonomy_id: gov-eco
+        path: ["二 加快实施重点行动", "（五）“人工智能+”治理能力", "3 共绘美丽中国生态治理新画卷"]
+        index_label: "五 · 3"
+        heading_cn: "共绘美丽中国生态治理新画卷"
+        heading_en: "Ecological / environmental governance"
+        subhead: "治理能力 · item 3"
+        clauses:
+          - num: 1
+            text: "提高{空天地海一体化}动态感知和{国土空间智慧规划}水平，强化资源要素优化配置。围绕大气、水、海洋、土壤、生物等多要素生态环境系统和{全国碳市场}建设等，提升人工智能驱动的监测预测、模拟推演、问题处置等能力，推动构建智能协同的精准治理模式。"
+            gloss: "Space-air-ground-sea sensing; smart land-space planning; AI monitoring of air/water/soil/biology and the national carbon market."
+        queries:
+          mentions:
+            - {term: "生态环境", label: "生态环境"}
+            - {term: "碳市场", label: "碳市场"}
+        reading: ""
+      - id: "6.1"
+        taxonomy_id: glo-inclusive
+        path: ["二 加快实施重点行动", "（六）“人工智能+”全球合作", "1 推动人工智能普惠共享"]
+        index_label: "六 · 1"
+        heading_cn: "推动人工智能普惠共享"
+        heading_en: "Inclusive global AI (public good)"
+        subhead: "全球合作 · item 1"
+        clauses:
+          - num: 1
+            text: "把人工智能作为造福人类的{国际公共产品}，打造平权、互信、多元、共赢的人工智能能力建设开放生态。深化人工智能领域高水平开放，推动人工智能技术{开源可及}，强化算力、数据、人才等领域国际合作，帮助{全球南方}国家加强人工智能能力建设，助力各国平等参与智能化发展进程，弥合{全球智能鸿沟}。"
+            gloss: "AI as international public good; open ecosystem; open-source access; help the Global South; bridge the global intelligence divide."
+        queries:
+          mentions:
+            - {term: "全球南方", label: "全球南方"}
+            - {term: "智能鸿沟", label: "智能鸿沟"}
+        reading: ""
+      - id: "6.2"
+        taxonomy_id: glo-governance
+        path: ["二 加快实施重点行动", "（六）“人工智能+”全球合作", "2 共建人工智能全球治理体系"]
+        index_label: "六 · 2"
+        heading_cn: "共建人工智能全球治理体系"
+        heading_en: "Global AI governance system"
+        subhead: "全球合作 · item 2"
+        clauses:
+          - num: 1
+            text: "支持{联合国}在人工智能全球治理中发挥主渠道作用，探索形成各国广泛参与的{治理框架}，共同应对全球性挑战。深化与国际组织、专业机构等交流合作，加强{治理规则、技术标准}等对接协调。共同研判、积极应对人工智能应用风险，确保人工智能发展{安全、可靠、可控}。"
+            gloss: "UN as main channel; broad-participation governance framework; rules/standards alignment; safe, reliable, controllable AI."
+        queries:
+          mentions:
+            - {term: "全球治理", label: "全球治理"}
+            - {term: "智能向善", label: "智能向善"}
+        reading: ""
