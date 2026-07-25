@@ -86,6 +86,23 @@ async def _breakdown(db, term):
                       "pct": round(r[1] / mx * 100)} for r in top]}
 
 
+async def _linked_from_map(db, taxonomy_id, limit=12):
+    """Linked docs from the DeepSeek AI+ mapping (aiplus_map), by citation-rank."""
+    rows = await db.fetch(
+        "SELECT d.id, d.site_key, d.title, substr(COALESCE(d.date_published,''),1,10) dt, "
+        "d.citation_rank FROM aiplus_map m JOIN documents d ON d.id = m.doc_id "
+        "WHERE m.item_id = $1 AND d.title != '' "
+        "ORDER BY d.citation_rank DESC, d.date_published DESC LIMIT $2",
+        taxonomy_id, limit)
+    return [{"id": r[0], "site_key": r[1], "title": r[2], "date": r[3],
+             "rank": round(r[4] or 0, 1)} for r in rows]
+
+
+async def _map_count(db, taxonomy_id):
+    return await db.fetchval(
+        "SELECT COUNT(*) FROM aiplus_map WHERE item_id = $1", taxonomy_id)
+
+
 async def _linked(db, spec):
     ors, args, i = [], [], 1
     for t in spec.get("title_any", []):
@@ -131,7 +148,16 @@ async def get_annotation(db, slug):
             n = await _count(db, term=m.get("term"), term_all=m.get("term_all"))
             mentions.append({"label": m["label"], "count": n})
         breakdown = await _breakdown(db, q["breakdown"]) if q.get("breakdown") else None
-        linked = await _linked(db, q["linked"]) if q.get("linked") else []
+        tax_id = it.get("taxonomy_id")
+        if tax_id:                                    # auto-populated from the DeepSeek map
+            limit = (q.get("linked") or {}).get("limit", 12)
+            linked = await _linked_from_map(db, tax_id, limit)
+            linked_count = await _map_count(db, tax_id)
+        elif q.get("linked"):                         # hand-curated keyword query
+            linked = await _linked(db, q["linked"])
+            linked_count = len(linked)
+        else:
+            linked, linked_count = [], 0
         for d in linked:
             d["src"] = _src(d["site_key"])
         top_rank = max((d["rank"] for d in linked), default=0)
@@ -142,7 +168,7 @@ async def get_annotation(db, slug):
             "clauses": [{"num": c["num"], "parts": _parse_marks(c["text"]),
                          "gloss": c.get("gloss", "")} for c in it.get("clauses", [])],
             "mentions": mentions, "breakdown": breakdown, "linked": linked,
-            "linked_count": len(linked), "top_rank": top_rank,
+            "linked_count": linked_count, "top_rank": top_rank,
             "reading": (it.get("reading") or "").strip(),
         })
     return {
