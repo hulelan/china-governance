@@ -63,7 +63,7 @@ CENTRAL = [
     ("全国政协 CPPCC", "cppcc.gov.cn", "cppcc", "power-organ"),
     ("最高法 SPC", "court.gov.cn", "ipc_court", "judiciary"),
     ("最高检 SPP", "spp.gov.cn", "spp", "judiciary"),
-    ("中央政法委", "chinapeace.gov.cn", "", "cpc"),
+    ("中央政法委", "chinapeace.gov.cn", "chinapeace", "cpc"),
     ("共产党员网(中组部) 12371", "12371.cn", "", "cpc"),
 ]
 
