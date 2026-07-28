@@ -116,6 +116,15 @@ SITES = {
         "base_url": "http://www.jinan.gov.cn", "admin_level": "municipal",
         "sections": ["/col/col118736/", "/col/col121799/"],  # 政策解读 (policy)
     },
+    "chinapeace": {
+        # 中央政法委 — TRS content dialect: /chinapeace/c<col>/YYYY-MM/DD/content_ID.shtml.
+        # Section index pages server-render ~99 links each (fully crawlable).
+        "name": "Central Political & Legal Affairs Commission (中央政法委)",
+        "base_url": "http://www.chinapeace.gov.cn", "admin_level": "central",
+        "sections": ["/chinapeace/c100004/index.shtml", "/chinapeace/c100007/index.shtml",
+                     "/chinapeace/c100008/index.shtml", "/chinapeace/c100013/index.shtml",
+                     "/chinapeace/c100014/index.shtml"],
+    },
     # TODO: qingdao (青岛) + tianjin (天津) expose t-date on the homepage but the
     # derived section dirs aren't browsable list pages — need section rediscovery.
     # TODO: jinan 通知公告/政府文件 columns use Hanweb client-side datacall — need
@@ -131,6 +140,9 @@ _ART_RE = re.compile(r'<a\s+[^>]*href="([^"]*?t(\d{8})_\d+\.s?html?)"[^>]*>(.*?)
 # or a hex hash.
 _ART_ART_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/art/(\d{4})(?:/(\d{1,2})/(\d{1,2}))?/art_[0-9a-f_]+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (C) TRS content: …/YYYY-MM/DD/content_ID.shtml  (中央政法委 chinapeace & many TRS sites)
+_ART_CONTENT_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{4})-(\d{1,2})/(\d{1,2})/content_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
@@ -203,6 +215,9 @@ def _list_articles(page_html: str, page_url: str) -> list:
         y, mo, d = m.group(2), m.group(3), m.group(4)
         url_date = f"{y}-{int(mo):02d}-{int(d):02d}" if mo and d else f"{y}-01-01"
         matches.append((m, m.group(1), m.group(5), url_date))
+    for m in _ART_CONTENT_RE.finditer(page_html):
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        matches.append((m, m.group(1), m.group(5), f"{y}-{int(mo):02d}-{int(d):02d}"))
     out, seen = [], set()
     for m, href, inner, url_date in matches:
         url = urljoin(page_url, H.unescape(href))
