@@ -125,6 +125,14 @@ SITES = {
                      "/chinapeace/c100008/index.shtml", "/chinapeace/c100013/index.shtml",
                      "/chinapeace/c100014/index.shtml"],
     },
+    "nea": {
+        # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
+        # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
+        "name": "National Energy Administration (国家能源局)",
+        "base_url": "http://www.nea.gov.cn", "admin_level": "central",
+        "sections": ["/n/xwzx/index.htm", "/n/policy/zxwj.htm", "/n/nyflfg/index.htm",
+                     "/n/politics/2015v/wj.htm", "/n/politics/2015v/zc.htm"],
+    },
     # TODO: qingdao (青岛) + tianjin (天津) expose t-date on the homepage but the
     # derived section dirs aren't browsable list pages — need section rediscovery.
     # TODO: jinan 通知公告/政府文件 columns use Hanweb client-side datacall — need
@@ -140,9 +148,12 @@ _ART_RE = re.compile(r'<a\s+[^>]*href="([^"]*?t(\d{8})_\d+\.s?html?)"[^>]*>(.*?)
 # or a hex hash.
 _ART_ART_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/art/(\d{4})(?:/(\d{1,2})/(\d{1,2}))?/art_[0-9a-f_]+\.s?html?)"[^>]*>(.*?)</a>', re.S)
-#  (C) TRS content: …/YYYY-MM/DD/content_ID.shtml  (中央政法委 chinapeace & many TRS sites)
+#  (C) TRS content: …/YYYY-MM/DD/content_ID.shtml OR …/c_ID.htm (中央政法委, NEA policy…)
 _ART_CONTENT_RE = re.compile(
-    r'<a\s+[^>]*href="([^"]*?/(\d{4})-(\d{1,2})/(\d{1,2})/content_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+    r'<a\s+[^>]*href="([^"]*?/(\d{4})-(\d{1,2})/(\d{1,2})/(?:content|c)_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (D) NEA new: …/YYYYMMDD/<hex>/c.html  (国家能源局)
+_ART_NEA_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{4})(\d{2})(\d{2})/[0-9a-f]{8,}/c\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
@@ -218,6 +229,9 @@ def _list_articles(page_html: str, page_url: str) -> list:
     for m in _ART_CONTENT_RE.finditer(page_html):
         y, mo, d = m.group(2), m.group(3), m.group(4)
         matches.append((m, m.group(1), m.group(5), f"{y}-{int(mo):02d}-{int(d):02d}"))
+    for m in _ART_NEA_RE.finditer(page_html):
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        matches.append((m, m.group(1), m.group(5), f"{y}-{mo}-{d}"))
     out, seen = [], set()
     for m, href, inner, url_date in matches:
         url = urljoin(page_url, H.unescape(href))
