@@ -287,15 +287,17 @@ false** — they belong with the SPA/browser tier, not the quick-win tier.
 **Correction C — 4 reachable provinces were never characterized → now are:**
 | Province | Homepage | Section CMS | Verdict |
 |---|---|---|---|
-| **辽宁 Liaoning** | 200, web-idx | `/web/…/<ts-id>/index.shtml`, 20 gov-doc + 42 news links **server-rendered** | ✅ **BUILDING** — new `_ART_WEB_RE` dialect; id's leading 8 digits = pub date |
-| **西藏 Xizang** | 200, 48 t-date on homepage | sections TBD (keyword match missed them) | 🟢 t-date — govcms-addable once section dirs found |
-| **宁夏 Ningxia** | 200, 63 t-date on homepage | sections TBD | 🟢 t-date — govcms-addable once section dirs found |
-| **云南 Yunnan** | 200, t-date + col | 政策解读 server-renders **31 t-date**; some sections 404 | 🟢 partial — add the working t-date sections |
+| **辽宁 Liaoning** | 200, web-idx | `/web/…/<ts-id>/index.shtml`, 20 gov-doc + 42 news links **server-rendered** | ✅ **DONE** — new `_ART_WEB_RE` dialect; **62 docs / 60 body live** |
+| **西藏 Xizang** | 200, 55 t-date on homepage | 政策规章 `/zwgk/zfxxgk/fdzdgknr/zc/gz/`, 政务要闻, 公示公告 | ✅ **DONE** — t-date (dialect A), config-only; **64 docs / 63 body** |
+| **宁夏 Ningxia** | 200, 69 t-date on homepage | 政策 `/zwgk/zc/`, 政策解读 `/zwxx_11337/zcjd/`, 通知公告 | ✅ **DONE** — t-date (dialect A), config-only; **45 docs / 45 body** |
+| **云南 Yunnan** | 200, t-date + col | `/zwgk/*` policy subtree **403-fenced to datacenter IP**; only `/ywdt/` news reachable | ⏸️ defer — needs residential IP/browser for policy sections |
 | **新疆 Xinjiang** | 200 | sections `.shtml` but 0 static article urls (client-render) | ⏸️ defer — Jinan-class, homepage-snapshot only |
 
 **Revised conclusion:** the reliable-gov tail is NOT exhausted — it just moved from
-central bodies to the **unknown-CMS provinces** (§1's "❔ reachable" row). 辽宁 is a
-full provincial portal (五五 plans, policy notices, ~8k-char bodies). 西藏/宁夏/云南
-are t-date, i.e. the dialect govcms already handles — they only need section-dir
-discovery. Next after 辽宁: derive 西藏/宁夏 section dirs from their homepage t-date
-link paths, then wire all into `daily_sync.sh`.
+central bodies to the **unknown-CMS provinces** (§1's "❔ reachable" row). Three new
+provinces landed this round: **辽宁** (web-idx, new dialect) + **西藏/宁夏** (t-date,
+config-only) = **~171 provincial gov docs, 98–100% body coverage**, all wired into
+`daily_sync.sh`'s govcms loop. 云南 turned out to be datacenter-IP-fenced on its
+policy subtree (news-only from the droplet) → deferred with 新疆 to the browser/
+residential-IP tier. Remaining reachable unknowns: 天津/青岛 (t-date on homepage but
+section-index pages not browsable — need section rediscovery).

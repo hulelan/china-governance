@@ -145,6 +145,26 @@ SITES = {
         "sections": ["/web/zwgkx/zfwj/index.shtml", "/web/zwgkx/zfwj/szfwj/index.shtml",
                      "/web/ywdt/index.shtml"],
     },
+    "xizang": {
+        # 西藏自治区 — plain t-date dialect (A). Section index pages server-render
+        # the /YYYYMM/tYYYYMMDD_ID.html rows. High-value 政策规章 (regulations),
+        # 政务要闻, 公示公告. Droplet reaches these list pages (200); a couple of
+        # deeper dirs connection-reset intermittently (US->China latency, retried).
+        "name": "Tibet (西藏自治区)",
+        "base_url": "https://www.xizang.gov.cn", "admin_level": "provincial",
+        "sections": ["/zwgk/zfxxgk/fdzdgknr/zc/gz/index.html",
+                     "/xwzx_406/zwyw/index.html",
+                     "/zwgk/xxfb/gsgg_428/index.html"],
+    },
+    "ningxia": {
+        # 宁夏回族自治区 — plain t-date dialect (A). 政策 (/zwgk/zc/, incl. 规章库),
+        # 政策解读 (69 rows), 通知公告. All three server-render from the droplet.
+        "name": "Ningxia (宁夏回族自治区)",
+        "base_url": "https://www.nx.gov.cn", "admin_level": "provincial",
+        "sections": ["/zwgk/zc/", "/zwxx_11337/zcjd/", "/zwgk/tzgg/"],
+    },
+    # TODO: yunnan (云南) — /zwgk/* policy subtree is 403-fenced to the droplet's
+    # datacenter IP; only /ywdt/ news reachable. Needs a residential IP or browser.
     # TODO: qingdao (青岛) + tianjin (天津) expose t-date on the homepage but the
     # derived section dirs aren't browsable list pages — need section rediscovery.
     # TODO: jinan 通知公告/政府文件 columns use Hanweb client-side datacall — need
