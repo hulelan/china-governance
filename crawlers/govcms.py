@@ -128,10 +128,22 @@ SITES = {
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
+        # DEFERRED: the droplet IP serves the homepage (200) but 404s these section
+        # pages — datacenter geo-fence. Configured but NOT wired into daily_sync.
         "name": "National Energy Administration (国家能源局)",
         "base_url": "http://www.nea.gov.cn", "admin_level": "central",
         "sections": ["/n/xwzx/index.htm", "/n/policy/zxwj.htm", "/n/nyflfg/index.htm",
                      "/n/politics/2015v/wj.htm", "/n/politics/2015v/zc.htm"],
+    },
+    "liaoning": {
+        # 辽宁省 — web-idx dialect: /web/SECTION/<timestamp-id>/index.shtml. Section
+        # list pages server-render the article rows; the article-id dir's leading 8
+        # digits ARE the publish date (YYYYMMDD). Full provincial policy docs
+        # (省政府文件: 五五 plans, policy notices), ~8k-char bodies.
+        "name": "Liaoning Province (辽宁省)",
+        "base_url": "https://www.ln.gov.cn", "admin_level": "provincial",
+        "sections": ["/web/zwgkx/zfwj/index.shtml", "/web/zwgkx/zfwj/szfwj/index.shtml",
+                     "/web/ywdt/index.shtml"],
     },
     # TODO: qingdao (青岛) + tianjin (天津) expose t-date on the homepage but the
     # derived section dirs aren't browsable list pages — need section rediscovery.
@@ -154,6 +166,10 @@ _ART_CONTENT_RE = re.compile(
 #  (D) NEA new: …/YYYYMMDD/<hex>/c.html  (国家能源局)
 _ART_NEA_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/(\d{4})(\d{2})(\d{2})/[0-9a-f]{8,}/c\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (E) web-idx: …/web/SECTION/<timestamp-id>/index.shtml  (辽宁省). The id dir is a
+#      ≥12-digit timestamp whose leading 8 digits are the pub date (YYYYMMDD).
+_ART_WEB_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/web/[^"]*?/(\d{8})\d{4,}/index\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
@@ -232,6 +248,9 @@ def _list_articles(page_html: str, page_url: str) -> list:
     for m in _ART_NEA_RE.finditer(page_html):
         y, mo, d = m.group(2), m.group(3), m.group(4)
         matches.append((m, m.group(1), m.group(5), f"{y}-{mo}-{d}"))
+    for m in _ART_WEB_RE.finditer(page_html):
+        ymd = m.group(2)
+        matches.append((m, m.group(1), m.group(3), f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}"))
     out, seen = [], set()
     for m, href, inner, url_date in matches:
         url = urljoin(page_url, H.unescape(href))

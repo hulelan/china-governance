@@ -265,3 +265,37 @@ remains is exactly two vantage-point problems, both outside the droplet:
   (b) IP-flaky sites (NEA + the §5 BLOCKED provinces) → need a residential/China IP.
 More govcms dialects won't move either. Media (WP/RSS: 虎嗅, 雷峰网, 机器之心) remains
 the low-friction, high-yield path from here.
+
+## 11. Province re-sweep (2026-07-31) — "gov tail exhausted" was WRONG
+
+Re-probed the reachable-but-uncrawled **provincial** portals from the droplet
+(§10's "exhausted" claim only looked at central bodies). Found **4 more buildable
+provinces**. Three corrections + the new targets:
+
+**Correction A — the govcms build-out landed better than the docs said.** Live
+droplet counts (2026-07-31): chinapeace **151** (§10 said 95 — nightly kept
+crawling), qbitai **3,022**, mot **1,018**, shandong **493**, cppcc 92, fujian 72,
+jilin 64, shenyang 59, nhsa 155, nrta 46, elsewhere 74. Underperformers: jinan **4**
+(Hanweb client-render), nea **0** (deferred, correct).
+
+**Correction B — the anti-bot five need a BROWSER, not headers.** Tested 河南/安徽/
+内蒙古 (still **403**) and 湖北/甘肃 (still **412**) with full Chrome headers +
+zh-CN + keep-alive. `412 Precondition Failed` = a JS/cookie challenge (Incapsula-
+class), not a UA gap. So §1/§5's "maybe fixable with headers" is now **tested
+false** — they belong with the SPA/browser tier, not the quick-win tier.
+
+**Correction C — 4 reachable provinces were never characterized → now are:**
+| Province | Homepage | Section CMS | Verdict |
+|---|---|---|---|
+| **辽宁 Liaoning** | 200, web-idx | `/web/…/<ts-id>/index.shtml`, 20 gov-doc + 42 news links **server-rendered** | ✅ **BUILDING** — new `_ART_WEB_RE` dialect; id's leading 8 digits = pub date |
+| **西藏 Xizang** | 200, 48 t-date on homepage | sections TBD (keyword match missed them) | 🟢 t-date — govcms-addable once section dirs found |
+| **宁夏 Ningxia** | 200, 63 t-date on homepage | sections TBD | 🟢 t-date — govcms-addable once section dirs found |
+| **云南 Yunnan** | 200, t-date + col | 政策解读 server-renders **31 t-date**; some sections 404 | 🟢 partial — add the working t-date sections |
+| **新疆 Xinjiang** | 200 | sections `.shtml` but 0 static article urls (client-render) | ⏸️ defer — Jinan-class, homepage-snapshot only |
+
+**Revised conclusion:** the reliable-gov tail is NOT exhausted — it just moved from
+central bodies to the **unknown-CMS provinces** (§1's "❔ reachable" row). 辽宁 is a
+full provincial portal (五五 plans, policy notices, ~8k-char bodies). 西藏/宁夏/云南
+are t-date, i.e. the dialect govcms already handles — they only need section-dir
+discovery. Next after 辽宁: derive 西藏/宁夏 section dirs from their homepage t-date
+link paths, then wire all into `daily_sync.sh`.
