@@ -181,14 +181,17 @@ govcms EXPANSION TODO (reachable central bodies still needing sections found):
 - gkmlpt FK fix (cb1db78): url-collision skip now also skips _record_change (FK to documents.id). Was aborting the sweep.
 - coverage.csv regenerated: CRAWLED 100->110, central 20->27.
 - shandong: jpaas discover fixed (http not https) but crawl=0 docs — jpaas.discover finds 政务公开 meta-columns not the 省政府文件 doc list (col 320658). NEEDS jpaas column-depth fix before wiring. NOT in nightly.
-- STILL TODO: qingdao/tianjin/mohrss govcms section rediscovery; 济南/郑州/无锡 col (bespoke); non-t-date central (cnipa/gas/mem/nia/政法委/12371/nea/nfga/nfra); elsewhere.news; jpaas depth fix (unlocks shandong + more provinces).
+- STILL TODO: qingdao/tianjin/mohrss govcms section rediscovery; 济南/郑州/无锡 col (bespoke); non-t-date central (cnipa/gas/mem/nia/12371/nfga/nfra); jpaas depth fix (unlocks shandong + more provinces).
+  - DONE 2026-07-30: 政法委 (chinapeace, 95 docs, content_N dialect); elsewhere.news; qbitai (~3k, WP API). See coverage-tracker §10.
+  - DEFERRED 2026-07-30: NEA — dialect built + committed but droplet IP 404s its section pages (homepage-only). Not wired. Needs residential vantage.
 
 ## Session 2026-07-24 — govcms /art/ + col-city findings
 - govcms +/art/ dialect (ee44a57): unlocked 山东 (490 docs, ~80% body). govcms now 12 sites.
 - 济南/郑州/无锡 are NOT quick govcms adds: their policy columns list via JS (static /col/ index HTML has 0 /art/ or t-date links). 济南's 16-art cols are NEWS feeds not policy. Need browser network inspection to find the JSON list API → bespoke crawler.
 - REMAINING (all need bespoke reverse-engineering, no quick wins left):
   - JS-list col cities: 济南 郑州 无锡 (find data API)
-  - non-t-date central bodies: MOHRSS(人社部,major) CNIPA GAS MEM NIA 政法委 12371 NEA NFGA NFRA
+  - non-t-date central bodies: MOHRSS(人社部,major) CNIPA GAS MEM NIA 12371 NFGA NFRA
+    (✅政法委 cracked 2026-07-30; ⏸️NEA deferred — droplet IP 404s section pages)
   - govcms section rediscovery: qingdao tianjin (t-date on homepage, wrong section dirs)
   - other provinces/cities: 辽宁 新疆 南京 西安 (no-tdate)
   - elsewhere.news/zh (Next.js JSON API — media)

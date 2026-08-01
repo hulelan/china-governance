@@ -228,3 +228,40 @@ step, ideally once to crack a shared CMS like Hanweb) or uses an undiscovered pe
 URL scheme (tier C). Only shallow homepage-snapshot crawls are possible without the
 browser. Recommended next: connect the Chrome extension, crack Hanweb's datacall once
 (unlocks Jinan + NFGA + others), then tackle tier C by format.
+
+## 10. Tier-C crack attempts + media round (2026-07-30) — outcomes
+
+Worked the §9 tier-C list ("server-rendered homepage, own URL scheme") plus a
+reliable-media pass. Net: one gov crack, one gov defer, one big media win.
+
+**Two new reusable govcms dialects (committed):**
+- `_ART_CONTENT_RE` generalized to `(?:content|c)_\d+` — matches the TRS
+  `…/YYYY-MM/DD/content_ID.shtml` family AND the older `…/c_ID.htm`.
+- `_ART_NEA_RE` — the `/YYYYMMDD/<hex>/c.html` family.
+  → These help any future TRS-platform gov site, independent of NEA's fate.
+
+**✅ 中央政法委 (chinapeace) — CRACKED, 95 docs live, wired into nightly.**
+Server-rendered `content_N` sections (~99 links/section). This was the payoff of
+the generalized dialect. Moves 政法委 out of tier C (§9) → done.
+
+**⏸️ NEA 国家能源局 — DEFERRED (vantage problem, not code).** The dialect + config
+are built and committed, but the droplet's DigitalOcean IP serves NEA's *homepage*
+(200) while its *section list* pages (`/n/xwzx/index.htm`, `/n/policy/zxwj.htm`, …)
+return **404 intermittently** — classic CN-gov datacenter-IP geo-fence (homepage
+whitelisted, deep paths not). Configured in `govcms.SITES` but **NOT wired into
+`daily_sync.sh`** (would just log 0). Salvageable only as a homepage snapshot
+(~30 recent docs) or from a residential/China vantage. Stays in the BLOCKED-class
+bucket (§5) in spirit.
+
+**✅ 量子位 QbitAI (`crawlers/qbitai.py`) — ~3,000 docs, ~100% body, wired.** WP REST
+API (`/wp-json/wp/v2/posts`) → bodies inline, no per-article fetch. Newest-first
+incremental early-exit; `--full` backfills. Added to the media loop in
+`daily_sync.sh`. This is the reliably-productive direction.
+
+**Conclusion — reliable-from-droplet gov tail is now EXHAUSTED.** After 政法委, what
+remains is exactly two vantage-point problems, both outside the droplet:
+  (a) browser-gated SPAs (tiers A/B §9 + MOHRSS/CNIPA/南京/郑州) → need the Chrome
+      extension to reveal section-list APIs (crack Hanweb once = several sites).
+  (b) IP-flaky sites (NEA + the §5 BLOCKED provinces) → need a residential/China IP.
+More govcms dialects won't move either. Media (WP/RSS: 虎嗅, 雷峰网, 机器之心) remains
+the low-friction, high-yield path from here.
