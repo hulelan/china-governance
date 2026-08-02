@@ -338,3 +338,13 @@ tool unlocks: 天津 + 辽宁 departments (datacall lists), datacenter-fenced ci
 (大连 etc.), 云南 policy, 新疆, and the anti-bot five. Blocked only on the
 Claude-in-Chrome extension being connected. (西藏/宁夏 sub-unit host-by-host record:
 `logs/enum_sub.log` on the droplet.)
+
+**No-browser attempt at the datacall lists (2026-08-02):** tried to crack 天津's
+client-side list endpoint by static JS analysis (no browser) — `datacall_probe.py`
++ `datacall_js.py`. Confirmed the CMS is **南威/Nanwei IGS** (`.jhtml` JSON
+interface, `siteId=34`, e.g. `/igs/front/term/type.jhtml?code=…` for search). The
+list-data XHR is NOT in the section HTML or the main mixin JS (`N_new_mixin-*`,
+`N-QT.js` are UI-only); it's buried across further minified JS (`ta_Info.js`,
+`articleReader.js`). Reconstructing it statically is possible but low-ROI vs. just
+loading the page in a browser and reading the list XHR from the Network panel.
+Confirms 天津 (and the 辽宁 datacall departments) are genuinely browser-tier.
