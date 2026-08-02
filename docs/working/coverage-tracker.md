@@ -314,3 +314,27 @@ frontier is now built out (辽宁/西藏/宁夏/青岛 this stretch). What remai
 different tool, not more crawler config: 天津 (Hanweb datacall → browser), 云南 policy
 + 新疆 (datacenter-IP/client-render → residential IP/browser), and the anti-bot five
 (河南/湖北/安徽/内蒙古/甘肃, 403/412 even with Chrome headers → cookie-challenge browser).
+
+## 12. Downward expansion — cities + departments (2026-08-02)
+
+Probed the sub-units under the newly-added provinces (辽宁/西藏/宁夏): prefecture
+cities (own domains) + provincial departments (`*.<prov>.gov.cn` subdomains), for
+reachability + article-URL dialect. `enum_subsites.py` (homepage reachability +
+t-date/art dialect) then `ln_dept_sections.py` (section rediscovery on the
+buildable depts).
+
+**Finding: the downward tail is browser-tier / per-site work, NOT quick config.**
+
+**辽宁 (representative — homepage links 271 gov hosts):**
+| Layer | Status |
+|---|---|
+| Prefecture cities | **Mostly datacenter-fenced from the droplet.** 大连/鞍山/本溪/葫芦岛 = unreachable (DO NYC IP blocked). 朝阳/丹东/抚顺/阜新 = 200 but homepage-shallow (no t-date/art on homepage → need section probe). Separate city domains block the datacenter IP *harder* than the province portal does. → browser/residential-IP tier. |
+| Provincial departments | **Reachable** (share the province's IP-allowlisting) but their list pages are **web-idx / Hanweb-datacall templates, not browsable bare-dir indexes.** ~6 expose articles on the homepage (gxt 工信厅 /art/, rst 人社厅, sthj 生态环境厅, whly 文旅厅 /art/, wsb 卫健委, mzw — all t-date/art), but section-root list pages 404 → each needs per-site list-endpoint discovery (browser network inspection), not a config add. |
+
+**Takeaway:** the clean config-only frontier really is exhausted now — both the
+remaining central/provincial *and* the entire sub-provincial (city/department)
+layer require the **browser tier** (real JS + cookies + residential IP). That one
+tool unlocks: 天津 + 辽宁 departments (datacall lists), datacenter-fenced cities
+(大连 etc.), 云南 policy, 新疆, and the anti-bot five. Blocked only on the
+Claude-in-Chrome extension being connected. (西藏/宁夏 sub-unit host-by-host record:
+`logs/enum_sub.log` on the droplet.)
