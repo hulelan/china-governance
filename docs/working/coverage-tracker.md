@@ -299,5 +299,18 @@ provinces landed this round: **辽宁** (web-idx, new dialect) + **西藏/宁夏
 config-only) = **~171 provincial gov docs, 98–100% body coverage**, all wired into
 `daily_sync.sh`'s govcms loop. 云南 turned out to be datacenter-IP-fenced on its
 policy subtree (news-only from the droplet) → deferred with 新疆 to the browser/
-residential-IP tier. Remaining reachable unknowns: 天津/青岛 (t-date on homepage but
-section-index pages not browsable — need section rediscovery).
+residential-IP tier.
+
+**Section-rediscovery round (2026-08-01):** probed 天津 + 青岛 (homepage t-date, but
+their obvious section paths weren't list pages). Learned real dirs from homepage
+t-date link paths, then found the browsable bare-dir/index list page for each:
+| City | Result |
+|---|---|
+| **青岛 Qingdao** | ✅ **DONE** — 市政府规范性文件 `/zwgk/zdgk/fgwj/zcwj/szfgw/` (177, **100% body**) + 政务要闻/公告公示 news. Config-only (dialect A), `municipal`. The old 政策解读 index (`/zwgk/xxgk/bgt/gkml/zcjd/`) is an archived dead list (articles 302→404) — deliberately excluded. |
+| **天津 Tianjin** | ⏸️ defer — all 7 section dirs are JS-built (Hanweb datacall, like 济南); no browsable list URL. Needs browser network inspection. |
+
+**Reachable-gov tail status:** worked through. The config-only provincial/municipal
+frontier is now built out (辽宁/西藏/宁夏/青岛 this stretch). What remains needs a
+different tool, not more crawler config: 天津 (Hanweb datacall → browser), 云南 policy
++ 新疆 (datacenter-IP/client-render → residential IP/browser), and the anti-bot five
+(河南/湖北/安徽/内蒙古/甘肃, 403/412 even with Chrome headers → cookie-challenge browser).

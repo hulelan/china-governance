@@ -56,7 +56,7 @@ python3 -m crawlers.pbc                          # People's Bank of China 央行
 python3 -m crawlers.trs --site nhsa             # TRS WCM central bodies (医保局 NHSA, 广电 NRTA)
 python3 -m crawlers.trs --list-sites            # Generic TRS "recordset" crawler (encrypted-param dialect)
 python3 -m crawlers.govcms --list-sites         # Generic gov "t-date list" crawler (central ministries)
-python3 -m crawlers.govcms --site mwr           # 水利部 (also: nbs 统计局, mva 退役军人部, mct 文旅部, mara 农业部, liaoning 辽宁省 web-idx dialect, xizang 西藏 + ningxia 宁夏 t-date)
+python3 -m crawlers.govcms --site mwr           # 水利部 (also: nbs 统计局, mva 退役军人部, mct 文旅部, mara 农业部, liaoning 辽宁省 web-idx dialect, xizang 西藏 + ningxia 宁夏 + qingdao 青岛 t-date)
 python3 -m crawlers.govcms --site mwr --discover # Map a site's t-date sub-sections (config aid)
 python3 -m crawlers.tsinghua_aiig               # Tsinghua AI Governance Institute
 

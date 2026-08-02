@@ -163,10 +163,20 @@ SITES = {
         "base_url": "https://www.nx.gov.cn", "admin_level": "provincial",
         "sections": ["/zwgk/zc/", "/zwxx_11337/zcjd/", "/zwgk/tzgg/"],
     },
+    "qingdao": {
+        # 青岛市 (副省级市, Shandong) — plain t-date dialect (A). High-value section
+        # is 市政府规范性文件 (/zwgk/zdgk/fgwj/zcwj/szfgw/, ~177 rows, 100% body) plus
+        # 政务要闻/公告公示 news. NOTE: the old 政策解读 index (/zwgk/xxgk/bgt/gkml/
+        # zcjd/) is an ARCHIVED dead list — its article links 302→404, so it's
+        # deliberately excluded (would add ~40 bodyless rows).
+        "name": "Qingdao (青岛市)",
+        "base_url": "https://www.qingdao.gov.cn", "admin_level": "municipal",
+        "sections": ["/zwgk/zdgk/fgwj/zcwj/szfgw/", "/ywdt/zwyw/", "/ywdt/gggs/"],
+    },
     # TODO: yunnan (云南) — /zwgk/* policy subtree is 403-fenced to the droplet's
     # datacenter IP; only /ywdt/ news reachable. Needs a residential IP or browser.
-    # TODO: qingdao (青岛) + tianjin (天津) expose t-date on the homepage but the
-    # derived section dirs aren't browsable list pages — need section rediscovery.
+    # TODO: tianjin (天津) — t-date on the homepage but section list pages are
+    # JS-built (Hanweb datacall, like jinan) — need browser network inspection.
     # TODO: jinan 通知公告/政府文件 columns use Hanweb client-side datacall — need
     # browser network inspection to find the list endpoint.
 }
