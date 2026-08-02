@@ -346,9 +346,18 @@ crawled via the new `govcms --group dept` (one command, scales cleanly).
 `scripts/rnd/`-style helper `dept_autoconfig.py` emits ready SITES entries from a
 subdomain list (title→name, ranks policy sections, confirms index.html render).
 
-**宁夏 departments:** homepage t-date (td up to 284, e.g. 水利厅 sjt) but section roots
-404 at the obvious index paths (like 辽宁) → need per-dept section probing. ~35 depts
-+ county portals reachable. Deferred (buildable-next, not browser-tier).
+**宁夏 departments — ALSO a config-only win (earlier "404" was a probe BUG):**
+The initial read said 宁夏 dept section roots 404 (like 辽宁). That was a FALSE
+NEGATIVE: the probe concatenated homepage-relative dirs (`./yxxw/`) onto the host
+without normalizing, yielding a trailing-dot FQDN (`fzggw.nx.gov.cn.`). That
+trailing dot happens to resolve on 西藏's servers (so 西藏 probes worked) but errors
+on 宁夏's — so 宁夏 looked dead when it wasn't. After normalizing `./x/`→`/x/`, 宁夏
+depts render cleanly at `<section>/index.html`. **Built 19 宁夏 depts** (发改委 财政厅
+科技厅 工信厅 教育厅 民政厅 司法厅 人社厅 自然资源厅 生态环境厅 住建厅 交通厅 审计厅 农业农村厅
+商务厅 文旅厅 卫健委 医保局 应急管理厅) via `dept_autoconfig.py` — **952 docs, 96% body**,
+richer than 西藏 (~50 docs/dept). gat/scjg/gzw hit transient errors, retry later.
+Lesson: normalize relative URLs before probing — a trailing-dot host is a silent
+per-server false negative. `dept_autoconfig.py` fixed to emit absolute paths.
 
 **Takeaway (corrected):** the config-only frontier is NOT exhausted — the 西藏
 department tier alone is ~28 addable sites. What genuinely needs the **browser tier**
