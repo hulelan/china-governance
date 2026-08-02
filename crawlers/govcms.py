@@ -170,27 +170,47 @@ SITES = {
     # for policy value (政策法规/通知公告/公示公告 over pure news). ~28 depts expose
     # t-date on their homepage; this is the high-value policy-body batch.
     "xz_drc": {"name": "Tibet DRC (西藏发改委)", "base_url": "https://drc.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/zwgk_1941/tz/index.html", "/fgdt/tz/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/zwgk_1941/tz/index.html", "/fgdt/tz/index.html"]},
     "xz_swt": {"name": "Tibet Commerce Dept (西藏商务厅)", "base_url": "https://swt.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/xwzx/swyw/index.html", "/xwzx/gsgg/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/xwzx/swyw/index.html", "/xwzx/gsgg/index.html"]},
     "xz_zrzyt": {"name": "Tibet Natural Resources Dept (西藏自然资源厅)", "base_url": "https://zrzyt.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/gk/xxgk/zfjc/zcjd/index.html", "/gk/gsgg/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/gk/xxgk/zfjc/zcjd/index.html", "/gk/gsgg/index.html"]},
     "xz_jtt": {"name": "Tibet Transport Dept (西藏交通厅)", "base_url": "https://jtt.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/xxgk/tzgg/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/xxgk/tzgg/index.html"]},
     "xz_sft": {"name": "Tibet Justice Dept (西藏司法厅)", "base_url": "https://sft.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/xxgk/xxgkml/zcfg/index.html", "/xxgk/xxgkml/bmwj/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/xxgk/xxgkml/zcfg/index.html", "/xxgk/xxgkml/bmwj/index.html"]},
     "xz_hrss": {"name": "Tibet Human Resources & Social Security Dept (西藏人社厅)", "base_url": "https://hrss.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/xwzx/tzgg/index.html", "/zcfg/shbz/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/xwzx/tzgg/index.html", "/zcfg/shbz/index.html"]},
     "xz_wjw": {"name": "Tibet Health Commission (西藏卫健委)", "base_url": "https://wjw.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/xwzx/wsjkdt/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/xwzx/wsjkdt/index.html"]},
     "xz_sjt": {"name": "Tibet Water Resources Dept (西藏水利厅)", "base_url": "https://sjt.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/xwzx/gsgg/index.html", "/xwzx/bmkx/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/xwzx/gsgg/index.html", "/xwzx/bmkx/index.html"]},
     "xz_nynct": {"name": "Tibet Agriculture & Rural Affairs Dept (西藏农业农村厅)", "base_url": "https://nynct.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/xwzx/gsgg/index.html", "/xwzx/xzsn/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/xwzx/gsgg/index.html", "/xwzx/xzsn/index.html"]},
     "xz_tjj": {"name": "Tibet Statistics Bureau (西藏统计局)", "base_url": "https://tjj.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/xxgk/tjxx/tjsj/index.html", "/xwzx/gsgg/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/xxgk/tjxx/tjsj/index.html", "/xwzx/gsgg/index.html"]},
     "xz_mzt": {"name": "Tibet Civil Affairs Dept (西藏民政厅)", "base_url": "https://mzt.xizang.gov.cn",
-        "admin_level": "provincial", "sections": ["/zxzx/dsdt/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/zxzx/dsdt/index.html"]},
+    # 西藏 departments round 2 (autoconfig-generated, curated: dropped 4 驻外办事处
+    # liaison offices + slt dup-水利厅 + unreachable wsb + empty-name gdj).
+    "xz_gat": {"name": "Tibet Public Security Dept (西藏公安厅)", "base_url": "https://gat.xizang.gov.cn",
+        "admin_level": "provincial", "group": "dept", "sections": ["/zwgk_3249/zcjd_220/index.html", "/zwgk_3249/zcfg_219/index.html", "/xwzx_3233/gsgg_205/index.html"]},
+    "xz_sti": {"name": "Tibet Science & Technology Dept (西藏科技厅)", "base_url": "https://sti.xizang.gov.cn",
+        "admin_level": "provincial", "group": "dept", "sections": ["/xxgk/fdzdgk/zcjd/index.html", "/xxgk/fdzdgk/tzgg/index.html", "/xxgk/zc/Laws/index.html"]},
+    "xz_wlt": {"name": "Tibet Culture & Tourism Dept (西藏文旅厅)", "base_url": "https://wlt.xizang.gov.cn",
+        "admin_level": "provincial", "group": "dept", "sections": ["/zwgk_69/zcfg/bmgz/index.html", "/xwzx_69/tzgg/index.html"]},
+    "xz_ylbzj": {"name": "Tibet Healthcare Security Bureau (西藏医保局)", "base_url": "https://ylbzj.xizang.gov.cn",
+        "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/zcjd/index.html", "/zwgk/flfg/index.html", "/zwgk/zcwj/index.html"]},
+    "xz_mw": {"name": "Tibet Ethnic Affairs Commission (西藏民委)", "base_url": "https://mw.xizang.gov.cn",
+        "admin_level": "provincial", "group": "dept", "sections": ["/xxgk/gsgg/index.html", "/xxgk/zcjd/index.html", "/xxgk/zcfg/index.html"]},
+    "xz_tzcjj": {"name": "Tibet Investment Promotion Bureau (西藏投资促进局)", "base_url": "https://tzcjj.xizang.gov.cn",
+        "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/tzgg/index.html", "/zwgk/zcjd/index.html"]},
+    "xz_ee": {"name": "Tibet Ecology & Environment Dept (西藏生态环境厅)", "base_url": "https://ee.xizang.gov.cn",
+        "admin_level": "provincial", "group": "dept", "sections": ["/xwzx/gsgg/index.html"]},
+    "xz_sport": {"name": "Tibet Sports Bureau (西藏体育局)", "base_url": "https://sport.xizang.gov.cn",
+        "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/tzgz/index.html", "/zwgk/zwxx/index.html"]},
+    "xz_tyjr": {"name": "Tibet Veterans Affairs Dept (西藏退役军人事务厅)", "base_url": "https://tyjr.xizang.gov.cn",
+        "admin_level": "provincial", "group": "dept", "sections": ["/xwzx/gsgg/index.html"]},
     "qingdao": {
         # 青岛市 (副省级市, Shandong) — plain t-date dialect (A). High-value section
         # is 市政府规范性文件 (/zwgk/zdgk/fgwj/zcwj/szfgw/, ~177 rows, 100% body) plus
@@ -430,6 +450,7 @@ def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30)
 def main():
     ap = argparse.ArgumentParser(description="Generic gov t-date list crawler")
     ap.add_argument("--site")
+    ap.add_argument("--group", help="crawl every site tagged with this group (e.g. 'dept')")
     ap.add_argument("--list-sites", action="store_true")
     ap.add_argument("--discover", action="store_true", help="map sub-sections, don't crawl")
     ap.add_argument("--list-only", action="store_true", help="metadata only, skip bodies")
@@ -439,7 +460,23 @@ def main():
 
     if args.list_sites:
         for k, c in SITES.items():
-            print(f"  {k:8} {c['name']}  {c['base_url']}")
+            grp = f" [{c['group']}]" if c.get("group") else ""
+            print(f"  {k:12} {c['name']}  {c['base_url']}{grp}")
+        return
+    if args.group:
+        # crawl all sites tagged with this group, sequentially, into one DB.
+        keys = [k for k, c in SITES.items() if c.get("group") == args.group]
+        if not keys:
+            print(f"No sites tagged group={args.group!r}")
+            return
+        conn = init_db(args.db) if args.db else init_db()
+        for k in keys:
+            print(f"\n=== [{args.group}] {k}: {SITES[k]['name']} ===")
+            try:
+                crawl_site(conn, k, SITES[k], fetch_bodies=not args.list_only, deep=args.deep)
+            except Exception as e:  # one dept failing must not abort the group
+                print(f"  {k}: FAILED {type(e).__name__}: {e}")
+        show_stats(conn)
         return
     if not args.site or args.site not in SITES:
         print("Specify --site KEY (see --list-sites)")

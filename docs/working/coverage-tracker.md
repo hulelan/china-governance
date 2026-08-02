@@ -337,10 +337,14 @@ finished. That was the same scope-too-narrow error as §10/§11 — corrected be
 **西藏 departments — a large config-only win (the 辽宁 conclusion did NOT generalize):**
 Unlike 辽宁, 西藏 department subdomains (`*.xizang.gov.cn`) expose t-date DIRECTLY on
 their homepages (td=44–185) AND their section list pages server-render at
-`<section>/index.html`. So they're plain dialect-A config adds. ~28 depts qualify;
-**built the 11-dept high-value policy batch** (发改委 drc, 商务厅 swt, 自然资源厅 zrzyt,
-交通厅 jtt, 司法厅 sft, 人社厅 hrss, 卫健委 wjw, 水利厅 sjt, 农业农村厅 nynct, 统计局 tjj,
-民政厅 mzt) as `xz_*` sites. (住建厅 zjt homepage dirs didn't render at index.html — skipped.)
+`<section>/index.html`. So they're plain dialect-A config adds. **Built 20 西藏 depts**
+as `xz_*` sites (round 1: 发改委 商务厅 自然资源厅 交通厅 司法厅 人社厅 卫健委 水利厅 农业农村厅
+统计局 民政厅; round 2 via `dept_autoconfig.py`: 公安厅 科技厅 文旅厅 医保局 民委 投资促进局
+生态环境厅 体育局 退役军人厅). Skipped: 住建厅 (no index.html list), 4 驻外办事处 liaison
+offices (thin), wsb (unreachable), gdj (empty title). All tagged `group:"dept"` and
+crawled via the new `govcms --group dept` (one command, scales cleanly).
+`scripts/rnd/`-style helper `dept_autoconfig.py` emits ready SITES entries from a
+subdomain list (title→name, ranks policy sections, confirms index.html render).
 
 **宁夏 departments:** homepage t-date (td up to 284, e.g. 水利厅 sjt) but section roots
 404 at the obvious index paths (like 辽宁) → need per-dept section probing. ~35 depts

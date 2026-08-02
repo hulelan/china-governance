@@ -175,11 +175,13 @@ for site in nhsa nrta; do
     run_crawler "trs ($site)" python3 -m crawlers.trs --site $site
 done
 
-# Generic gov t-date list crawlers (central ministries — see crawlers/govcms.py)
-for site in mwr nbs mva mct mara mot cppcc jilin fujian hunan shenyang shandong jinan chinapeace liaoning xizang ningxia qingdao \
-            xz_drc xz_swt xz_zrzyt xz_jtt xz_sft xz_hrss xz_wjw xz_sjt xz_nynct xz_tjj xz_mzt; do
+# Generic gov t-date list crawlers (central ministries + provinces — see crawlers/govcms.py)
+for site in mwr nbs mva mct mara mot cppcc jilin fujian hunan shenyang shandong jinan chinapeace liaoning xizang ningxia qingdao; do
     run_crawler "govcms ($site)" python3 -m crawlers.govcms --site $site
 done
+# Provincial departments (tagged group=dept in SITES) — crawled as one group so
+# this stays clean as the dept tier scales across provinces.
+run_crawler "govcms (dept group)" python3 -m crawlers.govcms --group dept
 
 for crawler in beijing shanghai jiangsu chongqing wuhan suzhou heilongjiang; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
