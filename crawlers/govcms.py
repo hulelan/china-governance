@@ -163,6 +163,34 @@ SITES = {
         "base_url": "https://www.nx.gov.cn", "admin_level": "provincial",
         "sections": ["/zwgk/zc/", "/zwxx_11337/zcjd/", "/zwgk/tzgg/"],
     },
+    # --- 西藏自治区 provincial departments (*.xizang.gov.cn) ---
+    # Same t-date dialect (A) as the province; each dept's section list pages
+    # server-render at <section>/index.html. Reachable from the droplet (they ride
+    # the province's IP-allowlist, unlike separate city domains). Sections chosen
+    # for policy value (政策法规/通知公告/公示公告 over pure news). ~28 depts expose
+    # t-date on their homepage; this is the high-value policy-body batch.
+    "xz_drc": {"name": "Tibet DRC (西藏发改委)", "base_url": "https://drc.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/zwgk_1941/tz/index.html", "/fgdt/tz/index.html"]},
+    "xz_swt": {"name": "Tibet Commerce Dept (西藏商务厅)", "base_url": "https://swt.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/xwzx/swyw/index.html", "/xwzx/gsgg/index.html"]},
+    "xz_zrzyt": {"name": "Tibet Natural Resources Dept (西藏自然资源厅)", "base_url": "https://zrzyt.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/gk/xxgk/zfjc/zcjd/index.html", "/gk/gsgg/index.html"]},
+    "xz_jtt": {"name": "Tibet Transport Dept (西藏交通厅)", "base_url": "https://jtt.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/xxgk/tzgg/index.html"]},
+    "xz_sft": {"name": "Tibet Justice Dept (西藏司法厅)", "base_url": "https://sft.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/xxgk/xxgkml/zcfg/index.html", "/xxgk/xxgkml/bmwj/index.html"]},
+    "xz_hrss": {"name": "Tibet Human Resources & Social Security Dept (西藏人社厅)", "base_url": "https://hrss.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/xwzx/tzgg/index.html", "/zcfg/shbz/index.html"]},
+    "xz_wjw": {"name": "Tibet Health Commission (西藏卫健委)", "base_url": "https://wjw.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/xwzx/wsjkdt/index.html"]},
+    "xz_sjt": {"name": "Tibet Water Resources Dept (西藏水利厅)", "base_url": "https://sjt.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/xwzx/gsgg/index.html", "/xwzx/bmkx/index.html"]},
+    "xz_nynct": {"name": "Tibet Agriculture & Rural Affairs Dept (西藏农业农村厅)", "base_url": "https://nynct.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/xwzx/gsgg/index.html", "/xwzx/xzsn/index.html"]},
+    "xz_tjj": {"name": "Tibet Statistics Bureau (西藏统计局)", "base_url": "https://tjj.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/xxgk/tjxx/tjsj/index.html", "/xwzx/gsgg/index.html"]},
+    "xz_mzt": {"name": "Tibet Civil Affairs Dept (西藏民政厅)", "base_url": "https://mzt.xizang.gov.cn",
+        "admin_level": "provincial", "sections": ["/zxzx/dsdt/index.html"]},
     "qingdao": {
         # 青岛市 (副省级市, Shandong) — plain t-date dialect (A). High-value section
         # is 市政府规范性文件 (/zwgk/zdgk/fgwj/zcwj/szfgw/, ~177 rows, 100% body) plus

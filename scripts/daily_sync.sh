@@ -176,7 +176,8 @@ for site in nhsa nrta; do
 done
 
 # Generic gov t-date list crawlers (central ministries — see crawlers/govcms.py)
-for site in mwr nbs mva mct mara mot cppcc jilin fujian hunan shenyang shandong jinan chinapeace liaoning xizang ningxia qingdao; do
+for site in mwr nbs mva mct mara mot cppcc jilin fujian hunan shenyang shandong jinan chinapeace liaoning xizang ningxia qingdao \
+            xz_drc xz_swt xz_zrzyt xz_jtt xz_sft xz_hrss xz_wjw xz_sjt xz_nynct xz_tjj xz_mzt; do
     run_crawler "govcms ($site)" python3 -m crawlers.govcms --site $site
 done
 

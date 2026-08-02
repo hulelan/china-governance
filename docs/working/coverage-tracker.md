@@ -323,21 +323,36 @@ reachability + article-URL dialect. `enum_subsites.py` (homepage reachability +
 t-date/art dialect) then `ln_dept_sections.py` (section rediscovery on the
 buildable depts).
 
-**Finding: the downward tail is browser-tier / per-site work, NOT quick config.**
+**Finding: it splits sharply BY PROVINCE — 辽宁 is browser-tier, but 西藏
+departments are a large config-only win.** (An early version of this section
+concluded "downward = browser-tier" from 辽宁 alone, before the 西藏/宁夏 enum
+finished. That was the same scope-too-narrow error as §10/§11 — corrected below.)
 
-**辽宁 (representative — homepage links 271 gov hosts):**
+**辽宁 (homepage links 271 gov hosts):**
 | Layer | Status |
 |---|---|
 | Prefecture cities | **Mostly datacenter-fenced from the droplet.** 大连/鞍山/本溪/葫芦岛 = unreachable (DO NYC IP blocked). 朝阳/丹东/抚顺/阜新 = 200 but homepage-shallow (no t-date/art on homepage → need section probe). Separate city domains block the datacenter IP *harder* than the province portal does. → browser/residential-IP tier. |
 | Provincial departments | **Reachable** (share the province's IP-allowlisting) but their list pages are **web-idx / Hanweb-datacall templates, not browsable bare-dir indexes.** ~6 expose articles on the homepage (gxt 工信厅 /art/, rst 人社厅, sthj 生态环境厅, whly 文旅厅 /art/, wsb 卫健委, mzw — all t-date/art), but section-root list pages 404 → each needs per-site list-endpoint discovery (browser network inspection), not a config add. |
 
-**Takeaway:** the clean config-only frontier really is exhausted now — both the
-remaining central/provincial *and* the entire sub-provincial (city/department)
-layer require the **browser tier** (real JS + cookies + residential IP). That one
-tool unlocks: 天津 + 辽宁 departments (datacall lists), datacenter-fenced cities
-(大连 etc.), 云南 policy, 新疆, and the anti-bot five. Blocked only on the
-Claude-in-Chrome extension being connected. (西藏/宁夏 sub-unit host-by-host record:
-`logs/enum_sub.log` on the droplet.)
+**西藏 departments — a large config-only win (the 辽宁 conclusion did NOT generalize):**
+Unlike 辽宁, 西藏 department subdomains (`*.xizang.gov.cn`) expose t-date DIRECTLY on
+their homepages (td=44–185) AND their section list pages server-render at
+`<section>/index.html`. So they're plain dialect-A config adds. ~28 depts qualify;
+**built the 11-dept high-value policy batch** (发改委 drc, 商务厅 swt, 自然资源厅 zrzyt,
+交通厅 jtt, 司法厅 sft, 人社厅 hrss, 卫健委 wjw, 水利厅 sjt, 农业农村厅 nynct, 统计局 tjj,
+民政厅 mzt) as `xz_*` sites. (住建厅 zjt homepage dirs didn't render at index.html — skipped.)
+
+**宁夏 departments:** homepage t-date (td up to 284, e.g. 水利厅 sjt) but section roots
+404 at the obvious index paths (like 辽宁) → need per-dept section probing. ~35 depts
++ county portals reachable. Deferred (buildable-next, not browser-tier).
+
+**Takeaway (corrected):** the config-only frontier is NOT exhausted — the 西藏
+department tier alone is ~28 addable sites. What genuinely needs the **browser tier**
+(real JS + cookies + residential IP): 天津 + 辽宁 departments (datacall lists),
+datacenter-fenced cities (大连 etc.), 云南 policy, 新疆, the anti-bot five. What's
+buildable-next WITHOUT a browser: remaining 西藏 depts, 宁夏 depts (after section
+probe), and likely other provinces' department subdomains (same pattern).
+(Full sub-unit host record: `logs/enum_sub.log` on the droplet.)
 
 **No-browser attempt at the datacall lists (2026-08-02):** tried to crack 天津's
 client-side list endpoint by static JS analysis (no browser) — `datacall_probe.py`
