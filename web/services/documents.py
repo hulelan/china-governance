@@ -27,6 +27,22 @@ def _norm(col: str) -> str:
     return f"regexp_replace({col}, '[{_CN_PUNCT_CHARS}]', '', 'g')"
 
 
+_fts_flag = {"has": None}  # None = unchecked; cached after first probe
+
+
+async def _fts_available(db) -> bool:
+    """Whether the FTS5 trigram index (doc_search) exists. Checked once, cached,
+    so search transparently falls back to LIKE if the index hasn't been built."""
+    if _fts_flag["has"] is None:
+        try:
+            n = await db.fetchval(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='doc_search'")
+            _fts_flag["has"] = bool(n)
+        except Exception:
+            _fts_flag["has"] = False
+    return _fts_flag["has"]
+
+
 def date_str_to_timestamp(date_str: str) -> int:
     """Convert 'YYYY-MM-DD' to Unix timestamp at midnight CST (UTC+8).
 
@@ -332,20 +348,21 @@ def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
 
 async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
                            date_start: int = None, date_end: int = None):
-    """LIKE-based search across title, doc number, keywords, abstract, and body. Returns (results, total)."""
+    """Full-text search across title, doc number, keywords, abstract, body.
+
+    Uses the FTS5 **trigram** index (`doc_search`, built by
+    scripts/build_search_index.py) for queries >= 3 chars — an indexed substring
+    lookup that works on Chinese (no word boundaries), turning what was a ~240k-row
+    double table scan into a millisecond index probe. Short queries (< 3 chars,
+    below the trigram minimum) fall back to the old LIKE scan. Returns (results, total).
+    """
     offset = (page - 1) * per_page
     clean_query = _strip_cn_punct(query)
     search_pattern = f"%{clean_query}%"
 
-    # Normalized column expressions (strip Chinese quotes/brackets for fuzzy matching)
-    nt = _norm('d.title')
-    nk = _norm('d.keywords')
-    na = _norm('d.abstract')
-    nb = _norm('d.body_text_cn')
-
     date_clause = ""
     date_params = []
-    next_idx = 2  # $1 is search_pattern
+    next_idx = 2  # $1 is the FTS match / search_pattern
     if date_start is not None:
         date_clause += f" AND d.date_written >= ${next_idx}"
         date_params.append(date_start)
@@ -355,34 +372,67 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
         date_params.append(date_end)
         next_idx += 1
 
-    limit_idx = next_idx
-    offset_idx = next_idx + 1
-
-    rows = await db.fetch(
-        f"""SELECT d.id, d.title, d.document_number, d.publisher,
-                  d.date_written, d.site_key, d.classify_main_name,
-                  d.title_en, d.importance, d.category,
-                  CASE
-                    WHEN {nt} LIKE $1 THEN d.title
-                    WHEN {na} LIKE $1 THEN d.abstract
-                    ELSE SUBSTR(d.body_text_cn, 1, 200)
-                  END as snippet
-           FROM documents d
-           WHERE ({nt} LIKE $1
-              OR d.document_number LIKE $1
-              OR {nk} LIKE $1
-              OR {na} LIKE $1
-              OR {nb} LIKE $1)
-              {date_clause}
-           ORDER BY
-             CASE WHEN {nt} LIKE $1 THEN 0
-                  WHEN d.document_number LIKE $1 THEN 1
-                  WHEN {nk} LIKE $1 THEN 2
-                  ELSE 3 END,
-             d.date_written DESC
-           LIMIT ${limit_idx} OFFSET ${offset_idx}""",
-        search_pattern, *date_params, per_page, offset
-    )
+    fts_ok = await _fts_available(db)
+    if fts_ok and len(clean_query) >= 3:
+        # FTS5 trigram path. Quote the query so it is matched as a literal
+        # substring (trigram tokenizer), escaping any embedded double-quotes.
+        match = '"' + clean_query.replace('"', '""') + '"'
+        tp_idx = next_idx           # $tp = title/exact pattern for ranking + snippet
+        limit_idx = next_idx + 1
+        offset_idx = next_idx + 2
+        rows = await db.fetch(
+            f"""SELECT d.id, d.title, d.document_number, d.publisher,
+                      d.date_written, d.site_key, d.classify_main_name,
+                      d.title_en, d.importance, d.category,
+                      CASE
+                        WHEN d.title LIKE ${tp_idx} THEN d.title
+                        WHEN d.abstract LIKE ${tp_idx} THEN d.abstract
+                        ELSE SUBSTR(d.body_text_cn, 1, 200)
+                      END as snippet
+               FROM doc_search s JOIN documents d ON d.id = s.rowid
+               WHERE doc_search MATCH $1 {date_clause}
+               ORDER BY
+                 CASE WHEN d.title LIKE ${tp_idx} THEN 0
+                      WHEN d.document_number LIKE ${tp_idx} THEN 1
+                      ELSE 2 END,
+                 d.date_written DESC
+               LIMIT ${limit_idx} OFFSET ${offset_idx}""",
+            match, *date_params, search_pattern, per_page, offset
+        )
+        total = await db.fetchval(
+            f"""SELECT COUNT(*) FROM doc_search s JOIN documents d ON d.id = s.rowid
+               WHERE doc_search MATCH $1 {date_clause}""",
+            match, *date_params
+        )
+    else:
+        # Fallback LIKE scan (short queries, or before the index is built).
+        nt, nk = _norm('d.title'), _norm('d.keywords')
+        na, nb = _norm('d.abstract'), _norm('d.body_text_cn')
+        limit_idx = next_idx
+        offset_idx = next_idx + 1
+        rows = await db.fetch(
+            f"""SELECT d.id, d.title, d.document_number, d.publisher,
+                      d.date_written, d.site_key, d.classify_main_name,
+                      d.title_en, d.importance, d.category,
+                      CASE WHEN {nt} LIKE $1 THEN d.title
+                           WHEN {na} LIKE $1 THEN d.abstract
+                           ELSE SUBSTR(d.body_text_cn, 1, 200) END as snippet
+               FROM documents d
+               WHERE ({nt} LIKE $1 OR d.document_number LIKE $1 OR {nk} LIKE $1
+                      OR {na} LIKE $1 OR {nb} LIKE $1) {date_clause}
+               ORDER BY CASE WHEN {nt} LIKE $1 THEN 0
+                             WHEN d.document_number LIKE $1 THEN 1
+                             WHEN {nk} LIKE $1 THEN 2 ELSE 3 END,
+                        d.date_written DESC
+               LIMIT ${limit_idx} OFFSET ${offset_idx}""",
+            search_pattern, *date_params, per_page, offset
+        )
+        total = await db.fetchval(
+            f"""SELECT COUNT(*) FROM documents d
+               WHERE ({nt} LIKE $1 OR d.document_number LIKE $1 OR {nk} LIKE $1
+                      OR {na} LIKE $1 OR {nb} LIKE $1) {date_clause}""",
+            search_pattern, *date_params
+        )
 
     results = []
     for r in rows:
@@ -396,16 +446,6 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
         d["snippet"] = _truncate_snippet(raw)
         results.append(d)
 
-    total = await db.fetchval(
-        f"""SELECT COUNT(*) FROM documents d
-           WHERE ({nt} LIKE $1
-              OR d.document_number LIKE $1
-              OR {nk} LIKE $1
-              OR {na} LIKE $1
-              OR {nb} LIKE $1)
-              {date_clause}""",
-        search_pattern, *date_params
-    )
     return results, total or 0
 
 
