@@ -26,6 +26,7 @@ from web.services.changes import (
 from web.services.chain import get_chain, TOPIC_KEYWORDS
 from web.services.structure import get_structure
 from web.services.annotations import list_annotations, get_overview, get_item
+from web.services.collections import get_collection
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -278,6 +279,26 @@ async def annotation_item(request: Request, slug: str, item_id: str):
     return templates.TemplateResponse("annotation.html", {
         "request": request, "stats": stats,
         "annotation": data["annotation"], "item": data["item"], "nav": "annotations",
+    })
+
+
+@router.get("/collections", response_class=HTMLResponse)
+async def collections_index(request: Request):
+    """Collections hub. One collection today (oil) — redirect straight to it."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/collections/oil")
+
+
+@router.get("/collections/{slug}", response_class=HTMLResponse)
+async def collection_page(request: Request, slug: str):
+    """A topical, annotatable document collection (live corpus query + curated notes)."""
+    db = request.app.state.db
+    try:
+        payload = await get_collection(db, slug)
+    except FileNotFoundError:
+        return HTMLResponse("<h1>Unknown collection</h1>", status_code=404)
+    return templates.TemplateResponse("collection.html", {
+        "request": request, "data_json": json.dumps(payload, ensure_ascii=False),
     })
 
 

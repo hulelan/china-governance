@@ -1,0 +1,1174 @@
+{
+"config": {
+"sites": {
+"miit": {
+"cn": "工信部",
+"en": "MIIT — Industry & IT",
+"tier": "central",
+"n": 2
+},
+"chinatax": {
+"cn": "税务总局",
+"en": "State Taxation Admin",
+"tier": "central",
+"n": 1
+},
+"mofcom": {
+"cn": "商务部",
+"en": "MOFCOM — Commerce",
+"tier": "central",
+"n": 1
+},
+"xizang": {
+"cn": "西藏自治区",
+"en": "Tibet Gov",
+"tier": "provincial",
+"n": 1
+},
+"xz_drc": {
+"cn": "西藏发改委",
+"en": "Tibet DRC",
+"tier": "provincial",
+"n": 5
+},
+"xz_swt": {
+"cn": "西藏商务厅",
+"en": "Tibet Commerce Dept",
+"tier": "provincial",
+"n": 1
+},
+"bj": {
+"cn": "北京市",
+"en": "Beijing",
+"tier": "provincial",
+"n": 1
+},
+"zj": {
+"cn": "浙江省",
+"en": "Zhejiang",
+"tier": "provincial",
+"n": 5
+},
+"sz": {
+"cn": "深圳市",
+"en": "Shenzhen",
+"tier": "municipal",
+"n": 1
+},
+"sz_invest": {
+"cn": "深圳投资推广",
+"en": "Shenzhen Invest Portal",
+"tier": "municipal",
+"n": 4
+},
+"shanwei": {
+"cn": "汕尾市",
+"en": "Shanwei",
+"tier": "municipal",
+"n": 1
+},
+"stdaily": {
+"cn": "科技日报",
+"en": "S&T Daily",
+"tier": "news",
+"n": 18
+},
+"xinhua": {
+"cn": "新华社",
+"en": "Xinhua",
+"tier": "news",
+"n": 10
+},
+"guancha": {
+"cn": "观察者网",
+"en": "Guancha",
+"tier": "news",
+"n": 121
+},
+"ifeng": {
+"cn": "凤凰网",
+"en": "Phoenix",
+"tier": "news",
+"n": 1
+},
+"latepost": {
+"cn": "晚点",
+"en": "LatePost",
+"tier": "news",
+"n": 1
+}
+},
+"tierRank": {
+"central": 1,
+"provincial": 2,
+"municipal": 3,
+"news": 4
+},
+"tierLabel": {
+"central": "Central ministries",
+"provincial": "Provincial",
+"municipal": "Municipal",
+"news": "News & media"
+},
+"themes": {
+"dist": "Distribution & retail reform",
+"price": "Fuel-price adjustments",
+"up": "Upstream & supply security",
+"geo": "Geopolitics & sanctions",
+"tech": "Industry, standards & tech",
+"misc": "Uncategorised / false match"
+},
+"ftags": {
+"reserve": "Strategic reserves",
+"hormuz": "Strait of Hormuz",
+"import": "Import posture",
+"chinaresp": "China response / stance"
+}
+},
+"annotations": {
+"https://www.guancha.cn/internation/2026_08_03_825949.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://swt.xizang.gov.cn/xwzx/swyw/202608/t20260801_552221.html": {
+"theme": "dist",
+"ftag": "",
+"en": "Tibet — 9-department rules implementing the national Refined-Oil Distribution Measures",
+"note": "Newest link in the 国办发〔2025〕5号 → 商务部办法 → province cascade; localises 批发/零售 licensing."
+},
+"https://ah.ifeng.com/c/8vCrPRkhRot": {
+"theme": "price",
+"ftag": "",
+"en": "Anhui refined-oil price adjustment (eff. 24:00 Jul 31)",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-07/31/content_557137.html": {
+"theme": "up",
+"ftag": "",
+"en": "'Whole petroleum system' theory raises exploration efficiency",
+"note": ""
+},
+"https://drc.xizang.gov.cn/zwgk_1941/tz/202607/t20260731_552184.html": {
+"theme": "price",
+"ftag": "",
+"en": "Tibet refined-oil retail price adjustment",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_31_825699.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_30_825521.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "US announces fresh Iran-oil sanctions; China had formally objected",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_29_825428.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Mideast war as energy-security alarm; Australia to build first refinery in 60 years",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_29_825451.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_28_825360.shtml": {
+"theme": "reserve",
+"ftag": "reserve",
+"en": "ECB analyst: China's large oil reserves + diversified mix cushion the Iran-war shock",
+"note": "DIRECTLY on your reserves question — argues China's SPR + import diversification are the shock-absorber."
+},
+"https://www.guancha.cn/internation/2026_07_27_825192.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-07/25/content_553629.html": {
+"theme": "tech",
+"ftag": "",
+"en": "Beijing Institute of Petrochemical Technology forms biomed & AI schools",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-07/24/content_553108.html": {
+"theme": "tech",
+"ftag": "",
+"en": "Lanzhou Petrochemical cracks petroleum-coke anode production",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-07/24/content_553078.html": {
+"theme": "up",
+"ftag": "",
+"en": "CNOOC Engineering patent lets offshore oil/gas platforms withstand typhoons",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-07/23/content_552496.html": {
+"theme": "tech",
+"ftag": "",
+"en": "PetroChina Sichuan gas-line relocation for an expressway expansion",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_23_824828.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-07/22/content_551803.html": {
+"theme": "up",
+"ftag": "",
+"en": "China to launch a new round of the oil & gas exploration & development strategic action",
+"note": "FLAGSHIP upstream policy. NEA's 2026 report: keep crude ≥200Mt/yr (2025=216Mt), grow gas, push deep/offshore/unconventional; frame = domestic self-sufficiency (自主保障)."
+},
+"https://www.guancha.cn/internation/2026_07_20_824358.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/ShiYang/2026_07_19_824264.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_19_824282.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_19_824343.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_18_824175.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://drc.xizang.gov.cn/zwgk_1941/tz/202607/t20260717_550504.html": {
+"theme": "price",
+"ftag": "",
+"en": "Tibet refined-oil retail price adjustment",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_16_823989.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Ukraine: state oil & gas chairman named new PM",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_15_823762.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Iran warns: if US keeps striking, 'not a drop of oil' leaves the region",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_15_823734.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-07/13/content_546353.html": {
+"theme": "up",
+"ftag": "",
+"en": "PetroChina Tarim tops 400bn m³ delivered to the West-East gas pipeline",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-07/13/content_546313.html": {
+"theme": "up",
+"ftag": "",
+"en": "Yanchang Petroleum finds large deep coalbed-methane field, 53.7bn m³ reserves",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_13_823525.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Iraqi PM to visit US; oil & gas cooperation deal expected",
+"note": ""
+},
+"https://www.news.cn/fortune/20260713/ee08166727704af7a46de74dab260d1d/c.html": {
+"theme": "geo",
+"ftag": "",
+"en": "OPEC again cuts its 2026 global oil-demand growth forecast",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_13_823576.shtml": {
+"theme": "geo",
+"ftag": "chinaresp",
+"en": "",
+"note": "China's official response to a Strait-of-Hormuz closure — an actual government voice."
+},
+"https://www.guancha.cn/internation/2026_07_12_823452.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_12_823516.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_11_823428.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_11_823368.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_11_823438.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_09_823104.shtml": {
+"theme": "geo",
+"ftag": "import",
+"en": "Russia imposes diesel-export ban, starts importing oil products",
+"note": ""
+},
+"https://www.guancha.cn/zhangchenyi/2026_07_08_822991.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "Commentary: India refines Russian crude and sells it back — 'winning again'?",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_08_822971.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "US revokes Iran-oil sanctions waiver; prices jump",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-07/07/content_543313.html": {
+"theme": "tech",
+"ftag": "",
+"en": "PetroChina petroleum-engineering numerical-simulation lab profile",
+"note": ""
+},
+"https://www.guancha.cn/politics/2026_07_07_822907.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "'China's oil demand to peak this year, reshaping the global market'",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_07_822871.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_05_822647.shtml": {
+"theme": "hormuz",
+"ftag": "hormuz",
+"en": "Drone strike hits St Petersburg oil terminal",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_05_822717.shtml": {
+"theme": "hormuz",
+"ftag": "hormuz",
+"en": "Hormuz oil exports recover; OPEC+ agrees to raise output again from August",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_05_822673.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_04_822602.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "'Chinese independent refiners snap up discounted Mideast crude'",
+"note": "KEY to the import-pause question: shows China LEANED IN — refiners bought MORE discounted crude, not paused."
+},
+"https://www.guancha.cn/internation/2026_07_04_822553.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "Japan follows China in buying Iranian oil — not afraid of US sanctions?",
+"note": ""
+},
+"https://drc.xizang.gov.cn/zwgk_1941/tz/202607/t20260703_548283.html": {
+"theme": "price",
+"ftag": "",
+"en": "Tibet refined-oil retail price adjustment",
+"note": ""
+},
+"https://www.stdaily.com/web/zhuantiji/content_540834.html": {
+"theme": "tech",
+"ftag": "",
+"en": "Chen Junwu: a lifetime answering 'how does China become a refining power?'",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_02_822295.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "US Treasury Sec: only China dares buy Iranian oil; others fear our sanctions",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_01_822242.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Zelensky: strikes on Russian refineries & defence plants will be 'daily'",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_07_01_822252.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-06/30/content_539777.html": {
+"theme": "tech",
+"ftag": "",
+"en": "Beijing Inst. of Petrochemical Tech mobile welding robot used in Hainan high-rise",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_30_822124.shtml": {
+"theme": "geo",
+"ftag": "import",
+"en": "Peskov confirms Russia weighing oil-product imports from other countries",
+"note": ""
+},
+"https://www.miit.gov.cn/zwgk/wjgs/art/2026/art_6e70959182874adba870a50c3d9f84c6.html": {
+"theme": "tech",
+"ftag": "",
+"en": "MIIT consults on 51 industry standards incl. petrochemical construction supervision",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_30_822137.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.miit.gov.cn/jgsj/kjs/jscx/bzgf/art/2026/art_a214913f42ee4eb4952a91dad00f3210.html": {
+"theme": "tech",
+"ftag": "",
+"en": "MIIT consults on 51 industry standards (petrochemical construction supervision) — 2nd notice",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-06/25/content_537163.html": {
+"theme": "up",
+"ftag": "",
+"en": "PetroChina Tarim greens ~80,000 mu of desert with PV arrays",
+"note": ""
+},
+"https://www.news.cn/fortune/20260624/9397b7b388624f8096b74be7381864ab/c.html": {
+"theme": "geo",
+"ftag": "",
+"en": "Brent crude drops below $75 for first time since the Iran conflict began",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_24_821533.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "US Treasury Sec: Iranian oil to settle in USD; Venezuela & Russia may rejoin dollar system",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_24_821493.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_23_821328.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "US Treasury temporarily lifts sanctions to let Iran sell oil in USD",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_23_821395.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_23_821324.shtml": {
+"theme": "geo",
+"ftag": "import",
+"en": "",
+"note": "Argues global oil pricing now hinges on Chinese demand."
+},
+"https://www.guancha.cn/internation/2026_06_23_821318.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_23_821415.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_22_821294.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "US eases Iran-oil sanctions for a 60-day window",
+"note": ""
+},
+"https://drc.xizang.gov.cn/zwgk_1941/tz/202606/t20260622_546498.html": {
+"theme": "price",
+"ftag": "",
+"en": "Tibet refined-oil retail price adjustment",
+"note": ""
+},
+"https://www.guancha.cn/politics/2026_06_21_821175.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_20_821097.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_19_820979.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_18_820873.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_17_820723.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "Maritime-intel firm: Iran exports crude for first time in ~2 months",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_17_820829.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_17_820768.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_16_820688.shtml": {
+"theme": "geo",
+"ftag": "reserve",
+"en": "",
+"note": "On China's insulation from a blockade (reserves + diversified supply)."
+},
+"https://www.news.cn/fortune/20260615/1f16b0f700ec410b820552304fc5fd8d/c.html": {
+"theme": "tech",
+"ftag": "",
+"en": "Dalian delivers a 115,000-dwt product-oil tanker 15 days early",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_15_820479.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-06/13/content_531695.html": {
+"theme": "up",
+"ftag": "",
+"en": "Yanchang Petroleum starts first Mt-scale integrated CCUS project (Shaanxi)",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_06_13_820377.shtml": {
+"theme": "geo",
+"ftag": "import",
+"en": "",
+"note": "Examines a dip in Chinese crude imports — demand vs. stockpiling."
+},
+"https://www.beijing.gov.cn/zhengce/zcjd/202606/t20260612_4697606.html": {
+"theme": "dist",
+"ftag": "",
+"en": "Beijing — policy explainer for its rules implementing the Refined-Oil Distribution Measures",
+"note": "Provincial implementation of 商务部令 2025 No.4; 11 departments, eff. Jun 1 2026."
+},
+"https://www.stdaily.com/web/gdxw/2026-06/12/content_531513.html": {
+"theme": "dist",
+"ftag": "",
+"en": "S&T Daily: State Taxation Admin rolls out 'invoice-on-transaction' across retail fuel",
+"note": ""
+},
+"https://www.news.cn/fortune/20260611/9fbe3c63a6aa4a9f82ebdcca19ad1e1e/c.html": {
+"theme": "dist",
+"ftag": "",
+"en": "Xinhua: retail fuel to adopt 'invoice-on-transaction' nationwide",
+"note": ""
+},
+"https://fgk.chinatax.gov.cn/zcfgk/c100012/c5250347/content.html": {
+"theme": "dist",
+"ftag": "",
+"en": "State Taxation Administration announcement — nationwide 'invoice-on-transaction' at fuel pumps",
+"note": "KEY tax/monitoring move; mandatory instant e-invoicing per pump sale; implements 国办发〔2025〕5号."
+},
+"https://drc.xizang.gov.cn/zwgk_1941/tz/202606/t20260604_543878.html": {
+"theme": "price",
+"ftag": "",
+"en": "Tibet refined-oil retail price adjustment",
+"note": ""
+},
+"https://www.news.cn/fortune/20260521/47139892d8d6400e8abbdd4f3a0e9520/c.html": {
+"theme": "tech",
+"ftag": "",
+"en": "MIIT guide: industrial-internet integration for oil & gas storage & transport",
+"note": ""
+},
+"https://www.news.cn/fortune/20260514/57becfaf2a1c419c990006929d8ec2a5/c.html": {
+"theme": "geo",
+"ftag": "",
+"en": "OPEC cuts 2026 global oil-demand growth forecast",
+"note": ""
+},
+"https://www.news.cn/fortune/20260512/b148b0f1df5549d09b8c348efaadbcb7/c.html": {
+"theme": "reserve",
+"ftag": "reserve",
+"en": "Economic Q&A: has Iran's oil-storage capacity 'peaked'?",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_08_816344.shtml": {
+"theme": "reserve",
+"ftag": "reserve",
+"en": "US strategic petroleum reserve near lows; govt eyes military-base stocks",
+"note": "On the RESERVES theme — but this is the US SPR, not China's."
+},
+"https://fzggw.zj.gov.cn/col/col1632199/cpyjg/art/2026/art_4b333cceb53c4535b74b7fe9baff2241.html": {
+"theme": "price",
+"ftag": "",
+"en": "Zhejiang refined-oil price adjustment",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_08_816319.shtml": {
+"theme": "geo",
+"ftag": "chinaresp",
+"en": "",
+"note": "MFA statement on a reported attack on a Chinese vessel in Hormuz — a government voice."
+},
+"https://www.news.cn/fortune/20260508/91bbf12fe0c5400d9909642373e9c79c/c.html": {
+"theme": "geo",
+"ftag": "import",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/ShenYi/2026_05_07_816088.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_06_816057.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_05_815960.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_05_815927.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_04_815860.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "UAE formally quits the Organization of Arab Petroleum Exporting Countries",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_04_815879.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_04_815902.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_04_815892.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_03_815773.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_0ff88c45f1974962a539775085014888.html": {
+"theme": "dist",
+"ftag": "",
+"en": "MOFCOM blocking order against US sanctions on 5 Chinese refiners over Iran oil",
+"note": "KEY China policy action on imports: under the 阻断办法, orders 'not recognise / not execute / not comply' with US SDN sanctions on 恒力石化 & 4 others — PROTECTS Iranian-oil purchases, opposite of pausing."
+},
+"https://www.stdaily.com/web/gdxw/2026-05/02/content_511472.html": {
+"theme": "geo",
+"ftag": "",
+"en": "MOFCOM spokesperson Q&A on the blocking order (companion)",
+"note": ""
+},
+"https://www.guancha.cn/politics/2026_05_02_815732.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "US sanctions 5 Chinese firms over Iran oil; MOFCOM: 'three don'ts'",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_02_815739.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "7 OPEC+ members tentatively agree to raise oil-output quotas",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_02_815716.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "Japan buys Russian crude for first time after the Hormuz blockade",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_05_02_815672.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "Brazil's Petrobras exports to US fall to zero; China now top destination",
+"note": ""
+},
+"https://www.sz.gov.cn/cn/xxgk/zfxxgj/tzgg/content/post_12763219.html": {
+"theme": "misc",
+"ftag": "",
+"en": "False match: Shenzhen Metro Line 22 permit ('油松' is a station name)",
+"note": "Keyword false positive (原油松站). Not a policy doc."
+},
+"https://www.guancha.cn/qianxvming/2026_04_30_815456.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "UAE quits OPEC — courting the US in the oil-pricing-power fight?",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_30_815510.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_30_815555.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-04/29/content_510047.html": {
+"theme": "tech",
+"ftag": "",
+"en": "'Oil & Gas (English)' journal profile",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_29_815311.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_29_815308.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/zhangxinyu2/2026_04_29_815313.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_28_815248.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_27_815125.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "'Mideast oil/gas disrupted; China clean-energy exports hit record $26bn/month'",
+"note": ""
+},
+"https://www.xizang.gov.cn/zwgk/xxfb/gsgg_428/202604/t20260421_536120.html": {
+"theme": "price",
+"ftag": "",
+"en": "Tibet refined-oil retail price adjustment",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_27_815043.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_26_814970.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_24_814795.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/xinzhiguanchasuo/2026_04_23_814570.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Commentary: 'everyone talks oil, but the real shortage is Tokens'",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_22_814537.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_22_814500.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-04/21/content_505828.html": {
+"theme": "up",
+"ftag": "",
+"en": "Daqing Drilling develops smart integrated mud-logging instrument",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_21_814378.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "Iran's war fires rage on, but US refiners are cashing in",
+"note": ""
+},
+"https://fzggw.zj.gov.cn/col/col1632199/cpyjg/art/2026/art_fb453a1e05104499a3b14f683d7b5657.html": {
+"theme": "price",
+"ftag": "",
+"en": "Zhejiang refined-oil price adjustment",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_21_814315.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_21_814417.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/yuchunyu/2026_04_20_814219.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_20_814299.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/tangxiaofu/2026_04_19_814163.shtml": {
+"theme": "reserve",
+"ftag": "reserve",
+"en": "Can the world dodge stagflation from an oil crisis?",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_17_813969.shtml": {
+"theme": "geo",
+"ftag": "import",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_16_813914.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "'For the first time since WWII, the US is about to become a net oil exporter'",
+"note": ""
+},
+"https://www.guancha.cn/qiche/2026_04_14_813630.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/ShenYi/2026_04_14_813501.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_13_813486.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "Trump urges China to buy US & Venezuelan oil; China responds",
+"note": ""
+},
+"https://www.stdaily.com/web/gdxw/2026-04/13/content_501263.html": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_13_813442.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/changluowen/2026_04_13_813393.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_13_813406.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_13_813379.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.163.com/dy/article/KQAIBB260531M1CO.html": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/yangchangjiang/2026_04_09_813027.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Commentary: dollar hegemony won't fall from an oil crisis alone",
+"note": ""
+},
+"https://www.guancha.cn/jinliangxiang/2026_04_08_812903.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Commentary: after 'petrodollar-for-security' shattered, how do Gulf states cope?",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_07_812746.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Trump openly wants to seize Iran's oil; calls anti-war Americans 'stupid'",
+"note": ""
+},
+"https://fzggw.zj.gov.cn/col/col1632199/cpyjg/art/2026/art_526c80c76a1b4801b34ad37a1ba81f9e.html": {
+"theme": "price",
+"ftag": "",
+"en": "Zhejiang refined-oil price adjustment",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_07_812831.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_07_812801.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_07_812734.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.news.cn/20260407/12dd63ed90a24dfeb9b372ca4c629ade/c.html": {
+"theme": "geo",
+"ftag": "import",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_06_812704.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Oil issue hits polls; Japan's Takaichi seeks talks with US & Iran",
+"note": ""
+},
+"https://www.guancha.cn/Guqingyang/2026_04_04_812522.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_03_812408.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/Caoyuanzheng/2026_04_02_812309.shtml": {
+"theme": "reserve",
+"ftag": "reserve",
+"en": "Commentary: amid oil-crisis fears, how deep is China's confidence?",
+"note": "On China's calm-amid-crisis posture (reserves + diversification framing)."
+},
+"https://www.guancha.cn/internation/2026_04_02_812367.shtml": {
+"theme": "geo",
+"ftag": "",
+"en": "Deutsche Bank: petrodollar dominance eroding; a 'petro-yuan' era may open",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_02_812289.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_04_01_812169.shtml": {
+"theme": "geo",
+"ftag": "reserve",
+"en": "",
+"note": "Why the biggest importer stays composed — reserves/diversification."
+},
+"https://www.guancha.cn/internation/2026_03_31_812092.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "Russian Dep FM: no oil for countries setting price caps (e.g. Japan)",
+"note": ""
+},
+"https://www.sz.gov.cn/cn/xxgk/zfxxgj/tzgg/content/post_12713759.html": {
+"theme": "misc",
+"ftag": "",
+"en": "False match: Shenzhen Metro Line 22 total-plan notice ('油松' station)",
+"note": "Keyword false positive."
+},
+"https://www.guancha.cn/TuZhuXi/2026_03_26_811488.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.news.cn/fortune/20260325/337cbf49fca0441f8b71cebd3dab7af5/c.html": {
+"theme": "tech",
+"ftag": "",
+"en": "New-generation very-large crude carrier (VLCC) delivered at Dalian",
+"note": ""
+},
+"https://www.guancha.cn/internation/2026_03_25_811403.shtml": {
+"theme": "import",
+"ftag": "import",
+"en": "Philippines declares energy emergency; asks US to buy sanctioned-country oil",
+"note": ""
+},
+"https://www.sz.gov.cn/gkmlpt/content/12/12698/post_12698018.html": {
+"theme": "dist",
+"ftag": "",
+"en": "Shenzhen mayor meets Sinopec chairman Hou Qijun",
+"note": "Local govt–NOC engagement, not a regulation."
+},
+"https://www.sz.gov.cn/cn/xxgk/zfxxgj/zwdt/content/post_12697554.html": {
+"theme": "dist",
+"ftag": "",
+"en": "Shenzhen mayor meets Sinopec chairman (investment-portal copy)",
+"note": ""
+},
+"https://fzggw.zj.gov.cn/col/col1229629046/art/2026/art_7c2b4abc9fbe46d8b9a8a9a9d09b7af3.html": {
+"theme": "price",
+"ftag": "",
+"en": "Zhejiang refined-oil price adjustment",
+"note": ""
+},
+"https://www.guancha.cn/politics/2026_03_23_811050.shtml": {
+"theme": "price",
+"ftag": "",
+"en": "NDRC's first refined-oil price control since 2013",
+"note": "NOTABLE: first direct NDRC price intervention since 2013 — a departure from pure mechanism adjustment."
+},
+"https://www.guancha.cn/ChenFeng3/2026_03_21_810822.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/WarwickPowell/2026_03_17_810314.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://www.guancha.cn/xinzhiguanchasuo/2026_03_13_809870.shtml": {
+"theme": "geo",
+"ftag": "hormuz",
+"en": "",
+"note": ""
+},
+"https://fzggw.zj.gov.cn/col/col1229629046/art/2026/art_fdec8de9085e4584a679d9f6ecbe12e6.html": {
+"theme": "price",
+"ftag": "",
+"en": "Zhejiang refined-oil mechanism-based price adjustment",
+"note": ""
+},
+"https://www.guancha.cn/QuXinRong/2026_03_07_809136.shtml": {
+"theme": "geo",
+"ftag": "chinaresp",
+"en": "",
+"note": "On how China responds to a Hormuz closure."
+},
+"http://www.shanwei.gov.cn/gkmlpt/content/1/1229/post_1229679.html": {
+"theme": "dist",
+"ftag": "",
+"en": "Shanwei official visits CNOOC",
+"note": ""
+},
+"https://www.sz.gov.cn/cn/xxgk/zfxxgj/tzgg/content/post_12668551.html": {
+"theme": "dist",
+"ftag": "",
+"en": "Shenzhen Commerce Bureau — 2025 annual inspection of refined-oil operators",
+"note": "Municipal downstream compliance/enforcement."
+}
+}
+}

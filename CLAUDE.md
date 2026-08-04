@@ -136,6 +136,16 @@ uvicorn web.app:app --reload --port 8001  # Local dev (SQLite, read-only)
 # Override the DB path with SQLITE_PATH if needed.
 ```
 
+**Search = FTS5 trigram index** (`doc_search`, built by `scripts/build_search_index.py`).
+Search was a `LIKE '%q%'` full scan over ~240k rows run twice (rows+COUNT), ~6.5s each;
+now an indexed substring lookup (~0.1s warm). Trigram tokenizer handles Chinese (no
+word boundaries). Three triggers keep it synced as crawlers write — new docs are
+searchable immediately, no nightly rebuild. `search_documents()` uses `MATCH` for
+queries ≥3 chars (trigram min), else falls back to LIKE. **The index lives inside
+documents.db; if the DB is ever rebuilt/restored, re-run `python3 scripts/build_search_index.py`
+once (~22 min, one-time).** Cold first-access to a common term after a rebuild can be
+slow on the 2GB-RAM droplet (page cache) — it warms quickly.
+
 ### Daily Crawl + Sync (runs ON the droplet via cron)
 ```bash
 # Automated: droplet cron runs daily_sync.sh at 06:00 UTC.
