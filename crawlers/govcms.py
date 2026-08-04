@@ -30,7 +30,10 @@ Usage:
 import argparse
 import html as H
 import re
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import nullcontext
 from urllib.parse import urljoin
 
 from crawlers.base import (
@@ -436,9 +439,18 @@ def _pages(base: str, section: str, deep: bool, max_pages: int):
         time.sleep(REQUEST_DELAY)
 
 
-def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30):
+def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30,
+               write_lock=None):
+    # write_lock: optional threading.Lock shared across parallel --group workers.
+    # It guards ONLY the quick id-allocate + insert + commit critical section, so
+    # the slow body fetches stay parallel while next_id()/store_document() are
+    # serialized — preventing both "database is locked" AND the next_id() race
+    # (MAX(id)+1 collisions that ON CONFLICT(id) would silently merge = data loss).
+    wlock = write_lock if write_lock is not None else nullcontext()
     base = cfg["base_url"].rstrip("/")
-    store_site(conn, site_key, cfg)
+    with wlock:
+        store_site(conn, site_key, cfg)
+        conn.commit()
     # expand landing sections into leaf list pages
     sections = []
     for root in cfg["sections"]:
@@ -456,32 +468,35 @@ def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30)
                                 (it["url"],)).fetchone():
                     continue
                 new += 1
-                doc_id = next_id(conn)
-                body, raw, meta = "", "", {}
+                # SLOW body fetch happens OUTSIDE the write lock (raw HTML is saved
+                # under a temp name keyed by url hash, renamed to the real doc_id
+                # inside the lock once the id is known).
+                body, dh, meta = "", None, {}
                 if fetch_bodies:
                     try:
                         dh = fetch(it["url"], headers=UA)
                         body = _extract_body(dh)
                         meta = _extract_metadata_table(dh)
-                        raw = save_raw_html(site_key, doc_id, dh)
                     except Exception as e:
                         log.warning(f"    body {it['url']}: {e}")
                     time.sleep(REQUEST_DELAY)
-                store_document(conn, site_key, {
-                    "id": doc_id, "title": meta.get("title") or it["title"],
-                    "document_number": meta.get("document_number", ""),
-                    "publisher": meta.get("publisher", ""),
-                    "date_published": it["date"],
-                    "identifier": meta.get("identifier", ""),
-                    "classify_theme_name": meta.get("classify_theme_name", ""),
-                    "body_text_cn": body, "url": it["url"],
-                    "classify_main_name": section, "raw_html_path": raw,
-                    "admin_level": cfg["admin_level"],
-                })
-                stored += 1
-                if stored % 20 == 0:      # commit periodically so a long section
-                    conn.commit()         # (e.g. MOT's ~477) is resumable, not lost
-            conn.commit()
+                # SHORT critical section: allocate id, persist raw, insert, commit.
+                with wlock:
+                    doc_id = next_id(conn)
+                    raw = save_raw_html(site_key, doc_id, dh) if dh is not None else ""
+                    store_document(conn, site_key, {
+                        "id": doc_id, "title": meta.get("title") or it["title"],
+                        "document_number": meta.get("document_number", ""),
+                        "publisher": meta.get("publisher", ""),
+                        "date_published": it["date"],
+                        "identifier": meta.get("identifier", ""),
+                        "classify_theme_name": meta.get("classify_theme_name", ""),
+                        "body_text_cn": body, "url": it["url"],
+                        "classify_main_name": section, "raw_html_path": raw,
+                        "admin_level": cfg["admin_level"],
+                    })
+                    conn.commit()  # commit inside the lock: no txn stays open across
+                    stored += 1    # the next fetch, so a second worker never blocks
             log.info(f"  {section} [{page_url.split('/')[-1]}]: +{new}")
             if not deep:
                 break
@@ -493,6 +508,7 @@ def main():
     ap = argparse.ArgumentParser(description="Generic gov t-date list crawler")
     ap.add_argument("--site")
     ap.add_argument("--group", help="crawl every site tagged with this group (e.g. 'dept')")
+    ap.add_argument("--workers", type=int, default=4, help="parallel workers for --group (writes serialized by a shared lock, so this only parallelizes the network fetches — safe to raise)")
     ap.add_argument("--list-sites", action="store_true")
     ap.add_argument("--discover", action="store_true", help="map sub-sections, don't crawl")
     ap.add_argument("--list-only", action="store_true", help="metadata only, skip bodies")
@@ -506,19 +522,38 @@ def main():
             print(f"  {k:12} {c['name']}  {c['base_url']}{grp}")
         return
     if args.group:
-        # crawl all sites tagged with this group, sequentially, into one DB.
+        # crawl all sites tagged with this group, in parallel, into one DB.
         keys = [k for k, c in SITES.items() if c.get("group") == args.group]
         if not keys:
             print(f"No sites tagged group={args.group!r}")
             return
-        conn = init_db(args.db) if args.db else init_db()
-        for k in keys:
-            print(f"\n=== [{args.group}] {k}: {SITES[k]['name']} ===")
+
+        # One shared lock guards the id-allocate+insert+commit critical section
+        # across all workers, so the slow body fetches run in parallel while writes
+        # are serialized (no lock contention, no next_id() race). Each worker still
+        # gets its OWN connection (sqlite3 conns aren't thread-safe to share).
+        write_lock = threading.Lock()
+
+        def _one(k):
+            conn = init_db(args.db) if args.db else init_db()
+            conn.execute("PRAGMA busy_timeout=60000")
             try:
-                crawl_site(conn, k, SITES[k], fetch_bodies=not args.list_only, deep=args.deep)
+                crawl_site(conn, k, SITES[k], fetch_bodies=not args.list_only,
+                           deep=args.deep, write_lock=write_lock)
+                return (k, "ok")
             except Exception as e:  # one dept failing must not abort the group
-                print(f"  {k}: FAILED {type(e).__name__}: {e}")
-        show_stats(conn)
+                return (k, f"FAILED {type(e).__name__}: {e}")
+            finally:
+                conn.close()
+
+        workers = max(1, args.workers)
+        print(f"[{args.group}] crawling {len(keys)} sites with {workers} workers")
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            futs = {ex.submit(_one, k): k for k in keys}
+            for fut in as_completed(futs):
+                k, status = fut.result()
+                print(f"  [{args.group}] {k}: {status}")
+        show_stats(init_db(args.db) if args.db else init_db())
         return
     if not args.site or args.site not in SITES:
         print("Specify --site KEY (see --list-sites)")
