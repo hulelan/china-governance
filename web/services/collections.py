@@ -68,7 +68,27 @@ def _china(t):
     return any(k in t for k in ("中国", "中方", "外交部", "中企", "独立炼油", "人民币"))
 
 
+_payload_cache = {}  # slug -> (monotonic_ts, payload). Collection changes only when
+_CACHE_TTL = 1800    # new docs are crawled (nightly), so a 30-min cache is safe.
+
+
 async def get_collection(db, slug="oil"):
+    """Return the render payload for a topical collection (cached ~30 min).
+
+    The title conditions are 2-char terms that can't use the trigram index, so the
+    live query is ~3s; caching makes repeat loads instant. The nightly restart
+    clears the cache, picking up newly-crawled docs.
+    """
+    import time
+    hit = _payload_cache.get(slug)
+    if hit and (time.monotonic() - hit[0]) < _CACHE_TTL:
+        return hit[1]
+    payload = await _build_collection(db, slug)
+    _payload_cache[slug] = (time.monotonic(), payload)
+    return payload
+
+
+async def _build_collection(db, slug="oil"):
     """Return the render payload for a topical collection."""
     cfg = _load(slug)
     sites_cfg = cfg["config"]["sites"]
