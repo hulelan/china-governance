@@ -2,6 +2,22 @@
 {% block title %}Citation Network — ChinaGovernance{% endblock %}
 {% block head %}
 <script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  #network-canvas { display:block; width:100%; height:100%; cursor:grab; }
+  #network-canvas.grabbing { cursor:grabbing; }
+  #net-tooltip {
+    position:fixed; z-index:50; pointer-events:none; display:none;
+    max-width:22rem; padding:.4rem .55rem; font-size:11px; line-height:1.3;
+    background:rgba(23,23,23,.92); color:#f5f5f4; border-radius:3px;
+    box-shadow:0 2px 8px rgba(0,0,0,.25);
+  }
+  #net-tooltip .tt-num { font-family:ui-monospace,monospace; color:#fca5a5; }
+  #net-status {
+    position:absolute; top:8px; left:10px; font-size:11px; color:#9ca3af;
+    background:rgba(255,255,255,.75); padding:2px 6px; border-radius:3px;
+    pointer-events:none;
+  }
+</style>
 {% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
@@ -44,7 +60,7 @@
                     <option value="review">Review</option>
                 </select>
                 <label class="text-gray-400 text-xs block mb-1">Min citations</label>
-                <input type="range" x-model="minDeg" min="1" max="10" @input="refresh()"
+                <input type="range" x-model="minDeg" min="1" max="10" @change="refresh()"
                        class="w-full mb-1">
                 <span class="text-gray-500 text-xs" x-text="minDeg + ' citations'"></span>
                 <label class="text-gray-400 text-xs block mb-1 mt-3">Date range</label>
@@ -63,6 +79,9 @@
                     <div><span class="inline-block w-3 h-3 rounded-none bg-green-600 mr-2"></span> District</div>
                     <div><span class="inline-block w-3 h-3 rounded-none bg-gray-400 mr-2"></span> Unknown</div>
                 </div>
+                <div class="text-xs text-gray-400 mt-3 leading-snug">
+                    Scroll to zoom, drag the canvas to pan, drag a node to pin it.
+                </div>
             </div>
 
             <div id="node-info" class="card p-3 text-sm hidden">
@@ -70,29 +89,95 @@
                 <div id="node-docnum" class="mono text-red-700 mb-1 text-sm"></div>
                 <div id="node-title" class="text-gray-600 mb-1 text-xs"></div>
                 <div id="node-citations" class="text-gray-400 text-xs"></div>
-                <a id="node-link" href="#" class="block mt-2 text-sm">View document</a>
+                <a id="node-link" href="#" class="block mt-2 text-sm hidden">View document</a>
             </div>
         </div>
 
         <!-- Graph -->
-        <div class="flex-1 card overflow-hidden">
-            <svg id="network-svg" width="100%" height="100%"></svg>
+        <div class="flex-1 card overflow-hidden relative">
+            <canvas id="network-canvas"></canvas>
+            <div id="net-status"></div>
         </div>
     </div>
 </div>
+<div id="net-tooltip"></div>
 {% endblock %}
 {% block scripts %}
 <script>
 const COLORS = {central:'#dc2626', provincial:'#ea580c', municipal:'#2563eb', district:'#16a34a', unknown:'#9ca3af'};
 
-let simulation, svg, g;
+// Canvas rendering (instead of one SVG element per node/edge) keeps the graph
+// smooth even at ~2k nodes / 2.5k edges. Server caps the payload; we draw it
+// on a single <canvas> with a d3 force simulation.
+let simulation, canvas, ctx, transform = d3.zoomIdentity;
+let nodes = [], edges = [], nodeById = new Map();
+let width = 0, height = 0, dpr = 1;
+const statusEl = () => document.getElementById('net-status');
 
-function initGraph() {
-    svg = d3.select('#network-svg');
-    const {width, height} = svg.node().getBoundingClientRect();
-    g = svg.append('g');
-    svg.call(d3.zoom().scaleExtent([0.1, 8]).on('zoom', (e) => g.attr('transform', e.transform)));
-    updateNetwork('', 3, '2024-01-01', '', '');
+function radius(d) { return Math.sqrt(d.citations) * 3 + 4; }
+
+function resizeCanvas() {
+    const rect = canvas.parentNode.getBoundingClientRect();
+    width = rect.width; height = rect.height;
+    dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function draw() {
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    ctx.translate(transform.x, transform.y);
+    ctx.scale(transform.k, transform.k);
+
+    // Edges
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 0.7 / transform.k;
+    ctx.beginPath();
+    for (const e of edges) {
+        if (!e.source.x) continue;
+        ctx.moveTo(e.source.x, e.source.y);
+        ctx.lineTo(e.target.x, e.target.y);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Nodes
+    for (const d of nodes) {
+        const r = radius(d);
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, r, 0, 2 * Math.PI);
+        ctx.fillStyle = COLORS[d.level] || COLORS.unknown;
+        ctx.fill();
+        ctx.lineWidth = 1.2 / transform.k;
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+    }
+
+    // Labels (only for prominent nodes, and only when zoomed in enough to read)
+    if (transform.k > 0.55) {
+        ctx.fillStyle = '#4b5563';
+        ctx.font = `${9 / transform.k}px ui-sans-serif, system-ui, sans-serif`;
+        ctx.textBaseline = 'middle';
+        for (const d of nodes) {
+            if (d.citations >= 5) {
+                ctx.fillText(d.id, d.x + radius(d) + 2 / transform.k, d.y);
+            }
+        }
+    }
+    ctx.restore();
+}
+
+function nodeAt(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const x = transform.invertX(clientX - rect.left);
+    const y = transform.invertY(clientY - rect.top);
+    return simulation.find(x, y, 24 / transform.k);
 }
 
 async function updateNetwork(site, minDeg, dateStart, dateEnd, docType) {
@@ -101,69 +186,114 @@ async function updateNetwork(site, minDeg, dateStart, dateEnd, docType) {
     if (dateStart) url += `&date_start=${dateStart}`;
     if (dateEnd) url += `&date_end=${dateEnd}`;
     if (docType) url += `&doc_type=${docType}`;
+
+    statusEl().textContent = 'Loading…';
     const data = await fetch(url).then(r => r.json());
 
-    g.selectAll('*').remove();
-    const {width, height} = svg.node().getBoundingClientRect();
+    nodeById = new Map(data.nodes.map(n => [n.id, n]));
+    nodes = data.nodes;
+    // Resolve edge endpoints to node objects; drop any dangling refs.
+    edges = data.edges
+        .filter(e => nodeById.has(e.source) && nodeById.has(e.target))
+        .map(e => ({source: nodeById.get(e.source), target: nodeById.get(e.target)}));
 
-    if (!data.nodes.length) {
-        g.append('text').attr('x', width/2).attr('y', height/2)
-         .attr('text-anchor', 'middle').attr('fill', '#9ca3af').attr('font-size', 13)
-         .text('No nodes match filters');
+    if (!nodes.length) {
+        if (simulation) simulation.stop();
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#9ca3af'; ctx.font = '13px system-ui'; ctx.textAlign = 'center';
+        ctx.fillText('No nodes match filters', width / 2, height / 2);
+        ctx.textAlign = 'left';
+        statusEl().textContent = '';
         return;
     }
-
-    const nodeMap = new Map(data.nodes.map(n => [n.id, n]));
-    const edges = data.edges.filter(e => nodeMap.has(e.target));
+    statusEl().textContent = `${nodes.length.toLocaleString()} nodes · ${edges.length.toLocaleString()} edges`;
 
     if (simulation) simulation.stop();
-    simulation = d3.forceSimulation(data.nodes)
+    simulation = d3.forceSimulation(nodes)
         .force('link', d3.forceLink(edges).id(d => d.id).distance(80))
-        .force('charge', d3.forceManyBody().strength(-200))
-        .force('center', d3.forceCenter(width/2, height/2))
-        .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.citations)*3 + 8));
+        .force('charge', d3.forceManyBody().strength(-200).distanceMax(400))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius(d => radius(d) + 4))
+        .on('tick', draw);
+}
 
-    const link = g.append('g').selectAll('line')
-        .data(edges).join('line')
-        .attr('stroke', '#e5e7eb').attr('stroke-width', 0.8);
+function initGraph() {
+    canvas = document.getElementById('network-canvas');
+    ctx = canvas.getContext('2d');
+    resizeCanvas();
 
-    const node = g.append('g').selectAll('circle')
-        .data(data.nodes).join('circle')
-        .attr('r', d => Math.sqrt(d.citations)*3 + 4)
-        .attr('fill', d => COLORS[d.level] || COLORS.unknown)
-        .attr('stroke', '#fff').attr('stroke-width', 1.5)
-        .attr('cursor', 'pointer')
-        .call(d3.drag()
-            .on('start', (e,d) => { if(!e.active) simulation.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
-            .on('drag', (e,d) => { d.fx=e.x; d.fy=e.y; })
-            .on('end', (e,d) => { if(!e.active) simulation.alphaTarget(0); d.fx=null; d.fy=null; }));
+    const zoom = d3.zoom().scaleExtent([0.08, 8]).on('zoom', (e) => {
+        transform = e.transform;
+        draw();
+    });
 
-    node.append('title').text(d => `${d.id} (${d.citations} citations)`);
+    const drag = d3.drag()
+        .subject((e) => {
+            // event.x/y are element-local (canvas) pixels; invert the zoom.
+            const x = transform.invertX(e.x), y = transform.invertY(e.y);
+            return simulation ? simulation.find(x, y, 24 / transform.k) : null;
+        })
+        .on('start', (e) => {
+            if (!e.active) simulation.alphaTarget(0.25).restart();
+            e.subject.fx = transform.invertX(e.x);
+            e.subject.fy = transform.invertY(e.y);
+        })
+        .on('drag', (e) => {
+            e.subject.fx = transform.invertX(e.x);
+            e.subject.fy = transform.invertY(e.y);
+        })
+        .on('end', (e) => {
+            if (!e.active) simulation.alphaTarget(0);
+            e.subject.fx = null; e.subject.fy = null;
+        });
 
-    node.on('click', (e, d) => {
+    d3.select(canvas).call(drag).call(zoom);
+
+    // Hover tooltip
+    const tip = document.getElementById('net-tooltip');
+    canvas.addEventListener('mousemove', (ev) => {
+        const n = nodes.length ? nodeAt(ev.clientX, ev.clientY) : null;
+        if (n) {
+            tip.style.display = 'block';
+            tip.style.left = (ev.clientX + 12) + 'px';
+            tip.style.top = (ev.clientY + 12) + 'px';
+            const title = n.title ? `<div>${n.title}</div>` : '<div style="color:#a3a3a3">(not in corpus)</div>';
+            tip.innerHTML = `<div class="tt-num">${n.id}</div>${title}<div style="color:#a3a3a3">${n.citations} citations</div>`;
+            canvas.style.cursor = 'pointer';
+        } else {
+            tip.style.display = 'none';
+            canvas.style.cursor = 'grab';
+        }
+    });
+    canvas.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+
+    // Click → selected-node panel
+    canvas.addEventListener('click', (ev) => {
+        const n = nodes.length ? nodeAt(ev.clientX, ev.clientY) : null;
+        if (!n) return;
         document.getElementById('node-info').classList.remove('hidden');
-        document.getElementById('node-docnum').textContent = d.id;
-        document.getElementById('node-title').textContent = d.title || '(not in corpus)';
-        document.getElementById('node-citations').textContent = d.citations + ' citations';
-        if (d.resolved) {
-            const link = document.getElementById('node-link');
-            link.href = `/search?q=${encodeURIComponent(d.id)}`;
+        document.getElementById('node-docnum').textContent = n.id;
+        document.getElementById('node-title').textContent = n.title || '(not in corpus)';
+        document.getElementById('node-citations').textContent = n.citations + ' citations';
+        const link = document.getElementById('node-link');
+        if (n.resolved) {
+            link.href = `/search?q=${encodeURIComponent(n.id)}`;
             link.classList.remove('hidden');
+        } else {
+            link.classList.add('hidden');
         }
     });
 
-    const labels = g.append('g').selectAll('text')
-        .data(data.nodes.filter(d => d.citations >= 5)).join('text')
-        .text(d => d.id)
-        .attr('font-size', 9).attr('fill', '#6b7280')
-        .attr('dx', d => Math.sqrt(d.citations)*3 + 6).attr('dy', 3);
-
-    simulation.on('tick', () => {
-        link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
-            .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
-        node.attr('cx',d=>d.x).attr('cy',d=>d.y);
-        labels.attr('x',d=>d.x).attr('y',d=>d.y);
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        if (simulation) {
+            simulation.force('center', d3.forceCenter(width / 2, height / 2));
+            draw();
+        }
     });
+
+    updateNetwork('', 3, '2024-01-01', '', '');
 }
 
 document.addEventListener('DOMContentLoaded', initGraph);
