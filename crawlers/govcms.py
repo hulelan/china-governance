@@ -429,6 +429,22 @@ SITES = {
     # JS-built (Hanweb datacall, like jinan) — need browser network inspection.
     # TODO: jinan 通知公告/政府文件 columns use Hanweb client-side datacall — need
     # browser network inspection to find the list endpoint.
+    # --- 北京市 districts (区政府) — t-date, config-only. ---
+    # NOTE: 海淀 Haidian (Zhongguancun tech hub, HIGH interest) is DEFERRED — its
+    # www policy lists are JS-rendered (homepage t-date links are service-subdomain
+    # zyk.bjhd.gov.cn noise; /zwdt/.../ sections return 13-byte stubs). Browser-tier.
+    "bjd_fangshan": {"name": "Beijing Fangshan District (北京房山区)", "base_url": "https://www.bjfsh.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/zwgk/zcjd/", "/zwgk/tzgg/"]},
+    "bjd_dongcheng": {"name": "Beijing Dongcheng District (北京东城区)", "base_url": "https://www.bjdch.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/zwgk/tzgg/", "/zwgk/zcwj2024/", "/zwgk/zcjd2024/"]},
+    "bjd_fengtai": {"name": "Beijing Fengtai District (北京丰台区)", "base_url": "https://www.bjft.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/xwdt/zwyw/", "/hdjl/zxft/"]},
+    "bjd_miyun": {"name": "Beijing Miyun District (北京密云区)", "base_url": "https://www.bjmy.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/zwgk/gsgg/", "/zwgk/zcwj/"]},
+    "bjd_huairou": {"name": "Beijing Huairou District (北京怀柔区)", "base_url": "https://www.bjhr.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/zwgk/tzgg/", "/ywdt/rdgz/"]},
+    "bjd_shijingshan": {"name": "Beijing Shijingshan District (北京石景山区)", "base_url": "https://www.bjsjs.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/gongkai/zcwjk/zcwd25/", "/gongkai/zcjd/", "/gongkai/zcwj/"]},
 }
 
 # article link dialects:
