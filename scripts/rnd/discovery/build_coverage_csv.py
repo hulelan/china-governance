@@ -71,7 +71,7 @@ PROVINCES = [
     ("北京", "beijing.gov.cn", "municipality", "bj"), ("天津", "tj.gov.cn", "municipality", ""),
     ("上海", "shanghai.gov.cn", "municipality", "sh"), ("重庆", "cq.gov.cn", "municipality", "cq"),
     ("河北", "hebei.gov.cn", "province", ""), ("山西", "shanxi.gov.cn", "province", ""),
-    ("内蒙古", "nmg.gov.cn", "province", ""), ("辽宁", "ln.gov.cn", "province", ""),
+    ("内蒙古", "nmg.gov.cn", "province", ""), ("辽宁", "ln.gov.cn", "province", "liaoning"),
     ("吉林", "jl.gov.cn", "province", "jilin"), ("黑龙江", "hlj.gov.cn", "province", "hlj"),
     ("江苏", "jiangsu.gov.cn", "province", "js"), ("浙江", "zj.gov.cn", "province", "zj"),
     ("安徽", "ah.gov.cn", "province", ""), ("福建", "fujian.gov.cn", "province", "fujian"),
@@ -80,9 +80,9 @@ PROVINCES = [
     ("湖南", "hunan.gov.cn", "province", "hunan"), ("广东", "gd.gov.cn", "province", "gd"),
     ("广西", "gxzf.gov.cn", "province", ""), ("海南", "hainan.gov.cn", "province", ""),
     ("四川", "sc.gov.cn", "province", ""), ("贵州", "guizhou.gov.cn", "province", ""),
-    ("云南", "yn.gov.cn", "province", ""), ("西藏", "xizang.gov.cn", "province", ""),
+    ("云南", "yn.gov.cn", "province", ""), ("西藏", "xizang.gov.cn", "province", "xizang"),
     ("陕西", "shaanxi.gov.cn", "province", ""), ("甘肃", "gansu.gov.cn", "province", ""),
-    ("青海", "qh.gov.cn", "province", ""), ("宁夏", "nx.gov.cn", "province", ""),
+    ("青海", "qh.gov.cn", "province", ""), ("宁夏", "nx.gov.cn", "province", "ningxia"),
     ("新疆", "xinjiang.gov.cn", "province", ""),
 ]
 # provincial capitals + major cities (best-effort domains). city already-crawled via other-crawled merge.
@@ -143,6 +143,24 @@ def main():
     docs = dict(con.execute("SELECT site_key, COUNT(*) FROM documents GROUP BY site_key").fetchall())
     rows, listed = [], set()
 
+    # Department/district site_key families that roll up under a province portal.
+    # The docs count for a province = its portal + all its sub-unit sites (so the
+    # audit reflects the department/district tiers we crawl, not just the portal).
+    PROV_SUBS = {
+        "fujian": ["fj_"], "ningxia": ["nx_"], "xizang": ["xz_"],
+        "cq": ["cq_", "cqd_"], "bj": ["bjd_"], "js": ["njd_"],
+    }
+
+    def agg_docs(have):
+        total = docs.get(have, 0) or 0
+        subs = 0
+        for pre in PROV_SUBS.get(have, []):
+            for k, n in docs.items():
+                if k.startswith(pre):
+                    subs += n
+                    listed.add(k)  # keep sub-unit keys out of the "other-crawled" tail
+        return total + subs
+
     for name, dom, have, cat in CENTRAL:
         http, cms = ("-", "-") if have else probe(dom)
         rows.append([f"central:{cat}", name, "中央", dom, cms, http, status_for(http, cms, have), have, docs.get(have, "")])
@@ -150,12 +168,19 @@ def main():
             listed.add(have)
     for name, dom, level, have in PROVINCES:
         http, cms = ("-", "-") if have else probe(dom)
-        rows.append([level, name, name, dom, cms, http, status_for(http, cms, have), have, docs.get(have, "")])
+        total = agg_docs(have) if have else ""
+        rows.append([level, name, name, dom, cms, http, status_for(http, cms, have), have, total])
         if have:
             listed.add(have)
     for name, dom in CITIES:
-        http, cms = probe(dom)
-        rows.append(["prefecture-city", name, name, dom, cms, http, status_for(http, cms, ""), "", ""])
+        # A city is "crawled" if a site_key matching its domain label has docs
+        # (e.g. qingdao.gov.cn -> site_key 'qingdao'). Skip the network probe then.
+        guess = dom.split(".")[0]
+        have = guess if docs.get(guess) else ""
+        http, cms = ("-", "-") if have else probe(dom)
+        rows.append(["prefecture-city", name, name, dom, cms, http, status_for(http, cms, have), have, docs.get(have, "")])
+        if have:
+            listed.add(have)
     # GD provincial departments we added (gkmlpt)
     from crawlers.gkmlpt import SITES as GK
     for key, cfg in GK.items():
