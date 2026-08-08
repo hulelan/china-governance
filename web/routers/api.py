@@ -11,8 +11,23 @@ from web.services.documents import (
     REF_PATTERN, get_admin_level,
 )
 from web.services.inbox import get_inbox_dates, get_documents_for_date
+import time
+from collections import Counter
 
 router = APIRouter()
+
+# --- Citation-network tuning + cache -----------------------------------------
+# The network graph is bounded server-side so the payload stays small and the
+# client force-layout stays interactive. We keep the top hub documents by
+# inbound-citation count and cap the number of edges.
+NETWORK_NODE_CAP = 400    # max hub (frequently-cited) target nodes
+NETWORK_EDGE_CAP = 2500   # max edges returned (strongest hubs' edges kept first)
+
+# Simple TTL cache keyed by the filter tuple (mirrors the stats/sites cache
+# pattern in web/services/documents.py). Bounded to a handful of entries.
+_network_cache: dict = {}
+_NETWORK_TTL = 3600  # seconds
+_NETWORK_CACHE_MAX = 48
 
 
 @router.get("/documents")
@@ -109,15 +124,31 @@ async def api_inbox(request: Request, site: str = None, admin_level: str = None,
 async def api_network(request: Request, site: str = None, min_degree: int = 2,
                       date_start: str = None, date_end: str = None,
                       doc_type: str = None):
-    """Citation network as nodes + edges for D3.js, using pre-computed citations table."""
+    """Citation network as nodes + edges for D3.js, using the pre-computed
+    citations table.
+
+    Bounded + cached for interactivity. Instead of a full GROUP-BY scan over the
+    whole citations table (which drove a ~427k-row index scan joined to
+    documents, ~6s), this drives a single edge query off the documents
+    date/site index, aggregates citation counts in Python, keeps only the
+    top-N most-cited hub documents (NETWORK_NODE_CAP) plus a capped set of
+    edges (NETWORK_EDGE_CAP), and resolves node metadata with one indexed
+    ``IN`` lookup. Results are cached per filter tuple for an hour.
+    """
     db = request.app.state.db
     ds = date_str_to_timestamp(date_start) if date_start else None
     de = date_str_to_timestamp(date_end) if date_end else None
 
+    cache_key = (site or "", int(min_degree), ds, de, doc_type or "")
+    now = time.time()
+    hit = _network_cache.get(cache_key)
+    if hit and now - hit[0] < _NETWORK_TTL:
+        return hit[1]
+
     # Build source filter for citations (filter by source doc attributes)
     source_where = ["sd.document_number != ''"]
     source_params = []
-    idx = 1  # $1 is min_degree
+    idx = 0
     if site:
         idx += 1
         source_where.append(f"sd.site_key = ${idx}")
@@ -139,49 +170,69 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
 
     source_filter = " AND ".join(source_where)
 
-    # Get citation counts filtered by source doc attributes
-    cite_rows = await db.fetch(f"""
-        SELECT c.target_ref, COUNT(*) as cnt, c.target_level
-        FROM citations c
-        JOIN documents sd ON sd.id = c.source_id
-        WHERE {source_filter}
-        GROUP BY c.target_ref
-        HAVING cnt >= $1
-    """, min_degree, *source_params)
-
-    frequent = {r["target_ref"]: {"count": r["cnt"], "level": r["target_level"]} for r in cite_rows}
-
-    if not frequent:
-        return {"nodes": [], "edges": []}
-
-    # Get edges involving frequent nodes (with same source filter)
+    # Single edge-driven pass: all citations whose SOURCE matches the filter.
+    # Driven off idx_documents_date / idx_documents_site (fast) rather than a
+    # full citations GROUP BY. We aggregate counts in Python below.
     edge_rows = await db.fetch(f"""
-        SELECT c.source_id, c.target_ref,
+        SELECT c.source_id, c.target_ref, c.target_level,
                sd.document_number as source_docnum
         FROM citations c
         JOIN documents sd ON sd.id = c.source_id
         WHERE {source_filter}
-    """, min_degree, *source_params)  # min_degree not used but keeps param indices consistent
+    """, *source_params)
 
-    # Build node set and filtered edges
-    node_set = set(frequent.keys())
-    raw_edges = []
+    if not edge_rows:
+        _network_store(cache_key, now, {"nodes": [], "edges": []})
+        return {"nodes": [], "edges": []}
+
+    # Count inbound citations per target, keep the level seen for each target.
+    counts = Counter()
+    levels = {}
     for r in edge_rows:
-        tgt = r["target_ref"]
-        src = r["source_docnum"]
-        if tgt in frequent:
-            node_set.add(src)
-            raw_edges.append((src, tgt, r["source_id"]))
+        ref = r["target_ref"]
+        counts[ref] += 1
+        if ref not in levels:
+            levels[ref] = r["target_level"]
 
-    # Resolve document info for all nodes
+    # Frequent hub targets (>= min_degree), capped to the top N by count.
+    frequent = {}
+    for ref, cnt in counts.most_common():
+        if cnt < min_degree:
+            break  # most_common is sorted desc, nothing below will qualify
+        frequent[ref] = {"count": cnt, "level": levels.get(ref)}
+        if len(frequent) >= NETWORK_NODE_CAP:
+            break
+
+    if not frequent:
+        _network_store(cache_key, now, {"nodes": [], "edges": []})
+        return {"nodes": [], "edges": []}
+
+    # Keep edges whose target is a kept hub, strongest hubs first, capped.
+    kept = [(r["source_docnum"], r["target_ref"], r["source_id"])
+            for r in edge_rows if r["target_ref"] in frequent]
+    kept.sort(key=lambda e: -frequent[e[1]]["count"])
+    kept = kept[:NETWORK_EDGE_CAP]
+
+    node_set = set(frequent.keys())
+    for src, _tgt, _sid in kept:
+        node_set.add(src)
+
+    # Resolve document metadata for the bounded node set with one indexed
+    # IN lookup (idx_documents_docnum) instead of scanning all docnum rows.
     known = {}
-    for r in await db.fetch(
-        "SELECT id, document_number, title, site_key, algo_doc_type FROM documents WHERE document_number != ''"
-    ):
-        if r["document_number"] in node_set:
-            known[r["document_number"]] = dict(r)
+    node_list = list(node_set)
+    CHUNK = 900  # stay under SQLite's variable limit
+    for i in range(0, len(node_list), CHUNK):
+        chunk = node_list[i:i + CHUNK]
+        placeholders = ",".join("?" for _ in chunk)
+        rows = await db.fetch(
+            f"SELECT document_number, title, site_key, algo_doc_type "
+            f"FROM documents WHERE document_number IN ({placeholders})",
+            *chunk,
+        )
+        for r in rows:
+            known[r["document_number"]] = r
 
-    # Build node list
     nodes = []
     for ref in node_set:
         info = frequent.get(ref, {})
@@ -192,16 +243,23 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
             "citations": info.get("count", 0),
             "title": resolved["title"] if resolved else "",
             "resolved": bool(resolved),
-            "doc_type": resolved.get("algo_doc_type", "") if resolved else "",
+            "doc_type": (resolved["algo_doc_type"] or "") if resolved else "",
         })
 
-    edges = [
-        {"source": src, "target": tgt, "source_id": sid}
-        for src, tgt, sid in raw_edges
-        if src in node_set and tgt in node_set
-    ]
+    edges = [{"source": src, "target": tgt, "source_id": sid}
+             for src, tgt, sid in kept]
 
-    return {"nodes": nodes, "edges": edges}
+    result = {"nodes": nodes, "edges": edges}
+    _network_store(cache_key, now, result)
+    return result
+
+
+def _network_store(key, ts, result):
+    """Store a network result, evicting the oldest entry when the cache is full."""
+    if len(_network_cache) >= _NETWORK_CACHE_MAX and key not in _network_cache:
+        oldest = min(_network_cache, key=lambda k: _network_cache[k][0])
+        del _network_cache[oldest]
+    _network_cache[key] = (ts, result)
 
 
 @router.get("/officials/network")
