@@ -9,11 +9,18 @@
                 <div class="card-header">Filters</div>
 
                 <div class="p-3 border-b border-gray-100">
-                    <label class="text-gray-400 text-xs block mb-1">Source</label>
-                    <select name="source_type" class="w-full text-sm">
+                    <label class="text-gray-400 text-xs block mb-1">Source type</label>
+                    <select name="source_node" class="w-full text-sm">
                         <option value="">All sources</option>
-                        <option value="government" {{ 'selected' if filters.source_type == 'government' }}>Government</option>
-                        <option value="media" {{ 'selected' if filters.source_type == 'media' }}>Media</option>
+                        <option value="!media" {{ 'selected' if filters.source_node == '!media' }}>— Exclude news &amp; media —</option>
+                        {% for branch in source_tree %}
+                        <optgroup label="{{ branch.label_en }}">
+                            <option value="{{ branch.id }}" {{ 'selected' if filters.source_node == branch.id }}>All {{ branch.label_en }}</option>
+                            {% for child in branch.children or [] %}
+                            <option value="{{ child.id }}" {{ 'selected' if filters.source_node == child.id }}>&nbsp;&nbsp;{{ child.label_en }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endfor %}
                     </select>
                 </div>
 

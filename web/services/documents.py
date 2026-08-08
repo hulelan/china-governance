@@ -92,12 +92,16 @@ async def get_documents(db, site_key=None, category=None, year=None,
                         date_start=None, date_end=None,
                         importance=None, source_type=None,
                         doc_type=None, min_ai_relevance=None,
-                        sort_by=None):
+                        sort_by=None, include_sites=None, exclude_sites=None):
     """Paginated document listing with optional filters. Returns (rows, total).
 
     date_start/date_end are Unix timestamps (ints). When provided they
     take precedence over the year filter.
-    source_type: 'government' excludes media, 'media' shows only media.
+    source_type: 'government' excludes media, 'media' shows only media
+        (legacy admin_level-based flag; kept for back-compat).
+    include_sites / exclude_sites: optional lists of site_keys used by the
+        source-TYPE ontology filter (web.services.ontology). include restricts
+        to a branch; exclude drops a branch (e.g. "exclude news").
     """
     where = ["1=1"]
     params = []
@@ -115,6 +119,19 @@ async def get_documents(db, site_key=None, category=None, year=None,
         param_idx += 1
         where.append(f"d.site_key = ${param_idx}")
         params.append(site_key)
+    # A list-valued placeholder is expanded to `IN (?,?,...)` by _pg_to_sqlite's
+    # generic single left-to-right pass, which keeps args aligned even when list
+    # and scalar placeholders are mixed. (The `= ANY`/`!= ALL` sugar is handled in
+    # a *separate earlier* pass and MUST NOT be mixed with scalars — it reorders
+    # args.) So write `col $n` -> `col IN (...)` and `col NOT $n` -> `col NOT IN (...)`.
+    if include_sites:
+        param_idx += 1
+        where.append(f"d.site_key ${param_idx}")
+        params.append(list(include_sites))
+    if exclude_sites:
+        param_idx += 1
+        where.append(f"d.site_key NOT ${param_idx}")
+        params.append(list(exclude_sites))
     if category:
         param_idx += 1
         where.append(f"d.classify_main_name = ${param_idx}")
@@ -347,8 +364,13 @@ def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
 
 
 async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
-                           date_start: int = None, date_end: int = None):
+                           date_start: int = None, date_end: int = None,
+                           exclude_sites=None, include_sites=None):
     """Full-text search across title, doc number, keywords, abstract, body.
+
+    exclude_sites / include_sites: optional lists of site_keys for the
+    source-TYPE ontology filter (e.g. exclude every news site_key to hide
+    media from results). Applied in both the FTS and LIKE-fallback paths.
 
     Uses the FTS5 **trigram** index (`doc_search`, built by
     scripts/build_search_index.py) for queries >= 3 chars — an indexed substring
@@ -372,6 +394,22 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
         date_params.append(date_end)
         next_idx += 1
 
+    # Source-type ontology filter (include a branch and/or exclude a branch).
+    # A list placeholder expands to IN (...) via _pg_to_sqlite's generic pass;
+    # `col $n` -> `col IN (...)`, `col NOT $n` -> `col NOT IN (...)`. Avoid the
+    # `= ANY`/`!= ALL` sugar here — its separate pass would reorder these list
+    # args relative to the scalar $1 FTS-match placeholder.
+    site_clause = ""
+    site_params = []
+    if include_sites:
+        site_clause += f" AND d.site_key ${next_idx}"
+        site_params.append(list(include_sites))
+        next_idx += 1
+    if exclude_sites:
+        site_clause += f" AND d.site_key NOT ${next_idx}"
+        site_params.append(list(exclude_sites))
+        next_idx += 1
+
     fts_ok = await _fts_available(db)
     if fts_ok and len(clean_query) >= 3:
         # FTS5 trigram path. Quote the query so it is matched as a literal
@@ -390,19 +428,19 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
                         ELSE SUBSTR(d.body_text_cn, 1, 200)
                       END as snippet
                FROM doc_search s JOIN documents d ON d.id = s.rowid
-               WHERE doc_search MATCH $1 {date_clause}
+               WHERE doc_search MATCH $1 {date_clause}{site_clause}
                ORDER BY
                  CASE WHEN d.title LIKE ${tp_idx} THEN 0
                       WHEN d.document_number LIKE ${tp_idx} THEN 1
                       ELSE 2 END,
                  d.date_written DESC
                LIMIT ${limit_idx} OFFSET ${offset_idx}""",
-            match, *date_params, search_pattern, per_page, offset
+            match, *date_params, *site_params, search_pattern, per_page, offset
         )
         total = await db.fetchval(
             f"""SELECT COUNT(*) FROM doc_search s JOIN documents d ON d.id = s.rowid
-               WHERE doc_search MATCH $1 {date_clause}""",
-            match, *date_params
+               WHERE doc_search MATCH $1 {date_clause}{site_clause}""",
+            match, *date_params, *site_params
         )
     else:
         # Fallback LIKE scan (short queries, or before the index is built).
@@ -419,19 +457,19 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
                            ELSE SUBSTR(d.body_text_cn, 1, 200) END as snippet
                FROM documents d
                WHERE ({nt} LIKE $1 OR d.document_number LIKE $1 OR {nk} LIKE $1
-                      OR {na} LIKE $1 OR {nb} LIKE $1) {date_clause}
+                      OR {na} LIKE $1 OR {nb} LIKE $1) {date_clause}{site_clause}
                ORDER BY CASE WHEN {nt} LIKE $1 THEN 0
                              WHEN d.document_number LIKE $1 THEN 1
                              WHEN {nk} LIKE $1 THEN 2 ELSE 3 END,
                         d.date_written DESC
                LIMIT ${limit_idx} OFFSET ${offset_idx}""",
-            search_pattern, *date_params, per_page, offset
+            search_pattern, *date_params, *site_params, per_page, offset
         )
         total = await db.fetchval(
             f"""SELECT COUNT(*) FROM documents d
                WHERE ({nt} LIKE $1 OR d.document_number LIKE $1 OR {nk} LIKE $1
-                      OR {na} LIKE $1 OR {nb} LIKE $1) {date_clause}""",
-            search_pattern, *date_params
+                      OR {na} LIKE $1 OR {nb} LIKE $1) {date_clause}{site_clause}""",
+            search_pattern, *date_params, *site_params
         )
 
     results = []
