@@ -4,3 +4,4 @@ uvicorn[standard]>=0.24
 aiosqlite>=0.19
 jinja2==3.1.6
 python-multipart>=0.0.6
+jieba>=0.42  # Chinese word segmentation for the BM25 search index (query-time)
