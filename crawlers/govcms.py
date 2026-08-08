@@ -461,6 +461,43 @@ SITES = {
         "admin_level": "district", "group": "dept", "sections": ["/zwgk/tzgg/", "/ywdt/rdgz/"]},
     "bjd_shijingshan": {"name": "Beijing Shijingshan District (北京石景山区)", "base_url": "https://www.bjsjs.gov.cn",
         "admin_level": "district", "group": "dept", "sections": ["/gongkai/zcwjk/zcwd25/", "/gongkai/zcjd/", "/gongkai/zcwj/"]},
+    # --- 北京市 districts round 2 (new article-URL dialects, config-only) ---
+    # 通州 Tongzhou: tsid dialect (…/<≥12-digit id>/index.shtml; leading 8 = date).
+    "bjd_tongzhou": {"name": "Beijing Tongzhou District (北京通州区)", "base_url": "https://www.bjtzh.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/bjtz/zwgk/tzgg/", "/bjtz/zwgk/zcwj/", "/bjtz/zwgk/zcjd/"]},
+    # 大兴 Daxing: numid dialect (…/<5-8 digit id>/index.html; no date in URL).
+    "bjd_daxing": {"name": "Beijing Daxing District (北京大兴区)", "base_url": "https://www.bjdx.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/bjsdxqrmzf/zwfw/tzgg/", "/bjsdxqrmzf/zwfw/zcjd/", "/bjsdxqrmzf/zwfw/zfwj67/"]},
+    # 平谷 Pinggu: numid dialect (…/<5-8 digit id>/index.html; no date in URL).
+    "bjd_pinggu": {"name": "Beijing Pinggu District (北京平谷区)", "base_url": "https://www.bjpg.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/pgqrmzf/zwxx0/tzgg/", "/pgqrmzf/zwxx0/zcwj71/", "/pgqrmzf/zwxx0/zcjd30/"]},
+    # 门头沟 Mentougou: hexmon dialect (…/<YYYYMM>/<32-hex>.shtml; date = YYYYMM).
+    "bjd_mentougou": {"name": "Beijing Mentougou District (北京门头沟区)", "base_url": "https://www.bjmtg.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/bjmtg/2024zcwj/zcwj.shtml", "/bjmtg/2024zcjd/common_list1585033740817.shtml"]},
+    # 西城 Xicheng: pnidpv dialect (…/pnidpv<digits>.html; no date in URL).
+    "bjd_xicheng": {"name": "Beijing Xicheng District (北京西城区)", "base_url": "https://www.bjxch.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/xxgk/tzgg.html", "/xxgk/gfxwj/zfgfxwj.html", "/xxgk/zcjdw.html"]},
+    # --- Other major-city districts (t-date, discovered via probe agent) ---
+    "njd_gulou": {"name": "Nanjing Gulou District (南京鼓楼区)", "base_url": "http://www.njgl.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/xxgk/"]},
+    "njd_jiangning": {"name": "Nanjing Jiangning District (南京江宁区)", "base_url": "http://www.jiangning.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/xxgk/", "/xxgk/ldzc/"]},
+    "whd_jianghan": {"name": "Wuhan Jianghan District (武汉江汉区)", "base_url": "http://www.jianghan.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/xwzx/tzgg/", "/xwzx/jhyw/"]},
+    "whd_wuchang": {"name": "Wuhan Wuchang District (武汉武昌区)", "base_url": "http://www.wuchang.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/zwgk_37/zc/gsgg/", "/zwgk_37/zc/gfxwj/"]},
+    "whd_donghu": {"name": "Wuhan East Lake High-Tech Zone (武汉东湖高新区)", "base_url": "http://www.wehdz.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/2022/ggxw_68627/ggxw_68629/", "/2022/ggxw_68627/tz_68628/"]},
+    "whd_jiangan": {"name": "Wuhan Jiang'an District (武汉江岸区)", "base_url": "http://www.jiangan.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/jaxxw/zfxxgk/zc_41333/qtzdgkwj/gsgg/"]},
+    "whd_qiaokou": {"name": "Wuhan Qiaokou District (武汉硚口区)", "base_url": "http://www.qiaokou.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/xxgk/zc/zcfg/zfwj/", "/qkxw/tzgg/"]},
+    "whd_hongshan": {"name": "Wuhan Hongshan District (武汉洪山区)", "base_url": "http://www.hongshan.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/tzgg/"]},
+    "cqd_yuzhong": {"name": "Chongqing Yuzhong District (重庆渝中区)", "base_url": "http://www.cqyz.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/zwgk_229/zcwj/qtwj/", "/zwgk_229/zcjd/mtsj/"]},
+    "cqd_jiulongpo": {"name": "Chongqing Jiulongpo District (重庆九龙坡区)", "base_url": "http://www.cqjlp.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/zwgk_251/zfxxgkml_1/gggs/", "/zwgk_251/zfxxgkml_1/hygq/", "/zwgk_251/zcwj/gfxwj/"]},
 }
 
 # article link dialects:
@@ -485,6 +522,27 @@ _ART_WEB_RE = re.compile(
 #  (F) ARTI: …/YYYY/MM/DD/ARTI<digits>.shtml  (共产党员网 12371.cn). Full date in path.
 _ART_ARTI_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/(\d{4})/(\d{2})/(\d{2})/ARTI\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (G) numid: …/<section>/<5-8 digit id>/index.html  (北京大兴/平谷区). No date in URL.
+#      Kept 5-8 digits so it can't steal web-idx/tsid (≥12-digit id dirs) — a
+#      ≥12-digit contiguous id has no internal '/', so \d{5,8} can never sit right
+#      before the trailing /index. Filename is index.* (t-date/art/ARTI have their
+#      own filename shapes), so no clash there either.
+_ART_NUMID_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/\d{5,8}/index\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (H) tsid: …/<section>/<≥12-digit id>/index.shtml  (北京通州区). No /web/ prefix
+#      (that's web-idx). Leading 8 digits of the id are YYYYMMDD when they form a
+#      valid date, else no date. web-idx runs first, so its /web/ rows de-dupe ahead
+#      of this (identical URL) — this only adds the non-/web/ ≥12-digit rows.
+_ART_TSID_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{12,})/index\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (I) hexmon: …/<section>/<YYYYMM>/<32-hex>.shtml  (北京门头沟区). Date = YYYYMM
+#      (day unknown → -01). The 32-hex filename is unique to this dialect.
+_ART_HEXMON_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{6})/[0-9a-f]{32}\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (J) pnidpv: …/pnidpv<digits>.html  (北京西城区). No date in URL. Distinct filename
+#      (not index.*, not t-date/art/ARTI) so it can't clash with the others.
+_ART_PNIDPV_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/pnidpv\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
@@ -507,6 +565,16 @@ def _clean(t: str) -> str:
     t = re.sub(r"<[^>]+>", "", t)
     t = H.unescape(t)
     return re.sub(r"\s+", " ", t).strip()
+
+
+def _valid_ymd(s: str) -> bool:
+    """True if s is 8 digits forming a plausible YYYYMMDD (1900-2099, mm 01-12,
+    dd 01-31). Used by the tsid dialect where the id's leading 8 digits are a
+    pub date only some of the time."""
+    if len(s) != 8 or not s.isdigit():
+        return False
+    y, mo, d = int(s[:4]), int(s[4:6]), int(s[6:8])
+    return 1900 <= y <= 2099 and 1 <= mo <= 12 and 1 <= d <= 31
 
 
 def _region_text(region: str) -> str:
@@ -569,6 +637,20 @@ def _list_articles(page_html: str, page_url: str) -> list:
     for m in _ART_ARTI_RE.finditer(page_html):
         y, mo, d = m.group(2), m.group(3), m.group(4)
         matches.append((m, m.group(1), m.group(5), f"{y}-{mo}-{d}"))
+    # --- new dialects (after the existing ones so those win the de-dupe) ---
+    for m in _ART_NUMID_RE.finditer(page_html):        # (G) numid: no date in URL
+        matches.append((m, m.group(1), m.group(2), ""))
+    for m in _ART_TSID_RE.finditer(page_html):         # (H) tsid: leading-8 may be date
+        ymd = m.group(2)[:8]
+        date_str = f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}" if _valid_ymd(ymd) else ""
+        matches.append((m, m.group(1), m.group(3), date_str))
+    for m in _ART_HEXMON_RE.finditer(page_html):       # (I) hexmon: YYYYMM dir → -01
+        ym = m.group(2)
+        mo = int(ym[4:6])
+        date_str = f"{ym[:4]}-{ym[4:6]}-01" if 1 <= mo <= 12 else ""
+        matches.append((m, m.group(1), m.group(3), date_str))
+    for m in _ART_PNIDPV_RE.finditer(page_html):       # (J) pnidpv: no date in URL
+        matches.append((m, m.group(1), m.group(2), ""))
     out, seen = [], set()
     for m, href, inner, url_date in matches:
         url = urljoin(page_url, H.unescape(href))

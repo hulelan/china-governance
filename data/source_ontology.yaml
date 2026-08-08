@@ -89,9 +89,11 @@ tree:
       - id: local_district
         label_en: Districts & Counties
         label_zh: 区县
-        site_keys:
-          [szdp, szlhq, szlg, szpsq, szgm, szlh, szns, szft, szyantian,
-           bjd_shijingshan, bjd_dongcheng, bjd_fangshan, bjd_huairou, bjd_miyun, bjd_fengtai]
+        # Shenzhen districts by explicit key; Beijing/Nanjing/Wuhan/Chongqing
+        # districts by prefix (bjd_/njd_/whd_/cqd_) so new district crawlers
+        # auto-classify. cqd_ is distinct from cq_ (Chongqing bureaus).
+        site_keys: [szdp, szlhq, szlg, szpsq, szgm, szlh, szns, szft, szyantian]
+        prefixes: [bjd_, njd_, whd_, cqd_]
 
   # ── NEWS & MEDIA ──────────────────────────────────────────────────────
   - id: media
