@@ -146,6 +146,18 @@ documents.db; if the DB is ever rebuilt/restored, re-run `python3 scripts/build_
 once (~22 min, one-time).** Cold first-access to a common term after a rebuild can be
 slow on the 2GB-RAM droplet (page cache) — it warms quickly.
 
+**Relevance ranking = word-segmented BM25** (`doc_search_seg`, built by
+`scripts/build_search_index_seg.py`; requires `jieba`). The trigram index matches
+Chinese substrings but `bm25()` over trigrams is noise, so search used to fall back
+to date order. `doc_search_seg` is a second FTS5 index over jieba-**segmented** words
+(contentless, `unicode61`), letting `search_documents()` rank by real `bm25()` with a
+title boost + recency tiebreak. Path chain: segmented-BM25 → trigram substring → LIKE
+(each falls through on 0 hits, so recall never regresses; if `doc_search_seg` is absent
+the code behaves exactly as the old trigram path). One-time build ~1h, incremental
+re-runs are cheap (only new ids) — add `python3 scripts/build_search_index_seg.py` to
+`daily_sync.sh` after the crawl to keep it fresh (segmentation is Python, so it can't be
+a SQL trigger like `doc_search`). See `docs/research/search-primer.md` + `search-proposal.md`.
+
 ### Daily Crawl + Sync (runs ON the droplet via cron)
 ```bash
 # Automated: droplet cron runs daily_sync.sh at 06:00 UTC.

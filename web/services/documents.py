@@ -7,6 +7,8 @@ import re
 from datetime import datetime, timezone, timedelta
 from collections import Counter, defaultdict
 
+from . import segment
+
 CST = timezone(timedelta(hours=8))
 
 # Chinese brackets/quotes that users commonly omit when typing search queries
@@ -41,6 +43,24 @@ async def _fts_available(db) -> bool:
         except Exception:
             _fts_flag["has"] = False
     return _fts_flag["has"]
+
+
+_seg_flag = {"has": None}  # None = unchecked; cached after first probe
+
+
+async def _seg_available(db) -> bool:
+    """Whether the word-segmented BM25 index (doc_search_seg, built by
+    scripts/build_search_index_seg.py) exists. Checked once, cached. When present,
+    search ranks by real BM25 relevance; otherwise it falls back to the trigram
+    index (date-ordered) or a LIKE scan."""
+    if _seg_flag["has"] is None:
+        try:
+            n = await db.fetchval(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='doc_search_seg'")
+            _seg_flag["has"] = bool(n)
+        except Exception:
+            _seg_flag["has"] = False
+    return _seg_flag["has"]
 
 
 def date_str_to_timestamp(date_str: str) -> int:
@@ -363,20 +383,61 @@ def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
     return cut + "…"
 
 
+async def _search_seg_bm25(db, match, date_clause, date_params, site_clause,
+                           site_params, next_idx, search_pattern, per_page, offset):
+    """Run the word-segmented BM25 path. Returns (rows, total).
+
+    Ranking (best first):
+      1. exact title substring matches (a user typing a title wants THAT doc),
+      2. bm25() over segmented words, per-column-weighted (title 12x … body 1x) —
+         lower is better in FTS5, so ascending is most-relevant-first,
+      3. date_written DESC as a recency tiebreak.
+    """
+    tp_idx = next_idx           # $tp = exact-substring pattern (title boost + snippet)
+    limit_idx = next_idx + 1
+    offset_idx = next_idx + 2
+    # Column order = (title, document_number, keywords, abstract, body_text_cn).
+    weights = "bm25(doc_search_seg, 12.0, 6.0, 4.0, 2.0, 1.0)"
+    rows = await db.fetch(
+        f"""SELECT d.id, d.title, d.document_number, d.publisher,
+                  d.date_written, d.site_key, d.classify_main_name,
+                  d.title_en, d.importance, d.category,
+                  CASE
+                    WHEN d.title LIKE ${tp_idx} THEN d.title
+                    WHEN d.abstract LIKE ${tp_idx} THEN d.abstract
+                    ELSE SUBSTR(d.body_text_cn, 1, 200)
+                  END as snippet
+           FROM doc_search_seg s JOIN documents d ON d.id = s.rowid
+           WHERE doc_search_seg MATCH $1 {date_clause}{site_clause}
+           ORDER BY
+             CASE WHEN d.title LIKE ${tp_idx} THEN 0 ELSE 1 END,
+             {weights},
+             d.date_written DESC
+           LIMIT ${limit_idx} OFFSET ${offset_idx}""",
+        match, *date_params, *site_params, search_pattern, per_page, offset
+    )
+    total = await db.fetchval(
+        f"""SELECT COUNT(*) FROM doc_search_seg s JOIN documents d ON d.id = s.rowid
+           WHERE doc_search_seg MATCH $1 {date_clause}{site_clause}""",
+        match, *date_params, *site_params
+    )
+    return rows, total
+
+
 async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
                            date_start: int = None, date_end: int = None,
                            exclude_sites=None, include_sites=None):
     """Full-text search across title, doc number, keywords, abstract, body.
 
-    exclude_sites / include_sites: optional lists of site_keys for the
-    source-TYPE ontology filter (e.g. exclude every news site_key to hide
-    media from results). Applied in both the FTS and LIKE-fallback paths.
-
-    Uses the FTS5 **trigram** index (`doc_search`, built by
-    scripts/build_search_index.py) for queries >= 3 chars — an indexed substring
-    lookup that works on Chinese (no word boundaries), turning what was a ~240k-row
-    double table scan into a millisecond index probe. Short queries (< 3 chars,
-    below the trigram minimum) fall back to the old LIKE scan. Returns (results, total).
+    Ranking chain, best available first:
+      1. **BM25 relevance** (`doc_search_seg`, word-segmented FTS5 over jieba
+         tokens) — bm25() with a title boost + recency tiebreak. The relevance path.
+      2. **Trigram substring** (`doc_search`) — indexed substring match, date-ordered;
+         used when the segmented index is absent or BM25 finds nothing (recall net).
+      3. **LIKE scan** — final fallback for very short queries / no indexes.
+    exclude_sites / include_sites: optional lists of site_keys for the source-TYPE
+    ontology filter (e.g. exclude every news site_key) — applied in ALL paths.
+    Returns (results, total).
     """
     offset = (page - 1) * per_page
     clean_query = _strip_cn_punct(query)
@@ -398,7 +459,8 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
     # A list placeholder expands to IN (...) via _pg_to_sqlite's generic pass;
     # `col $n` -> `col IN (...)`, `col NOT $n` -> `col NOT IN (...)`. Avoid the
     # `= ANY`/`!= ALL` sugar here — its separate pass would reorder these list
-    # args relative to the scalar $1 FTS-match placeholder.
+    # args relative to the scalar $1 FTS-match placeholder. Built before the
+    # ranked paths so it advances next_idx and applies to all of them.
     site_clause = ""
     site_params = []
     if include_sites:
@@ -410,8 +472,24 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
         site_params.append(list(exclude_sites))
         next_idx += 1
 
+    rows = None
+    total = 0
+
+    # --- Path 1: word-segmented BM25 relevance ---------------------------------
+    seg_ok = await _seg_available(db)
+    if seg_ok and len(clean_query) >= 2:
+        try:
+            seg_match = segment.query_match(clean_query)
+            if seg_match:
+                rows, total = await _search_seg_bm25(
+                    db, seg_match, date_clause, date_params, site_clause,
+                    site_params, next_idx, search_pattern, per_page, offset)
+        except Exception:
+            rows, total = None, 0  # any failure → fall through to trigram/LIKE
+
     fts_ok = await _fts_available(db)
-    if fts_ok and len(clean_query) >= 3:
+    # --- Path 2: trigram substring (fallback / recall net) ---------------------
+    if (rows is None or total == 0) and fts_ok and len(clean_query) >= 3:
         # FTS5 trigram path. Quote the query so it is matched as a literal
         # substring (trigram tokenizer), escaping any embedded double-quotes.
         match = '"' + clean_query.replace('"', '""') + '"'
@@ -442,7 +520,9 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
                WHERE doc_search MATCH $1 {date_clause}{site_clause}""",
             match, *date_params, *site_params
         )
-    else:
+
+    # --- Path 3: LIKE scan (short queries, no indexes, or still no hits) --------
+    if rows is None or total == 0:
         # Fallback LIKE scan (short queries, or before the index is built).
         nt, nk = _norm('d.title'), _norm('d.keywords')
         na, nb = _norm('d.abstract'), _norm('d.body_text_cn')
