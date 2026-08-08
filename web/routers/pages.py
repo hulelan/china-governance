@@ -27,6 +27,7 @@ from web.services.chain import get_chain, TOPIC_KEYWORDS
 from web.services.structure import get_structure
 from web.services.annotations import list_annotations, get_overview, get_item
 from web.services.collections import get_collection
+from web.services import ontology
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -53,13 +54,31 @@ async def browse(
     site: str = "", category: str = "", year: str = "",
     has_docnum: str = "", page: int = 1,
     date_start: str = "", date_end: str = "",
-    importance: str = "", source_type: str = "",
+    importance: str = "", source_type: str = "", source_node: str = "",
     doc_type: str = "", min_ai: str = "", sort: str = "",
 ):
-    """Paginated document browser with filters for site, category, year, date range, importance, source type, and doc-number presence."""
+    """Paginated document browser with filters for site, category, year, date range, importance, source type, and doc-number presence.
+
+    source_node is the source-TYPE ontology filter: a node id restricts results
+    to that branch; a leading '!' excludes it (e.g. '!media' = exclude news).
+    """
     db = request.app.state.db
+    sites = await get_sites(db)
     ds = date_str_to_timestamp(date_start) if date_start else None
     de = date_str_to_timestamp(date_end) if date_end else None
+
+    # Source-type ontology filter → include_sites / exclude_sites.
+    include_sites = exclude_sites = None
+    if source_node:
+        exclude = source_node.startswith("!")
+        node_id = source_node[1:] if exclude else source_node
+        branch = ontology.sites_under(node_id, [s["site_key"] for s in sites])
+        if branch:
+            if exclude:
+                exclude_sites = branch
+            else:
+                include_sites = branch
+
     documents, total = await get_documents(
         db, site_key=site or None, category=category or None,
         year=year or None, has_docnum=bool(has_docnum), page=page,
@@ -68,14 +87,15 @@ async def browse(
         doc_type=doc_type or None,
         min_ai_relevance=float(min_ai) if min_ai else None,
         sort_by=sort or None,
+        include_sites=include_sites, exclude_sites=exclude_sites,
     )
-    sites = await get_sites(db)
     categories = await get_categories(db)
 
     filters = {
         "site": site, "category": category, "year": year,
         "has_docnum": has_docnum, "date_start": date_start, "date_end": date_end,
         "importance": importance, "source_type": source_type,
+        "source_node": source_node,
         "doc_type": doc_type, "min_ai": min_ai, "sort": sort,
     }
     pagination_qs = urlencode({k: v for k, v in filters.items() if v})
@@ -84,6 +104,7 @@ async def browse(
         "request": request, "documents": documents, "total": total,
         "page": page, "sites": sites, "categories": categories,
         "filters": filters, "pagination_qs": pagination_qs,
+        "source_tree": ontology.tree(),
         "stats": await get_stats(db),
     })
 
@@ -116,20 +137,33 @@ async def compare(request: Request, doc_id: int):
 
 @router.get("/search", response_class=HTMLResponse)
 async def search_page(request: Request, q: str = "", page: int = 1,
-                      date_start: str = "", date_end: str = ""):
-    """Full-text search page with highlighted snippets, pagination, and optional date range."""
+                      date_start: str = "", date_end: str = "",
+                      exclude_news: str = ""):
+    """Full-text search page with highlighted snippets, pagination, and optional date range.
+
+    exclude_news (checkbox) drops every News & Media source_key from results
+    via the source-type ontology.
+    """
     db = request.app.state.db
     ds = date_str_to_timestamp(date_start) if date_start else None
     de = date_str_to_timestamp(date_end) if date_end else None
+
+    exclude_sites = None
+    if exclude_news:
+        sites = await get_sites(db)
+        exclude_sites = ontology.sites_under("media", [s["site_key"] for s in sites])
+
     results, total = [], 0
     if q:
         try:
-            results, total = await search_documents(db, q, page, date_start=ds, date_end=de)
+            results, total = await search_documents(
+                db, q, page, date_start=ds, date_end=de, exclude_sites=exclude_sites)
         except Exception:
             results, total = [], 0
     return templates.TemplateResponse("search.html", {
         "request": request, "q": q, "results": results, "total": total,
         "page": page, "date_start": date_start, "date_end": date_end,
+        "exclude_news": exclude_news,
         "stats": await get_stats(db),
     })
 

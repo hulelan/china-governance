@@ -1,0 +1,122 @@
+# Source-TYPE ontology for the corpus.
+#
+# This is a hierarchical tree of SOURCE TYPES (what KIND of body published a
+# document) — NOT a jurisdiction/geography tree. Every site_key in the corpus
+# maps to exactly one leaf. It powers the "exclude a whole branch" filters
+# (e.g. "exclude news") on the search + browse pages.
+#
+# HOW IT WORKS
+#   - Each leaf lists `site_keys` (exact) and/or `prefixes` (site_key.startswith).
+#   - Prefixes exist only for the department FAMILIES that use an underscore
+#     separator (fj_, nx_, xz_, cq_, js_), so a NEW provincial department crawler
+#     auto-classifies with zero edits here. Everything else is listed explicitly.
+#   - `web/services/ontology.py` loads this file and validates that every DB
+#     site_key resolves to exactly one leaf (scripts/validate_ontology.py on the
+#     droplet checks live coverage). Anything unmapped falls into `other`.
+#
+# MAINTENANCE
+#   - New central ministry/agency  -> add its site_key to the right central_* leaf.
+#   - New whole-province portal     -> add to local_province.
+#   - New <prov>_<dept> crawler with an existing prefix -> nothing to do.
+#   - New media/research source     -> add to the media_* / research leaf.
+#   - Guangdong departments have NO underscore (gddrc, gdedu, ...), so they are
+#     listed explicitly under local_provincial_dept.
+#
+# NOTE: `stdaily` (科技日报) has admin_level='central' in the DB but is a
+# newspaper, so it lives under News & Media, per the corpus owner's intent.
+
+version: 1
+
+tree:
+  # ── CENTRAL GOVERNMENT ────────────────────────────────────────────────
+  - id: central
+    label_en: Central Government
+    label_zh: 中央政府
+    children:
+      - id: central_state_council
+        label_en: State Council
+        label_zh: 国务院
+        site_keys: [gov]
+      - id: central_ministry
+        label_en: Ministries
+        label_zh: 部委
+        site_keys: [ndrc, miit, mof, mee, mofcom, most, moe, mot, mwr, mara, mva, mct, mfa]
+      - id: central_agency
+        label_en: Agencies, Administrations & Bureaus
+        label_zh: 直属机构与总局
+        site_keys: [samr, chinatax, cac, nda, nbs, nrta, nhsa, csrc, sic, pbc]
+      - id: central_cpc
+        label_en: CPC Central Organs
+        label_zh: 党中央机关
+        site_keys: [chinapeace]
+      - id: central_legislative_judicial
+        label_en: Legislative, Advisory & Judicial
+        label_zh: 立法·协商·司法机关
+        site_keys: [npc, cppcc, ipc_court, spp]
+
+  # ── LOCAL GOVERNMENT ──────────────────────────────────────────────────
+  - id: local
+    label_en: Local Government
+    label_zh: 地方政府
+    children:
+      - id: local_province
+        label_en: Provinces & Province-level Regions
+        label_zh: 省级政府
+        # Whole-province / autonomous-region / direct-municipality portals.
+        # (cq = Chongqing, a 直辖市, is province-level despite its DB admin_level.)
+        site_keys: [gd, sh, bj, hlj, js, zj, shandong, fujian, jilin, liaoning, hunan, ningxia, xizang, cq]
+      - id: local_provincial_dept
+        label_en: Provincial Departments
+        label_zh: 省级部门
+        # Guangdong depts have no underscore, so listed explicitly; the fj_/nx_/
+        # xz_/cq_/js_ families are captured by prefix (cq_ = Chongqing 直辖市 bureaus).
+        prefixes: [fj_, nx_, xz_, cq_, js_]
+        site_keys:
+          [gdstats, gdhsa, gdedu, gdjt, gdwjw, gddrc, gdcom, gdct, gdee, gdmz,
+           gdstc, gdczt, gdnr, gdzjst, gdii, gdny, gdlyj, gdga, gdyjt, gdhrss]
+      - id: local_municipality
+        label_en: Municipalities & Prefecture Cities
+        label_zh: 地市政府
+        site_keys:
+          [suzhou, wuhan, hangzhou, qingdao, jinan, shenyang, jieyang, zhongshan,
+           jiangmen, huizhou, heyuan, gz, shanwei, zhuhai, yangjiang, shaoguan,
+           yunfu, shantou, zhaoqing, sz, sz_invest]
+      - id: local_city_dept
+        label_en: City Departments
+        label_zh: 市级部门
+        # Shenzhen municipal bureaus (DB admin_level='department').
+        site_keys: [ga, mzj, hrss, swj, jtys, zjj, stic, sf, yjgl, szeb, fgw, wjw, audit]
+      - id: local_district
+        label_en: Districts & Counties
+        label_zh: 区县
+        site_keys:
+          [szdp, szlhq, szlg, szpsq, szgm, szlh, szns, szft, szyantian,
+           bjd_shijingshan, bjd_dongcheng, bjd_fangshan, bjd_huairou, bjd_miyun, bjd_fengtai]
+
+  # ── NEWS & MEDIA ──────────────────────────────────────────────────────
+  - id: media
+    label_en: News & Media
+    label_zh: 新闻媒体
+    children:
+      - id: media_state
+        label_en: State & Official Media
+        label_zh: 官方媒体
+        site_keys: [xinhua, newscn, people, peopleapp, cctv, cnr, stdaily]
+      - id: media_commercial
+        label_en: Commercial & Tech Media
+        label_zh: 商业与科技媒体
+        site_keys: [guancha, ifeng, thepaper, qbitai, 36kr, latepost, elsewhere]
+
+  # ── RESEARCH / THINK-TANK / OTHER ─────────────────────────────────────
+  - id: research
+    label_en: Research & Think Tanks
+    label_zh: 研究与智库
+    site_keys: [chinalawtranslate, tsinghua_aiig]
+
+  # ── CATCH-ALL ─────────────────────────────────────────────────────────
+  # Any site_key not matched above resolves here at runtime (keeps the app
+  # correct if a new crawler lands before this file is updated).
+  - id: other
+    label_en: Other / Unclassified
+    label_zh: 其他
+    site_keys: []
