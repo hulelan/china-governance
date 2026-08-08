@@ -260,7 +260,26 @@ def fetch(url: str, timeout: int = 20, retries: int = 3, headers: dict = None) -
     for attempt in range(retries):
         try:
             resp = urllib.request.urlopen(req, timeout=timeout, context=_ctx)
-            return resp.read().decode("utf-8", errors="replace")
+            raw = resp.read()
+            # Some gov servers (e.g. CNIPA) force-gzip responses even when the
+            # client sent no Accept-Encoding. Decompress by header or magic bytes.
+            enc = (resp.headers.get("Content-Encoding") or "").lower()
+            if enc == "gzip" or raw[:2] == b"\x1f\x8b":
+                import gzip
+                try:
+                    raw = gzip.decompress(raw)
+                except Exception:
+                    pass
+            elif enc == "deflate":
+                import zlib
+                try:
+                    raw = zlib.decompress(raw)
+                except Exception:
+                    try:
+                        raw = zlib.decompress(raw, -zlib.MAX_WBITS)
+                    except Exception:
+                        pass
+            return raw.decode("utf-8", errors="replace")
         except urllib.error.HTTPError as e:
             if e.code in (404, 410, 550):
                 raise

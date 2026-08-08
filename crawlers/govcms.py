@@ -128,6 +128,20 @@ SITES = {
                      "/chinapeace/c100008/index.shtml", "/chinapeace/c100013/index.shtml",
                      "/chinapeace/c100014/index.shtml"],
     },
+    "cnipa": {
+        # 国家知识产权局 — /art/ dialect (/col/ index pages, art_COL_ID links inside a
+        # <recordset> CDATA block). Needs base.fetch() gzip handling (CNIPA force-gzips).
+        "name": "National IP Administration (国家知识产权局)",
+        "base_url": "https://www.cnipa.gov.cn", "admin_level": "central",
+        "sections": ["/col/col74/", "/col/col75/", "/col/col66/"],
+    },
+    "dangyuan": {
+        # 共产党员网 (中组部) — ARTI dialect: /YYYY/MM/DD/ARTI<id>.shtml. Party policy
+        # docs, laws, intra-Party regulations (党内法规). 政策文件 alone ~604 links.
+        "name": "CPC Members Network (共产党员网)",
+        "base_url": "https://www.12371.cn", "admin_level": "central",
+        "sections": ["/special/zcwj/", "/special/falv/", "/special/dnfg/"],
+    },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
@@ -430,9 +444,11 @@ SITES = {
     # TODO: jinan 通知公告/政府文件 columns use Hanweb client-side datacall — need
     # browser network inspection to find the list endpoint.
     # --- 北京市 districts (区政府) — t-date, config-only. ---
-    # NOTE: 海淀 Haidian (Zhongguancun tech hub, HIGH interest) is DEFERRED — its
-    # www policy lists are JS-rendered (homepage t-date links are service-subdomain
-    # zyk.bjhd.gov.cn noise; /zwdt/.../ sections return 13-byte stubs). Browser-tier.
+    # 海淀 Haidian (Zhongguancun tech hub): its POLICY docs live on the zyk.bjhd.gov.cn
+    # content subdomain (not www — www /zwdt/ returns stubs). Found via browser network
+    # inspection; droplet reaches zyk fine, /zwdt/zcwj/ + /zwdt/zcjd/ render 70 t-date each.
+    "bjd_haidian": {"name": "Beijing Haidian District (北京海淀区)", "base_url": "https://zyk.bjhd.gov.cn",
+        "admin_level": "district", "group": "dept", "sections": ["/zwdt/zcwj/", "/zwdt/zcjd/"]},
     "bjd_fangshan": {"name": "Beijing Fangshan District (北京房山区)", "base_url": "https://www.bjfsh.gov.cn",
         "admin_level": "district", "group": "dept", "sections": ["/zwgk/zcjd/", "/zwgk/tzgg/"]},
     "bjd_dongcheng": {"name": "Beijing Dongcheng District (北京东城区)", "base_url": "https://www.bjdch.gov.cn",
@@ -466,6 +482,9 @@ _ART_NEA_RE = re.compile(
 #      ≥12-digit timestamp whose leading 8 digits are the pub date (YYYYMMDD).
 _ART_WEB_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/web/[^"]*?/(\d{8})\d{4,}/index\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (F) ARTI: …/YYYY/MM/DD/ARTI<digits>.shtml  (共产党员网 12371.cn). Full date in path.
+_ART_ARTI_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{4})/(\d{2})/(\d{2})/ARTI\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
@@ -547,6 +566,9 @@ def _list_articles(page_html: str, page_url: str) -> list:
     for m in _ART_WEB_RE.finditer(page_html):
         ymd = m.group(2)
         matches.append((m, m.group(1), m.group(3), f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}"))
+    for m in _ART_ARTI_RE.finditer(page_html):
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        matches.append((m, m.group(1), m.group(5), f"{y}-{mo}-{d}"))
     out, seen = [], set()
     for m, href, inner, url_date in matches:
         url = urljoin(page_url, H.unescape(href))
