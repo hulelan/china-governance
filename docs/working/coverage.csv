@@ -1,66 +1,66 @@
 level,name,jurisdiction,domain,cms,http,status,site_key,docs
-central:state-council,国务院 State Council,中央,gov.cn,-,-,CRAWLED,gov,20157
+central:state-council,国务院 State Council,中央,gov.cn,-,-,CRAWLED,gov,20165
 central:ministry,外交部 MFA,中央,mfa.gov.cn,-,-,CRAWLED,mfa,4
-central:ministry,国家发改委 NDRC,中央,ndrc.gov.cn,-,-,CRAWLED,ndrc,1648
+central:ministry,国家发改委 NDRC,中央,ndrc.gov.cn,-,-,CRAWLED,ndrc,1651
 central:ministry,教育部 MOE,中央,moe.gov.cn,-,-,CRAWLED,moe,343
-central:ministry,科技部 MOST,中央,most.gov.cn,-,-,CRAWLED,most,1585
-central:ministry,工信部 MIIT,中央,miit.gov.cn,-,-,CRAWLED,miit,4686
+central:ministry,科技部 MOST,中央,most.gov.cn,-,-,CRAWLED,most,1592
+central:ministry,工信部 MIIT,中央,miit.gov.cn,-,-,CRAWLED,miit,5277
 central:ministry,公安部 MPS,中央,mps.gov.cn,,000,BLOCKED,,
 central:ministry,民政部 MCA,中央,mca.gov.cn,,000,BLOCKED,,
 central:ministry,司法部 MOJ,中央,moj.gov.cn,,000,BLOCKED,,
-central:ministry,财政部 MOF,中央,mof.gov.cn,-,-,CRAWLED,mof,1322
+central:ministry,财政部 MOF,中央,mof.gov.cn,-,-,CRAWLED,mof,1362
 central:ministry,人社部 MOHRSS,中央,mohrss.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:ministry,自然资源部 MNR,中央,mnr.gov.cn,,000,BLOCKED,,
-central:ministry,生态环境部 MEE,中央,mee.gov.cn,-,-,CRAWLED,mee,586
+central:ministry,生态环境部 MEE,中央,mee.gov.cn,-,-,CRAWLED,mee,592
 central:ministry,住建部 MOHURD,中央,mohurd.gov.cn,,000,BLOCKED,,
-central:ministry,交通运输部 MOT,中央,mot.gov.cn,-,-,CRAWLED,mot,520
-central:ministry,水利部 MWR,中央,mwr.gov.cn,-,-,CRAWLED,mwr,56
+central:ministry,交通运输部 MOT,中央,mot.gov.cn,-,-,CRAWLED,mot,1055
+central:ministry,水利部 MWR,中央,mwr.gov.cn,-,-,CRAWLED,mwr,60
 central:ministry,农业农村部 MARA,中央,moa.gov.cn,-,-,CRAWLED,mara,24
-central:ministry,商务部 MOFCOM,中央,mofcom.gov.cn,-,-,CRAWLED,mofcom,3040
-central:ministry,文旅部 MCT,中央,mct.gov.cn,-,-,CRAWLED,mct,20
+central:ministry,商务部 MOFCOM,中央,mofcom.gov.cn,-,-,CRAWLED,mofcom,3055
+central:ministry,文旅部 MCT,中央,mct.gov.cn,-,-,CRAWLED,mct,27
 central:ministry,卫健委 NHC,中央,nhc.gov.cn,,000,BLOCKED,,
 central:ministry,应急管理部 MEM,中央,mem.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:ministry,退役军人部 MVA,中央,mva.gov.cn,-,-,CRAWLED,mva,15
 central:ministry,央行 PBOC,中央,pbc.gov.cn,-,-,CRAWLED,pbc,27
-central:ministry,审计署 CNAO,中央,audit.gov.cn,,000,BLOCKED,,
-central:agency,海关总署 GACC,中央,customs.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-central:agency,税务总局 STA,中央,chinatax.gov.cn,-,-,CRAWLED,chinatax,4999
-central:agency,市场监管总局 SAMR,中央,samr.gov.cn,-,-,CRAWLED,samr,3686
+central:ministry,审计署 CNAO,中央,audit.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+central:agency,海关总署 GACC,中央,customs.gov.cn,,000,BLOCKED,,
+central:agency,税务总局 STA,中央,chinatax.gov.cn,-,-,CRAWLED,chinatax,5004
+central:agency,市场监管总局 SAMR,中央,samr.gov.cn,-,-,CRAWLED,samr,3818
 central:agency,金融监管总局 NFRA,中央,nfra.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-central:agency,证监会 CSRC,中央,csrc.gov.cn,-,-,CRAWLED,csrc,152
-central:agency,统计局 NBS,中央,stats.gov.cn,-,-,CRAWLED,nbs,34
+central:agency,证监会 CSRC,中央,csrc.gov.cn,-,-,CRAWLED,csrc,174
+central:agency,统计局 NBS,中央,stats.gov.cn,-,-,CRAWLED,nbs,42
 central:agency,知识产权局 CNIPA,中央,cnipa.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-central:agency,医保局 NHSA,中央,nhsa.gov.cn,-,-,CRAWLED,nhsa,154
-central:agency,国家网信办 CAC,中央,cac.gov.cn,-,-,CRAWLED,cac,2277
+central:agency,医保局 NHSA,中央,nhsa.gov.cn,-,-,CRAWLED,nhsa,156
+central:agency,国家网信办 CAC,中央,cac.gov.cn,-,-,CRAWLED,cac,2294
 central:agency,国家数据局 NDA,中央,nda.gov.cn,-,-,CRAWLED,nda,459
 central:agency,国家能源局 NEA,中央,nea.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-central:agency,广电总局 NRTA,中央,nrta.gov.cn,-,-,CRAWLED,nrta,45
+central:agency,广电总局 NRTA,中央,nrta.gov.cn,-,-,CRAWLED,nrta,46
 central:agency,药监局 NMPA,中央,nmpa.gov.cn,,000,BLOCKED,,
 central:agency,林草局 NFGA,中央,forestry.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:agency,移民局 NIA,中央,nia.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:agency,体育总局 GAS,中央,sport.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 central:power-organ,全国人大 NPC,中央,npc.gov.cn,-,-,CRAWLED,npc,29208
-central:power-organ,全国政协 CPPCC,中央,cppcc.gov.cn,-,-,CRAWLED,cppcc,69
-central:judiciary,最高法 SPC,中央,court.gov.cn,-,-,CRAWLED,ipc_court,324
+central:power-organ,全国政协 CPPCC,中央,cppcc.gov.cn,-,-,CRAWLED,cppcc,108
+central:judiciary,最高法 SPC,中央,court.gov.cn,-,-,CRAWLED,ipc_court,348
 central:judiciary,最高检 SPP,中央,spp.gov.cn,-,-,CRAWLED,spp,40
-central:cpc,中央政法委,中央,chinapeace.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
+central:cpc,中央政法委,中央,chinapeace.gov.cn,-,-,CRAWLED,chinapeace,254
 central:cpc,共产党员网(中组部) 12371,中央,12371.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-municipality,北京,北京,beijing.gov.cn,-,-,CRAWLED,bj,1927
+municipality,北京,北京,beijing.gov.cn,-,-,CRAWLED,bj,1942
 municipality,天津,天津,tj.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 municipality,上海,上海,shanghai.gov.cn,-,-,CRAWLED,sh,3852
-municipality,重庆,重庆,cq.gov.cn,-,-,CRAWLED,cq,704
+municipality,重庆,重庆,cq.gov.cn,-,-,CRAWLED,cq,706
 province,河北,河北,hebei.gov.cn,,000,BLOCKED,,
 province,山西,山西,shanxi.gov.cn,,000,BLOCKED,,
 province,内蒙古,内蒙古,nmg.gov.cn,,000,BLOCKED,,
 province,辽宁,辽宁,ln.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-province,吉林,吉林,jl.gov.cn,-,-,CRAWLED,jilin,20
-province,黑龙江,黑龙江,hlj.gov.cn,-,-,CRAWLED,hlj,2276
-province,江苏,江苏,jiangsu.gov.cn,-,-,CRAWLED,js,1091
+province,吉林,吉林,jl.gov.cn,-,-,CRAWLED,jilin,112
+province,黑龙江,黑龙江,hlj.gov.cn,-,-,CRAWLED,hlj,2277
+province,江苏,江苏,jiangsu.gov.cn,-,-,CRAWLED,js,1092
 province,浙江,浙江,zj.gov.cn,-,-,CRAWLED,zj,313
 province,安徽,安徽,ah.gov.cn,,000,BLOCKED,,
-province,福建,福建,fujian.gov.cn,-,-,CRAWLED,fujian,31
+province,福建,福建,fujian.gov.cn,-,-,CRAWLED,fujian,122
 province,江西,江西,jiangxi.gov.cn,,000,BLOCKED,,
-province,山东,山东,shandong.gov.cn,-,-,CRAWLED,shandong,
+province,山东,山东,shandong.gov.cn,-,-,CRAWLED,shandong,495
 province,河南,河南,henan.gov.cn,,403,ANTI-BOT,,
 province,湖北,湖北,hubei.gov.cn,,000,BLOCKED,,
 province,湖南,湖南,hunan.gov.cn,-,-,CRAWLED,hunan,15
@@ -87,7 +87,7 @@ prefecture-city,合肥,合肥,hefei.gov.cn,,000,BLOCKED,,
 prefecture-city,福州,福州,fuzhou.gov.cn,col/,200,BUILDABLE,,
 prefecture-city,南昌,南昌,nc.gov.cn,,000,BLOCKED,,
 prefecture-city,济南,济南,jinan.gov.cn,jpaas,200,BUILDABLE,,
-prefecture-city,郑州,郑州,zhengzhou.gov.cn,col/,200,BUILDABLE,,
+prefecture-city,郑州,郑州,zhengzhou.gov.cn,,000,BLOCKED,,
 prefecture-city,武汉,武汉,wuhan.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
 prefecture-city,长沙,长沙,changsha.gov.cn,,000,BLOCKED,,
 prefecture-city,南宁,南宁,nanning.gov.cn,,000,BLOCKED,,
@@ -101,7 +101,7 @@ prefecture-city,兰州,兰州,lanzhou.gov.cn,,000,BLOCKED,,
 prefecture-city,西宁,西宁,xining.gov.cn,,000,BLOCKED,,
 prefecture-city,银川,银川,yinchuan.gov.cn,col/,200,BUILDABLE,,
 prefecture-city,乌鲁木齐,乌鲁木齐,urumqi.gov.cn,?,200,REACHABLE-UNKNOWN-CMS,,
-prefecture-city,青岛,青岛,qingdao.gov.cn,,000,BLOCKED,,
+prefecture-city,青岛,青岛,qingdao.gov.cn,col/,200,BUILDABLE,,
 prefecture-city,大连,大连,dl.gov.cn,,000,BLOCKED,,
 prefecture-city,宁波,宁波,ningbo.gov.cn,,000,BLOCKED,,
 prefecture-city,厦门,厦门,xm.gov.cn,,000,BLOCKED,,
@@ -127,18 +127,18 @@ provincial-dept,Guangdong Forestry Bureau (林业局),广东,lyj.gd.gov.cn,gkmlp
 provincial-dept,Guangdong Healthcare Security Bureau (医保局),广东,hsa.gd.gov.cn,gkmlpt,200,CRAWLED,gdhsa,447
 provincial-dept,Guangdong Development & Reform Commission (发改委),广东,drc.gd.gov.cn,gkmlpt,200,CRAWLED,gddrc,347
 provincial-dept,Guangdong Statistics Bureau (统计局),广东,stats.gd.gov.cn,gkmlpt,200,CRAWLED,gdstats,450
+other-crawled,stdaily,,,,-,CRAWLED,stdaily,8740
 other-crawled,szdp,,,,-,CRAWLED,szdp,8586
-other-crawled,guancha,,,,-,CRAWLED,guancha,7133
-other-crawled,stdaily,,,,-,CRAWLED,stdaily,7075
+other-crawled,guancha,,,,-,CRAWLED,guancha,8475
 other-crawled,szlhq,,,,-,CRAWLED,szlhq,6280
 other-crawled,jieyang,,,,-,CRAWLED,jieyang,5872
 other-crawled,zhongshan,,,,-,CRAWLED,zhongshan,5152
 other-crawled,ga,,,,-,CRAWLED,ga,5093
-other-crawled,suzhou,,,,-,CRAWLED,suzhou,4890
+other-crawled,ifeng,,,,-,CRAWLED,ifeng,4973
+other-crawled,suzhou,,,,-,CRAWLED,suzhou,4896
 other-crawled,mzj,,,,-,CRAWLED,mzj,4847
+other-crawled,xinhua,,,,-,CRAWLED,xinhua,4341
 other-crawled,jiangmen,,,,-,CRAWLED,jiangmen,4241
-other-crawled,xinhua,,,,-,CRAWLED,xinhua,4049
-other-crawled,ifeng,,,,-,CRAWLED,ifeng,4041
 other-crawled,szlg,,,,-,CRAWLED,szlg,3893
 other-crawled,huizhou,,,,-,CRAWLED,huizhou,3826
 other-crawled,heyuan,,,,-,CRAWLED,heyuan,3777
@@ -146,11 +146,12 @@ other-crawled,gz,,,,-,CRAWLED,gz,3656
 other-crawled,shanwei,,,,-,CRAWLED,shanwei,3610
 other-crawled,zhuhai,,,,-,CRAWLED,zhuhai,3540
 other-crawled,hrss,,,,-,CRAWLED,hrss,3106
+other-crawled,qbitai,,,,-,CRAWLED,qbitai,3080
 other-crawled,swj,,,,-,CRAWLED,swj,2920
 other-crawled,jtys,,,,-,CRAWLED,jtys,2903
 other-crawled,sz_invest,,,,-,CRAWLED,sz_invest,2761
-other-crawled,zjj,,,,-,CRAWLED,zjj,2585
-other-crawled,stic,,,,-,CRAWLED,stic,2415
+other-crawled,zjj,,,,-,CRAWLED,zjj,2614
+other-crawled,stic,,,,-,CRAWLED,stic,2494
 other-crawled,yangjiang,,,,-,CRAWLED,yangjiang,2355
 other-crawled,sf,,,,-,CRAWLED,sf,2033
 other-crawled,yjgl,,,,-,CRAWLED,yjgl,2018
@@ -158,26 +159,148 @@ other-crawled,szeb,,,,-,CRAWLED,szeb,2012
 other-crawled,fgw,,,,-,CRAWLED,fgw,1953
 other-crawled,szpsq,,,,-,CRAWLED,szpsq,1635
 other-crawled,shaoguan,,,,-,CRAWLED,shaoguan,1613
-other-crawled,people,,,,-,CRAWLED,people,1520
+other-crawled,people,,,,-,CRAWLED,people,1585
 other-crawled,wjw,,,,-,CRAWLED,wjw,1262
-other-crawled,sic,,,,-,CRAWLED,sic,1156
+other-crawled,sic,,,,-,CRAWLED,sic,1158
 other-crawled,chinalawtranslate,,,,-,CRAWLED,chinalawtranslate,1103
-other-crawled,sz,,,,-,CRAWLED,sz,1025
+other-crawled,sz,,,,-,CRAWLED,sz,1026
 other-crawled,wuhan,,,,-,CRAWLED,wuhan,1001
 other-crawled,szgm,,,,-,CRAWLED,szgm,913
 other-crawled,szlh,,,,-,CRAWLED,szlh,762
 other-crawled,yunfu,,,,-,CRAWLED,yunfu,658
+other-crawled,fj_tyjrswt,,,,-,CRAWLED,fj_tyjrswt,493
+other-crawled,36kr,,,,-,CRAWLED,36kr,475
 other-crawled,audit,,,,-,CRAWLED,audit,475
-other-crawled,36kr,,,,-,CRAWLED,36kr,409
+other-crawled,fj_xxzx,,,,-,CRAWLED,fj_xxzx,323
+other-crawled,fj_lsj,,,,-,CRAWLED,fj_lsj,319
 other-crawled,szns,,,,-,CRAWLED,szns,309
-other-crawled,latepost,,,,-,CRAWLED,latepost,268
+other-crawled,fj_gdj,,,,-,CRAWLED,fj_gdj,291
+other-crawled,fj_kjt,,,,-,CRAWLED,fj_kjt,287
+other-crawled,latepost,,,,-,CRAWLED,latepost,283
+other-crawled,fj_sjt,,,,-,CRAWLED,fj_sjt,271
+other-crawled,fj_mzt,,,,-,CRAWLED,fj_mzt,256
+other-crawled,qingdao,,,,-,CRAWLED,qingdao,240
+other-crawled,fj_gxt,,,,-,CRAWLED,fj_gxt,233
+other-crawled,fj_sft,,,,-,CRAWLED,fj_sft,227
+other-crawled,fj_fgw,,,,-,CRAWLED,fj_fgw,225
+other-crawled,fj_gzw,,,,-,CRAWLED,fj_gzw,225
+other-crawled,fj_gdb,,,,-,CRAWLED,fj_gdb,224
+other-crawled,fj_hyyyj,,,,-,CRAWLED,fj_hyyyj,223
+other-crawled,fj_sthjt,,,,-,CRAWLED,fj_sthjt,222
+other-crawled,fj_rst,,,,-,CRAWLED,fj_rst,211
 other-crawled,szft,,,,-,CRAWLED,szft,211
+other-crawled,fj_mzzjt,,,,-,CRAWLED,fj_mzzjt,196
+other-crawled,fj_slt,,,,-,CRAWLED,fj_slt,194
+other-crawled,fj_yjt,,,,-,CRAWLED,fj_yjt,188
+other-crawled,fj_tjj,,,,-,CRAWLED,fj_tjj,183
+other-crawled,fj_lyj,,,,-,CRAWLED,fj_lyj,180
+other-crawled,fj_scjgj,,,,-,CRAWLED,fj_scjgj,179
+other-crawled,fj_jgswglj,,,,-,CRAWLED,fj_jgswglj,175
+other-crawled,fj_ybj,,,,-,CRAWLED,fj_ybj,172
+other-crawled,fj_czt,,,,-,CRAWLED,fj_czt,171
+other-crawled,fj_jtyst,,,,-,CRAWLED,fj_jtyst,163
+other-crawled,fj_swt,,,,-,CRAWLED,fj_swt,157
+other-crawled,fj_wjw,,,,-,CRAWLED,fj_wjw,155
+other-crawled,liaoning,,,,-,CRAWLED,liaoning,153
+other-crawled,fj_jyt,,,,-,CRAWLED,fj_jyt,151
+other-crawled,fj_zjt,,,,-,CRAWLED,fj_zjt,151
+other-crawled,fj_wb,,,,-,CRAWLED,fj_wb,142
+other-crawled,fj_wlt,,,,-,CRAWLED,fj_wlt,136
+other-crawled,fj_nynct,,,,-,CRAWLED,fj_nynct,135
+other-crawled,fj_bb,,,,-,CRAWLED,fj_bb,117
+other-crawled,fj_gat,,,,-,CRAWLED,fj_gat,112
+other-crawled,shenyang,,,,-,CRAWLED,shenyang,89
+other-crawled,elsewhere,,,,-,CRAWLED,elsewhere,84
+other-crawled,nx_fzggw,,,,-,CRAWLED,nx_fzggw,82
+other-crawled,xz_sti,,,,-,CRAWLED,xz_sti,82
+other-crawled,xizang,,,,-,CRAWLED,xizang,74
+other-crawled,nx_nynct,,,,-,CRAWLED,nx_nynct,73
 other-crawled,tsinghua_aiig,,,,-,CRAWLED,tsinghua_aiig,71
-other-crawled,elsewhere,,,,-,CRAWLED,elsewhere,64
+other-crawled,cq_tyj,,,,-,CRAWLED,cq_tyj,69
+other-crawled,xz_swt,,,,-,CRAWLED,xz_swt,66
+other-crawled,nx_czt,,,,-,CRAWLED,nx_czt,65
+other-crawled,nx_whhlyt,,,,-,CRAWLED,nx_whhlyt,65
+other-crawled,nx_dofcom,,,,-,CRAWLED,nx_dofcom,64
+other-crawled,nx_ylbz,,,,-,CRAWLED,nx_ylbz,64
+other-crawled,cq_gxq,,,,-,CRAWLED,cq_gxq,63
+other-crawled,nx_nxyjglt,,,,-,CRAWLED,nx_nxyjglt,58
+other-crawled,nx_sft,,,,-,CRAWLED,nx_sft,58
+other-crawled,nx_gxt,,,,-,CRAWLED,nx_gxt,55
+other-crawled,nx_jtt,,,,-,CRAWLED,nx_jtt,55
+other-crawled,nx_zrzyt,,,,-,CRAWLED,nx_zrzyt,55
+other-crawled,xz_hrss,,,,-,CRAWLED,xz_hrss,54
+other-crawled,nx_hrss,,,,-,CRAWLED,nx_hrss,53
+other-crawled,xz_mw,,,,-,CRAWLED,xz_mw,53
+other-crawled,xz_zrzyt,,,,-,CRAWLED,xz_zrzyt,53
+other-crawled,cq_cgj,,,,-,CRAWLED,cq_cgj,51
+other-crawled,cq_jtysw,,,,-,CRAWLED,cq_jtysw,51
+other-crawled,cq_sww,,,,-,CRAWLED,cq_sww,51
+other-crawled,fj_tyj,,,,-,CRAWLED,fj_tyj,49
 other-crawled,hangzhou,,,,-,CRAWLED,hangzhou,49
+other-crawled,nx_mca,,,,-,CRAWLED,nx_mca,49
 other-crawled,shantou,,,,-,CRAWLED,shantou,49
+other-crawled,xz_sport,,,,-,CRAWLED,xz_sport,49
+other-crawled,cq_tyjrswj,,,,-,CRAWLED,cq_tyjrswj,47
+other-crawled,nx_jyt,,,,-,CRAWLED,nx_jyt,47
+other-crawled,xz_drc,,,,-,CRAWLED,xz_drc,47
+other-crawled,cq_gaj,,,,-,CRAWLED,cq_gaj,46
+other-crawled,cq_sthjj,,,,-,CRAWLED,cq_sthjj,46
+other-crawled,cq_tjj,,,,-,CRAWLED,cq_tjj,46
+other-crawled,cq_zfcxjw,,,,-,CRAWLED,cq_zfcxjw,46
+other-crawled,cq_zfkawlb,,,,-,CRAWLED,cq_zfkawlb,46
+other-crawled,xz_nynct,,,,-,CRAWLED,xz_nynct,46
+other-crawled,cq_czj,,,,-,CRAWLED,cq_czj,45
+other-crawled,cq_jgswj,,,,-,CRAWLED,cq_jgswj,45
+other-crawled,cq_jkq,,,,-,CRAWLED,cq_jkq,45
+other-crawled,cq_whlyw,,,,-,CRAWLED,cq_whlyw,45
+other-crawled,cq_ws,,,,-,CRAWLED,cq_ws,45
+other-crawled,fj_qb,,,,-,CRAWLED,fj_qb,45
 other-crawled,js_czt,,,,-,CRAWLED,js_czt,45
-other-crawled,shenyang,,,,-,CRAWLED,shenyang,40
+other-crawled,ningxia,,,,-,CRAWLED,ningxia,45
+other-crawled,nx_jst,,,,-,CRAWLED,nx_jst,45
+other-crawled,cq_gzw,,,,-,CRAWLED,cq_gzw,42
+other-crawled,cq_yjj,,,,-,CRAWLED,cq_yjj,42
+other-crawled,nx_sthjt,,,,-,CRAWLED,nx_sthjt,42
+other-crawled,cq_jjxxw,,,,-,CRAWLED,cq_jjxxw,41
+other-crawled,cq_nyncw,,,,-,CRAWLED,cq_nyncw,41
+other-crawled,cq_wsjkw,,,,-,CRAWLED,cq_wsjkw,41
+other-crawled,xz_sjt,,,,-,CRAWLED,xz_sjt,41
+other-crawled,cq_jw,,,,-,CRAWLED,cq_jw,40
+other-crawled,cq_lyj,,,,-,CRAWLED,cq_lyj,40
+other-crawled,cq_scjgj,,,,-,CRAWLED,cq_scjgj,40
+other-crawled,cq_slj,,,,-,CRAWLED,cq_slj,40
+other-crawled,cq_ylbzj,,,,-,CRAWLED,cq_ylbzj,40
+other-crawled,cq_zscqj,,,,-,CRAWLED,cq_zscqj,40
+other-crawled,fj_xfj,,,,-,CRAWLED,fj_xfj,40
+other-crawled,nx_kjt,,,,-,CRAWLED,nx_kjt,40
+other-crawled,nx_sjt,,,,-,CRAWLED,nx_sjt,40
+other-crawled,cq_fzggw,,,,-,CRAWLED,cq_fzggw,39
+other-crawled,xz_sft,,,,-,CRAWLED,xz_sft,38
+other-crawled,cq_sfj,,,,-,CRAWLED,cq_sfj,36
+other-crawled,nx_wsjkw,,,,-,CRAWLED,nx_wsjkw,36
+other-crawled,xz_wlt,,,,-,CRAWLED,xz_wlt,36
+other-crawled,xz_ylbzj,,,,-,CRAWLED,xz_ylbzj,35
+other-crawled,cq_rlsbj,,,,-,CRAWLED,cq_rlsbj,33
+other-crawled,fj_zrzyt,,,,-,CRAWLED,fj_zrzyt,32
+other-crawled,xz_gat,,,,-,CRAWLED,xz_gat,32
+other-crawled,xz_tjj,,,,-,CRAWLED,xz_tjj,32
+other-crawled,cq_mzj,,,,-,CRAWLED,cq_mzj,31
+other-crawled,cq_rmfkb,,,,-,CRAWLED,cq_rmfkb,29
+other-crawled,cq_jrjgj,,,,-,CRAWLED,cq_jrjgj,28
+other-crawled,cq_xfb,,,,-,CRAWLED,cq_xfb,27
+other-crawled,xz_jtt,,,,-,CRAWLED,xz_jtt,25
+other-crawled,cq_dsjj,,,,-,CRAWLED,cq_dsjj,24
+other-crawled,cq_gxhzs,,,,-,CRAWLED,cq_gxhzs,22
+other-crawled,xz_wjw,,,,-,CRAWLED,xz_wjw,22
+other-crawled,cq_mzzjw,,,,-,CRAWLED,cq_mzzjw,21
+other-crawled,cq_zfwb,,,,-,CRAWLED,cq_zfwb,21
+other-crawled,xz_tzcjj,,,,-,CRAWLED,xz_tzcjj,20
+other-crawled,xz_tyjr,,,,-,CRAWLED,xz_tyjr,16
+other-crawled,xz_ee,,,,-,CRAWLED,xz_ee,15
+other-crawled,xz_mzt,,,,-,CRAWLED,xz_mzt,15
+other-crawled,cq_gbdsj,,,,-,CRAWLED,cq_gbdsj,13
+other-crawled,cq_sjj,,,,-,CRAWLED,cq_sjj,9
+other-crawled,jinan,,,,-,CRAWLED,jinan,4
 other-crawled,cctv,,,,-,CRAWLED,cctv,1
 other-crawled,cnr,,,,-,CRAWLED,cnr,1
 other-crawled,newscn,,,,-,CRAWLED,newscn,1
