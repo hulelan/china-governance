@@ -376,3 +376,52 @@ list-data XHR is NOT in the section HTML or the main mixin JS (`N_new_mixin-*`,
 `articleReader.js`). Reconstructing it statically is possible but low-ROI vs. just
 loading the page in a browser and reading the list XHR from the Network panel.
 Confirms 天津 (and the 辽宁 datacall departments) are genuinely browser-tier.
+
+## 13. Browser tier + districts + web platform (2026-08-08/09)
+
+**Browser tier connected (Claude-in-Chrome).** Runs the user's residential Chrome —
+real JS, cookies, non-datacenter IP. Used as a **key-cutter**: find *what* to crawl,
+then the droplet crawls it.
+
+- **海淀 Haidian cracked.** Its policy docs live on the `zyk.bjhd.gov.cn` content
+  subdomain (the `www` homepage's t-date links were service-subdomain noise; `www`
+  policy sections return 13-byte stubs). `zyk` IS droplet-reachable → config-only
+  t-date add (`bjd_haidian`). Browser found it in one page-load after hours of ssh
+  probing failed.
+
+**District tier (22 sites, ~870 docs).** Beijing 海淀 + 通州/大兴/平谷/门头沟/西城
+(the latter 5 needed 4 NEW url dialects: numid/tsid/hexmon/pnidpv — 0 duplicate
+matches, 92-100% body). Other cities (t-date, config-only): 南京 鼓楼/江宁, 武汉
+江汉/武昌/东湖高新/江岸/硚口/洪山, 重庆 渝中/九龙坡 (njd_/whd_/cqd_). Guangzhou districts =
+Guangdong service platform (gkmlpt, not govcms); 苏州/天津/成都 districts = browser-tier.
+
+**Central bodies.** cnipa 知识产权局 (/art/; needed the base.fetch gunzip fix — CNIPA
+force-gzips). dangyuan 共产党员网 12371 (new ARTI dialect, 604-link 政策文件). NFRA/MOHRSS
+= SPA/anti-bot (browser-tier).
+
+**Web platform (3 subagent builds, all deployed).**
+- **Search relevance = word-segmented BM25** (`doc_search_seg`, jieba). Was trigram
+  substring ordered by DATE (no relevance); now bm25()-ranked (人工智能 → AI-literacy
+  policy framework first, not a news blurb). Primer: `docs/research/search-primer.md`.
+- **Source-type ontology** (`data/source_ontology.yaml` + `web/services/ontology.py`):
+  hierarchical source TYPES (central/local/news/research), "exclude news" on search +
+  browse. 32k news vs 218k non-news.
+- **Network graph**: 5-6s → ~0.3s warm (bounded+cached server-side, SVG→Canvas).
+- Fixed: structure page linked `/browse?site_key=` but the route param is `site` →
+  filter was silently dropped (clicking MOF showed everything). Now `/browse?site=`.
+
+**Province coverage reality (the honest finding).** Tier-1 (北上广深) all covered;
+~14/34 provincial units crawled. The gap is **datacenter-IP-BLOCKED province portals**
+— e.g. 四川/河北 are genuinely unroutable from the droplet (Errno 101); 湖北's homepage
+is 412 and only its `/zwgk/hbyw/` news subtree is droplet-reachable (policy `/xxgk/` =
+412). **Browser recon does NOT unlock these for the droplet crawler** — the browser
+(residential IP) reads them, but the crawler (datacenter IP) still hits the WAF on the
+useful sections. Real unlock = a **residential fetch vantage**: (a) residential proxy
+for the crawler, or (b) local `govcms --site <prov>` from a residential machine →
+merge up. DECISION PENDING.
+
+**Ops lesson (recurring this session).** Single-box contention on the droplet caused:
+deploy-hygiene aborts (dirty working tree from scratch `cp`s silently blocked
+`git pull`), fujian WAF blocks (my own probes re-triggering a ~1-min IP block), and
+the BM25 build's `database is locked` (crawl + index-build writing at once). TODO: a
+build/crawl lock so index builds never overlap crawls; stop leaving the droplet tree dirty.

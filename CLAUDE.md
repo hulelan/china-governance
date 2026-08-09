@@ -21,7 +21,27 @@ Chinese government document corpus + web app. Crawls policy documents from centr
 - Title translations: ~99.7% of titles have `title_en` (free Google/deep-translator
   pass). References: `references_source` on ~133k docs (`regex_v1` + `deepseek_v2`).
 - Corpus counts above are an April-2026 snapshot (~135k); the live total is
-  higher (~180k as of June 2026). Check `/api/v1/stats` for the current number.
+  higher (**~252k as of Aug 2026**). Check `/api/v1/stats` for the current number.
+
+**Aug 2026 additions (this build-out):**
+- **Provincial department tier** (119 sites, ~10.8k docs) via `govcms --group dept`:
+  西藏 (xz_*, 20), 宁夏 (nx_*, 19), 福建 (fj_*, 38), 重庆 bureaus (cq_*, 40+). Plus
+  province portals 辽宁/西藏/宁夏/青岛.
+- **District tier** (22 sites, ~870 docs): Beijing 海淀 (bjd_haidian, on the
+  `zyk.bjhd.gov.cn` content subdomain — found via browser network inspection) +
+  5 more BJ districts (通州/大兴/平谷/门头沟/西城, needing 4 new URL dialects) +
+  Nanjing/Wuhan/Chongqing districts (njd_/whd_/cqd_).
+- **Central**: cnipa (知识产权局, /art/), dangyuan (共产党员网 12371, new ARTI dialect).
+- **Web features**: `/collections/oil` (topical collection, live corpus + curated
+  annotations), source-type **ontology** (`data/source_ontology.yaml` + "exclude
+  news" filter on search/browse), **BM25 relevance** search (below), Canvas-rendered
+  network graph (bounded + cached, ~5s→0.3s).
+- **base.fetch() now gunzips** gzip/deflate responses (some gov servers force-gzip).
+- **Coverage audit**: `docs/working/coverage.csv` (rebuild via
+  `scripts/rnd/discovery/build_coverage_csv.py`) — ~14/34 provincial units crawled;
+  the gap is mostly **datacenter-IP-BLOCKED** province portals (the droplet's NYC IP;
+  need a residential fetch vantage — browser reads them but the crawler still hits
+  the WAF on policy sections). Tier-1 (北上广深) all covered.
 
 ## Key Commands
 
@@ -56,8 +76,13 @@ python3 -m crawlers.pbc                          # People's Bank of China 央行
 python3 -m crawlers.trs --site nhsa             # TRS WCM central bodies (医保局 NHSA, 广电 NRTA)
 python3 -m crawlers.trs --list-sites            # Generic TRS "recordset" crawler (encrypted-param dialect)
 python3 -m crawlers.govcms --list-sites         # Generic gov "t-date list" crawler (central ministries)
-python3 -m crawlers.govcms --site mwr           # 水利部 (also: nbs 统计局, mva 退役军人部, mct 文旅部, mara 农业部, liaoning 辽宁省 web-idx dialect, xizang 西藏 + ningxia 宁夏 + qingdao 青岛 t-date, xz_/nx_/fj_/cq_ = 117 provincial+municipal dept sites, 西藏20+宁夏19+福建39+重庆39)
-python3 -m crawlers.govcms --group dept       # Crawl all department-tier sites (group=dept) in one pass
+python3 -m crawlers.govcms --site mwr           # 水利部 (also: provinces liaoning/xizang/ningxia/qingdao t-date, cnipa 知识产权局 /art/, dangyuan 共产党员网 ARTI dialect)
+python3 -m crawlers.govcms --group dept       # Crawl all department-tier + district sites (group=dept, ~140 sites) in one pass
+# Dialects (crawlers/govcms.py): (A) t-date /tYYYYMMDD_ID (B) /art/ (C) content_N/c_N
+#   (D) NEA hex/c.html (E) web-idx (辽宁) (F) ARTI (12371) (G) numid (H) tsid (I) hexmon
+#   (J) pnidpv — G-J added for Beijing districts (通州/大兴/平谷/门头沟/西城).
+# Dept families (group=dept): xz_/nx_/fj_/cq_ = 117 dept sites; bjd_/njd_/whd_/cqd_ = 22 districts.
+# NOTE base.fetch() gunzips gzip/deflate responses (CNIPA & others force-gzip).
 python3 -m crawlers.govcms --site mwr --discover # Map a site's t-date sub-sections (config aid)
 python3 -m crawlers.tsinghua_aiig               # Tsinghua AI Governance Institute
 
