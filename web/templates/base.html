@@ -120,6 +120,21 @@
             text-transform: uppercase; border-right: 1px solid rgba(255,255,255,.12); }
         .subnav a:hover { background: rgba(0,0,0,.16); text-decoration: none; color: #fff; }
         .subnav a.active { background: rgba(0,0,0,.22); color: #fff; }
+        /* Research dropdown */
+        .navdrop { position: relative; display: inline-flex; }
+        .navdrop > a::after { content: "▾"; font-size: 9px; opacity: .7; margin-left: 5px; }
+        .navmenu { position: absolute; left: 0; top: 100%; min-width: 260px; z-index: 60;
+            background: var(--paper); border: 1px solid rgba(0,0,0,.16);
+            box-shadow: 0 8px 22px rgba(0,0,0,.20); display: none; }
+        .navdrop:hover .navmenu, .navdrop:focus-within .navmenu { display: block; }
+        .navmenu a { display: block; color: var(--ink); text-transform: none; letter-spacing: 0;
+            padding: 10px 14px; border-right: 0; border-bottom: 1px solid rgba(0,0,0,.08); }
+        .navmenu a:last-child { border-bottom: 0; }
+        .navmenu a:hover { background: rgba(0,0,0,.05); color: var(--ink); }
+        .navmenu strong { display: block; font-size: 12px; font-weight: 600;
+            letter-spacing: .08em; text-transform: uppercase; }
+        .navmenu .desc { display: block; font-size: 11px; color: #6b6558;
+            text-transform: none; letter-spacing: 0; margin-top: 3px; }
     </style>
     {% block head %}{% endblock %}
 </head>
@@ -138,8 +153,13 @@
                 {% set nav = active_nav|default('') %}
                 <a href="/browse" class="{{ 'active' if nav=='browse' }}">Catalog</a>
                 <a href="/search" class="{{ 'active' if nav=='search' }}">Search</a>
-                <a href="/annotations" class="{{ 'active' if nav=='annotations' }}">Annotations</a>
-                <a href="/collections" class="{{ 'active' if nav=='collections' }}">Collections</a>
+                <div class="navdrop">
+                    <a href="/collections" class="{{ 'active' if nav in ['annotations','collections','research'] }}">Research</a>
+                    <div class="navmenu">
+                        <a href="/collections"><strong>Collections</strong><span class="desc">Topical dossiers — every document on a theme, filterable</span></a>
+                        <a href="/annotations"><strong>Annotations</strong><span class="desc">Close readings — a landmark policy, clause by clause</span></a>
+                    </div>
+                </div>
                 <a href="/network" class="{{ 'active' if nav=='network' }}">Citations</a>
                 <a href="/structure" class="{{ 'active' if nav=='structure' }}">Structure</a>
                 <a href="/officials" class="{{ 'active' if nav=='officials' }}">Officials</a>
