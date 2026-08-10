@@ -181,6 +181,13 @@ AI_TERMS = {
 }
 
 
+# Single alternation of all terms, longest-first, for a cheap "does this doc contain
+# ANY AI term?" precheck. Most gov docs contain none, and those score 0.0 anyway (the
+# per-term loop below would sum to zero) — so this lets us skip the 40-term scan for
+# the majority WITHOUT changing any score.
+_ANY_AI_TERM = re.compile("|".join(re.escape(t) for t in sorted(AI_TERMS, key=len, reverse=True)))
+
+
 def compute_ai_relevance(title: str, body: str, keywords: str = "") -> float:
     """Compute AI relevance score from 0.0 to 1.0.
 
@@ -189,6 +196,10 @@ def compute_ai_relevance(title: str, body: str, keywords: str = "") -> float:
     """
     text = (title or "") + " " + (body or "") + " " + (keywords or "")
     if not text.strip():
+        return 0.0
+
+    # Fast path: no AI term present anywhere -> score is definitionally 0.0.
+    if not _ANY_AI_TERM.search(text):
         return 0.0
 
     # Title matches count 3x (a doc titled "人工智能" is definitely about AI)
@@ -253,23 +264,27 @@ def compute_all(conn, dry_run=False):
         print(f"    {rank:.1f}  {title}")
 
     print("\nClassifying document types...")
-    rows = conn.execute("SELECT id, title FROM documents").fetchall()
     type_counts = Counter()
     doc_types = {}
-    for doc_id, title in rows:
+    # Stream the cursor (don't fetchall) — titles are small, but keep the pattern
+    # consistent with the body read below.
+    for doc_id, title in conn.execute("SELECT id, title FROM documents"):
         dt = classify_doc_type(title)
         doc_types[doc_id] = dt
         type_counts[dt] += 1
 
-    print(f"  {len(rows)} documents classified:")
+    print(f"  {len(doc_types)} documents classified:")
     for dt, count in type_counts.most_common():
         print(f"    {dt}: {count:,}")
 
     print("\nComputing AI relevance scores...")
-    rows = conn.execute("SELECT id, title, body_text_cn, keywords FROM documents").fetchall()
+    # Stream the cursor rather than fetchall(): body_text_cn totals ~4GB and
+    # materializing it all at once swaps a 4GB box. Iterating keeps one row's body
+    # in memory at a time. (Read-only phase — no writes interleave on this conn.)
     ai_scores = {}
     score_buckets = Counter()
-    for doc_id, title, body, keywords in rows:
+    for doc_id, title, body, keywords in conn.execute(
+            "SELECT id, title, body_text_cn, keywords FROM documents"):
         score = compute_ai_relevance(title, body, keywords)
         ai_scores[doc_id] = score
         if score >= 0.5:
@@ -301,26 +316,54 @@ def compute_all(conn, dry_run=False):
     print("\nSaving scores...")
     ensure_columns(conn)
 
-    # Batch update
+    # Only UPDATE rows whose score actually CHANGED. Every UPDATE rewrites the whole
+    # record — including body_text_cn overflow pages — so touching all 252k rows
+    # rewrites ~5GB into the WAL even when the scores are identical to last run. Most
+    # docs' scores are stable between runs (citation_rank changes only if their
+    # inbound citations changed; algo_doc_type only if the title changed; ai_relevance
+    # only if the body changed), so diffing against the stored values turns a full
+    # re-score from ~78min/5GB-WAL into a few-thousand-row write on incremental runs.
+    current = {
+        doc_id: (cr, adt, air)
+        for doc_id, cr, adt, air in conn.execute(
+            "SELECT id, citation_rank, algo_doc_type, ai_relevance FROM documents")
+    }
+
+    def _close(a, b):  # REAL columns: tolerate float representation noise
+        return abs((a or 0.0) - (b or 0.0)) < 1e-9
+
     batch = []
-    for doc_id, title in conn.execute("SELECT id, title FROM documents").fetchall():
+    for doc_id in doc_types:  # doc_types has an entry for every document id
         rank = ranks.get(doc_id, 0.0)
         dt = doc_types.get(doc_id, "unknown")
         ai = ai_scores.get(doc_id, 0.0)
+        cur = current.get(doc_id)
+        if cur is not None and (cur[1] or "") == dt and _close(cur[0], rank) and _close(cur[2], ai):
+            continue  # unchanged — skip the expensive record rewrite
         batch.append((rank, dt, ai, doc_id))
 
-    conn.executemany(
-        "UPDATE documents SET citation_rank = ?, algo_doc_type = ?, ai_relevance = ? WHERE id = ?",
-        batch
-    )
-    conn.commit()
-    print(f"  Updated {len(batch):,} documents")
+    # Batched commits + periodic PASSIVE checkpoint cap WAL growth (one giant
+    # transaction pinned by the app's read connection is what let the WAL reach 5GB).
+    # synchronous=NORMAL is safe in WAL mode and avoids an fsync per commit.
+    conn.execute("PRAGMA synchronous=NORMAL")
+    CHUNK = 5000
+    for i in range(0, len(batch), CHUNK):
+        conn.executemany(
+            "UPDATE documents SET citation_rank = ?, algo_doc_type = ?, ai_relevance = ? WHERE id = ?",
+            batch[i:i + CHUNK],
+        )
+        conn.commit()
+        if i and i % (CHUNK * 10) == 0:  # every ~50k rows, reclaim WAL space
+            conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
+    unchanged = len(doc_types) - len(batch)
+    print(f"  Updated {len(batch):,} of {len(doc_types):,} documents ({unchanged:,} unchanged, skipped)")
 
     # Create index for fast filtering
     conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_ai_relevance ON documents(ai_relevance)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_citation_rank ON documents(citation_rank)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_algo_doc_type ON documents(algo_doc_type)")
     conn.commit()
+    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")  # leave the WAL small for the app
     print("  Indexes created")
 
 
@@ -381,6 +424,7 @@ def main():
     args = parser.parse_args()
 
     conn = sqlite3.connect(str(DB_PATH))
+    conn.execute("PRAGMA busy_timeout=30000")  # 30s — don't fail if a reader is mid-query
 
     if args.stats:
         show_stats(conn)
