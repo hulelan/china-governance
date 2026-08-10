@@ -425,3 +425,42 @@ deploy-hygiene aborts (dirty working tree from scratch `cp`s silently blocked
 `git pull`), fujian WAF blocks (my own probes re-triggering a ~1-min IP block), and
 the BM25 build's `database is locked` (crawl + index-build writing at once). TODO: a
 build/crawl lock so index builds never overlap crawls; stop leaving the droplet tree dirty.
+
+## 14. Citation-resolver recall upgrade + missing-doc acquisition (2026-08-10)
+
+Two-part strengthening of the **citation graph** (the thing that powers /network,
+/document mini-graphs, "cited by", `citation_rank`, and Policy Trace).
+
+**(1) Resolver-recall upgrade** (`scripts/rnd/citations/extract_citations.py`).
+The old matcher was exact-substring, so it MISSED docs we already HOLD whenever the
+cited reference and the stored title differed only in punctuation/brackets/whitespace
+or the `中华人民共和国` prefix (~14% false-missing on top-cited refs). Fix: `_norm_title()`
+folds `《》`/brackets/quotes/separators/whitespace + strips the PRC prefix, and
+`TitleMatcher` indexes+resolves on the normalized form (both sides); `_norm_docnum()`
+unifies 〔〕[]（） brackets so 文号 refs stored with a different bracket still resolve.
+Result (250k corpus): named **86,830→114,966** resolved, llm **44,896→66,423**, formal
+**24,327→29,545**; total resolved **~156k→210,934**. Docs with ≥1 inbound citation
+jumped **~12,102→35,880** — the graph nearly tripled in connectivity, no new crawling.
+
+**(2) Missing-doc acquisition** (`scripts/rnd/backfill/ingest_acquired_cited.py`).
+A retrieval subagent fetched the top-cited docs that NO crawler had captured (from
+`missing-cited-docs.csv`) from authoritative `*.gov.cn`. **13/15 ingested** (1 dup
+already held, 1 = 财库〔2022〕4号 unlocatable online). Each mapped to its real source
+`site_key` (gov/gd/chinatax/moe) so it inherits the right admin_level + ministry browse;
+`relation='acquired=cited_ref'` tags provenance. On re-running the resolver they
+absorbed **3,307 previously-dangling references** — the biggest single win being
+**城市、镇控制性详细规划编制审批办法 (住建部令第7号): 1,011 inbound** (it was the #1
+dangling ref). Others: 大湾区纲要 410, 广东省征地补偿保护标准 408, 建设用地容积率管理办法
+399, 中小企业划型标准规定 349, 深圳先行示范区意见 155, 全面深化改革决定 100.
+
+`citation_rank` for the 13 new docs reconciles on tonight's `daily_sync` (Phase 1
+re-scores). Both the resolver upgrade and the ingester are committed + on the droplet.
+
+**Perf note discovered here (KNOWN ISSUE).** `scripts/compute_scores.py` writes all
+~252k score updates in a **single `executemany`+commit**. Re-scoring on the live box
+took **~78 min** with the WAL ballooning to ~5GB, because (a) updating a tiny score
+column on rows with huge `body_text_cn` forces big record/overflow-page rewrites and
+(b) the app's read connection pins the WAL so it can't checkpoint mid-pass → reads get
+quadratically slower as the WAL grows. It DOES finish and self-checkpoints (WAL→0), so
+it's safe, but a **batched commit (every ~10k rows) would cap WAL size and cut
+wall-clock**. Candidate fix; logged so a future killed run isn't mistaken for a hang.

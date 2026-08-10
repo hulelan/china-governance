@@ -405,6 +405,11 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   now runs in **~5.4 min** with **byte-identical resolved counts** (validated on the
   live corpus: formal 24,327 / named 86,830 / llm 44,896). Phase 2b timeout left at
   10800s as generous headroom. Parity-tested (0 mismatches / 6k synthetic queries).
+  **(2026-08-10 recall upgrade — see coverage-tracker §14)** the matcher now
+  NORMALIZES titles + 文号 (folds `《》`/brackets/whitespace, strips `中华人民共和国`)
+  on both sides, so the resolved counts intentionally went UP (named→114,966,
+  llm→66,423, formal→29,545; docs-with-inbound ~12,102→35,880) — the old
+  "byte-identical" baseline no longer applies.
 - **(2026-07) Crawler timeouts.** `CRAWLER_TIMEOUT=1800` (30 min/crawler). Recent
   runs see ~11 crawlers hit the cap (cac, samr, mofcom, beijing, shanghai,
   jiangsu, suzhou, heilongjiang, xinhua, miit, most) → ~10h total run. Likely
@@ -432,3 +437,11 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
 - **A broken Mac `crontab` line** (`0 7 * * * ./scripts/daily_sync.sh …`) used a
   relative path and silently failed for weeks (cron CWD = `$HOME`). Being removed
   — the droplet is the sole runner. The Mac is dev-only; nothing schedules there.
+- **`compute_scores.py` re-score is slow (~78 min) + WAL-heavy (~5GB) on the live box.**
+  It writes all ~252k score updates in ONE `executemany`+commit; updating a tiny score
+  column on rows with huge `body_text_cn` forces big overflow-page rewrites, and the
+  app's read connection pins the WAL so it can't checkpoint mid-pass → reads slow
+  quadratically as the WAL grows. It DOES finish + self-checkpoints (WAL→0), so it's
+  safe — but don't mistake a long run for a hang, and never kill it mid-pass (that
+  strands a multi-GB uncheckpointed WAL, the 2026-07 outage scenario). Candidate fix:
+  batch the commit every ~10k rows to cap WAL size. (Nightly Phase 1 runs it unattended.)
