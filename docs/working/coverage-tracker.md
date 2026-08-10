@@ -456,11 +456,15 @@ dangling ref). Others: 大湾区纲要 410, 广东省征地补偿保护标准 40
 `citation_rank` for the 13 new docs reconciles on tonight's `daily_sync` (Phase 1
 re-scores). Both the resolver upgrade and the ingester are committed + on the droplet.
 
-**Perf note discovered here (KNOWN ISSUE).** `scripts/compute_scores.py` writes all
-~252k score updates in a **single `executemany`+commit**. Re-scoring on the live box
-took **~78 min** with the WAL ballooning to ~5GB, because (a) updating a tiny score
-column on rows with huge `body_text_cn` forces big record/overflow-page rewrites and
-(b) the app's read connection pins the WAL so it can't checkpoint mid-pass → reads get
-quadratically slower as the WAL grows. It DOES finish and self-checkpoints (WAL→0), so
-it's safe, but a **batched commit (every ~10k rows) would cap WAL size and cut
-wall-clock**. Candidate fix; logged so a future killed run isn't mistaken for a hang.
+**Perf fix (done same day).** `scripts/compute_scores.py` used to write all ~252k
+score updates in a **single `executemany`+commit**; re-scoring took **~78 min** with
+the WAL ballooning to ~5GB, because updating a tiny score column on rows with huge
+`body_text_cn` rewrites the whole record (overflow pages) and the app's read
+connection pinned the one giant transaction (no mid-pass checkpoint → quadratic read
+slowdown). **Fixed (`f8d939c`), all score-preserving:** UPDATE only rows whose score
+actually CHANGED (diff vs stored) + batched commits (5k) + periodic PASSIVE checkpoint
++ final TRUNCATE + stream the body cursor (was `fetchall()`-ing ~4GB on a 4GB box) +
+an ANY-term regex precheck to skip the 40-term scan for no-AI-term docs. Verified: a
+re-score right after a full run wrote **354/252,318 rows (251,964 unchanged), WAL 0,
+~1–2 min**. Also reconciled the 13 acquired docs' `citation_rank` on the spot (控规办法
+→ 1518, now a top-ranked doc).

@@ -437,11 +437,15 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
 - **A broken Mac `crontab` line** (`0 7 * * * ./scripts/daily_sync.sh …`) used a
   relative path and silently failed for weeks (cron CWD = `$HOME`). Being removed
   — the droplet is the sole runner. The Mac is dev-only; nothing schedules there.
-- **`compute_scores.py` re-score is slow (~78 min) + WAL-heavy (~5GB) on the live box.**
-  It writes all ~252k score updates in ONE `executemany`+commit; updating a tiny score
-  column on rows with huge `body_text_cn` forces big overflow-page rewrites, and the
-  app's read connection pins the WAL so it can't checkpoint mid-pass → reads slow
-  quadratically as the WAL grows. It DOES finish + self-checkpoints (WAL→0), so it's
-  safe — but don't mistake a long run for a hang, and never kill it mid-pass (that
-  strands a multi-GB uncheckpointed WAL, the 2026-07 outage scenario). Candidate fix:
-  batch the commit every ~10k rows to cap WAL size. (Nightly Phase 1 runs it unattended.)
+- **(RESOLVED 2026-08-10) `compute_scores.py` re-score was slow (~78 min) + WAL-heavy
+  (~5GB).** It wrote all ~252k score updates in ONE `executemany`+commit; because an
+  `UPDATE ... SET score` rewrites the WHOLE record (incl. `body_text_cn` overflow
+  pages), touching every row rewrote ~5GB of unchanged body text into one transaction
+  the app's read connection pinned (no mid-pass checkpoint → reads slowed
+  quadratically). Fix (all score-preserving): (1) diff computed scores vs stored and
+  UPDATE only CHANGED rows — a full re-score now writes ~hundreds of rows, not 252k;
+  (2) batched commits (5k) + periodic PASSIVE checkpoint + final TRUNCATE cap the WAL;
+  (3) stream the body cursor instead of `fetchall()` (was materializing ~4GB on a 4GB
+  box); (4) an ANY-term regex precheck skips the 40-term scan for docs with no AI
+  terms. Verified: a re-score right after a full run wrote **354/252,318 rows
+  (251,964 unchanged), WAL 0, ~1–2 min** vs the old ~78min/5GB.
