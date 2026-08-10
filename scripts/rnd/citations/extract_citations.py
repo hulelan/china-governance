@@ -10,6 +10,7 @@ Usage:
 """
 
 import argparse
+import re
 import sqlite3
 import sys
 import time
@@ -30,6 +31,33 @@ LEVEL_NORMALIZE = {"department": "municipal"}
 
 _NG = 4  # n-gram size for the title substring index
 
+# Resolver-recall upgrade (2026-08): the old exact-substring matcher missed docs
+# we DO hold whenever the cited reference and the stored title differed only in
+# punctuation / brackets / whitespace / the 中华人民共和国 prefix (a ~14% false-missing
+# rate on top-cited refs). Normalizing BOTH sides before matching recovers those.
+_TITLE_STRIP = re.compile(
+    r'[\s《》〈〉「」『』【】〔〕\[\]()（）“”‘’"\'、，,。．\.·・:：;；／/　]')
+_PRC_PREFIX = "中华人民共和国"
+
+
+def _norm_title(s):
+    """Fold punctuation/bracket/whitespace variants + the PRC prefix so that e.g.
+    '城市、镇控制性详细规划编制审批办法' and '城市镇...办法', or '《中华人民共和国网络安全法》'
+    and '网络安全法', normalize to the same key."""
+    s = _TITLE_STRIP.sub('', s or '')
+    if s.startswith(_PRC_PREFIX):
+        s = s[len(_PRC_PREFIX):]
+    return s
+
+
+_DOCNUM_STRIP = re.compile(r'[\s〔〕\[\]()（）【】　]')
+
+
+def _norm_docnum(s):
+    """Normalize a 文号 for matching: unify bracket styles (〔〕[]（）) + strip spaces,
+    so a cited ref matches a stored document_number that used a different bracket."""
+    return _DOCNUM_STRIP.sub('', s or '')
+
 
 class TitleMatcher:
     """Indexed fuzzy title resolver — replaces an O(docs x titles) per-ref scan.
@@ -43,7 +71,13 @@ class TitleMatcher:
     """
 
     def __init__(self, title_to_doc):
-        self.exact = {t: v[0] for t, v in title_to_doc.items()}  # title -> id
+        # Index on NORMALIZED titles (punctuation/prefix folded). setdefault keeps the
+        # first id when two titles normalize identically (near-duplicate docs).
+        self.exact = {}  # norm-title -> id
+        for t, v in title_to_doc.items():
+            nt = _norm_title(t)
+            if nt:
+                self.exact.setdefault(nt, v[0])
         self.titles = list(self.exact.keys())
         self.index = {}  # gram -> set of title indices
         for idx, t in enumerate(self.titles):
@@ -69,6 +103,7 @@ class TitleMatcher:
         return (self.titles[i] for i in posting if name in self.titles[i])
 
     def resolve(self, name, min_len):
+        name = _norm_title(name)  # match on the normalized form (both sides folded)
         L = len(name)
         # (a) a stored title is a substring of the cited name (longest-first; L==exact)
         if L >= min_len:
@@ -105,7 +140,11 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
     for row in conn.execute(
         "SELECT id, document_number FROM documents WHERE document_number <> ''"
     ).fetchall():
-        docnum_to_id[row[0 + 1]] = row[0]  # docnum -> id
+        did, dn = row[0], row[1 + 0]
+        docnum_to_id[dn] = did  # raw docnum -> id
+        nd = _norm_docnum(dn)   # + bracket-normalized key (don't clobber a raw match)
+        if nd and nd != dn:
+            docnum_to_id.setdefault(nd, did)
 
     # title -> (id, site_key) for named ref resolution (only titles >= 10 chars)
     title_to_doc = {}
@@ -159,7 +198,7 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
                 continue
             seen_formal.add(ref)
 
-            target_id = docnum_to_id.get(ref)
+            target_id = docnum_to_id.get(ref) or docnum_to_id.get(_norm_docnum(ref))
             target_level = get_admin_level(ref)
             citations.append((doc_id, ref, target_id, "formal", source_level, target_level))
             stats["formal"] += 1
@@ -210,8 +249,8 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
 
                 # Try to resolve to corpus by title match (indexed), then doc number
                 target_id = matcher.resolve(ref_name, 8)
-                if not target_id and ref_name in docnum_to_id:
-                    target_id = docnum_to_id[ref_name]
+                if not target_id:
+                    target_id = docnum_to_id.get(ref_name) or docnum_to_id.get(_norm_docnum(ref_name))
 
                 target_level = classify_named_ref_level(ref_name)
                 citations.append((doc_id, ref_name, target_id, "llm", source_level, target_level))
