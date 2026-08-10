@@ -281,6 +281,16 @@ timeout 10800 python3 scripts/rnd/citations/extract_citations.py >> "$LOG" 2>&1 
 log "Phase 2b: Algorithmic scoring (citation_rank, algo_doc_type, ai_relevance)..."
 timeout 1800 python3 scripts/compute_scores.py >> "$LOG" 2>&1 || log "  compute_scores had errors"
 
+# --- Phase 2c: Refresh the BM25 (word-segmented) search index -----------------
+# doc_search (trigram) is trigger-maintained, but doc_search_seg (jieba words, the
+# BM25 relevance path) segments in Python so it CAN'T be a SQL trigger — it needs a
+# periodic rebuild. Runs here (after all writers, before the Phase 3 checkpoint) so
+# it's a clean write-window (no crawl/classify writer → no 'database is locked') and
+# Phase 3's wal_checkpoint(TRUNCATE) flushes it. Incremental: only new doc ids, cheap
+# most nights (~seconds); a from-scratch build is ~40 min (bounded by the timeout).
+log "Phase 2c: Refreshing BM25 segmented search index (doc_search_seg)..."
+timeout 3600 nice -n 19 python3 scripts/build_search_index_seg.py >> "$LOG" 2>&1 || log "  build_search_index_seg had errors"
+
 # --- Phase 3: Publish the DB to the live web app ---
 # Two modes:
 #   (a) Production droplet (marker file present): the web app reads THIS very
