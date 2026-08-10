@@ -179,9 +179,12 @@ to date order. `doc_search_seg` is a second FTS5 index over jieba-**segmented** 
 title boost + recency tiebreak. Path chain: segmented-BM25 → trigram substring → LIKE
 (each falls through on 0 hits, so recall never regresses; if `doc_search_seg` is absent
 the code behaves exactly as the old trigram path). One-time build ~1h, incremental
-re-runs are cheap (only new ids) — add `python3 scripts/build_search_index_seg.py` to
-`daily_sync.sh` after the crawl to keep it fresh (segmentation is Python, so it can't be
-a SQL trigger like `doc_search`). See `docs/research/search-primer.md` + `search-proposal.md`.
+re-runs are cheap (only new ids — ~8s for a day's docs). **Wired into `daily_sync.sh`
+Phase 2c** (after all writers, before the Phase 3 WAL checkpoint) so BM25 stays fresh
+and the WAL never bloats (segmentation is Python, so it can't be a SQL trigger like
+`doc_search`; the builder itself ends with `wal_checkpoint(TRUNCATE)` on success — a
+KILLED build skips that and leaves a big WAL, so a manual run must be allowed to finish
+or be followed by a checkpoint). See `docs/research/search-primer.md` + `search-proposal.md`.
 
 ### Daily Crawl + Sync (runs ON the droplet via cron)
 ```bash
