@@ -41,7 +41,14 @@ not_held = [
     ("research", "北京智源 BAAI", "baai", "spa", "-", "client-rendered shell"),
     ("research", "上海人工智能实验室 Shanghai AI Lab", "shlab", "spa", "-", "client-rendered shell"),
     ("central", "国家金融监督管理总局 NFRA", "nfra", "spa", "-", "SPA shell (215B)"),
+    # Round 2 not-held:
+    ("central", "中国政府采购网 CCGP", "ccgp", "deferred", "govcms-A", "crawlable but high-volume low-value tender notices — deferred by choice"),
+    ("central", "国家疾控局 NDCPA/CDC", "ndcpa", "spa", "-", "jQuery zwgk.js JSON-rendered list"),
+    ("central", "国家烟草专卖局 STMA", "stma", "blocked", "-", "WAF blackholes datacenter IP (site is dialect L, residential would work)"),
+    ("central", "国家铁路局 NRA", "nra", "blocked", "-", "IPv6 CDN misroutes datacenter IP; alt portal Yundun WAF"),
 ]
+# NOTE: safe + nfsra are crawled (in DB as 'have') but their article-body container is
+# not yet recognized (near-empty bodies) — body-extraction TODO, tracked in structure-gaps.md.
 for level, inst, sk, status, method, lim in not_held:
     rows.append({"level": level, "institution": inst, "site_key": sk, "docs": "0",
                  "status": status, "method": method, "limitation": lim})

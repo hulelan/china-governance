@@ -152,3 +152,42 @@ from the article body when the list row has none); same-host + no-`/../` quality
 base.py cookie fix, 1 API-crawlable (Huxiu), 1 SPA (DRC), 9 blocked (residential/JS-WAF).
 The blocked cluster shares the same root cause as the blocked provinces: datacenter-IP
 WAFs. A residential fetch vantage (proxy or local-crawl-and-merge) is the common unlock.
+
+## Crawler build round 2 (2026-08-11) — central bureaus, 11 built / 625 docs
+
+Same 5-agent fleet pattern, targeting the directly-subordinate central bureaus.
+
+**✅ BUILT (config-only, in govcms + crawled + wired into daily_sync):**
+| Body | site_key | dialect | docs | body% |
+|---|---|---|--:|--:|
+| 最高人民法院 SPC | `spc` | N spc *(new)* | 114 | 48 (hearing notices thin) |
+| 求是网 Qiushi | `qstheory` | D hex | 130 | 82 |
+| 中国民用航空局 CAAC | `caac` | A t-date | 112 | 100 |
+| 中医药局 NATCM | `natcm` | O datepath *(new)* | 75 | 96 |
+| 粮储局 NFSRA | `nfsra` | C content | 50 | 2 · body TODO |
+| 中国气象局 CMA | `cma` | A t-date | 46 | 100 |
+| 文物局 NCHA | `ncha` | B /art/ | 26 | 92 |
+| 外汇局 SAFE | `safe` | P safe *(new)* | 20 | 5 · body TODO |
+| 移民局 NIA | `nia` | K ccontent | 20 | 75 |
+| 林草局 SFA | `sfa` | Q ymd8 *(new)* | 20 | — |
+| 邮政局 SPB | `spb` | I hexmon | 12 | 25 |
+
+New dialects N (spc /fabu/xiangqing), O (datepath /YYYY-MM-DD/id), P (safe /YYYY/MMDD/id),
+Q (ymd8 /YYYYMMDD/id). **Body-extraction TODO for SAFE + NFSRA** — links/titles/dates
+crawl fine but their article-body container isn't in `_BODY_CONTAINERS` yet (near-empty
+bodies); backfillable once the container is added.
+
+**⚙️ crawlable-but-DEFERRED:** CCGP 政府采购网 (dialect A, but high-volume low-value tender
+notices — accounted, not crawled to avoid flooding the corpus).
+
+**🖥️ blocked (residential/JS-WAF):** NRA 铁路局 (IPv6 CDN misroutes datacenter IP) ·
+STMA 烟草局 (WAF blackholes datacenter IP; site is dialect L, residential would work) ·
+NDCPA 疾控局 (jQuery JSON-rendered list = SPA).
+
+## Master ledger
+
+`docs/working/coverage-ledger.csv` (built by `scripts/rnd/discovery/build_coverage_ledger.py`)
+is the canonical account: **297 institutions — 279 held, 18 not-held (11 blocked, 5 SPA,
+1 API-ready = Huxiu)**. Regenerated from the live DB each round; the not-held list +
+limitations are maintained in the builder. This is the "account for everything" artifact
+for the full-coverage campaign.

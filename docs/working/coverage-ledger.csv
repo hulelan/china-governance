@@ -23,21 +23,31 @@ central,China Securities Regulatory Commission (证监会),csrc,188,have,crawler
 central,National IP Administration (国家知识产权局),cnipa,165,have,crawler,
 central,National Healthcare Security Admin (国家医保局),nhsa,156,have,crawler,
 central,CPPCC National Committee (全国政协),cppcc,116,have,crawler,
+central,Supreme People's Court (最高人民法院),spc,114,have,crawler,
+central,Civil Aviation Administration (中国民用航空局),caac,112,have,crawler,
 central,CPC Members Network (共产党员网),dangyuan,81,have,crawler,
+central,National Administration of TCM (国家中医药管理局),natcm,75,have,crawler,
 central,Chinese Academy of Sciences (中国科学院),cas,74,have,crawler,
 central,National Audit Office (审计署),cnao,69,have,crawler,
 central,National Natural Science Foundation (国家自然科学基金委),nsfc,63,have,crawler,
 central,Ministry of Water Resources (水利部),mwr,60,have,crawler,
+central,National Food & Strategic Reserves Admin (国家粮食和物资储备局),nfsra,50,have,crawler,
+central,China Meteorological Administration (中国气象局),cma,46,have,crawler,
 central,Radio & Television Admin (广电总局),nrta,46,have,crawler,
 central,National Bureau of Statistics (国家统计局),nbs,44,have,crawler,
 central,Supreme People's Procuratorate (最高人民检察院),spp,40,have,crawler,
 central,State-owned Assets Supervision & Admin Commission (国资委),sasac,33,have,crawler,
 central,Ministry of Culture & Tourism (文旅部),mct,28,have,crawler,
 central,People's Bank of China (中国人民银行),pbc,27,have,crawler,
+central,National Cultural Heritage Administration (国家文物局),ncha,26,have,crawler,
 central,Ministry of Agriculture & Rural Affairs (农业农村部),mara,24,have,crawler,
+central,National Immigration Administration (国家移民管理局),nia,21,have,crawler,
 central,Ministry of Justice (司法部),moj,20,have,crawler,
+central,State Administration of Foreign Exchange (国家外汇管理局),safe,20,have,crawler,
+central,National Forestry & Grassland Administration (国家林业和草原局),sfa,20,have,crawler,
 central,National Cybersecurity Standardization TC (网安标委 TC260),tc260,17,have,crawler,
 central,Ministry of Veterans Affairs (退役军人事务部),mva,15,have,crawler,
+central,State Post Bureau (国家邮政局),spb,12,have,crawler,
 central,Ministry of Foreign Affairs (外交部),mfa,4,have,crawler,
 central,Ministry of Emergency Management (应急管理部),mem,2,have,crawler,
 department,Public Security Bureau,ga,5093,have,crawler,
@@ -90,6 +100,7 @@ media,QbitAI (量子位 · AI media),qbitai,3109,have,crawler,
 media,People's Daily (人民日报),people,1596,have,crawler,
 media,36Kr (36氪),36kr,475,have,crawler,
 media,LatePost (晚点LatePost),latepost,289,have,crawler,
+media,Qiushi (求是网),qstheory,130,have,crawler,
 media,Elsewhere (别处 · VC/AI tech news),elsewhere,126,have,crawler,
 media,CCTV News (央视新闻),cctv,1,have,crawler,
 media,China National Radio (央广网),cnr,1,have,crawler,
@@ -283,3 +294,7 @@ media,虎嗅 Huxiu,huxiu,0,api,api-crawl,SSR /article/{aid}.html + JSON articleL
 research,北京智源 BAAI,baai,0,spa,-,client-rendered shell
 research,上海人工智能实验室 Shanghai AI Lab,shlab,0,spa,-,client-rendered shell
 central,国家金融监督管理总局 NFRA,nfra,0,spa,-,SPA shell (215B)
+central,中国政府采购网 CCGP,ccgp,0,deferred,govcms-A,crawlable but high-volume low-value tender notices — deferred by choice
+central,国家疾控局 NDCPA/CDC,ndcpa,0,spa,-,jQuery zwgk.js JSON-rendered list
+central,国家烟草专卖局 STMA,stma,0,blocked,-,"WAF blackholes datacenter IP (site is dialect L, residential would work)"
+central,国家铁路局 NRA,nra,0,blocked,-,IPv6 CDN misroutes datacenter IP; alt portal Yundun WAF
