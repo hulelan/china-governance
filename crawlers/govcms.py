@@ -162,6 +162,14 @@ SITES = {
         "sections": ["/portal/list/index/id/1.html", "/portal/list/index/id/2.html",
                      "/portal/list/index/id/3.html", "/"],
     },
+    "cas": {
+        # 中国科学院 — HQ notices/policy. Standard t-date dialect (A) with .shtml
+        # (/<sec>/YYYYMM/tYYYYMMDD_ID.shtml). Scoped to www.cas.cn HQ (institute
+        # subdomains excluded). Apex national research system (AI/chip/quantum).
+        "name": "Chinese Academy of Sciences (中国科学院)",
+        "base_url": "https://www.cas.cn", "admin_level": "central",
+        "sections": ["/tz/", "/zcjd/"],
+    },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
@@ -574,6 +582,10 @@ _ART_PORTAL_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/portal/article/\d+/[0-9a-f]{8,})"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
+# Publish-date from the ARTICLE body, used only when the list row carried no date
+# (e.g. TC260 /portal/ + the dateless numid/pnidpv/ccontent dialects). Label-anchored
+# on 发布/发表/时间/日期 so it can't grab a random in-body date; fires only as a fallback.
+_PUB_DATE = re.compile(r'(?:发布|发表|时间|日期)[^0-9<]{0,10}(\d{4})[-/年.](\d{1,2})[-/月.](\d{1,2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
 # Known tight content containers, tried first (fast path for common templates).
 _BODY_CONTAINERS = [
@@ -787,6 +799,10 @@ def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30,
                         dh = fetch(it["url"], headers=UA)
                         body = _extract_body(dh)
                         meta = _extract_metadata_table(dh)
+                        if not it["date"]:            # list row had no date → try body
+                            pdm = _PUB_DATE.search(dh)
+                            if pdm:
+                                it["date"] = f"{pdm.group(1)}-{int(pdm.group(2)):02d}-{int(pdm.group(3)):02d}"
                     except Exception as e:
                         log.warning(f"    body {it['url']}: {e}")
                     time.sleep(REQUEST_DELAY)
