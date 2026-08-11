@@ -273,6 +273,22 @@ SITES = {
         "base_url": "https://www.forestry.gov.cn", "admin_level": "central",
         "sections": ["/lyj/1/lczc.html", "/lyj/1/zcgg.html", "/lyj/1/gwywj.html"],
     },
+    "spb": {
+        # 国家邮政局 — hexmon dialect I: /gjyzj/cNNN/cNNN/YYYYMM/<32-hex>.shtml. The list
+        # page is common_list.shtml (bare column dir 404s). Under MOT.
+        "name": "State Post Bureau (国家邮政局)",
+        "base_url": "http://www.spb.gov.cn", "admin_level": "central",
+        "sections": ["/gjyzj/c100009/c100010/common_list.shtml",
+                     "/gjyzj/c100001/c100007/common_list.shtml"],
+    },
+    "caac": {
+        # 中国民用航空局 — t-date dialect A. The homepage server-renders many t-date links
+        # (section hubs are JS iframes → index_N.html lists; JGGLL=362 confirmed). Point
+        # at the homepage + known index_N pages.
+        "name": "Civil Aviation Administration (中国民用航空局)",
+        "base_url": "http://www.caac.gov.cn", "admin_level": "central",
+        "sections": ["/index.html", "/XXGK/XXGK/JGGLL/index_362.html"],
+    },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
