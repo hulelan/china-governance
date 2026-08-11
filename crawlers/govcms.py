@@ -206,6 +206,66 @@ SITES = {
         "sections": ["/pub/sfbgw/flfggz/flfggzxzfg/", "/pub/sfbgw/gwxw/xwyw/index.html",
                      "/pub/sfbgw/lfyjzj/lflfyjzj/"],
     },
+    # ── Round-2 central bureaus (2026-08-11) ─────────────────────────────────
+    "spc": {
+        # 最高人民法院 — spc dialect (N): list /fabu/gengduo/<sec-id>.html → articles
+        # /fabu/xiangqing/<numid>.html (numeric section ids from the 发布 hub, not slugs).
+        # Full court: 司法解释/公告/司法文件 (we previously held only the IP tribunal).
+        "name": "Supreme People's Court (最高人民法院)",
+        "base_url": "https://www.court.gov.cn", "admin_level": "central",
+        "sections": ["/fabu/gengduo/14.html", "/fabu/gengduo/15.html", "/fabu/gengduo/16.html",
+                     "/fabu/gengduo/17.html", "/fabu/gengduo/21.html", "/fabu/gengduo/108.html"],
+    },
+    "qstheory": {
+        # 求是网 — CCP flagship theory journal. Dialect D (hex/c.html):
+        # /YYYYMMDD/<hex32>/c.html. Authoritative party-line policy signal.
+        "name": "Qiushi (求是网)",
+        "base_url": "http://www.qstheory.cn", "admin_level": "media",
+        "sections": ["/qsyw/index.htm", "/qsgdzx/index.htm", "/dt/index.htm"],
+    },
+    "cma": {
+        # 中国气象局 — t-date dialect A. 规范性文件 + 通知公告.
+        "name": "China Meteorological Administration (中国气象局)",
+        "base_url": "http://www.cma.gov.cn", "admin_level": "central",
+        "sections": ["/zfxxgk/gknr/wjgk/gfxwj/", "/2011zwxx/2011ztzgg/"],
+    },
+    "ncha": {
+        # 国家文物局 — TRS-WCM /art/ dialect B (same family as cnipa). Use real section
+        # col pages (col1053 is a redirect shell — avoid).
+        "name": "National Cultural Heritage Administration (国家文物局)",
+        "base_url": "http://www.ncha.gov.cn", "admin_level": "central",
+        "sections": ["/col/col2664/index.html", "/col/col2666/index.html",
+                     "/col/col2318/index.html", "/col/col2096/index.html"],
+    },
+    "natcm": {
+        # 国家中医药管理局 — datepath dialect O: /<cat>/YYYY-MM-DD/<numid>.html. The /a/<cat>/
+        # aggregator pages link to articles under per-department paths. Rich bodies.
+        "name": "National Administration of TCM (国家中医药管理局)",
+        "base_url": "http://www.natcm.gov.cn", "admin_level": "central",
+        "sections": ["/a/zcwj/", "/a/tzgg/", "/a/zcjd/"],
+    },
+    "safe": {
+        # 国家外汇管理局 — safe dialect P: /safe/YYYY/MMDD/<numid>.html. 政策法规 (zcfg).
+        # Capital-flow / fintech policy.
+        "name": "State Administration of Foreign Exchange (国家外汇管理局)",
+        "base_url": "https://www.safe.gov.cn", "admin_level": "central",
+        "sections": ["/safe/zcfg/index.html"],
+    },
+    "nfsra": {
+        # 国家粮食和物资储备局 — content dialect C, but the server-rendered lists are the
+        # per-year archive pages /html/<col>YYYYyear/list_zh.shtml (the column first.shtml
+        # pages AJAX-load = SPA). Year archives need periodic bump.
+        "name": "National Food & Strategic Reserves Admin (国家粮食和物资储备局)",
+        "base_url": "http://www.lswz.gov.cn", "admin_level": "central",
+        "sections": ["/html/gzdt2026year/list_zh.shtml", "/html/gzdt2025year/list_zh.shtml"],
+    },
+    "nia": {
+        # 国家移民管理局 — ccontent dialect K: /nNNN/nNNN/c<id>/content.html. Native content
+        # under the n741440/* tree (homepage links out to gov.cn).
+        "name": "National Immigration Administration (国家移民管理局)",
+        "base_url": "https://www.nia.gov.cn", "admin_level": "central",
+        "sections": ["/n741440/n741567/index.html"],
+    },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
@@ -621,6 +681,19 @@ _ART_PORTAL_RE = re.compile(
 #      match \d+\.html). List pages carry adjacent dates. Bare dirs 403; slug list ok.
 _ART_NSFC_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/p1/(?:\d+/)+\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (N) spc: /fabu/xiangqing/<numeric-id>.html  (最高人民法院). Two-level: the list pages
+#      are /fabu/gengduo/<numeric-sectionid>.html (config as sections). Distinct path,
+#      so it can't clash with numid (index.html) or the others. Date from list row.
+_ART_SPC_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/fabu/xiangqing/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (O) datepath: …/<cat>/YYYY-MM-DD/<numeric-id>.html  (中医药局 NATCM). The FULL date is
+#      in the path (all-dash), distinct from (C) which is /YYYY-MM/DD/content_ID.
+_ART_DATEPATH_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{4})-(\d{2})-(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (P) safe: /safe/YYYY/MMDD/<numeric-id>.html  (外汇局). Year dir + combined MMDD dir.
+#      Anchored on /safe/ so the loose MMDD can't false-match other sites' /YYYY/NNNN/.
+_ART_SAFE_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/safe/(\d{4})/(\d{2})(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -739,6 +812,15 @@ def _list_articles(page_html: str, page_url: str) -> list:
         matches.append((m, m.group(1), m.group(2), ""))
     for m in _ART_NSFC_RE.finditer(page_html):         # (M) nsfc: date from row (_DATE_NEAR)
         matches.append((m, m.group(1), m.group(2), ""))
+    for m in _ART_SPC_RE.finditer(page_html):          # (N) spc: date from row
+        matches.append((m, m.group(1), m.group(2), ""))
+    for m in _ART_DATEPATH_RE.finditer(page_html):     # (O) datepath: full date in path
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        matches.append((m, m.group(1), m.group(5), f"{y}-{mo}-{d}"))
+    for m in _ART_SAFE_RE.finditer(page_html):         # (P) safe: YYYY/MMDD in path
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        date_str = f"{y}-{mo}-{d}" if 1 <= int(mo) <= 12 and 1 <= int(d) <= 31 else ""
+        matches.append((m, m.group(1), m.group(5), date_str))
     out, seen = [], set()
     page_host = urlparse(page_url).netloc
     for m, href, inner, url_date in matches:
