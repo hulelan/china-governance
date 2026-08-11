@@ -266,6 +266,13 @@ SITES = {
         "base_url": "https://www.nia.gov.cn", "admin_level": "central",
         "sections": ["/n741440/n741567/index.html"],
     },
+    "sfa": {
+        # 国家林业和草原局 — ymd8 dialect Q: /lyj/1/<sec>/YYYYMMDD/<numid>.html. 林草政策 +
+        # 政策公告 + 国务院文件. Server-rendered dated lists.
+        "name": "National Forestry & Grassland Administration (国家林业和草原局)",
+        "base_url": "https://www.forestry.gov.cn", "admin_level": "central",
+        "sections": ["/lyj/1/lczc.html", "/lyj/1/zcgg.html", "/lyj/1/gwywj.html"],
+    },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
@@ -694,6 +701,11 @@ _ART_DATEPATH_RE = re.compile(
 #      Anchored on /safe/ so the loose MMDD can't false-match other sites' /YYYY/NNNN/.
 _ART_SAFE_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/safe/(\d{4})/(\d{2})(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (Q) ymd8: …/YYYYMMDD/<numeric-id>.html  (林草局 SFA). 8-digit date dir + numeric file
+#      (D is /YYYYMMDD/<hex>/c.html — different filename). Date validated to avoid
+#      false-matching a non-date 8-digit dir.
+_ART_YMD8_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{4})(\d{2})(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -820,6 +832,10 @@ def _list_articles(page_html: str, page_url: str) -> list:
     for m in _ART_SAFE_RE.finditer(page_html):         # (P) safe: YYYY/MMDD in path
         y, mo, d = m.group(2), m.group(3), m.group(4)
         date_str = f"{y}-{mo}-{d}" if 1 <= int(mo) <= 12 and 1 <= int(d) <= 31 else ""
+        matches.append((m, m.group(1), m.group(5), date_str))
+    for m in _ART_YMD8_RE.finditer(page_html):         # (Q) ymd8 (SFA): validated YYYYMMDD dir
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        date_str = f"{y}-{mo}-{d}" if 2000 <= int(y) <= 2099 and 1 <= int(mo) <= 12 and 1 <= int(d) <= 31 else ""
         matches.append((m, m.group(1), m.group(5), date_str))
     out, seen = [], set()
     page_host = urlparse(page_url).netloc
