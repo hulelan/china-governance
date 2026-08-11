@@ -423,6 +423,27 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
 
 ## Known Issues
 
+- **(2026-08-11) Bot/scraper overload can hang the site ("loads forever").** The app
+  runs `uvicorn --workers 2` on a 2-vCPU box. A scraper walking `/raw_html/` (the
+  ~252k-page raw-HTML mirror) sequentially by id — plus a `57.141.20.0/24` cluster
+  spreading requests across the subnet to dodge per-IP limits — saturated both workers,
+  so real requests (e.g. a `/browse?site=X` click) queued and timed out. The DB/queries
+  are fine (site filter is 0.02s via `idx_documents_site`); it's pure serving capacity.
+  **Mitigations in place:** nginx per-IP rate limiting (`/etc/nginx/conf.d/ratelimit.conf`
+  — `perip` 10r/s, `rawhtml` 2r/s, a `harvester` geo-zone throttling known bulk
+  sources to 1r/s; 429 on exceed) wired into `location /` and `location /raw_html/`;
+  `robots.txt` disallows `/raw_html`, `/cms_files`, `/api`. To lift/adjust a throttle,
+  edit `ratelimit.conf` (the `geo $harvester` list) + `nginx -t && systemctl reload nginx`.
+  GOTCHA: nginx (`www-data`) can't traverse into `/root`, so anything it serves by
+  `alias` from `/root/china-governance/...` returns **403** — `robots.txt` is therefore
+  served from `/var/www/robots.txt` (a copy; re-copy from `web/static/robots.txt` after
+  editing). The same 403 affects the `location /static/` alias (pre-existing; assets
+  come from CDN so it doesn't break rendering). Right after an app restart the 1h query
+  cache is COLD, so the first hit to heavy endpoints (/network, /officials, the sites
+  aggregate) is slow and — under bot load — can block a worker until warm; this looks
+  like a hang but self-resolves. If it recurs hard, consider `--workers 3`.
+
+
 - **Broken/unreliable gkmlpt sites** (Dongguan, Foshan, Bao'an, Shantou, Zhaoqing,
   Zhanjiang, Chaozhou, Yantian, gd-partial): the authoritative list with per-site
   reasons now lives in code — `crawlers/gkmlpt.py` → `KNOWN_BROKEN`. A bulk
