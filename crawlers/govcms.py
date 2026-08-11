@@ -157,7 +157,10 @@ SITES = {
         # (生成式AI安全基本要求 etc.) — the technical backbone of China AI governance.
         "name": "National Cybersecurity Standardization TC (网安标委 TC260)",
         "base_url": "https://www.tc260.org.cn", "admin_level": "central",
-        "sections": ["/", "/portal/list/index/id/1.html", "/portal/list/index/id/2.html"],
+        # List pages carry per-row dates (homepage doesn't) → list first so the dated
+        # version of each article wins the URL de-dupe; homepage last as a backstop.
+        "sections": ["/portal/list/index/id/1.html", "/portal/list/index/id/2.html",
+                     "/portal/list/index/id/3.html", "/"],
     },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
