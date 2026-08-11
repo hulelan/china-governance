@@ -21,9 +21,9 @@
 {% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <div class="flex gap-4" style="height: calc(100vh - 100px);">
+    <div class="flex flex-col md:flex-row gap-4 md:h-[calc(100vh-100px)]">
         <!-- Controls -->
-        <div class="w-56 flex-shrink-0 space-y-3">
+        <div class="w-full md:w-56 md:flex-shrink-0 space-y-3">
             <div class="card p-3 text-sm" x-data="{site: '', minDeg: 3, dateStart: '2024-01-01', dateEnd: '', docType: '', refresh() { updateNetwork(this.site, this.minDeg, this.dateStart, this.dateEnd, this.docType) }}">
                 <div class="card-header -mx-3 -mt-3 mb-3">Filters</div>
                 <label class="text-gray-400 text-xs block mb-1">Site</label>
@@ -94,7 +94,7 @@
         </div>
 
         <!-- Graph -->
-        <div class="flex-1 card overflow-hidden relative">
+        <div class="card overflow-hidden relative h-[70vh] md:h-auto md:flex-1">
             <canvas id="network-canvas"></canvas>
             <div id="net-status"></div>
         </div>

@@ -24,7 +24,7 @@
             <h2 class="font-zh text-xl {% if not doc.title_en %}text-2xl text-ink{% else %}text-[#38332c] mt-0.5{% endif %}">{{ doc.title }}</h2>
 
             <!-- Field strip -->
-            <div class="grid grid-cols-4 border-t border-b border-rule mt-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 border-t border-b border-rule mt-4">
                 <div class="px-4 py-2.5 border-r border-rule">
                     <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Issuer</div>
                     <div class="font-medium mt-0.5">{{ doc.publisher or '—' }}</div>
@@ -52,8 +52,8 @@
     </div>
 
     <!-- Body + sidebar -->
-    <div class="grid grid-cols-3 gap-0 border-t border-rule mt-6">
-        <article class="col-span-2 border-r border-rule pr-9 pt-6 pb-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-0 border-t border-rule mt-6">
+        <article class="md:col-span-2 md:border-r border-rule md:pr-9 pt-6 pb-10">
             <div class="flex justify-between items-baseline mb-4">
                 <span class="lab" style="margin-bottom:0">Full text · 原文</span>
                 {% if doc.body_text_cn %}<span class="text-muted text-xs mono">{{ "{:,}".format(doc.body_text_cn|length) }} 字</span>{% endif %}
@@ -68,7 +68,7 @@
             {% endif %}
         </article>
 
-        <aside class="pl-8 pt-6 pb-10 space-y-7">
+        <aside class="md:pl-8 pt-6 pb-10 space-y-7 border-t md:border-t-0 border-rule">
             <!-- Catalog record -->
             <div>
                 <span class="lab">Catalog record</span>

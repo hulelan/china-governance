@@ -2,9 +2,9 @@
 {% block title %}Browse — ChinaGovernance{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <div class="flex gap-6">
+    <div class="flex flex-col md:flex-row gap-4 md:gap-6">
         <!-- Filter sidebar -->
-        <div class="w-56 flex-shrink-0">
+        <div class="w-full md:w-56 md:flex-shrink-0">
             <form method="get" action="/browse" class="card text-sm">
                 <div class="card-header">Filters</div>
 
@@ -121,16 +121,16 @@
                 <span>Page {{ page }} of {{ ((total - 1) // 50 + 1) }}</span>
             </div>
 
-            <div class="card overflow-hidden">
+            <div class="card table-scroll">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th class="w-4"></th>
                         <th>Title</th>
-                        <th class="w-20">Type</th>
-                        <th class="w-28">Site</th>
+                        <th class="w-20 hidden sm:table-cell">Type</th>
+                        <th class="w-28 hidden sm:table-cell">Site</th>
                         <th class="w-14 text-right">AI</th>
-                        <th class="w-14 text-right">Cited</th>
+                        <th class="w-14 text-right hidden sm:table-cell">Cited</th>
                         <th class="w-24">Date</th>
                     </tr>
                 </thead>
@@ -142,15 +142,15 @@
                             <a href="/document/{{ doc.id }}" class="block truncate">{{ doc.title }}</a>
                             {% if doc.title_en %}<div class="text-xs text-gray-400 truncate">{{ doc.title_en }}</div>{% endif %}
                         </td>
-                        <td class="text-xs text-gray-400">{{ (doc.algo_doc_type or '')|replace('_', ' ') }}</td>
-                        <td class="text-gray-400 truncate text-xs">{{ doc.site_key }}</td>
+                        <td class="text-xs text-gray-400 hidden sm:table-cell">{{ (doc.algo_doc_type or '')|replace('_', ' ') }}</td>
+                        <td class="text-gray-400 truncate text-xs hidden sm:table-cell">{{ doc.site_key }}</td>
                         <td class="text-right text-xs">
                             {% if doc.ai_relevance and doc.ai_relevance >= 0.5 %}<span class="text-red-600 font-medium">{{ "%.0f"|format(doc.ai_relevance * 100) }}</span>
                             {% elif doc.ai_relevance and doc.ai_relevance >= 0.2 %}<span class="text-amber-600">{{ "%.0f"|format(doc.ai_relevance * 100) }}</span>
                             {% elif doc.ai_relevance and doc.ai_relevance > 0 %}<span class="text-gray-300">{{ "%.0f"|format(doc.ai_relevance * 100) }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-right mono text-xs text-gray-400">{{ "%.0f"|format(doc.citation_rank) if doc.citation_rank else '' }}</td>
+                        <td class="text-right mono text-xs text-gray-400 hidden sm:table-cell">{{ "%.0f"|format(doc.citation_rank) if doc.citation_rank else '' }}</td>
                         <td class="mono text-gray-400 text-xs">{{ doc.date_published[:10] if doc.date_published else '' }}</td>
                     </tr>
                 {% endfor %}

@@ -135,13 +135,37 @@
             letter-spacing: .08em; text-transform: uppercase; }
         .navmenu .desc { display: block; font-size: 11px; color: #6b6558;
             text-transform: none; letter-spacing: 0; margin-top: 3px; }
+
+        /* Reusable horizontal-scroll wrapper for wide tables/diagrams so the
+           page body never scrolls sideways on a phone. */
+        .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* ---- Mobile (≤640px) ---- */
+        @media (max-width: 640px) {
+            main { padding-left: 1rem; padding-right: 1rem; }
+            .masthead .px-6 { padding-left: 1rem; padding-right: 1rem; }
+            .masthead .cn { font-size: 17px; letter-spacing: .06em; }
+            .masthead .en { letter-spacing: .14em; }
+            .masthead .stat { font-size: 10.5px; }
+            /* Nav becomes a single swipeable strip instead of a jumbled 3-row wrap. */
+            .subnav .max-w-7xl { flex-wrap: nowrap; overflow-x: auto;
+                -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .subnav .max-w-7xl::-webkit-scrollbar { display: none; }
+            .subnav a { padding: 10px 13px; letter-spacing: .06em; font-size: 11px;
+                white-space: nowrap; flex: 0 0 auto; }
+            /* The Research dropdown can't hover on touch — show it as a plain link
+               (it navigates to /collections, which lists both sub-pages). */
+            .navdrop > a::after { display: none; }
+            .navmenu { display: none !important; }
+            .data-table th, .data-table td { padding-left: 8px; padding-right: 8px; }
+        }
     </style>
     {% block head %}{% endblock %}
 </head>
 <body class="min-h-screen">
     <!-- Masthead -->
     <header class="masthead">
-        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between py-3.5">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between gap-x-3 gap-y-1 flex-wrap py-3.5">
             <a href="/" class="flex items-baseline gap-3.5 no-underline hover:no-underline">
                 <span class="cn">中国政策档案</span>
                 <span class="en">Governance Archive</span>

@@ -140,7 +140,7 @@
     {%- endmacro %}
 
     <!-- ─── TOP TIER: PARTY + LEGISLATIVE + JUDICIAL in three columns ───────── -->
-    <div class="mt-6 grid grid-cols-3 gap-4">
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         {% for tier_id in ["party", "legislative", "judicial"] %}
             {% set tier = t[tier_id] %}
             <div class="tier-card">
@@ -173,7 +173,7 @@
         <div class="mb-4 max-w-md">{{ node_card(sc_root) }}</div>
 
         <!-- Ministry grid -->
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {% for n in sc.nodes if n.parent == "gov" %}
                 <div>
                     {{ node_card(n) }}
@@ -205,7 +205,7 @@
     <div class="tier-card">
         <div class="tier-label">{{ prov.label }}</div>
         <div class="tier-intro">{{ prov.intro }}</div>
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {% for n in prov.nodes %}{{ node_card(n) }}{% endfor %}
         </div>
     </div>
@@ -217,21 +217,21 @@
         <div class="tier-intro">{{ cities.intro }}</div>
 
         <div class="text-xs uppercase tracking-wider text-gray-400 mb-2 mt-2">Sub-provincial (vice-provincial rank)</div>
-        <div class="grid grid-cols-4 gap-3 mb-5">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-5">
             {% for n in cities.nodes if (n.rank or "") == "sub-provincial" %}
                 {{ node_card(n) }}
             {% endfor %}
         </div>
 
         <div class="text-xs uppercase tracking-wider text-gray-400 mb-2">Prefecture-level cities</div>
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {% for n in cities.nodes if (n.rank or "") == "prefecture-level" %}
                 {{ node_card(n) }}
             {% endfor %}
         </div>
 
         <div class="text-xs uppercase tracking-wider text-gray-400 mb-2 mt-5">Special</div>
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {% for n in cities.nodes if not n.rank %}
                 {{ node_card(n) }}
             {% endfor %}
@@ -241,12 +241,13 @@
     <!-- ─── SHENZHEN DETAIL (DEPARTMENTS + DISTRICTS) ─────────────────────────── -->
     {% set dept = t["shenzhen_departments"] %}
     {% set dist = t["shenzhen_districts"] %}
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         <!-- Departments: rendered as a tiao-kuai mirror table -->
         <div class="tier-card">
             <div class="tier-label">{{ dept.label }}</div>
             <div class="tier-intro">{{ dept.intro }}</div>
+            <div class="table-scroll">
             <table class="data-table mt-2 w-full">
                 <thead>
                     <tr>
@@ -277,6 +278,7 @@
                 {% endfor %}
                 </tbody>
             </table>
+            </div>
             <div class="mt-3 text-xs text-gray-400 leading-relaxed">
                 "Mirrors central" is the functional counterpart, not always a
                 strict reporting line. Most bureaus are <em>kuai</em>-led (the
@@ -289,7 +291,7 @@
         <div class="tier-card">
             <div class="tier-label">{{ dist.label }}</div>
             <div class="tier-intro">{{ dist.intro }}</div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {% for n in dist.nodes %}{{ node_card(n) }}{% endfor %}
             </div>
             <div class="mt-4 text-xs text-gray-400 leading-relaxed">
@@ -307,7 +309,7 @@
     <div class="tier-card">
         <div class="tier-label">{{ media.label }}</div>
         <div class="tier-intro">{{ media.intro }}</div>
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {% for n in media.nodes %}{{ node_card(n) }}{% endfor %}
         </div>
     </div>

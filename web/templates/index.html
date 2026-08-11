@@ -14,9 +14,9 @@
         <input type="search" name="q" placeholder="Search the catalog — Chinese titles, 文号, keywords…" class="w-full px-4 py-2.5 text-sm">
     </form>
 
-    <div class="grid grid-cols-12 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
         <!-- Left rail: holdings -->
-        <aside class="col-span-4">
+        <aside class="md:col-span-4">
             <span class="lab">Holdings by level</span>
             {% set levels = {'central':0,'provincial':0,'municipal':0,'district':0,'department':0,'media':0,'research':0} %}
             {% for s in sites %}{% if s.admin_level in levels %}{% set _ = levels.update({s.admin_level: levels[s.admin_level] + s.doc_count}) %}{% endif %}{% endfor %}
@@ -48,9 +48,9 @@
         </aside>
 
         <!-- Right: figures + accessions -->
-        <section class="col-span-8">
+        <section class="md:col-span-8">
             <!-- Figures strip -->
-            <div class="flex border border-rule bg-panel mb-7">
+            <div class="grid grid-cols-2 md:flex border border-rule bg-panel mb-7">
                 <div class="flex-1 px-5 py-4 border-r border-rule">
                     <div class="text-2xl font-semibold text-ink">{{ "{:,}".format(stats.total) }}</div>
                     <div class="lab" style="border:0;margin:0;padding:0;margin-top:2px">Documents</div>
@@ -59,18 +59,19 @@
                     <div class="text-2xl font-semibold text-ink">{{ stats.site_count }}</div>
                     <div class="lab" style="border:0;margin:0;padding:0;margin-top:2px">Fonds</div>
                 </div>
-                <div class="flex-1 px-5 py-4 border-r border-rule">
+                <div class="flex-1 px-5 py-4 border-r border-rule border-t md:border-t-0">
                     <div class="text-2xl font-semibold text-ink">{{ "{:,}".format(stats.with_docnum) }}</div>
                     <div class="lab" style="border:0;margin:0;padding:0;margin-top:2px">With 文号</div>
                 </div>
-                <div class="flex-1 px-5 py-4">
+                <div class="flex-1 px-5 py-4 border-t md:border-t-0 border-rule">
                     <div class="text-2xl font-semibold text-teal">{{ "{:.0f}%".format(stats.with_body / stats.total * 100) }}</div>
                     <div class="lab" style="border:0;margin:0;padding:0;margin-top:2px">Body coverage</div>
                 </div>
             </div>
 
             <span class="lab">Recent accessions</span>
-            <table class="data-table mb-7">
+            <div class="table-scroll mb-7">
+            <table class="data-table">
                 <thead><tr><th style="width:120px">Ref. / Level</th><th>Title</th><th class="text-right" style="width:92px">Date</th></tr></thead>
                 <tbody>
                 {% for d in recent %}
@@ -88,10 +89,11 @@
                 {% endfor %}
                 </tbody>
             </table>
+            </div>
             <a href="/browse" class="text-sm">Full catalog →</a>
 
             <!-- Timeline + categories -->
-            <div class="grid grid-cols-2 gap-8 mt-7">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-7">
                 <div>
                     <span class="lab">Accession by year</span>
                     {% set max_count = stats.by_year|map(attribute='count')|max %}

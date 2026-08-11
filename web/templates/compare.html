@@ -18,8 +18,8 @@
     </div>
     {% endif %}
 
-    <div class="grid grid-cols-2 gap-4" style="height: calc(100vh - 140px);">
-        <div class="card flex flex-col">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:h-[calc(100vh-140px)]">
+        <div class="card flex flex-col h-[70vh] md:h-auto">
             <div class="card-header">Extracted Text</div>
             <div class="p-4 text-sm overflow-y-auto flex-1 leading-relaxed">
                 {% if doc.body_text_cn %}
@@ -30,7 +30,7 @@
             </div>
         </div>
 
-        <div class="card flex flex-col">
+        <div class="card flex flex-col h-[70vh] md:h-auto">
             <div class="card-header">Archived Raw HTML</div>
             {% if doc.raw_html_path %}
             <iframe src="/raw_html/{{ doc.site_key }}/{{ doc.id }}.html"

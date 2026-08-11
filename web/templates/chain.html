@@ -71,6 +71,7 @@
                 </div>
 
                 {% if policies %}
+                <div class="table-scroll">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -109,6 +110,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                </div>
                 {% else %}
                 <div class="px-4 py-4 text-sm text-gray-400 italic">No referenced policies at this level yet.</div>
                 {% endif %}
@@ -139,6 +141,7 @@
                 <span class="text-sm font-semibold text-gray-900">{{ src_label }}</span>
                 <span class="text-xs text-gray-400 ml-auto">{{ docs|length }} documents</span>
             </div>
+            <div class="table-scroll">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -164,6 +167,7 @@
                 {% endfor %}
                 </tbody>
             </table>
+            </div>
         </div>
         {% endif %}
     {% endfor %}
