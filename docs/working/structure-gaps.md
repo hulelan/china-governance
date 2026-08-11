@@ -102,3 +102,53 @@ network-inspection to find the data API, like qbitai/haidian):**
 
 **Bottom line:** 5 config-only crawlable now (TC260, SASAC, Shanghai AI Lab, NSFC, DRC);
 2 blocked → residential tier (CAICT, GAC); 3 SPA → browser-API tier (Jiqizhixin, BAAI, NFRA).
+
+## Crawler build round 1 (2026-08-11) — 5-agent fleet + central integration
+
+A fleet of investigation subagents went through the central-body gaps; each detected
+the URL dialect from the droplet vantage. Verdicts + what got built:
+
+**✅ BUILT (config-only, added to `crawlers/govcms.py` + crawled):**
+| Body | site_key | dialect | docs | notes |
+|---|---|---|---|---|
+| 国资委 SASAC | `sasac` | K ccontent (new) | 33 | /nN/…/c<id>/content.html |
+| 网安标委 TC260 | `tc260` | L portal (new) | 17 | /portal/article/<cat>/<id>; dates via body fallback |
+| 中科院 CAS | `cas` | A t-date .shtml | 74 | HQ notices/policy |
+| 审计署 CNAO | `cnao` | K ccontent | 69 | 中华人民共和国审计法 etc., 1.5k-char bodies |
+| 自然科学基金委 NSFC | `nsfc` | M nsfc (new) | 63 | /p1/<col>/<numid>.html; 7.7k-char bodies |
+| 应急管理部 MEM | `mem` | A t-date .shtml | 2 | fg/ sparse (external law links filtered); TODO 规范性文件 sub-sections |
+| 司法部 MOJ | `moj` | A t-date | 20 | unblocked by the base.py cookie-jar fix; 集成电路布图设计保护条例 etc. |
+
+**Session total: 278 docs across 7 new central bodies (SASAC 33, TC260 17, CAS 74,
+CNAO 69, NSFC 63, MEM 2, MOJ 20). All 7 wired into `daily_sync.sh` for nightly refresh;
+citation_rank + scores reconcile on tonight's run.**
+
+Framework improvements this round: new dialects K/L/M; `_PUB_DATE` (pull publish date
+from the article body when the list row has none); same-host + no-`/../` quality filter
+(drops cross-site nav links like SASAC→gov.cn and CAS protocol-relative `../..` 400s).
+
+**✅ DONE — base.py cookie-jar fix (unblocked MOJ + the openresty/CT6T class):**
+- `base.fetch()` now uses a per-call `HTTPCookieProcessor`, so a WAF that sets a cookie
+  on a 302→self and requires it replayed on the redirect works instead of looping.
+  MOJ 司法部 (`moj`) went from blocked → 20 docs. Empty jar for cookieless sites = no
+  regression (verified: CNAO unchanged). Future openresty/CT6T gov sites now crawlable.
+
+**🖥️ BLOCKED — JS anti-bot WAF or IP-fence (need a headless-browser or residential vantage):**
+- MPS 公安部 (Jiasule `__jsl_clearance` JS) · MCA 民政部 (DNS SERVFAIL from droplet) ·
+  NHC 卫健委 (412 JS-cookie WAF) · MOHRSS 人社部 (Tencent EdgeOne JS cookie) ·
+  MOHURD 住建部 (intermittent WAF + JS-rendered list) · NMPA 药监局 (Aliyun `$_ts` JS WAF) ·
+  GAC 海关总署 (policy-section 412 WAF; homepage IS reachable) ·
+  CAICT 信通院 (every path 404-fenced — highest value, most completely blocked) ·
+  Jiqizhixin 机器之心 (200 but serves a data-service interstitial to datacenter IPs).
+
+**⚙️ API-crawlable NOW (bespoke, no residential needed):**
+- **Huxiu 虎嗅** — JSON API `api-web-article.huxiu.com/web/channel/articleList` for
+  discovery → SSR `/article/{aid}.html` for bodies. Build a small dedicated crawler.
+
+**❌ SPA (out of scope for govcms's URL-pattern dialects):**
+- DRC 国务院发展研究中心 (easyui AJAX datagrid, no server-rendered list).
+
+**Accounting:** of the ~16 central bodies investigated → 6 built config-only, 1 pending a
+base.py cookie fix, 1 API-crawlable (Huxiu), 1 SPA (DRC), 9 blocked (residential/JS-WAF).
+The blocked cluster shares the same root cause as the blocked provinces: datacenter-IP
+WAFs. A residential fetch vantage (proxy or local-crawl-and-merge) is the common unlock.
