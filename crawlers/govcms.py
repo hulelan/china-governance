@@ -34,7 +34,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import nullcontext
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from crawlers.base import (
     REQUEST_DELAY, fetch, init_db, log, next_id, save_raw_html,
@@ -169,6 +169,32 @@ SITES = {
         "name": "Chinese Academy of Sciences (中国科学院)",
         "base_url": "https://www.cas.cn", "admin_level": "central",
         "sections": ["/tz/", "/zcjd/"],
+    },
+    "cnao": {
+        # 审计署 — same ccontent dialect (K) as SASAC: /nN/nN/.../c<id>/content.html.
+        # Section index pages server-render the content.html links (dates on the
+        # article page → _PUB_DATE fallback). 法律法规 + 公告 + 通知 + 审计要闻.
+        "name": "National Audit Office (审计署)",
+        "base_url": "https://www.audit.gov.cn", "admin_level": "central",
+        "sections": ["/n6/n36/index.html", "/n5/n25/index.html",
+                     "/n8/n28/index.html", "/n4/n19/index.html"],
+    },
+    "nsfc": {
+        # 国家自然科学基金委 — nsfc dialect (M): /p1/<col>/…/<numeric-id>.html. The bare
+        # column dir 403s, but each column has a SLUG-named server-rendered list page
+        # (dates adjacent). Basic-research funder steering AI/chip/quantum money.
+        "name": "National Natural Science Foundation (国家自然科学基金委)",
+        "base_url": "https://www.nsfc.gov.cn", "admin_level": "central",
+        "sections": ["/p1/3381/2824/zntg.html", "/p1/3381/2822/tzsm1.html",
+                     "/p1/3381/2821/jjyw11.html", "/p1/3381/2825/zzcg11.html"],
+    },
+    "mem": {
+        # 应急管理部 — t-date dialect A (.shtml): /<sub>/YYYYMM/tYYYYMMDD_ID.shtml.
+        # 法律法规标准 sections server-render dated rows (fg/ mixes in external NPC/gov.cn
+        # law links — the crawler keeps only native mem.gov.cn t-date docs).
+        "name": "Ministry of Emergency Management (应急管理部)",
+        "base_url": "https://www.mem.gov.cn", "admin_level": "central",
+        "sections": ["/fw/flfgbz/fg/", "/fw/flfgbz/"],
     },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
@@ -580,6 +606,11 @@ _ART_CCONTENT_RE = re.compile(
 #      hash or a 14-digit timestamp; no extension, no date in the URL (date from row).
 _ART_PORTAL_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/portal/article/\d+/[0-9a-f]{8,})"[^>]*>(.*?)</a>', re.S)
+#  (M) nsfc: /p1/<col>/…/<numeric-id>.html  (国家自然科学基金委). The NUMERIC filename is
+#      the article (slug-named .html under /p1/ are nav/list pages, so they can't
+#      match \d+\.html). List pages carry adjacent dates. Bare dirs 403; slug list ok.
+_ART_NSFC_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/p1/(?:\d+/)+\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -696,12 +727,20 @@ def _list_articles(page_html: str, page_url: str) -> list:
         matches.append((m, m.group(1), m.group(2), ""))
     for m in _ART_PORTAL_RE.finditer(page_html):       # (L) portal (TC260): no date in URL
         matches.append((m, m.group(1), m.group(2), ""))
+    for m in _ART_NSFC_RE.finditer(page_html):         # (M) nsfc: date from row (_DATE_NEAR)
+        matches.append((m, m.group(1), m.group(2), ""))
     out, seen = [], set()
+    page_host = urlparse(page_url).netloc
     for m, href, inner, url_date in matches:
         url = urljoin(page_url, H.unescape(href))
         if url in seen:
             continue
         seen.add(url)
+        # Quality guards: keep only this site's own articles. Cross-host links are
+        # nav (e.g. SASAC's "国务院部门网站" → gov.cn); a residual /../ means urljoin
+        # couldn't normalize a protocol-relative ../.. href (→ 400s, e.g. CAS).
+        if urlparse(url).netloc != page_host or "/../" in url:
+            continue
         ta = _ART_TITLE_ATTR.search(m.group(0))
         title = _clean(ta.group(1) if ta else inner)
         if not title:
