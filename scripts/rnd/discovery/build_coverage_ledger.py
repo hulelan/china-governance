@@ -46,6 +46,19 @@ not_held = [
     ("central", "国家疾控局 NDCPA/CDC", "ndcpa", "spa", "-", "jQuery zwgk.js JSON-rendered list"),
     ("central", "国家烟草专卖局 STMA", "stma", "blocked", "-", "WAF blackholes datacenter IP (site is dialect L, residential would work)"),
     ("central", "国家铁路局 NRA", "nra", "blocked", "-", "IPv6 CDN misroutes datacenter IP; alt portal Yundun WAF"),
+    # Round 3 not-held:
+    ("central", "国家标准委 SAC", "sac", "spa", "-", "JS-SPA list + JS-rendered article bodies"),
+    ("central", "国家信访局 GJXFJ", "gjxfj", "spa", "-", "wPaginate.js JS-templated list (item.publishUrl)"),
+    ("central", "中央党校/行政学院 CCPS", "ccps", "blocked", "-", "Tencent Cloud WAF 403 to datacenter IP"),
+    ("provincial", "河南省 Henan", "henan", "blocked", "-", "Wangsu/PS-ATL CDN WAF 403 to datacenter IP"),
+    ("provincial", "安徽省 Anhui", "anhui", "blocked", "-", "WZWS WAF 403 reason:GeoBL (Hefei AI/quantum hub — HIGH VALUE)"),
+    ("provincial", "河北省 Hebei", "hebei", "blocked", "-", "network blackhole (SYN dropped) to datacenter IP"),
+    ("provincial", "山西省 Shanxi", "shanxi", "blocked", "-", "network blackhole (SYN dropped)"),
+    ("provincial", "江西省 Jiangxi", "jiangxi", "blocked", "-", "network blackhole (SYN dropped)"),
+    ("provincial", "广西 Guangxi", "guangxi", "blocked", "-", "network blackhole (SYN dropped)"),
+    ("provincial", "陕西省 Shaanxi", "shaanxi", "blocked", "-", "IPv6-only, no IPv4 route from droplet (Xi'an semiconductor hub)"),
+    ("provincial", "贵州省 Guizhou", "guizhou", "blocked", "-", "IPv6-only, no IPv4 route (big-data hub)"),
+    ("provincial", "云南省 Yunnan", "yunnan", "blocked", "-", "list metadata reachable (dialect A) but article bodies WAF-403 — residential needed"),
 ]
 # NOTE: safe + nfsra are crawled (in DB as 'have') but their article-body container is
 # not yet recognized (near-empty bodies) — body-extraction TODO, tracked in structure-gaps.md.

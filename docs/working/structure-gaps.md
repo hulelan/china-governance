@@ -191,3 +191,33 @@ is the canonical account: **297 institutions — 279 held, 18 not-held (11 block
 1 API-ready = Huxiu)**. Regenerated from the live DB each round; the not-held list +
 limitations are maintained in the builder. This is the "account for everything" artifact
 for the full-coverage campaign.
+
+## Crawler build round 3 (2026-08-11) — long-tail central + the provincial-wall proof
+
+**✅ BUILT (config-only):** SASTIND 国防科工局 (K, 8) · CNSA 航天局 (K, 4) · SAAC 档案局
+(I, 93). Wired into daily_sync.
+
+**SPA / blocked (accounted):** SAC 标准委 (JS-SPA list+body) · GJXFJ 信访局 (wPaginate.js
+SPA) · CCPS 中央党校 (Tencent WAF 403).
+
+**Provincial-portal accounting sweep — 9 provinces, ALL blocked (the decisive finding):**
+Henan (Wangsu CDN WAF 403) · Anhui (WZWS WAF `reason:GeoBL`, Hefei hub) · Hebei/Shanxi/
+Jiangxi/Guangxi (network blackhole, SYN dropped) · Shaanxi/Guizhou (IPv6-only, no IPv4
+route) · Yunnan (list metadata reachable via dialect A, but article bodies WAF-403).
+**0/9 crawlable from the droplet** — hard confirmation that the provincial/city tier is
+uniformly datacenter-IP-walled.
+
+## Strategic inflection (after 3 rounds, ~21 central crawlers, ~1,000 docs)
+
+The campaign has hit its natural shape. Two frontiers remain, and they need different things:
+1. **The config-only central frontier is largely picked.** Most remaining central bodies
+   are either held, SPA, or WAF-blocked. Diminishing returns on more central fleets.
+2. **The mass of what's left — every uncrawled province + most major cities — is behind
+   the datacenter-IP wall** (proven 9/9 this round). This is NOT solvable from the NYC
+   droplet by any crawler cleverness; it needs a **residential/CN fetch vantage** (proxy
+   or local-crawl-and-merge). This is the single highest-leverage unlock and a resource
+   decision for the owner.
+3. **Autonomous frontier that remains:** bespoke **API crawlers** for the SPA tier that
+   expose JSON (Huxiu confirmed; likely CDC/GJXFJ/SAC/机器之心), plus the SAFE+NFSRA
+   body-container fix. Lower throughput (per-site engineering) but doable without a
+   residential vantage.
