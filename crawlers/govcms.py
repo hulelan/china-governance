@@ -196,6 +196,16 @@ SITES = {
         "base_url": "https://www.mem.gov.cn", "admin_level": "central",
         "sections": ["/fw/flfgbz/fg/", "/fw/flfgbz/"],
     },
+    "moj": {
+        # 司法部 — t-date dialect A. Reachable ONLY with cookie replay of the openresty
+        # CT6T/CT6TS WAF (302→self that sets a cookie) — enabled by the cookie jar added
+        # to base.fetch(). Drafts data/tech administrative regs. Use news + 法律法规规章
+        # (the 政务公开 notice landing is JS-rendered).
+        "name": "Ministry of Justice (司法部)",
+        "base_url": "http://www.moj.gov.cn", "admin_level": "central",
+        "sections": ["/pub/sfbgw/flfggz/flfggzxzfg/", "/pub/sfbgw/gwxw/xwyw/index.html",
+                     "/pub/sfbgw/lfyjzj/lflfyjzj/"],
+    },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.

@@ -35,6 +35,7 @@ import sqlite3
 import time
 import urllib.request
 import urllib.error
+import http.cookiejar
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -257,9 +258,17 @@ def fetch(url: str, timeout: int = 20, retries: int = 3, headers: dict = None) -
         hdrs.update(headers)
     req = urllib.request.Request(url, headers=hdrs)
     _ctx = _SSL_CTX if url.startswith("https") else None
+    # Per-call cookie jar: some gov WAFs (openresty CT6T/CT6TS, etc.) answer the first
+    # request with a 302→self that SETS a cookie and require it replayed on the
+    # redirect; without a cookie processor urllib loops until it errors. The jar stays
+    # empty for cookieless sites, so this can't change their behavior.
+    _handlers = [urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())]
+    if _ctx is not None:
+        _handlers.append(urllib.request.HTTPSHandler(context=_ctx))
+    _opener = urllib.request.build_opener(*_handlers)
     for attempt in range(retries):
         try:
-            resp = urllib.request.urlopen(req, timeout=timeout, context=_ctx)
+            resp = _opener.open(req, timeout=timeout)
             raw = resp.read()
             # Some gov servers (e.g. CNIPA) force-gzip responses even when the
             # client sent no Accept-Encoding. Decompress by header or magic bytes.
