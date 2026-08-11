@@ -142,6 +142,23 @@ SITES = {
         "base_url": "https://www.12371.cn", "admin_level": "central",
         "sections": ["/special/zcwj/", "/special/falv/", "/special/dnfg/"],
     },
+    "sasac": {
+        # 国资委 — old CMS: article at /nNNNN/.../c<id>/content.html under n-section
+        # dirs; section index pages server-render title-attributed content.html links
+        # (ccontent dialect K). Central SOE regulator (chip/telecom/AI/energy giants).
+        "name": "State-owned Assets Supervision & Admin Commission (国资委)",
+        "base_url": "http://www.sasac.gov.cn", "admin_level": "central",
+        "sections": ["/n2588035/n2588320/n2588335/index.html"],
+    },
+    "tc260": {
+        # 全国网络安全标准化技术委员会 (网安标委) — portal CMS: /portal/article/<cat>/<id>
+        # (portal dialect L). Homepage + category list pages server-render dated
+        # article rows. Issues the operative AI-security/ethics national standards
+        # (生成式AI安全基本要求 etc.) — the technical backbone of China AI governance.
+        "name": "National Cybersecurity Standardization TC (网安标委 TC260)",
+        "base_url": "https://www.tc260.org.cn", "admin_level": "central",
+        "sections": ["/", "/portal/list/index/id/1.html", "/portal/list/index/id/2.html"],
+    },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
@@ -543,6 +560,15 @@ _ART_HEXMON_RE = re.compile(
 #      (not index.*, not t-date/art/ARTI) so it can't clash with the others.
 _ART_PNIDPV_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/pnidpv\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (K) ccontent: …/c<digits>/content.html  (国资委 SASAC old CMS). Article lives in a
+#      c<id> dir; no date in the URL (date comes from the row). Filename is
+#      content.html (distinct from t-date/art/index/ARTI shapes), so no clash.
+_ART_CCONTENT_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/c\d+/content\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (L) portal: /portal/article/<cat>/<id>  (网安标委 TC260 portal CMS). Id is a 32-hex
+#      hash or a 14-digit timestamp; no extension, no date in the URL (date from row).
+_ART_PORTAL_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/portal/article/\d+/[0-9a-f]{8,})"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
@@ -650,6 +676,10 @@ def _list_articles(page_html: str, page_url: str) -> list:
         date_str = f"{ym[:4]}-{ym[4:6]}-01" if 1 <= mo <= 12 else ""
         matches.append((m, m.group(1), m.group(3), date_str))
     for m in _ART_PNIDPV_RE.finditer(page_html):       # (J) pnidpv: no date in URL
+        matches.append((m, m.group(1), m.group(2), ""))
+    for m in _ART_CCONTENT_RE.finditer(page_html):     # (K) ccontent (SASAC): no date in URL
+        matches.append((m, m.group(1), m.group(2), ""))
+    for m in _ART_PORTAL_RE.finditer(page_html):       # (L) portal (TC260): no date in URL
         matches.append((m, m.group(1), m.group(2), ""))
     out, seen = [], set()
     for m, href, inner, url_date in matches:
