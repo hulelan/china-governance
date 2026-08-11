@@ -289,6 +289,28 @@ SITES = {
         "base_url": "http://www.caac.gov.cn", "admin_level": "central",
         "sections": ["/index.html", "/XXGK/XXGK/JGGLL/index_362.html"],
     },
+    # ── Round-3 central bodies (2026-08-11) ─────────────────────────────────
+    "sastind": {
+        # 国防科工局 — ccontent dialect K (/nNNN/nNNN/c<id>/content.html). Defense-industry
+        # + space policy. Server-rendered n-section indexes.
+        "name": "State Admin for Sci-Tech & Industry for Nat'l Defense (国防科工局)",
+        "base_url": "https://www.sastind.gov.cn", "admin_level": "central",
+        "sections": ["/n10086200/n10086319/index.html"],
+    },
+    "cnsa": {
+        # 国家航天局 — ccontent dialect K. Space policy (skews news; pick sections carefully).
+        "name": "China National Space Administration (国家航天局)",
+        "base_url": "https://www.cnsa.gov.cn", "admin_level": "central",
+        "sections": ["/n6758823/n6758838/index.html"],
+    },
+    "saac": {
+        # 国家档案局 — hexmon dialect I: /daj/<sec>/YYYYMM/<32-hex>.shtml. list.shtml/
+        # <sec>.shtml section pages server-render dated rows. 行政法规库/法规标准库/信息公开.
+        "name": "National Archives Administration (国家档案局)",
+        "base_url": "https://www.saac.gov.cn", "admin_level": "central",
+        "sections": ["/daj/xxgk/list.shtml", "/daj/tzgg/list.shtml",
+                     "/daj/xzfgk/xzfgk.shtml", "/daj/fgbzk/fgbzk.shtml"],
+    },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
