@@ -442,6 +442,18 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   cache is COLD, so the first hit to heavy endpoints (/network, /officials, the sites
   aggregate) is slow and — under bot load — can block a worker until warm; this looks
   like a hang but self-resolves. If it recurs hard, consider `--workers 3`.
+- **(2026-08-11) The public site is PRIVATE — behind HTTP Basic Auth.** nginx
+  server-level `auth_basic` on the chinagovernance :443 block; creds in
+  `/etc/nginx/.htpasswd` (user `admin`, apr1 hash — NOT in the repo). This supersedes
+  the bot mitigations above (moot while private, kept as defense-in-depth).
+  `/.well-known/acme-challenge/` is exempted so certbot renewals still work.
+  `daily_sync` is unaffected (its checks curl `localhost:8001`, bypassing nginx; only
+  the Telegram report's `/document/` hyperlinks now require the login). Manage:
+  - Change/add a user: `htpasswd -B /etc/nginx/.htpasswd <user>` (apache2-utils) or
+    `H=$(openssl passwd -apr1); echo "user:$H" >> /etc/nginx/.htpasswd`; then
+    `nginx -t && systemctl reload nginx`.
+  - Make PUBLIC again: comment out the two `auth_basic` lines in
+    `/etc/nginx/sites-enabled/chinagovernance`, then `nginx -t && systemctl reload nginx`.
 
 
 - **Broken/unreliable gkmlpt sites** (Dongguan, Foshan, Bao'an, Shantou, Zhaoqing,
