@@ -1,7 +1,16 @@
+# Crawler policy.
+# /raw_html and /cms_files are the raw source-HTML mirror of the archive (~252k
+# pages) — not canonical content, and a magnet for bulk harvesters. Disallowed.
+# /api is machine JSON, not for crawlers. Canonical human pages (/document,
+# /browse, /collections, /structure, /network, /officials) stay crawlable.
 User-agent: *
 Crawl-delay: 10
-Allow: /
+Disallow: /raw_html/
+Disallow: /cms_files/
+Disallow: /api/
 
+# Googlebot ignores Crawl-delay but honors Disallow.
 User-agent: Googlebot
-Crawl-delay: 10
-Allow: /
+Disallow: /raw_html/
+Disallow: /cms_files/
+Disallow: /api/
