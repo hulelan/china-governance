@@ -265,6 +265,11 @@ def fetch(url: str, timeout: int = 20, retries: int = 3, headers: dict = None) -
     _handlers = [urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())]
     if _ctx is not None:
         _handlers.append(urllib.request.HTTPSHandler(context=_ctx))
+    # Optional proxy for datacenter-IP-blocked / China-geo-fenced sites: set CRAWL_PROXY
+    # (e.g. a residential/CN proxy "http://user:pass@host:port"). No var = direct (no-op).
+    _proxy = os.environ.get("CRAWL_PROXY")
+    if _proxy:
+        _handlers.append(urllib.request.ProxyHandler({"http": _proxy, "https": _proxy}))
     _opener = urllib.request.build_opener(*_handlers)
     for attempt in range(retries):
         try:
