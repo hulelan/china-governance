@@ -221,3 +221,34 @@ The campaign has hit its natural shape. Two frontiers remain, and they need diff
    expose JSON (Huxiu confirmed; likely CDC/GJXFJ/SAC/机器之心), plus the SAFE+NFSRA
    body-container fix. Lower throughput (per-site engineering) but doable without a
    residential vantage.
+
+## Round 4 (2026-08-12) — resolver fix + provincial-department expansion
+
+**Resolver (bottom-up, free):** the named-title match floor was `LENGTH>=10` AND
+`min_len=10`, which EXCLUDED 9-char provincial 条例 — so `广东省城乡规划条例` (975 cites,
+1 held doc) resolved to NOTHING. Lowered to 8 → **+9,404 citations resolved**
+(210,934→220,338), `广东省城乡规划条例` now links **1,100**. Formal 文号 path investigated
++ confirmed HEALTHY (held national 文号 resolve 100%; 88% of unresolved formal are local
+docs = coverage gap, not a bug — left untouched to avoid false matches).
+
+**Dept expansion (top-down): +48 department sites / ~1,939 docs, all in daily_sync
+(group=dept):**
+| Province/City | dialect | sites | docs |
+|---|---|--:|--:|
+| Jiangsu 江苏 | B /art/ | 5 | 536 |
+| Hunan 湖南 | A t-date (HTTP) | 9 | 399 |
+| Jilin 吉林 | A t-date | 9 | 314 |
+| Beijing 北京 | A + numid(9-digit) | 8 | 244 |
+| Shandong 山东 | B /art/ (HTTP) | 4 | 186 |
+| Shanghai 上海 | **T shhex (new)** | 6 | 147 |
+| Liaoning 辽宁 | H tsid | 7 | 113 |
+
+New dialect T (`/YYYYMMDD/<32hex>.html`) unlocks the whole `*.sh.gov.cn` family. Guangdong
+depts SKIPPED (already crawled via gkmlpt SID API — adding = redundant). Dialect library
+now **A–T (20)**; dept tier **189 sites**; ledger **363 institutions / 329 held**.
+
+**Convergence / next-crawl shopping list (from the unresolved citations):** the top missing
+formal 文号 are **粤 (Guangdong dept 规范性文件 — gkmlpt SID gap) + 苏住建规 (Jiangsu 住建厅
+`zjt.jiangsu.gov.cn`, IPv6-only → residential/proxy)**. The blocked dept tier this round —
+Jiangsu 住建厅/商务厅/自然资源厅 (IPv6-only), Shandong fgw/sthj/dnr/hrss, Liaoning zrzy — is
+the same datacenter-IP wall; a China/IPv6 proxy closes a disproportionate share.
