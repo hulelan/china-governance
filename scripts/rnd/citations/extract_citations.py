@@ -146,10 +146,10 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
         if nd and nd != dn:
             docnum_to_id.setdefault(nd, did)
 
-    # title -> (id, site_key) for named ref resolution (only titles >= 10 chars)
+    # title -> (id, site_key) for named ref resolution (only titles >= 8 chars (was 10 — excluded 9-char provincial 条例))
     title_to_doc = {}
     for row in conn.execute(
-        "SELECT id, title, site_key FROM documents WHERE LENGTH(title) >= 10"
+        "SELECT id, title, site_key FROM documents WHERE LENGTH(title) >= 8"
     ).fetchall():
         title_to_doc[row[1]] = (row[0], row[2])
 
@@ -220,7 +220,7 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
             seen_named.add(name)
 
             # Try to resolve to corpus (indexed fuzzy title match)
-            target_id = matcher.resolve(name, 10)
+            target_id = matcher.resolve(name, 8)
 
             target_level = classify_named_ref_level(name)
             citations.append((doc_id, name, target_id, "named", source_level, target_level))
