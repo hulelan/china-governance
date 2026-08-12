@@ -311,6 +311,44 @@ SITES = {
         "sections": ["/daj/xxgk/list.shtml", "/daj/tzgg/list.shtml",
                      "/daj/xzfgk/xzfgk.shtml", "/daj/fgbzk/fgbzk.shtml"],
     },
+    # ── RESIDENTIAL tier (2026-08-11): datacenter-IP-blocked from the droplet but
+    # reachable from a residential IP. group="residential" → EXCLUDED from the droplet
+    # nightly (which can't reach them); crawled via scripts/local_crawl_merge.sh from a
+    # residential machine → merged up. NOT added to daily_sync.sh's govcms loop.
+    "sichuan": {  # 四川省 — schex dialect R (/cols/YYYY/M/D/<32hex>.shtml). Chengdu AI/chip hub.
+        "name": "Sichuan Province (四川省)", "base_url": "https://www.sc.gov.cn",
+        "admin_level": "provincial", "group": "residential",
+        "sections": ["/10462/13241/list.shtml", "/10462/10464/13298/zcjd.shtml",
+                     "/10462/c102914/gfxwj.shtml"],
+    },
+    "tianjin": {  # 天津市 — t-date dialect A. Direct-controlled municipality.
+        "name": "Tianjin (天津市)", "base_url": "https://www.tj.gov.cn",
+        "admin_level": "provincial", "group": "residential",
+        "sections": ["/sy/tzgg/", "/zwgk/zcjd/", "/sy/jrgz/"],
+    },
+    "guizhou": {  # 贵州省 — t-date dialect A. Big-data hub. (szfwj/ is a redirect stub → szfl/)
+        "name": "Guizhou Province (贵州省)", "base_url": "https://www.guizhou.gov.cn",
+        "admin_level": "provincial", "group": "residential",
+        "sections": ["/home/tzgg/", "/zwgk/zcfg/szfwj/szfl/", "/zwgk/rsxx/rsrm/"],
+    },
+    "hainan": {  # 海南省 — hexmon dialect I (/SECTION/YYYYMM/<32hex>.shtml). Free-trade port.
+        "name": "Hainan Province (海南省)", "base_url": "https://www.hainan.gov.cn",
+        "admin_level": "provincial", "group": "residential",
+        "sections": ["/hainan/zfwj/szfzcwj.shtml", "/hainan/fdzdgknr/newxxgk_list.shtml"],
+    },
+    "xinjiang": {  # 新疆 — hexmon dialect I (same CMS as Hainan).
+        "name": "Xinjiang (新疆维吾尔自治区)", "base_url": "https://www.xinjiang.gov.cn",
+        "admin_level": "provincial", "group": "residential",
+        "sections": ["/xinjiang/zfl/zfxxgk_zhengce_list.shtml", "/xinjiang/zwgk/zw.shtml"],
+    },
+    "hebei": {  # 河北省 — hbuuid dialect S (/columns/<UUID>/YYYYMM/DD/<UUID>.html).
+        "name": "Hebei Province (河北省)", "base_url": "https://www.hebei.gov.cn",
+        "admin_level": "provincial", "group": "residential",
+        "sections": ["/columns/49f13cc2-db03-4d0c-b4fe-2f3f659d3b6e/index.html",
+                     "/columns/b4515201-74c2-4866-ba74-70199fee1a67/index.html",
+                     "/columns/e4a82431-5daf-4e1f-b7ff-80a68ad951b2/index.html",
+                     "/columns/259e0b1d-e98f-4d3c-bd10-b7ef867295be/index.html"],
+    },
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
@@ -744,6 +782,14 @@ _ART_SAFE_RE = re.compile(
 #      false-matching a non-date 8-digit dir.
 _ART_YMD8_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/(\d{4})(\d{2})(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (R) schex: …/YYYY/M/D/<32-hex>.shtml  (四川省 Sichuan). Slash-separated NON-zero-padded
+#      date dirs + 32-hex filename. Distinct from D (/YYYYMMDD/hex/c.html) and O (dashes).
+_ART_SCHEX_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{4})/(\d{1,2})/(\d{1,2})/[0-9a-f]{32}\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (S) hbuuid: /columns/<colUUID>/YYYYMM/DD/<artUUID>.html  (河北省). UUID columns +
+#      UUID article ids; date is YYYYMM/DD in the path.
+_ART_HBUUID_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/columns/[a-f0-9-]{36}/(\d{4})(\d{2})/(\d{2})/[a-f0-9-]{36}\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -877,6 +923,12 @@ def _list_articles(page_html: str, page_url: str) -> list:
         y, mo, d = m.group(2), m.group(3), m.group(4)
         date_str = f"{y}-{mo}-{d}" if 2000 <= int(y) <= 2099 and 1 <= int(mo) <= 12 and 1 <= int(d) <= 31 else ""
         matches.append((m, m.group(1), m.group(5), date_str))
+    for m in _ART_SCHEX_RE.finditer(page_html):        # (R) schex (Sichuan): YYYY/M/D in path
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        matches.append((m, m.group(1), m.group(5), f"{y}-{int(mo):02d}-{int(d):02d}"))
+    for m in _ART_HBUUID_RE.finditer(page_html):       # (S) hbuuid (Hebei): YYYYMM/DD in path
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        matches.append((m, m.group(1), m.group(5), f"{y}-{mo}-{d}"))
     out, seen = [], set()
     page_host = urlparse(page_url).netloc
     for m, href, inner, url_date in matches:
