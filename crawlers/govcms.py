@@ -349,6 +349,43 @@ SITES = {
                      "/columns/e4a82431-5daf-4e1f-b7ff-80a68ad951b2/index.html",
                      "/columns/259e0b1d-e98f-4d3c-bd10-b7ef867295be/index.html"],
     },
+    # ── Provincial DEPARTMENT tier, round 2 (2026-08-12): Hunan/Liaoning/Shandong/Jilin.
+    # All droplet-reachable (share the province IP-allowlist), existing dialects. group=dept.
+    # 湖南 (dialect A t-date, HTTP only — https TLS-fails from droplet):
+    "hn_fgw": {"name": "Hunan DRC (湖南发改委)", "base_url": "http://fgw.hunan.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/fgw/szfglb22/fzgglist.html", "/fgw/tayabl22/fzgglist.html", "/fgw/cztdsq/fzgglist.html"]},
+    "hn_gxt": {"name": "Hunan Industry & IT Dept (湖南工信厅)", "base_url": "http://gxt.hunan.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/gxt/xxgk_71033/zcfg/gfxwj/index.html", "/gxt/xxgk_71033/zcfg/zcjd/index.html", "/gxt/xxgk_71033/gsgg01/index.html"]},
+    "hn_kjt": {"name": "Hunan S&T Dept (湖南科技厅)", "base_url": "http://kjt.hunan.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/kjt/xxgk/zcfg/index.html", "/kjt/xxgk/zcfg/zcjd/index.html"]},
+    "hn_czt": {"name": "Hunan Finance Dept (湖南财政厅)", "base_url": "http://czt.hunan.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/czt/xxgk/zcfg/gfxwj/index.html", "/czt/xxgk/zcfg/zcwj/index.html"]},
+    "hn_swt": {"name": "Hunan Commerce Dept (湖南商务厅)", "base_url": "http://swt.hunan.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/swt/hnswt/85753/fdzdgknr/lzyj/gfxwj/xxgklbs.html", "/swt/hnswt/85753/fdzdgknr/lzyj/zcjd/xxgklbs.html"]},
+    "hn_jyt": {"name": "Hunan Education Dept (湖南教育厅)", "base_url": "http://jyt.hunan.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/jyt/sjyt/xxgk/zcfg/gfxwj/index.html", "/jyt/sjyt/xxgk/zcfg/zcjd/index.html"]},
+    "hn_rst": {"name": "Hunan HR & Social Security Dept (湖南人社厅)", "base_url": "http://rst.hunan.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/rst/xxgk/zcfg/index.html"]},
+    "hn_zrzyt": {"name": "Hunan Natural Resources Dept (湖南自然资源厅)", "base_url": "http://zrzyt.hunan.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zrzyt/falvfagui/list_zcdh_zcfg_st.html", "/zrzyt/zhengcejd/list_zcdh_zcfg_st.html"]},
+    "hn_sthjt": {"name": "Hunan Ecology & Environment Dept (湖南生态环境厅)", "base_url": "http://sthjt.hunan.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/sthjt/xxgk/zcfg/gfxwj/list_sy3.html", "/sthjt/xxgk/tzgg/gg/index.html"]},
+    # 辽宁 (dialect H tsid):
+    "ln_fgw": {"name": "Liaoning DRC (辽宁发改委)", "base_url": "https://fgw.ln.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/fgw/index/tzgg/index.shtml"]},
+    "ln_gxt": {"name": "Liaoning Industry & IT Dept (辽宁工信厅)", "base_url": "https://gxt.ln.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/gxt/yfxz/fgfgg/index.shtml", "/gxt/zwgk/zcjjd/index.shtml"]},
+    "ln_kjt": {"name": "Liaoning S&T Dept (辽宁科技厅)", "base_url": "https://kjt.ln.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/kjt/kjgz/tzgg/index.shtml"]},
+    "ln_czt": {"name": "Liaoning Finance Dept (辽宁财政厅)", "base_url": "https://czt.ln.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/czt/zwgkzdgz/czgg/gsgg/index.shtml", "/czt/zfxxgk/zc/xzgfxwj/index.shtml"]},
+    "ln_swt": {"name": "Liaoning Commerce Dept (辽宁商务厅)", "base_url": "https://swt.ln.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/swt/tzgg/index.shtml"]},
+    "ln_jyt": {"name": "Liaoning Education Dept (辽宁教育厅)", "base_url": "https://jyt.ln.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/jyt/gk/gsgg/index.shtml"]},
+    "ln_rst": {"name": "Liaoning HR & Social Security Dept (辽宁人社厅)", "base_url": "https://rst.ln.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/rst/rdzcybw/index.shtml"]},
+    "ln_sthj": {"name": "Liaoning Ecology & Environment Dept (辽宁生态环境厅)", "base_url": "https://sthj.ln.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/sthj/index/tzgg/index.shtml"]},
+    # 山东 (dialect B /art/, HTTP only):
+    "sd_gxt": {"name": "Shandong Industry & IT Dept (山东工信厅)", "base_url": "http://gxt.shandong.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col103865/index.html", "/col/col15188/index.html"]},
+    "sd_kjt": {"name": "Shandong S&T Dept (山东科技厅)", "base_url": "http://kjt.shandong.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col103586/index.html"]},
+    "sd_czt": {"name": "Shandong Finance Dept (山东财政厅)", "base_url": "http://czt.shandong.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col10559/index.html"]},
+    "sd_commerce": {"name": "Shandong Commerce Dept (山东商务厅)", "base_url": "http://commerce.shandong.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col106480/index.html"]},
+    "sd_edu": {"name": "Shandong Education Dept (山东教育厅)", "base_url": "http://edu.shandong.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col11984/index.html"]},
+    # 吉林 (dialect A t-date):
+    "jl_jldrc": {"name": "Jilin DRC (吉林发改委)", "base_url": "https://jldrc.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zcfg/jlzc/", "/zcfg/jlzcjd/", "/xxgk/zcfb/"]},
+    "jl_gxt": {"name": "Jilin Industry & IT Dept (吉林工信厅)", "base_url": "https://gxt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/xxgk/zcwj_200601/", "/xxgk/tzgg/", "/xxgk/zcjd/"]},
+    "jl_kjt": {"name": "Jilin S&T Dept (吉林科技厅)", "base_url": "https://kjt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/xxgk/fgwj/", "/xwzx/tztg/", "/xxgk/zcjd/"]},
+    "jl_czt": {"name": "Jilin Finance Dept (吉林财政厅)", "base_url": "https://czt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/xwfb/tzgg/", "/zwgk/czsj/"]},
+    "jl_swt": {"name": "Jilin Commerce Dept (吉林商务厅)", "base_url": "https://swt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zcfg/", "/tzgg/", "/zcjd/"]},
+    "jl_jyt": {"name": "Jilin Education Dept (吉林教育厅)", "base_url": "https://jyt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/ggl/", "/zwgk/rsrm/"]},
+    "jl_hrss": {"name": "Jilin HR & Social Security Dept (吉林人社厅)", "base_url": "https://hrss.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/flfg/dfxfggz2017/", "/fwzc/bszn/"]},
+    "jl_zrzy": {"name": "Jilin Natural Resources Dept (吉林自然资源厅)", "base_url": "https://zrzy.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/fgwj/gfxwj/", "/zwgk/fgwj/zcjd/"]},
+    "jl_sthjt": {"name": "Jilin Ecology & Environment Dept (吉林生态环境厅)", "base_url": "https://sthjt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/ywdt/tzgg/", "/zcjd/"]},
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
