@@ -306,10 +306,14 @@ central,国家信访局 GJXFJ,gjxfj,0,spa,-,wPaginate.js JS-templated list (item
 central,中央党校/行政学院 CCPS,ccps,0,blocked,-,Tencent Cloud WAF 403 to datacenter IP
 provincial,河南省 Henan,henan,0,blocked,-,Wangsu/PS-ATL CDN WAF 403 to datacenter IP
 provincial,安徽省 Anhui,anhui,0,blocked,-,WZWS WAF 403 reason:GeoBL (Hefei AI/quantum hub — HIGH VALUE)
-provincial,河北省 Hebei,hebei,0,blocked,-,network blackhole (SYN dropped) to datacenter IP
-provincial,山西省 Shanxi,shanxi,0,blocked,-,network blackhole (SYN dropped)
-provincial,江西省 Jiangxi,jiangxi,0,blocked,-,network blackhole (SYN dropped)
-provincial,广西 Guangxi,guangxi,0,blocked,-,network blackhole (SYN dropped)
-provincial,陕西省 Shaanxi,shaanxi,0,blocked,-,"IPv6-only, no IPv4 route from droplet (Xi'an semiconductor hub)"
-provincial,贵州省 Guizhou,guizhou,0,blocked,-,"IPv6-only, no IPv4 route (big-data hub)"
-provincial,云南省 Yunnan,yunnan,0,blocked,-,list metadata reachable (dialect A) but article bodies WAF-403 — residential needed
+provincial,山西省 Shanxi,shanxi,0,blocked,-,network blackhole; NOT Mac-reachable → needs CN proxy
+provincial,广西 Guangxi,guangxi,0,blocked,-,network blackhole; NOT Mac-reachable → CN proxy
+provincial,陕西省 Shaanxi,shaanxi,0,blocked,-,IPv6-only; NOT Mac-reachable → CN proxy (Xi'an chip hub)
+provincial,云南省 Yunnan,yunnan,0,blocked,-,WAF-403 to any foreign IP → CN proxy
+provincial,四川省 Sichuan,sichuan,0,residential,govcms-R,config built+validated (27 arts); Chengdu AI/chip hub
+provincial,河北省 Hebei,hebei,0,residential,govcms-S,"config built+validated (20 arts, UUID dialect)"
+provincial,贵州省 Guizhou,guizhou,0,residential,govcms-A,config built+validated (15 arts); big-data hub
+provincial,海南省 Hainan,hainan,0,residential,govcms-I,config built (free-trade port)
+provincial,新疆 Xinjiang,xinjiang,0,residential,govcms-I,config built
+provincial,天津市 Tianjin,tianjin,0,residential,govcms-A,config built but list not std t-date (0 arts) — TODO
+provincial,江西省 Jiangxi,jiangxi,0,residential,-,Mac-reachable but list is a JSON API — needs a JSON-list handler (TODO)

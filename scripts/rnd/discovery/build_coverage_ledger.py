@@ -52,13 +52,19 @@ not_held = [
     ("central", "中央党校/行政学院 CCPS", "ccps", "blocked", "-", "Tencent Cloud WAF 403 to datacenter IP"),
     ("provincial", "河南省 Henan", "henan", "blocked", "-", "Wangsu/PS-ATL CDN WAF 403 to datacenter IP"),
     ("provincial", "安徽省 Anhui", "anhui", "blocked", "-", "WZWS WAF 403 reason:GeoBL (Hefei AI/quantum hub — HIGH VALUE)"),
-    ("provincial", "河北省 Hebei", "hebei", "blocked", "-", "network blackhole (SYN dropped) to datacenter IP"),
-    ("provincial", "山西省 Shanxi", "shanxi", "blocked", "-", "network blackhole (SYN dropped)"),
-    ("provincial", "江西省 Jiangxi", "jiangxi", "blocked", "-", "network blackhole (SYN dropped)"),
-    ("provincial", "广西 Guangxi", "guangxi", "blocked", "-", "network blackhole (SYN dropped)"),
-    ("provincial", "陕西省 Shaanxi", "shaanxi", "blocked", "-", "IPv6-only, no IPv4 route from droplet (Xi'an semiconductor hub)"),
-    ("provincial", "贵州省 Guizhou", "guizhou", "blocked", "-", "IPv6-only, no IPv4 route (big-data hub)"),
-    ("provincial", "云南省 Yunnan", "yunnan", "blocked", "-", "list metadata reachable (dialect A) but article bodies WAF-403 — residential needed"),
+    ("provincial", "山西省 Shanxi", "shanxi", "blocked", "-", "network blackhole; NOT Mac-reachable → needs CN proxy"),
+    ("provincial", "广西 Guangxi", "guangxi", "blocked", "-", "network blackhole; NOT Mac-reachable → CN proxy"),
+    ("provincial", "陕西省 Shaanxi", "shaanxi", "blocked", "-", "IPv6-only; NOT Mac-reachable → CN proxy (Xi'an chip hub)"),
+    ("provincial", "云南省 Yunnan", "yunnan", "blocked", "-", "WAF-403 to any foreign IP → CN proxy"),
+    # RESIDENTIAL: droplet-blocked but reachable from a residential IP → configs built,
+    # crawl via scripts/local_crawl_merge.sh (or CRAWL_PROXY). Status 'residential'.
+    ("provincial", "四川省 Sichuan", "sichuan", "residential", "govcms-R", "config built+validated (27 arts); Chengdu AI/chip hub"),
+    ("provincial", "河北省 Hebei", "hebei", "residential", "govcms-S", "config built+validated (20 arts, UUID dialect)"),
+    ("provincial", "贵州省 Guizhou", "guizhou", "residential", "govcms-A", "config built+validated (15 arts); big-data hub"),
+    ("provincial", "海南省 Hainan", "hainan", "residential", "govcms-I", "config built (free-trade port)"),
+    ("provincial", "新疆 Xinjiang", "xinjiang", "residential", "govcms-I", "config built"),
+    ("provincial", "天津市 Tianjin", "tianjin", "residential", "govcms-A", "config built but list not std t-date (0 arts) — TODO"),
+    ("provincial", "江西省 Jiangxi", "jiangxi", "residential", "-", "Mac-reachable but list is a JSON API — needs a JSON-list handler (TODO)"),
 ]
 # NOTE: safe + nfsra are crawled (in DB as 'have') but their article-body container is
 # not yet recognized (near-empty bodies) — body-extraction TODO, tracked in structure-gaps.md.
