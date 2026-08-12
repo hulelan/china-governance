@@ -251,65 +251,91 @@ def _permissive_ssl_ctx():
 _SSL_CTX = _permissive_ssl_ctx()
 
 
+def _standard_ssl_ctx():
+    # Modern ciphers, but no cert verification (gov certs are often self-signed/expired).
+    ctx = _ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = _ssl.CERT_NONE
+    return ctx
+
+_STD_CTX = _standard_ssl_ctx()
+
+
+def _build_opener(ctx):
+    # Per-call cookie jar: some gov WAFs (openresty CT6T/CT6TS) answer the first request
+    # with a 302→self that SETS a cookie and require it replayed on the redirect; without
+    # a cookie processor urllib loops until it errors. Empty jar = no-op for cookieless
+    # sites. CRAWL_PROXY (if set) routes via a residential/CN proxy for blocked sites.
+    handlers = [urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())]
+    if ctx is not None:
+        handlers.append(urllib.request.HTTPSHandler(context=ctx))
+    proxy = os.environ.get("CRAWL_PROXY")
+    if proxy:
+        handlers.append(urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+    return urllib.request.build_opener(*handlers)
+
+
+def _decode(resp, raw):
+    # Some gov servers (e.g. CNIPA) force-gzip even when no Accept-Encoding was sent.
+    enc = (resp.headers.get("Content-Encoding") or "").lower()
+    if enc == "gzip" or raw[:2] == b"\x1f\x8b":
+        import gzip
+        try:
+            raw = gzip.decompress(raw)
+        except Exception:
+            pass
+    elif enc == "deflate":
+        import zlib
+        try:
+            raw = zlib.decompress(raw)
+        except Exception:
+            try:
+                raw = zlib.decompress(raw, -zlib.MAX_WBITS)
+            except Exception:
+                pass
+    return raw.decode("utf-8", errors="replace")
+
+
 def fetch(url: str, timeout: int = 20, retries: int = 3, headers: dict = None) -> str:
-    """Fetch a URL and return the response body as a string."""
+    """Fetch a URL and return the response body as a string.
+
+    Tries a STANDARD TLS context first — it's fast and works for many modern gov sites
+    that HANG under the permissive legacy context (SECLEVEL=1 + legacy renegotiation);
+    that permissive context is used only as a FALLBACK on an SSL handshake error (old
+    sites that genuinely need it error out quickly rather than hang). Non-TLS failures
+    (timeouts, HTTP errors) just retry within the current context — no fallback — so a
+    dead URL isn't tried twice.
+    """
     hdrs = {"User-Agent": USER_AGENT}
     if headers:
         hdrs.update(headers)
     req = urllib.request.Request(url, headers=hdrs)
-    _ctx = _SSL_CTX if url.startswith("https") else None
-    # Per-call cookie jar: some gov WAFs (openresty CT6T/CT6TS, etc.) answer the first
-    # request with a 302→self that SETS a cookie and require it replayed on the
-    # redirect; without a cookie processor urllib loops until it errors. The jar stays
-    # empty for cookieless sites, so this can't change their behavior.
-    _handlers = [urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())]
-    if _ctx is not None:
-        _handlers.append(urllib.request.HTTPSHandler(context=_ctx))
-    # Optional proxy for datacenter-IP-blocked / China-geo-fenced sites: set CRAWL_PROXY
-    # (e.g. a residential/CN proxy "http://user:pass@host:port"). No var = direct (no-op).
-    _proxy = os.environ.get("CRAWL_PROXY")
-    if _proxy:
-        _handlers.append(urllib.request.ProxyHandler({"http": _proxy, "https": _proxy}))
-    _opener = urllib.request.build_opener(*_handlers)
-    for attempt in range(retries):
-        try:
-            resp = _opener.open(req, timeout=timeout)
-            raw = resp.read()
-            # Some gov servers (e.g. CNIPA) force-gzip responses even when the
-            # client sent no Accept-Encoding. Decompress by header or magic bytes.
-            enc = (resp.headers.get("Content-Encoding") or "").lower()
-            if enc == "gzip" or raw[:2] == b"\x1f\x8b":
-                import gzip
-                try:
-                    raw = gzip.decompress(raw)
-                except Exception:
-                    pass
-            elif enc == "deflate":
-                import zlib
-                try:
-                    raw = zlib.decompress(raw)
-                except Exception:
-                    try:
-                        raw = zlib.decompress(raw, -zlib.MAX_WBITS)
-                    except Exception:
-                        pass
-            return raw.decode("utf-8", errors="replace")
-        except urllib.error.HTTPError as e:
-            if e.code in (404, 410, 550):
-                raise
-            if attempt < retries - 1:
-                wait = 2 ** attempt
-                log.warning(f"  Retry {attempt+1}/{retries} for {url}: {e}")
-                time.sleep(wait)
-            else:
-                raise
-        except (urllib.error.URLError, OSError) as e:
-            if attempt < retries - 1:
-                wait = 2 ** attempt
-                log.warning(f"  Retry {attempt+1}/{retries} for {url}: {e}")
-                time.sleep(wait)
-            else:
-                raise
+    contexts = [_STD_CTX, _SSL_CTX] if url.startswith("https") else [None]
+    for ctx in contexts:
+        opener = _build_opener(ctx)
+        for attempt in range(retries):
+            try:
+                resp = opener.open(req, timeout=timeout)
+                return _decode(resp, resp.read())
+            except _ssl.SSLError:
+                break  # TLS failed with this context → try the next (permissive) one
+            except urllib.error.HTTPError as e:
+                if e.code in (404, 410, 550):
+                    raise
+                if attempt < retries - 1:
+                    log.warning(f"  Retry {attempt+1}/{retries} for {url}: {e}")
+                    time.sleep(2 ** attempt)
+                else:
+                    raise
+            except (urllib.error.URLError, OSError) as e:
+                if isinstance(getattr(e, "reason", None), _ssl.SSLError):
+                    break  # URLError wrapping an SSLError → try the next context
+                if attempt < retries - 1:
+                    log.warning(f"  Retry {attempt+1}/{retries} for {url}: {e}")
+                    time.sleep(2 ** attempt)
+                else:
+                    raise
+    raise urllib.error.URLError(f"all TLS contexts failed for {url}")
 
 
 def fetch_json(url: str, timeout: int = 20, headers: dict = None):
