@@ -386,6 +386,30 @@ SITES = {
     "jl_hrss": {"name": "Jilin HR & Social Security Dept (吉林人社厅)", "base_url": "https://hrss.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/flfg/dfxfggz2017/", "/fwzc/bszn/"]},
     "jl_zrzy": {"name": "Jilin Natural Resources Dept (吉林自然资源厅)", "base_url": "https://zrzy.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/fgwj/gfxwj/", "/zwgk/fgwj/zcjd/"]},
     "jl_sthjt": {"name": "Jilin Ecology & Environment Dept (吉林生态环境厅)", "base_url": "https://sthjt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/ywdt/tzgg/", "/zcjd/"]},
+    # ── Provincial DEPARTMENT tier, round 3 (2026-08-12): Jiangsu (B), Beijing (A/numid),
+    # Shanghai (T shhex). All droplet-reachable. group=dept → auto in nightly.
+    # 江苏 depts (dialect B /art/):
+    "js_fzggw": {"name": "Jiangsu DRC (江苏发改委)", "base_url": "https://fzggw.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col284/index.html", "/col/col314/index.html"]},
+    "js_gxt": {"name": "Jiangsu Industry & IT Dept (江苏工信厅)", "base_url": "https://gxt.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col80179/index.html", "/col/col6278/index.html", "/col/col6281/index.html"]},
+    "js_kxjst": {"name": "Jiangsu S&T Dept (江苏科技厅)", "base_url": "https://kxjst.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col82540/index.html", "/col/col82572/index.html", "/col/col82570/index.html"]},
+    "js_czt": {"name": "Jiangsu Finance Dept (江苏财政厅)", "base_url": "https://czt.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col8511/index.html"]},
+    "js_sthjt": {"name": "Jiangsu Ecology & Environment Dept (江苏生态环境厅)", "base_url": "https://sthjt.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col83843/index.html", "/col/col83844/index.html", "/col/col83845/index.html"]},
+    # 北京市 bureaus (dialect A t-date; sthjj = numid /9-digit/index.html):
+    "bjb_fgw": {"name": "Beijing DRC (北京市发改委)", "base_url": "https://fgw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/fgwzwgk/2024zcwj/", "/fgwzwgk/2024zcjd/"]},
+    "bjb_jxj": {"name": "Beijing Economy & IT Bureau (北京市经信局)", "base_url": "https://jxj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgk/2024zcwj/", "/jxdt/tzgg/"]},
+    "bjb_kw": {"name": "Beijing S&T Commission (北京市科委)", "base_url": "https://kw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgk/zcwj/", "/zwgk/zcjd/", "/zwgk/tzgg/"]},
+    "bjb_czj": {"name": "Beijing Finance Bureau (北京市财政局)", "base_url": "https://czj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwxx/2024zcwj/"]},
+    "bjb_swj": {"name": "Beijing Commerce Bureau (北京市商务局)", "base_url": "https://swj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgk/2024zcwj/", "/zwgk/2024zcjd/", "/swdt/tzgg/"]},
+    "bjb_rsj": {"name": "Beijing HR & Social Security Bureau (北京市人社局)", "base_url": "https://rsj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/xxgk/2024zcwj/", "/xxgk/2024zcjd/"]},
+    "bjb_ghzrzyw": {"name": "Beijing Planning & Natural Resources Commission (北京市规划自然资源委)", "base_url": "https://ghzrzyw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zhengwuxinxi/zcwj/qtwj/", "/zhengwuxinxi/zcfg/fl/", "/zhengwuxinxi/tzgg/"]},
+    "bjb_sthjj": {"name": "Beijing Ecology & Environment Bureau (北京市生态环境局)", "base_url": "https://sthjj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/bjhrb/index/xxgk69/zfxxgk43/fdzdgknr2/zcfb/szfgfxwj/index.html", "/bjhrb/index/xxgk69/zfxxgk43/fdzdgknr2/ywdt28/xwfb/index.html"]},
+    # 上海市 bureaus (dialect T shhex /YYYYMMDD/<32hex>.html):
+    "shb_fgw": {"name": "Shanghai DRC (上海市发改委)", "base_url": "https://fgw.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/fgw_zcwjfl/index.html", "/fgw_gfxwj/index.html"]},
+    "shb_sheitc": {"name": "Shanghai Economy & Informatization Commission (上海市经信委)", "base_url": "https://www.sheitc.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zfxxgkml/"]},
+    "shb_stcsm": {"name": "Shanghai S&T Commission (上海市科委)", "base_url": "https://stcsm.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgk/kjzc/zcwj/kwzcxwj/", "/zwgk/kjzc/zcjd/"]},
+    "shb_sww": {"name": "Shanghai Commerce Commission (上海市商务委)", "base_url": "https://sww.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgkgfqtzcwj/index.html"]},
+    "shb_rsj": {"name": "Shanghai HR & Social Security Bureau (上海市人社局)", "base_url": "https://rsj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/tgsgg_17341/index.html", "/tmsztc_17502/index.html", "/tbmts_17501/index.html"]},
+    "shb_ghzyj": {"name": "Shanghai Planning & Natural Resources Bureau (上海市规划资源局)", "base_url": "https://ghzyj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zcwj/", "/gzdt/"]},
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
@@ -772,7 +796,7 @@ _ART_ARTI_RE = re.compile(
 #      before the trailing /index. Filename is index.* (t-date/art/ARTI have their
 #      own filename shapes), so no clash there either.
 _ART_NUMID_RE = re.compile(
-    r'<a\s+[^>]*href="([^"]*?/\d{5,8}/index\.s?html?)"[^>]*>(.*?)</a>', re.S)
+    r'<a\s+[^>]*href="([^"]*?/\d{5,9}/index\.s?html?)"[^>]*>(.*?)</a>', re.S)
 #  (H) tsid: …/<section>/<≥12-digit id>/index.shtml  (北京通州区). No /web/ prefix
 #      (that's web-idx). Leading 8 digits of the id are YYYYMMDD when they form a
 #      valid date, else no date. web-idx runs first, so its /web/ rows de-dupe ahead
@@ -827,6 +851,10 @@ _ART_SCHEX_RE = re.compile(
 #      UUID article ids; date is YYYYMM/DD in the path.
 _ART_HBUUID_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/columns/[a-f0-9-]{36}/(\d{4})(\d{2})/(\d{2})/[a-f0-9-]{36}\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (T) shhex: …/YYYYMMDD/<32-hex>.html  (上海市 depts). 8-digit date dir + 32-hex file
+#      (distinct from D /YYYYMMDD/<hex>/c.html, I /YYYYMM/<hex>.shtml, Q /YYYYMMDD/<num>).
+_ART_SHHEX_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{4})(\d{2})(\d{2})/[0-9a-f]{32}\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -966,6 +994,10 @@ def _list_articles(page_html: str, page_url: str) -> list:
     for m in _ART_HBUUID_RE.finditer(page_html):       # (S) hbuuid (Hebei): YYYYMM/DD in path
         y, mo, d = m.group(2), m.group(3), m.group(4)
         matches.append((m, m.group(1), m.group(5), f"{y}-{mo}-{d}"))
+    for m in _ART_SHHEX_RE.finditer(page_html):        # (T) shhex (Shanghai): YYYYMMDD in path
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        date_str = f"{y}-{mo}-{d}" if 1 <= int(mo) <= 12 and 1 <= int(d) <= 31 else ""
+        matches.append((m, m.group(1), m.group(5), date_str))
     out, seen = [], set()
     page_host = urlparse(page_url).netloc
     for m, href, inner, url_date in matches:
