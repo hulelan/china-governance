@@ -410,6 +410,39 @@ SITES = {
     "shb_sww": {"name": "Shanghai Commerce Commission (上海市商务委)", "base_url": "https://sww.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgkgfqtzcwj/index.html"]},
     "shb_rsj": {"name": "Shanghai HR & Social Security Bureau (上海市人社局)", "base_url": "https://rsj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/tgsgg_17341/index.html", "/tmsztc_17502/index.html", "/tbmts_17501/index.html"]},
     "shb_ghzyj": {"name": "Shanghai Planning & Natural Resources Bureau (上海市规划资源局)", "base_url": "https://ghzyj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zcwj/", "/gzdt/"]},
+    # ── Dept tier round 4 (2026-08-12): additional bureaus of Jiangsu/Beijing/Shanghai.
+    # 江苏 (dialect B):
+    "js_nynct": {"name": "Jiangsu Agriculture & Rural Affairs Dept (江苏农业农村厅)", "base_url": "https://nynct.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col11977/index.html", "/col/col51447/index.html"]},
+    "js_jtyst": {"name": "Jiangsu Transport Dept (江苏交通运输厅)", "base_url": "https://jtyst.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col77151/index.html", "/col/col41780/index.html", "/col/col77126/index.html"]},
+    "js_wjw": {"name": "Jiangsu Health Commission (江苏卫健委)", "base_url": "https://wjw.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col49491/index.html", "/col/col49511/index.html"]},
+    "js_mzt": {"name": "Jiangsu Civil Affairs Dept (江苏民政厅)", "base_url": "https://mzt.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col55087/index.html", "/col/col78574/index.html"]},
+    "js_sft": {"name": "Jiangsu Justice Dept (江苏司法厅)", "base_url": "https://sft.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col48525/index.html"]},
+    "js_scjgj": {"name": "Jiangsu Market Regulation Bureau (江苏市场监管局)", "base_url": "https://scjgj.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col78964/index.html", "/col/col78963/index.html"]},
+    "js_ybj": {"name": "Jiangsu Healthcare Security Bureau (江苏医保局)", "base_url": "https://ybj.jiangsu.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/col/col73935/index.html"]},
+    # 北京市 (dialect A t-date; nyncj/sfj/yjj = numid 9-digit):
+    "bjb_nyncj": {"name": "Beijing Agriculture & Rural Affairs Bureau (北京市农业农村局)", "base_url": "https://nyncj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/nyj/zwgk/zcgk/zcwj3149/", "/nyj/zwgk/tzgg/"]},
+    "bjb_jtw": {"name": "Beijing Transport Commission (北京市交通委)", "base_url": "https://jtw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/xxgk/tzgg/", "/xxgk/dtxx/"]},
+    "bjb_wjw": {"name": "Beijing Health Commission (北京市卫健委)", "base_url": "https://wjw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgk_20040/zcwj2024/zcwjss/", "/zwgk_20040/zcwj2022/flfg/", "/zwgk_20040/tzgg/"]},
+    "bjb_sfj": {"name": "Beijing Justice Bureau (北京市司法局)", "base_url": "https://sfj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/sfj/zwgk/2024zcwj/", "/sfj/zwgk/2024zcjd/"]},
+    "bjb_whlyj": {"name": "Beijing Culture & Tourism Bureau (北京市文旅局)", "base_url": "https://whlyj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgk/2024zcwj/", "/zwgk/2024zcjd/"]},
+    "bjb_scjgj": {"name": "Beijing Market Regulation Bureau (北京市市场监管局)", "base_url": "https://scjgj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwxx/2024zcwj/", "/zwxx/2024zcjd/"]},
+    "bjb_ybj": {"name": "Beijing Medical Insurance Bureau (北京市医保局)", "base_url": "https://ybj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/tzgg2022/", "/swdt/2020_gzdt/"]},
+    "bjb_yjj": {"name": "Beijing Emergency Management Bureau (北京市应急管理局)", "base_url": "https://yjj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/yjj/zwgk20/zcwj91/", "/yjj/zwgk20/zcjd8/"]},
+    "bjb_tjj": {"name": "Beijing Statistics Bureau (北京市统计局)", "base_url": "https://tjj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgkai/2024zcwj/", "/zwgkai/2024zcjd/"]},
+    "bjb_jw": {"name": "Beijing Education Commission (北京市教委)", "base_url": "https://jw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/xxgk/2024zcwj/", "/xxgk/2024zcjd/", "/tzgg/"]},
+    "bjb_sw": {"name": "Beijing Water Authority (北京市水务局)", "base_url": "https://sw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwxx/2024zcwj/", "/zwxx/2024zcjd/", "/tzgg/"]},
+    # 上海市 (dialect T shhex):
+    "shb_nyncw": {"name": "Shanghai Agriculture & Rural Commission (上海市农业农村委)", "base_url": "https://nyncw.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/gsgg/index.html"]},
+    "shb_jtw": {"name": "Shanghai Transportation Commission (上海市交通委)", "base_url": "https://jtw.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zxzfxx/index.html"]},
+    "shb_swj": {"name": "Shanghai Water Authority (上海市水务局)", "base_url": "https://swj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/swj-ghjhwj/index.html", "/swj-gzdt/index.html"]},
+    "shb_mzj": {"name": "Shanghai Civil Affairs Bureau (上海市民政局)", "base_url": "https://mzj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/jicxx/index.html"]},
+    "shb_sfj": {"name": "Shanghai Justice Bureau (上海市司法局)", "base_url": "https://sfj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/2020zwdt_tzgg/index.html"]},
+    "shb_whlyj": {"name": "Shanghai Culture & Tourism Bureau (上海市文旅局)", "base_url": "https://whlyj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/wlyw/index.html", "/cysc/index.html"]},
+    "shb_scjgj": {"name": "Shanghai Market Supervision Administration (上海市市场监管局)", "base_url": "https://scjgj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/056/index.html"]},
+    "shb_ybj": {"name": "Shanghai Medical Insurance Bureau (上海市医保局)", "base_url": "https://ybj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/gfxwj/index.html", "/qtwj/index.html", "/zcjd/index.html"]},
+    "shb_yjj": {"name": "Shanghai Emergency Management Bureau (上海市应急管理局)", "base_url": "https://yjj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zjyw/index.html", "/sjdt/index.html"]},
+    "shb_tjj": {"name": "Shanghai Statistics Bureau (上海市统计局)", "base_url": "https://tjj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/xxgk_gw/index.html", "/gfxwj/index.html"]},
+    "shb_edu": {"name": "Shanghai Education Commission (上海市教委)", "base_url": "https://edu.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/xwzx_gnxw/index.html", "/xwzx_bsxw/index.html"]},
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
