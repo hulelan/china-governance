@@ -875,6 +875,9 @@ _BODY_CONTAINERS = [
     r'class="[^"]*content[-_]?(?:box|main|body|text)',
     r'class="[^"]*detail[-_]?content',       # SAFE 外汇局
     r'class="[^"]*pub[-_]?det(?:ail|-content)',  # NFSRA 粮储局
+    r'id="ivs_content"',                     # 上海市 depts (Article_content / ivs_content)
+    r'class="[^"]*Article_content',          # 上海市 depts
+    r'class="[^"]*main[-_]txt',              # 江苏省 depts (dialect B, main-txt)
 ]
 _FOOT_CUT = re.compile(r'(相关(?:附件|链接|文件|报道)|扫一扫|打印本页|class="[^"]*(?:foot|share|xglj|fujian|print))')
 
