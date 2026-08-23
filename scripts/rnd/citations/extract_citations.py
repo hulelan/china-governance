@@ -59,6 +59,73 @@ def _norm_docnum(s):
     return _DOCNUM_STRIP.sub('', s or '')
 
 
+# --- Resolver-recall upgrade (2026-08, round 2) -----------------------------
+# Diagnosis of the ~49% unresolved edges (see docs/ / the sample study) found that
+# the vast majority are genuine COVERAGE GAPS (the cited doc isn't in the corpus:
+# other-city municipal docs, historical/central docs we never crawled, foreign
+# laws, non-document refs like "中央经济工作会议"). But a fixable minority miss docs
+# we DO hold because of two representable variations:
+#   (1) 文号 that differ only by full-width digits or stray non-〔〕 punctuation, and
+#   (2) a named/LLM ref shaped "《CoreTitle》（文号）" or "…发布的《CoreTitle》" whose stored
+#       doc is titled "<agency>印发《CoreTitle》的通知" / "<文号> CoreTitle" — reordered,
+#       so neither string substring-contains the other, yet the bare 《》 CORE is a
+#       clean substring of the stored title.
+# These helpers recover exactly those, conservatively (length-gated to avoid
+# matching a short generic core to the wrong doc).
+
+_FULLWIDTH_DIGITS = {ord('０') + i: chr(ord('0') + i) for i in range(10)}
+
+
+def _agg_docnum(s):
+    """Aggressive 文号 key: map full-width digits to ASCII and keep only CJK, ASCII
+    digits and 号 — folds every remaining punctuation/space/bracket variant."""
+    s = (s or "").translate(_FULLWIDTH_DIGITS)
+    return re.sub(r'[^一-鿿0-9号]', '', s)
+
+
+_CORE_DOCNUM = re.compile(
+    r'([一-鿿]{1,10})'
+    r'[〔〈《（‘〚\[(]'
+    r'((?:19|20)\d{2})'
+    r'[〕〉》）’〛\])]'
+    r'\s*(\d+)\s*号'
+)
+
+
+def _core_docnum(s):
+    """Extract the canonical issuer+〔year〕+num号 core from a noisy ref (last match),
+    dropping any prepended agency/sentence fragment the canonicalizer missed."""
+    ms = list(_CORE_DOCNUM.finditer(s or ""))
+    if not ms:
+        return None
+    m = ms[-1]
+    return f"{m.group(1)}{m.group(2)}{m.group(3)}号"
+
+
+# 《...》 inner title (>=8 chars) and an END-anchored trailing qualifier group.
+# The trailing set is deliberately limited to qualifiers that do NOT change a
+# document's identity (试行/暂行/征求意见稿/…); we intentionally do NOT strip a bare
+# trailing (YYYY)/(YYYY年版) because that would cross-link different editions, nor a
+# MID-title parenthetical (text after it) because that changes what the doc is.
+_INNER_TITLE = re.compile(r'《([^《》]{8,})》')
+_TRAIL_QUAL = re.compile(
+    r'[（(【\[〔](?:试行|暂行|修订|修正|草案|送审稿|征求意见稿|征求意见|讨论稿)[)）】\]〕]$')
+_CORE_MIN_LEN = 10  # normalized length floor for a title core to be trustworthy
+
+
+def _title_cores(raw_ref):
+    """Alternate title strings to try when the whole ref doesn't resolve: the text
+    inside 《》, and the ref with an end-anchored qualifier group removed."""
+    out = []
+    for m in _INNER_TITLE.finditer(raw_ref):
+        out.append(m.group(1))
+    s = raw_ref.strip()
+    s2 = _TRAIL_QUAL.sub('', s)
+    if s2 != s and s2:
+        out.append(s2)
+    return out
+
+
 class TitleMatcher:
     """Indexed fuzzy title resolver — replaces an O(docs x titles) per-ref scan.
 
@@ -118,6 +185,23 @@ class TitleMatcher:
                 return self.exact[t]
         return None
 
+    def resolve_ref(self, raw_ref, min_len=8):
+        """resolve() on the whole ref, then (only on a miss) on its title cores —
+        the bare 《》 inner title / an end-anchored-qualifier-stripped form — so a
+        "《Core》（文号）" ref still links to a stored "<agency>印发《Core》的通知"
+        (reordered; the core is a clean substring of the stored title)."""
+        did = self.resolve(raw_ref, min_len)
+        if did is not None:
+            return did
+        base = _norm_title(raw_ref)
+        for core in _title_cores(raw_ref):
+            nc = _norm_title(core)
+            if len(nc) >= _CORE_MIN_LEN and nc != base:
+                did = self.resolve(core, max(min_len, _CORE_MIN_LEN))
+                if did is not None:
+                    return did
+        return None
+
 
 def get_source_level(doc_number: str, site_admin_level: str) -> str:
     """Determine admin level for a source document."""
@@ -137,6 +221,8 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
 
     # document_number -> doc_id (for formal ref resolution)
     docnum_to_id = {}
+    docnum_agg = {}   # aggressive key (full-width digits + all punctuation folded)
+    docnum_core = {}  # canonical issuer+year+num号 core key
     for row in conn.execute(
         "SELECT id, document_number FROM documents WHERE document_number <> ''"
     ).fetchall():
@@ -145,6 +231,19 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
         nd = _norm_docnum(dn)   # + bracket-normalized key (don't clobber a raw match)
         if nd and nd != dn:
             docnum_to_id.setdefault(nd, did)
+        ad = _agg_docnum(dn)
+        if ad:
+            docnum_agg.setdefault(ad, did)
+        cd = _core_docnum(dn)
+        if cd:
+            docnum_core.setdefault(_agg_docnum(cd), did)
+
+    def resolve_formal(ref):
+        """docnum resolution: raw -> bracket-norm -> aggressive -> canonical core."""
+        return (docnum_to_id.get(ref)
+                or docnum_to_id.get(_norm_docnum(ref))
+                or docnum_agg.get(_agg_docnum(ref))
+                or docnum_core.get(_agg_docnum(_core_docnum(ref) or "")))
 
     # title -> (id, site_key) for named ref resolution (only titles >= 8 chars (was 10 — excluded 9-char provincial 条例))
     title_to_doc = {}
@@ -198,7 +297,7 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
                 continue
             seen_formal.add(ref)
 
-            target_id = docnum_to_id.get(ref) or docnum_to_id.get(_norm_docnum(ref))
+            target_id = resolve_formal(ref)
             target_level = get_admin_level(ref)
             citations.append((doc_id, ref, target_id, "formal", source_level, target_level))
             stats["formal"] += 1
@@ -219,8 +318,8 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
                 continue
             seen_named.add(name)
 
-            # Try to resolve to corpus (indexed fuzzy title match)
-            target_id = matcher.resolve(name, 8)
+            # Try to resolve to corpus (indexed fuzzy title match + title cores)
+            target_id = matcher.resolve_ref(name, 8)
 
             target_level = classify_named_ref_level(name)
             citations.append((doc_id, name, target_id, "named", source_level, target_level))
@@ -247,10 +346,10 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
                 if ref_name in seen_formal or ref_name in seen_named:
                     continue
 
-                # Try to resolve to corpus by title match (indexed), then doc number
-                target_id = matcher.resolve(ref_name, 8)
+                # Try to resolve to corpus by title match (indexed + cores), then doc number
+                target_id = matcher.resolve_ref(ref_name, 8)
                 if not target_id:
-                    target_id = docnum_to_id.get(ref_name) or docnum_to_id.get(_norm_docnum(ref_name))
+                    target_id = resolve_formal(ref_name)
 
                 target_level = classify_named_ref_level(ref_name)
                 citations.append((doc_id, ref_name, target_id, "llm", source_level, target_level))
