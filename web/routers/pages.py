@@ -27,6 +27,7 @@ from web.services.chain import get_chain, TOPIC_KEYWORDS
 from web.services.structure import get_structure
 from web.services.annotations import list_annotations, get_overview, get_item
 from web.services.collections import get_collection
+from web.services.lens import get_topic_lens, get_doc_lens
 from web.services import ontology
 
 router = APIRouter()
@@ -165,6 +166,35 @@ async def search_page(request: Request, q: str = "", page: int = 1,
         "page": page, "date_start": date_start, "date_end": date_end,
         "exclude_news": exclude_news,
         "stats": await get_stats(db),
+    })
+
+
+@router.get("/lens", response_class=HTMLResponse)
+async def lens_page(request: Request, q: str = "", doc: int = 0):
+    """Policy Lens — a topic/policy dossier.
+
+    ``?q=<topic>`` renders an attention timeline, level & genre breakdowns, top
+    issuing sites, and the most-cited anchor documents whose title matches the
+    topic. ``?doc=<id>`` renders one document's outbound/inbound citations plus
+    its metadata. Both are cached in-process for an hour (see services.lens).
+    """
+    db = request.app.state.db
+    stats = await get_stats(db)
+
+    doc_view = None
+    if doc:
+        doc_view = await get_doc_lens(db, doc)
+        if not doc_view:
+            return HTMLResponse("<h1>Not found</h1>", status_code=404)
+
+    topic = None if doc else await get_topic_lens(db, q)
+
+    return templates.TemplateResponse("lens.html", {
+        "request": request, "stats": stats, "active_nav": "lens",
+        "q": q, "topic": topic, "doc_view": doc_view,
+        # A few suggested entry-point topics for the empty state.
+        "suggestions": ["人工智能", "算力", "数据要素", "低空经济",
+                        "碳中和", "住房", "医保", "养老"],
     })
 
 

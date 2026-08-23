@@ -177,6 +177,7 @@
                 {% set nav = active_nav|default('') %}
                 <a href="/browse" class="{{ 'active' if nav=='browse' }}">Catalog</a>
                 <a href="/search" class="{{ 'active' if nav=='search' }}">Search</a>
+                <a href="/lens" class="{{ 'active' if nav=='lens' }}">Lens</a>
                 <div class="navdrop">
                     <a href="/collections" class="{{ 'active' if nav in ['annotations','collections','research'] }}">Research</a>
                     <div class="navmenu">

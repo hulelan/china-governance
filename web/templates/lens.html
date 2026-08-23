@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}{% if doc_view %}{{ doc_view.doc.title_en or doc_view.doc.title[:50] }} · Lens{% elif topic %}{{ topic.q }} · Policy Lens{% else %}Policy Lens{% endif %} — Governance Archive{% endblock %}
+{% block meta_description %}Policy Lens — a one-page dossier for any policy topic across the Chinese government corpus: attention over time, administrative level, issuing bodies, document genres, and the most-cited anchor documents.{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+
+    <!-- Masthead / search -->
+    <div class="border border-rule bg-panel mb-6">
+        <div class="bg-teal text-[#e8f0ed] px-4 py-1.5 flex justify-between text-[11px] tracking-[0.16em] uppercase">
+            <span>Policy Lens · 政策透镜</span>
+            {% if topic %}<span class="mono">{{ "{:,}".format(topic.total) }} records · title match</span>{% endif %}
+        </div>
+        <div class="px-6 py-4">
+            <form method="get" action="/lens" class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                <input type="search" name="q" value="{{ q }}" placeholder="A topic — e.g. 人工智能, 算力, 数据要素"
+                       class="flex-1 font-zh" autofocus>
+                <button type="submit" class="bg-teal text-white px-5 py-2 rounded-none text-sm font-medium tracking-wide">Open dossier</button>
+            </form>
+            <p class="text-muted text-xs mt-2 leading-relaxed">
+                Matches documents by <span class="font-zh">标题</span> (title). Every panel below counts the same title-matched set.
+            </p>
+        </div>
+    </div>
+
+    {# ============================ DOCUMENT VIEW ============================ #}
+    {% if doc_view %}
+    {% set d = doc_view.doc %}
+    <div class="mb-6">
+        <a href="{% if q %}/lens?q={{ q|urlencode }}{% else %}/lens{% endif %}" class="text-xs text-muted">&larr; Back to topic dossier</a>
+    </div>
+
+    <div class="border border-rule bg-panel mb-6">
+        <div class="bg-teal text-[#e8f0ed] px-4 py-1.5 flex justify-between text-[11px] tracking-[0.16em] uppercase">
+            <span>Focus record</span>
+            <span class="mono">ACC. {{ d.id }}</span>
+        </div>
+        <div class="px-6 py-5">
+            {% if d.document_number %}<div class="mono level-central text-sm">{{ d.document_number }}</div>{% endif %}
+            {% if d.title_en %}<h1 class="text-2xl font-semibold text-ink leading-snug mt-1.5">{{ d.title_en }}</h1>{% endif %}
+            <h2 class="font-zh text-xl {% if not d.title_en %}text-2xl text-ink{% else %}text-[#38332c] mt-0.5{% endif %}">{{ d.title }}</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 border-t border-b border-rule mt-4">
+                <div class="px-4 py-2.5 border-r border-rule">
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Issuer</div>
+                    <div class="font-medium mt-0.5">{{ d.publisher or d.site_key }}</div>
+                </div>
+                <div class="px-4 py-2.5 border-r border-rule">
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Date</div>
+                    <div class="font-medium mt-0.5 mono">{{ (d.date_published or '')[:10] or '—' }}</div>
+                </div>
+                <div class="px-4 py-2.5 border-r border-rule">
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Instrument</div>
+                    <div class="font-medium mt-0.5">{{ (d.algo_doc_type or 'document')|replace('_',' ') }}</div>
+                </div>
+                <div class="px-4 py-2.5">
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Citation rank</div>
+                    <div class="font-medium mt-0.5 mono text-teal">{{ "%.1f"|format(d.citation_rank) if d.citation_rank else '—' }}</div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="/document/{{ d.id }}" class="inline-block border border-rule bg-[#fdfcf9] hover:bg-panel px-3 py-1.5 text-sm no-underline">Full record &amp; body text →</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Outbound -->
+        <div>
+            <span class="lab">Cites — outbound ({{ doc_view.cites|length }})</span>
+            {% if doc_view.cites %}
+            <div class="card table-scroll">
+            <table class="data-table">
+                <thead><tr><th class="w-12">Level</th><th>Reference</th></tr></thead>
+                <tbody>
+                {% for c in doc_view.cites %}
+                    <tr>
+                        <td><span class="badge badge-{{ c.level or 'unknown' }}">{{ (c.level or 'unk')[:3] }}</span></td>
+                        <td>
+                            {% if c.type == 'formal' %}
+                                <span class="mono level-{{ c.level or 'unknown' }} text-xs">{{ c.ref }}</span>
+                            {% else %}
+                                <span class="font-zh text-[13px]">{{ c.ref[:60] }}</span>
+                            {% endif %}
+                            {% if c.resolved %}
+                                <a href="/lens?doc={{ c.resolved.id }}" class="block text-xs text-muted font-zh">{{ c.resolved.title[:56] }} →</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% else %}
+            <div class="text-muted italic text-sm py-6 border border-dashed border-rule text-center">No outbound citations resolved.</div>
+            {% endif %}
+        </div>
+
+        <!-- Inbound -->
+        <div>
+            <span class="lab">Cited by — inbound ({{ doc_view.cited_by|length }})</span>
+            {% if doc_view.cited_by %}
+            <div class="card table-scroll">
+            <table class="data-table">
+                <thead><tr><th class="w-12">Level</th><th>Citing document</th></tr></thead>
+                <tbody>
+                {% for cb in doc_view.cited_by %}
+                    <tr>
+                        <td><span class="badge badge-{{ cb.level or 'unknown' }}">{{ (cb.level or 'unk')[:3] }}</span></td>
+                        <td>
+                            <a href="/lens?doc={{ cb.id }}" class="font-zh text-[13px]">{{ cb.title[:60] }}</a>
+                            <span class="block text-muted text-[11px]">{{ cb.publisher or cb.site_key }}</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% else %}
+            <div class="text-muted italic text-sm py-6 border border-dashed border-rule text-center">Nothing in the corpus cites this record yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ============================ TOPIC VIEW ============================ #}
+    {% elif topic %}
+    {% if topic.total == 0 %}
+    <div class="text-muted italic text-center py-16 border border-dashed border-rule">
+        No document titles match <span class="font-zh not-italic text-ink">{{ topic.q }}</span>.
+        Try a shorter or more common term.
+    </div>
+    {% else %}
+
+    <!-- Attention timeline -->
+    <div class="mb-8">
+        <span class="lab">Attention over time · documents per year</span>
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr><th class="w-16">Year</th><th>Volume</th><th class="w-16 text-right">Count</th></tr></thead>
+            <tbody>
+            {% for t in topic.timeline %}
+                <tr>
+                    <td class="mono">{{ t.year }}</td>
+                    <td>
+                        <div class="h-3 bg-teal" style="width: {{ ((t.count / topic.timeline_max) * 100)|round(1) if topic.timeline_max else 0 }}%; min-width: 2px;"></div>
+                    </td>
+                    <td class="text-right mono">{{ "{:,}".format(t.count) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- By admin level -->
+        <div>
+            <span class="lab">By administrative level</span>
+            <div class="card table-scroll">
+            <table class="data-table">
+                <thead><tr><th>Level</th><th>Share</th><th class="w-16 text-right">Count</th></tr></thead>
+                <tbody>
+                {% for l in topic.levels %}
+                    <tr>
+                        <td><span class="badge badge-{{ l.level }}">{{ l.level[:3] }}</span> <span class="text-xs level-{{ l.level }}">{{ l.level }}</span></td>
+                        <td><div class="h-3 bg-teal" style="width: {{ ((l.count / topic.level_max) * 100)|round(1) if topic.level_max else 0 }}%; min-width: 2px;"></div></td>
+                        <td class="text-right mono">{{ "{:,}".format(l.count) }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <!-- Genre mix -->
+        <div>
+            <span class="lab">Genre mix · document type</span>
+            <div class="card table-scroll">
+            <table class="data-table">
+                <thead><tr><th>Type</th><th>Share</th><th class="w-16 text-right">Count</th></tr></thead>
+                <tbody>
+                {% for g in topic.genres %}
+                    <tr>
+                        <td class="text-xs">{{ g.genre|replace('_', ' ') }}</td>
+                        <td><div class="h-3 bg-brand" style="width: {{ ((g.count / topic.genre_max) * 100)|round(1) if topic.genre_max else 0 }}%; min-width: 2px;"></div></td>
+                        <td class="text-right mono">{{ "{:,}".format(g.count) }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top issuing sites -->
+    <div class="mb-8">
+        <span class="lab">Top issuing bodies</span>
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Source</th><th class="w-16">Level</th><th>Share</th><th class="w-16 text-right">Count</th></tr></thead>
+            <tbody>
+            {% for s in topic.top_sites %}
+                <tr>
+                    <td><a href="/browse?site={{ s.site_key }}">{{ s.name }}</a></td>
+                    <td><span class="badge badge-{{ s.level }}">{{ s.level[:3] }}</span></td>
+                    <td><div class="h-3 bg-teal" style="width: {{ ((s.count / topic.site_max) * 100)|round(1) if topic.site_max else 0 }}%; min-width: 2px;"></div></td>
+                    <td class="text-right mono">{{ "{:,}".format(s.count) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <!-- Citation neighborhood / anchor documents -->
+    <div class="mb-8">
+        <span class="lab">Citation neighborhood · most-cited documents on this topic</span>
+        {% if topic.anchors %}
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="w-12">Level</th>
+                    <th>Document</th>
+                    <th class="w-24 hidden sm:table-cell">文号</th>
+                    <th class="w-20 text-right">Rank</th>
+                    <th class="w-24 hidden sm:table-cell">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for a in topic.anchors %}
+                <tr>
+                    <td><span class="badge badge-{{ a.lvl }}">{{ a.lvl[:3] }}</span></td>
+                    <td>
+                        <a href="/lens?doc={{ a.id }}" class="font-zh">{{ a.title[:70] }}</a>
+                        {% if a.title_en %}<div class="text-xs text-muted truncate">{{ a.title_en }}</div>{% endif %}
+                    </td>
+                    <td class="mono text-xs level-central hidden sm:table-cell">{{ a.document_number or '' }}</td>
+                    <td class="text-right mono text-teal">{{ "%.1f"|format(a.citation_rank) }}</td>
+                    <td class="mono text-muted text-xs hidden sm:table-cell">{{ (a.date_published or '')[:10] }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <p class="text-muted text-xs mt-2">Rank = weighted inbound-citation score (central 3× / provincial 2× / municipal 1.5×). Click a title to see its full citation neighborhood.</p>
+        {% else %}
+        <div class="text-muted italic text-sm py-6 border border-dashed border-rule text-center">No cited documents on this topic yet.</div>
+        {% endif %}
+    </div>
+
+    {% endif %}
+
+    {# ============================ EMPTY STATE ============================ #}
+    {% else %}
+    <div class="border border-rule bg-panel px-6 py-8">
+        <span class="lab">Start a dossier</span>
+        <p class="text-sm text-muted mb-4 max-w-2xl leading-relaxed">
+            Type any policy topic to assemble its dossier — how attention to it has risen or fallen year by year,
+            which levels of government and which bodies issue on it, what kinds of instruments they use, and the
+            landmark documents everything else cites. Or pick one:
+        </p>
+        <div class="flex flex-wrap gap-2">
+            {% for s in suggestions %}
+            <a href="/lens?q={{ s|urlencode }}" class="inline-block bg-[#e3ddcf] hover:bg-[#d8d0be] text-[#4a453b] px-3 py-1.5 font-zh no-underline">{{ s }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
