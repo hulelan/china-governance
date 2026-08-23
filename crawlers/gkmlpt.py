@@ -16,6 +16,7 @@ import json
 import re
 import sqlite3
 import time
+import urllib.parse
 from datetime import datetime, timezone
 
 import uuid
@@ -35,6 +36,17 @@ from crawlers.base import (
 
 BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 SITES_NEEDING_BROWSER_UA = {"gd"}  # site keys that need browser UA to avoid connection reset
+
+# Guangdong province-wide gkml full-text search (JSONP). Every GD gkmlpt page's
+# _CONFIG.SEARCH_JSONP_URL points here. Its index reaches OLDER documents than a
+# category's public listing window: the per-category `api/all/{cat}` endpoint only
+# exposes a recent slice (served count << classify.post_count, floor ~2011–2018),
+# whereas this search returns matches back to ~2001. It is therefore the only
+# gkmlpt-native lever for the historical backfill — see search_site_index().
+# GOTCHA: the endpoint is 1-INDEXED (page=1 is the first page; page=0 returns
+# {"results":[],"count":0}) and it is JSONP, so a `callback` param is REQUIRED
+# (without it the server answers {"errcode":-1} "调用失败，请检查参数").
+SEARCH_BASE = "http://search.gd.gov.cn/jsonp"
 
 # Known-broken / unreliable site keys and WHY. These are still in SITES so a
 # manual `--site X` can retry them if the site recovers, but a bulk run will
@@ -410,6 +422,176 @@ def crawl_category(
         time.sleep(REQUEST_DELAY)
 
     return all_articles
+
+
+# --- Historical Search Backfill (search.gd.gov.cn) ---
+
+def _fetch_jsonp(url: str, headers: dict = None, timeout: int = 25) -> dict:
+    """Fetch a JSONP endpoint and return the unwrapped JSON payload.
+
+    The response looks like `cb({...})`; strip the callback wrapper before parsing.
+    """
+    txt = fetch(url, timeout=timeout, headers=headers).strip()
+    m = re.match(r"^[A-Za-z_$][\w$]*\((.*)\)\s*;?\s*$", txt, re.DOTALL)
+    payload = m.group(1) if m else txt
+    return json.loads(payload)
+
+
+def _normalize_search_article(r: dict) -> dict:
+    """Map a search.gd.gov.cn result object onto the gkmlpt article schema that
+    store_gkmlpt_document() expects (field names differ from api/all/{cat})."""
+    def _int(x):
+        try:
+            return int(x)
+        except (TypeError, ValueError):
+            return 0
+
+    # date_published: search uses `pub_time` (YYYY-MM-DD); the per-category feed
+    # stores "YYYY-MM-DD 00:00:00" — match that so both sources look identical.
+    pub = (r.get("pub_time") or "").strip()
+    created_at = f"{pub} 00:00:00" if re.match(r"^\d{4}-\d{2}-\d{2}$", pub) else ""
+
+    # `attachment` arrives as a JSON *string* here; store_gkmlpt_document json.dumps()
+    # it, so decode to a list first to avoid double-encoding.
+    att = r.get("attachment", [])
+    if isinstance(att, str):
+        try:
+            att = json.loads(att)
+        except Exception:
+            att = []
+
+    title = re.sub(r"</?em>", "", r.get("title", "") or "")  # strip highlight tags
+    return {
+        "id": _int(r.get("id")),
+        "title": title,
+        "document_number": r.get("document_number", "") or "",
+        "identifier": r.get("identifier", "") or "",
+        "publisher": r.get("publisher", "") or "",
+        "keywords": r.get("keywords", "") or "",
+        "date": _int(r.get("date")),
+        "created_at": created_at,
+        "display_publish_time": _int(r.get("display_publish_time")),
+        "abstract": r.get("abstract", "") or "",
+        "classify_main": _int(r.get("classify_main")),
+        "classify_main_name": r.get("classify_main_name", "") or "",
+        "classify_genre_name": r.get("classify_genre_name", "") or "",
+        "classify_theme_name": r.get("classify_theme_name", "") or "",
+        "url": (r.get("url", "") or "").strip(),
+        "post_url": r.get("post_url", "") or "",
+        "is_expired": _int(r.get("is_expired")),
+        "is_abolished": _int(r.get("is_abolished")),
+        "attachment": att,
+        "relation": "",
+    }
+
+
+def search_site_index(sid: str, keyword: str, headers: dict = None,
+                      max_pages: int = 10, pagesize: int = 20, position: str = ""):
+    """Yield normalized gkml article dicts for `keyword`, scoped to one site's SID.
+
+    Uses the Guangdong-wide search (SEARCH_BASE), whose index reaches historical
+    documents the per-category `api/all` listing has since dropped from its window.
+    `position="title"` restricts matching to titles (still fuzzy/OR-ranked); ""
+    searches full text. Only gkml content-page results are yielded.
+    """
+    seen = set()
+    for page in range(1, max_pages + 1):  # 1-indexed — page 0 is always empty
+        params = {
+            "page": page, "pagesize": pagesize, "isgkml": 1,
+            "text": keyword, "order": 0,
+            "including_url_doc": 1, "including_attach_doc": 1,
+            "classify_main_name": "", "classify_mains": "",
+            "classify_mains_excluded": "", "position": position,
+            "callback": "cb",
+        }
+        url = f"{SEARCH_BASE}/site/{sid}?{urllib.parse.urlencode(params)}"
+        try:
+            data = _fetch_jsonp(url, headers=headers)
+        except Exception as e:
+            log.warning(f"  search error p{page} '{keyword}': {e}")
+            break
+
+        results = data.get("results") or []
+        if not results:
+            break
+
+        for r in results:
+            if str(r.get("isgkml")) != "1":
+                continue
+            if "/gkmlpt/content/" not in (r.get("url") or ""):
+                continue
+            art = _normalize_search_article(r)
+            if not art["id"] or art["id"] in seen:
+                continue
+            seen.add(art["id"])
+            yield art
+
+        if len(results) < pagesize:
+            break
+        time.sleep(REQUEST_DELAY)
+
+
+def search_backfill(conn, site_key: str, site_cfg: dict, keywords: list[str],
+                    max_pages: int = 10, position: str = "", fetch_bodies: bool = True):
+    """Recover historical gkml docs via search.gd.gov.cn for a set of keywords.
+
+    For each keyword, search the site's index, skip docs already in the DB (by id
+    or url), fetch body text, and store. Follows the same store/body-fetch path as
+    crawl_site so recovered docs are indistinguishable from category-crawled ones.
+    """
+    base_url = site_cfg["base_url"]
+    ua_headers = {"User-Agent": BROWSER_UA, "Referer": base_url.rstrip("/") + "/"}
+
+    # Reuse the stored SID if we've crawled this site before; else discover it.
+    row = conn.execute("SELECT sid FROM sites WHERE site_key = ?", (site_key,)).fetchone()
+    sid = row[0] if row and row[0] else None
+    if not sid:
+        try:
+            disc_headers = ua_headers if site_key in SITES_NEEDING_BROWSER_UA else None
+            sid, tree = discover_site(base_url, headers=disc_headers)
+            store_site(conn, site_key, site_cfg, sid, tree)
+        except Exception as e:
+            log.error(f"Cannot resolve SID for {site_key}: {e}")
+            return None
+
+    log.info(f"=== Search-backfill {site_cfg['name']} (sid={sid}) — "
+             f"{len(keywords)} keyword(s), pos='{position or 'fulltext'}' ===")
+
+    added = skipped = bodies = 0
+    for kw in keywords:
+        kw = kw.strip()
+        if not kw:
+            continue
+        n_kw = 0
+        for art in search_site_index(sid, kw, headers=ua_headers,
+                                     max_pages=max_pages, position=position):
+            exists = conn.execute(
+                "SELECT 1 FROM documents WHERE id = ? OR (url = ? AND url != '') LIMIT 1",
+                (art["id"], art["url"]),
+            ).fetchone()
+            if exists:
+                skipped += 1
+                continue
+
+            body_text = raw_html_path = ""
+            if fetch_bodies and art["url"]:
+                body_text, raw_html = fetch_document_body(art["url"], headers=ua_headers)
+                if raw_html:
+                    raw_html_path = save_raw_html(site_key, art["id"], raw_html)
+                    bodies += 1
+                time.sleep(REQUEST_DELAY)
+
+            if store_gkmlpt_document(conn, site_key, art, body_text, raw_html_path):
+                added += 1
+                n_kw += 1
+                if added % 25 == 0:
+                    conn.commit()
+        log.info(f"  '{kw}': +{n_kw} new")
+
+    conn.commit()
+    log.info(f"=== Search-backfill done: {site_cfg['name']} — {added} new "
+             f"({bodies} bodies, {skipped} already had) ===")
+    return {"added": added, "bodies": bodies, "skipped": skipped}
 
 
 # --- Content Extraction ---
@@ -856,6 +1038,17 @@ def main():
                         help="Incremental sync: detect new/changed/deleted docs without overwriting")
     parser.add_argument("--show-changes", action="store_true",
                         help="Show recent document changes from sync runs")
+    parser.add_argument("--search", metavar="KEYWORDS",
+                        help="Historical backfill: comma-separated keywords to search via "
+                             "search.gd.gov.cn (reaches docs older than the category window). "
+                             "Requires --site. e.g. --search '行政听证,政府采购供应商信用'")
+    parser.add_argument("--search-pages", type=int, default=10,
+                        help="Max search result pages per keyword (default: 10, pagesize 20)")
+    parser.add_argument("--search-title", action="store_true",
+                        help="Restrict search matching to titles (position=title) instead of full text")
+    parser.add_argument("--db", metavar="PATH",
+                        help="Write to this SQLite file instead of the default documents.db "
+                             "(use a THROWAWAY temp DB for testing — never the live corpus)")
     args = parser.parse_args()
 
     if args.list_sites:
@@ -864,7 +1057,8 @@ def main():
             print(f"  {key:10s} {cfg['name']:40s} {cfg['base_url']}")
         return
 
-    conn = init_db()
+    from pathlib import Path
+    conn = init_db(Path(args.db) if args.db else None)
 
     if args.stats:
         show_stats(conn)
@@ -921,6 +1115,21 @@ def main():
 
     if args.backfill_bodies:
         backfill_bodies(conn, args.site, args.policy_first, delay=args.backfill_delay)
+        show_stats(conn)
+        conn.close()
+        return
+
+    if args.search:
+        if not args.site or args.site not in SITES:
+            print("--search requires a valid --site (e.g. --site sz). Use --list-sites.")
+            conn.close()
+            return
+        keywords = [k for k in args.search.split(",") if k.strip()]
+        fetch_bodies = not args.metadata_only
+        position = "title" if args.search_title else ""
+        search_backfill(conn, args.site, SITES[args.site], keywords,
+                        max_pages=args.search_pages, position=position,
+                        fetch_bodies=fetch_bodies)
         show_stats(conn)
         conn.close()
         return

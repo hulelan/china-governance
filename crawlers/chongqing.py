@@ -15,6 +15,21 @@ Sections crawled:
   - xzgfxwj/szfbgt: 市政府办公厅行政规范性文件  (Municipal Office normative docs)
   - xzgfxwj/szf:    市政府行政规范性文件        (Municipal Gov normative docs)
   - zfgz/zfgz:      政府规章 / 渝府令           (Government regulations)
+  - fzhsxgz/fzhsxxzgfxwj: 废止和失效行政规范性文件 (Repealed/invalid normative
+    docs — HISTORICAL BACKFILL, see note below)
+
+Repealed-archive note (废止失效, section key "fzhsx"):
+  When a normative doc is repealed it leaves the active xzgfxwj listings and is
+  moved into this 586-record archive.  The archive listing is server-rendered
+  with title + 发文字号 + 废止日期, but the row <a> tags carry NO href — detail
+  URLs are only reachable through the site's ENCRYPTED-param search API
+  (crypto-js / DECRYPT.js / ykb-request.js, the "encrypted-param dialect" of
+  crawlers/trs.py) and the original detail pages have themselves been withdrawn
+  (they 404).  So this section is captured as METADATA-ONLY records: title,
+  document_number, repeal date (-> date_published) and is_abolished=1, with a
+  stable synthetic URL (archive index + #发文字号) for dedup.  No body text is
+  fetched.  This still recovers ~586 genuinely-missing OLD abolished docs as
+  resolvable citation targets (matched by title / 文号).
 
 Pagination:
   JS function createPage(totalPages, currentIndex, "index", "html").
@@ -63,7 +78,14 @@ SECTIONS = {
     "szfbgt": ("市政府办公厅行政规范性文件", "xzgfxwj/szfbgt", "xzgfxwj"),
     "szf":    ("市政府行政规范性文件",     "xzgfxwj/szf",    "xzgfxwj"),
     "zfgz":   ("政府规章（渝府令）",       "zfgz/zfgz",      "zfgz"),
+    # Historical backfill: repealed/invalid normative docs (metadata-only, no body).
+    "fzhsx":  ("废止和失效行政规范性文件", "fzhsxgz/fzhsxxzgfxwj", "fzhsx"),
 }
+
+# Section formats that yield metadata-only records (no fetchable detail page):
+# the listing has title + 文号 + repeal date but no href, and the withdrawn
+# detail pages 404.  Stored with a synthetic URL + is_abolished=1, no body.
+NO_BODY_FORMATS = {"fzhsx"}
 
 
 def _section_url(section_key: str, page: int = 0) -> str:
@@ -222,10 +244,92 @@ def _parse_listing_zfgz(html: str, base_url: str) -> list[dict]:
     return items
 
 
+def _parse_listing_fzhsx(html: str, base_url: str) -> list[dict]:
+    """Parse the 废止和失效行政规范性文件 archive (metadata-only records).
+
+    Same <tr class="zcwjk-list-c"> rows as the xzgfxwj sections, but the <a>
+    tag has NO href (detail URLs live behind the encrypted search API, and the
+    original pages 404), and the date shown is 废止日期 (repeal date) in
+    YYYY年MM月DD日 form, e.g.:
+
+      <tr class="zcwjk-list-c clearfix">
+        <td class="num">1</td>
+        <td class="title">
+          <a>
+            <p class="tit">TITLE</p>
+            <p class="info">(<span>发文字号：渝府办发〔2016〕75号</span>
+               <span class="time">废止日期 ：2026年02月03日</span>)</p>
+          </a>
+        </td>
+      </tr>
+
+    Because there is no real detail URL we synthesize a STABLE one from the
+    archive index + a #发文字号 (or #title) fragment so the partial-unique url
+    index makes re-runs idempotent and gives a plausible source link.
+    """
+    from urllib.parse import quote
+
+    items = []
+    for m in re.finditer(
+        r'<tr[^>]*class="zcwjk-list-c[^"]*"[^>]*>(.*?)</tr>',
+        html,
+        re.DOTALL,
+    ):
+        row = m.group(1)
+
+        title_m = re.search(r'<p\s+class="tit"[^>]*>(.*?)</p>', row, re.DOTALL)
+        if not title_m:
+            continue
+        title = re.sub(r"<[^>]+>", "", title_m.group(1)).strip()
+        if not title:
+            continue
+
+        doc_number = ""
+        dn_m = re.search(r'发文字号[：:]\s*([^<]+)', row)
+        if dn_m:
+            doc_number = re.sub(
+                r'[​‌‍﻿\s]+$', '', dn_m.group(1).strip()
+            )
+
+        # 废止日期 (repeal date) — accepts both YYYY年MM月DD日 and YYYY-MM-DD.
+        repeal_date = ""
+        rd_m = re.search(
+            r'废止日期\s*[：:]\s*(\d{4}[-年]\d{1,2}[-月]\d{1,2}日?)', row
+        )
+        if rd_m:
+            repeal_date = rd_m.group(1)
+
+        # The archive gives no promulgation date, only the repeal date — but the
+        # true era is reliably encoded in the 文号 (e.g. 渝府办发〔2016〕75号 ->
+        # 2016).  Use that year for date_published so these sort into their real
+        # era; keep the repeal date in `relation`.  Empty if no year found.
+        promulgation = ""
+        yr_m = re.search(r'[〔\[（(](\d{4})[〕\]）)]', doc_number)
+        if yr_m:
+            promulgation = yr_m.group(1)
+
+        # Stable synthetic URL: archive index + #文号 (fall back to title).
+        frag = doc_number or title
+        synth_url = urljoin(base_url, "index.html") + "#" + quote(frag)
+
+        items.append({
+            "url": synth_url,
+            "title": unescape(title),
+            "date_str": promulgation,
+            "document_number": doc_number,
+            "is_abolished": 1,
+            "repeal_date": repeal_date,
+        })
+
+    return items
+
+
 def _parse_listing(html: str, base_url: str, fmt: str) -> list[dict]:
     """Dispatch to the correct listing parser."""
     if fmt == "zfgz":
         return _parse_listing_zfgz(html, base_url)
+    if fmt == "fzhsx":
+        return _parse_listing_fzhsx(html, base_url)
     return _parse_listing_xzgfxwj(html, base_url)
 
 
@@ -309,10 +413,17 @@ def _extract_body(html: str) -> str:
 
 
 def crawl_section(
-    conn, section_key: str, section_name: str, fetch_bodies: bool = True
+    conn, section_key: str, section_name: str, fetch_bodies: bool = True,
+    max_pages: int = None,
 ):
-    """Crawl all listing pages in a section and fetch document details."""
+    """Crawl all listing pages in a section and fetch document details.
+
+    max_pages: cap the number of listing pages fetched (for bounded testing).
+      None = all pages.
+    """
     _, _, fmt = SECTIONS[section_key]
+    # Repealed-archive rows have no fetchable detail page -> metadata-only.
+    no_body = fmt in NO_BODY_FORMATS
     log.info(f"--- Section: {section_name} ({section_key}) ---")
 
     first_url = _section_url(section_key, 0)
@@ -323,7 +434,9 @@ def crawl_section(
         return 0
 
     total_pages = _get_total_pages(html)
-    log.info(f"  {total_pages} listing pages")
+    if max_pages is not None:
+        total_pages = min(total_pages, max_pages)
+    log.info(f"  {total_pages} listing pages" + (" (metadata-only)" if no_body else ""))
 
     # Parse first page
     all_items = _parse_listing(html, first_url, fmt)
@@ -346,11 +459,13 @@ def crawl_section(
     for item in all_items:
         doc_url = item["url"]
 
-        # Skip if already stored with body text
+        # Skip if already stored with body text.  For metadata-only sections
+        # (no body ever), skip if the record already exists at all so re-runs
+        # are cheap and idempotent (the synthetic url is stable per 文号).
         existing = conn.execute(
             "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
-        if existing and existing[1]:
+        if existing and (existing[1] or no_body):
             stored += 1
             continue
 
@@ -363,7 +478,7 @@ def crawl_section(
         date_published = item.get("date_str", "")
         date_written = _parse_date(item.get("date_str", ""))
 
-        if fetch_bodies:
+        if fetch_bodies and not no_body:
             try:
                 doc_html = fetch(doc_url)
                 meta = _extract_meta(doc_html)
@@ -387,7 +502,7 @@ def crawl_section(
                 log.warning(f"  Failed to fetch {doc_url}: {e}")
             time.sleep(REQUEST_DELAY)
 
-        store_document(conn, SITE_KEY, {
+        doc_row = {
             "id": doc_id,
             "title": item["title"],
             "document_number": doc_number,
@@ -398,7 +513,14 @@ def crawl_section(
             "url": doc_url,
             "classify_main_name": section_name,
             "raw_html_path": raw_html_path,
-        })
+        }
+        if no_body:
+            # Repealed/invalid record: flag abolished, note the repeal date.
+            doc_row["is_abolished"] = item.get("is_abolished", 1)
+            rd = item.get("repeal_date", "")
+            if rd:
+                doc_row["relation"] = f"repealed;repeal_date={rd}"
+        store_document(conn, SITE_KEY, doc_row)
         stored += 1
 
         if stored % 20 == 0:
@@ -410,7 +532,8 @@ def crawl_section(
     return stored
 
 
-def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True):
+def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True,
+              max_pages: int = None):
     """Crawl all (or specified) Chongqing sections."""
     if sections is None:
         sections = {k: v[0] for k, v in SECTIONS.items()}
@@ -418,7 +541,7 @@ def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True):
     store_site(conn, SITE_KEY, SITE_CFG)
     total = 0
     for section_key, name in sections.items():
-        total += crawl_section(conn, section_key, name, fetch_bodies)
+        total += crawl_section(conn, section_key, name, fetch_bodies, max_pages)
         time.sleep(REQUEST_DELAY)
 
     log.info(f"=== Chongqing total: {total} documents ===")
@@ -442,6 +565,10 @@ def main():
     parser.add_argument(
         "--db", type=str, help="Path to SQLite database (default: documents.db)",
     )
+    parser.add_argument(
+        "--max-pages", type=int, default=None,
+        help="Cap listing pages per section (bounded testing)",
+    )
     args = parser.parse_args()
 
     conn = init_db(Path(args.db) if args.db else None)
@@ -454,7 +581,8 @@ def main():
     sections = (
         {args.section: SECTIONS[args.section][0]} if args.section else None
     )
-    crawl_all(conn, sections, fetch_bodies=not args.list_only)
+    crawl_all(conn, sections, fetch_bodies=not args.list_only,
+              max_pages=args.max_pages)
     show_stats(conn)
     conn.close()
 

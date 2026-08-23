@@ -61,9 +61,17 @@ SECTIONS = {
     "czwg": {
         "name": "财政文告",
         "path": "/gkml/caizhengwengao/",
-        "type": "pdf",
+        # Historical archive walker (see crawl_wengao_archive). The 财政部文告
+        # (gazette) is MOF's permanent, static-HTML back-catalog: year dirs
+        # (2000→now) → monthly issues → INDIVIDUAL per-document .htm pages.
+        # This is the only reachable route to pre-2021 MOF docs — the rolling
+        # zcfb/czxw listings only keep ~20 pages (floor ~2021-11) and the
+        # search.mof.gov.cn WAS backend 502s from datacenter IPs.
+        "type": "wengao",
     },
 }
+
+WENGAO_PATH = "/gkml/caizhengwengao/"
 
 
 def _parse_date(date_str: str) -> int:
@@ -161,6 +169,22 @@ def _extract_doc_number(title: str) -> str:
     m = re.search(r"[（(]([^）)]*[〕\]][^）)]*号)[）)]", title)
     if m:
         return m.group(1)
+    return ""
+
+
+def _extract_doc_number_from_body(body_text: str) -> str:
+    """Extract a MOF 文号 (财库/财预/财税〔YYYY〕N号 …) from the body head.
+
+    Gazette article titles rarely embed the 文号 — it sits in the first lines of
+    the body — so this backfills document_number for formal-citation resolution.
+    """
+    head = body_text[:800]
+    m = re.search(
+        r"(财[一-鿿]{0,3}[〔\[（(]\s*(?:19|20)\d{2}\s*[〕\]）)]\s*\d+\s*号)",
+        head,
+    )
+    if m:
+        return re.sub(r"\s+", "", m.group(1))
     return ""
 
 
@@ -397,7 +421,201 @@ def crawl_pdf_section(conn, section_key: str, section: dict, fetch_bodies: bool 
     return stored
 
 
-def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True):
+# --- 财政部文告 (gazette) historical archive walker ---
+
+def _wengao_year_dirs(index_html: str) -> list[str]:
+    """From the flat gazette index, return year-directory segment names.
+
+    Naming is inconsistent across eras (caizhengbuwengao2004, 2009niancaizheng-
+    buwengao, 2010nianwengao, 2011caizhengwengao, 2012wg, wg2013, 2017wg,
+    wg201901, 202001wg, wg2021 …) so we keep any `./<seg>/` link whose segment
+    carries a 4-digit year and isn't a file.
+    """
+    dirs = []
+    for seg in re.findall(r'href="\./([^"/.]+)/"', index_html):
+        if re.search(r"(?:19|20)\d{2}", seg):
+            dirs.append(seg)
+    # de-dup, preserve order
+    seen = set()
+    out = []
+    for d in dirs:
+        if d not in seen:
+            seen.add(d)
+            out.append(d)
+    return out
+
+
+def _issue_urls_for_year(year_index_url: str) -> list[str]:
+    """Resolve a year dir to the full set of its issue-page URLs.
+
+    The year index JS-redirects (location.replace) to its latest issue; that
+    issue page carries a sibling-issue nav (../wgYYYYNN/) listing every issue of
+    the year. We collect the redirect target + all siblings.
+    """
+    try:
+        html = fetch(year_index_url)
+    except Exception as e:
+        log.warning(f"  Failed year index {year_index_url}: {e}")
+        return []
+
+    m = re.search(r'location\.replace\(["\']([^"\']+)["\']', html)
+    if m:
+        latest_url = urljoin(year_index_url, m.group(1))
+    else:
+        # No redirect — the year index may itself be the issue listing.
+        latest_url = year_index_url
+
+    try:
+        issue_html = fetch(latest_url)
+    except Exception as e:
+        log.warning(f"  Failed latest issue {latest_url}: {e}")
+        return [latest_url]
+
+    urls = {latest_url.rstrip("/") + "/"}
+    for href in re.findall(r'href="(\.\.?/[^"]+/)"[^>]*id=', issue_html):
+        sib = urljoin(latest_url, href)
+        # Keep only sibling issue dirs (…/wgYYYYNN/ or …/caizhengbuwengaoYYYYNN/)
+        if re.search(r"(?:19|20)\d{2}\d{2}/$", sib) or re.search(r"wengao\d{6}/$", sib):
+            urls.add(sib)
+    return sorted(urls)
+
+
+def _issue_doc_links(issue_url: str, issue_html: str) -> list[dict]:
+    """Extract individual-document links from one gazette issue page.
+
+    Modern issues sometimes carry only a single compendium PDF; those are
+    skipped here (no per-doc granularity) — the HTML-per-document issues (the
+    vast majority, incl. all of 2000-2023) are what we want.
+    """
+    items = []
+    for m in re.finditer(
+        r'href="(\.{1,2}/[^"]*t\d{8}_\d+\.html?)"[^>]*(?:title=[\'"]([^\'"]*)[\'"])?[^>]*>([^<]*)</a>',
+        issue_html,
+    ):
+        href, title_attr, title_txt = m.group(1), m.group(2), m.group(3)
+        title = (title_attr or title_txt or "").strip()
+        if not title:
+            continue
+        items.append({"url": urljoin(issue_url, href), "title": title})
+    return items
+
+
+def crawl_wengao_archive(conn, section: dict, fetch_bodies: bool = True,
+                         max_docs: int = 0):
+    """Walk the 财政部文告 historical archive: year → issue → per-document .htm.
+
+    This backfills pre-2021 MOF documents (heavily cited 财库/财预/财税/财会/财建 …
+    通知) that the rolling zcfb/czxw listings no longer surface.
+    """
+    name = section["name"]
+    log.info(f"--- Section: {name} (czwg, gazette archive) ---")
+
+    index_url = urljoin(SITE_CFG["base_url"], WENGAO_PATH) + "index.htm"
+    try:
+        index_html = fetch(index_url)
+    except Exception as e:
+        log.error(f"Failed to fetch gazette index {index_url}: {e}")
+        return 0
+
+    year_dirs = _wengao_year_dirs(index_html)
+    log.info(f"  {len(year_dirs)} year directories: {', '.join(year_dirs)}")
+
+    # Collect all issue URLs across all years (newest years first).
+    issue_urls = []
+    for seg in year_dirs:
+        year_index = urljoin(index_url, f"./{seg}/") + "index.htm"
+        issues = _issue_urls_for_year(year_index)
+        issue_urls.extend(issues)
+        time.sleep(REQUEST_DELAY)
+    log.info(f"  {len(issue_urls)} gazette issues discovered")
+
+    # Gather per-document links from every issue.
+    all_items = []
+    seen_urls = set()
+    for issue_url in issue_urls:
+        if max_docs and len(all_items) >= max_docs:
+            break
+        try:
+            issue_html = fetch(issue_url)
+        except Exception as e:
+            log.warning(f"  Failed issue {issue_url}: {e}")
+            continue
+        for item in _issue_doc_links(issue_url, issue_html):
+            if item["url"] in seen_urls:
+                continue
+            seen_urls.add(item["url"])
+            all_items.append(item)
+        time.sleep(REQUEST_DELAY)
+
+    if max_docs:
+        all_items = all_items[:max_docs]
+    log.info(f"  Found {len(all_items)} archive document links")
+
+    stored = 0
+    bodies = 0
+    skipped = 0
+    for item in all_items:
+        doc_url = item["url"]
+        existing = conn.execute(
+            "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''",
+            (doc_url,),
+        ).fetchone()
+        if existing and existing[1]:
+            skipped += 1
+            continue
+
+        doc_id = existing[0] if existing else next_id(conn)
+        body_text = ""
+        raw_html_path = ""
+        doc_number = _extract_doc_number(item["title"])
+        publisher = "财政部"
+        date_published = ""
+
+        if fetch_bodies:
+            try:
+                doc_html = fetch(doc_url)
+                meta = _extract_meta(doc_html)
+                body_text = _extract_body(doc_html)
+                doc_number = (
+                    doc_number
+                    or _extract_doc_number(meta.get("ArticleTitle", ""))
+                    or _extract_doc_number_from_body(body_text)
+                )
+                if meta.get("PubDate"):
+                    date_published = meta["PubDate"][:10]
+                if doc_html:
+                    raw_html_path = save_raw_html(SITE_KEY, doc_id, doc_html)
+                    bodies += 1
+            except Exception as e:
+                log.warning(f"  Failed to fetch {doc_url}: {e}")
+            time.sleep(REQUEST_DELAY)
+
+        store_document(conn, SITE_KEY, {
+            "id": doc_id,
+            "title": item["title"],
+            "document_number": doc_number,
+            "publisher": publisher,
+            "date_written": _parse_date(date_published),
+            "date_published": date_published,
+            "body_text_cn": body_text,
+            "url": doc_url,
+            "classify_main_name": name,
+            "raw_html_path": raw_html_path,
+        })
+        stored += 1
+
+        if stored % 20 == 0:
+            conn.commit()
+            log.info(f"  Progress: {stored}/{len(all_items)} stored, "
+                     f"{bodies} bodies, {skipped} skipped")
+
+    conn.commit()
+    log.info(f"  Done: {stored} stored, {bodies} bodies, {skipped} already existed")
+    return stored
+
+
+def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True,
+              max_docs: int = 0):
     """Crawl all (or specified) MOF sections."""
     if sections is None:
         sections = SECTIONS
@@ -405,7 +623,9 @@ def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True):
     store_site(conn, SITE_KEY, SITE_CFG)
     total = 0
     for key, section in sections.items():
-        if section["type"] == "pdf":
+        if section["type"] == "wengao":
+            total += crawl_wengao_archive(conn, section, fetch_bodies, max_docs)
+        elif section["type"] == "pdf":
             total += crawl_pdf_section(conn, key, section, fetch_bodies)
         else:
             total += crawl_html_section(conn, key, section, fetch_bodies)
@@ -423,6 +643,9 @@ def main():
                         help="List URLs without fetching bodies")
     parser.add_argument("--db", type=str,
                         help="Path to SQLite database (default: documents.db)")
+    parser.add_argument("--max-docs", type=int, default=0,
+                        help="Cap docs fetched from the czwg gazette archive "
+                             "(0=all; for bounded validation runs)")
     args = parser.parse_args()
 
     conn = init_db(Path(args.db) if args.db else None)
@@ -433,7 +656,8 @@ def main():
         return
 
     sections = {args.section: SECTIONS[args.section]} if args.section else None
-    crawl_all(conn, sections, fetch_bodies=not args.list_only)
+    crawl_all(conn, sections, fetch_bodies=not args.list_only,
+              max_docs=args.max_docs)
     show_stats(conn)
     conn.close()
 

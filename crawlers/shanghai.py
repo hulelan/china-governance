@@ -18,6 +18,21 @@ Sections crawled:
   - nw11408: 沪府办发 (Municipal office directives)
   - nw39221: 沪府办 (Municipal office documents)
   - nw42944: 沪府规 (Municipal gov regulations)
+  - nw42850: 沪府办规 (Municipal office regulatory docs, 2018+ — added 2026-08)
+
+Historical depth note (2026-08): the 6 general families above are already at the
+portal's max linked depth — 沪府令 reaches 1979 because its index links a dedicated
+"2003年前" bucket (nw26170) that _get_year_archive_urls() auto-discovers (the "2003年"
+in that label matches the year regex); 沪府发/办发 reach 2003; but 沪府文件/沪府办 only
+link 2013+ and 沪府规 only 2018+ — shanghai.gov.cn does NOT expose any older archive
+for those families (their pre-cutoff history is delisted from the portal nav, not a
+crawler-depth gap; only 令 got a "…年前" bucket). 沪府办规 (nw42850) is an additional
+document family the portal exposes (same archive/pagination/body mechanism) that was
+previously uncrawled — ~156 docs, 2018+. Two caveats: (1) its newest year archive can
+be empty (e.g. 2025 had 0 docs mid-year), which trips the non-deep early-exit and
+halts the section — run a backfill with SHANGHAI_DEEP=1. (2) 沪府任 (nw44931,
+appointments) uses a different listing markup that _parse_listing does not match, so
+it is intentionally NOT added.
 
 Usage:
     python -m crawlers.shanghai                     # Crawl all sections
@@ -64,6 +79,7 @@ SECTIONS = {
     "nw11408": "沪府办发",
     "nw39221": "沪府办",
     "nw42944": "沪府规",
+    "nw42850": "沪府办规",
 }
 
 _BASE_URL = "https://www.shanghai.gov.cn"

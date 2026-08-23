@@ -96,6 +96,16 @@ def _get_total_pages(html: str) -> int:
     if re.search(r"var\s+\$list\s*=\s*\$\(['\"]\.default_news\s+li['\"]\)", html):
         return 1
 
+    # Server-side pagination via Beijing's Pager() widget (used by zcjd 政策解读
+    # and other sections whose listing is NOT the client-side .default_news slab):
+    #   <script>Pager({size:270, current:0, prefix:'index', suffix:'html'});</script>
+    # `size` is the TOTAL page count; pages are 0-indexed (index.html = page 0,
+    # index_1.html .. index_{size-1}.html). Checked AFTER the .default_news guard
+    # so single-page client-side sections still return 1.
+    m = re.search(r"Pager\(\s*\{[^}]*\bsize\s*:\s*(\d+)", html)
+    if m:
+        return int(m.group(1))
+
     # createPageHTML has two forms:
     #   createPageHTML(totalPages, currentPage, ...) — 2-arg: first is pages
     #   createPageHTML(totalRecords, totalPages, currentPage, ...) — 3+ arg: second is pages

@@ -91,11 +91,34 @@ def _get_total_pages(html: str) -> int:
     """Extract total page count from jpage configuration.
 
     Jiangsu uses jpage plugin: totalRecord:N, perPage:M
+
+    GOTCHA (fixed 2026-08): the server-rendered col index page embeds a
+    PLACEHOLDER `totalRecord:1000` in the jpage boilerplate BEFORE the real
+    column total (e.g. `totalRecord:5221`). Grabbing the FIRST match capped
+    every section at 1000 records (~50 pages) and silently dropped the older
+    ~80% of each column (zcwj alone holds 5221 docs back to 2003, not 1000).
+    Take the MAX over ALL occurrences instead. The jpage XML API response
+    carries the authoritative total in a `<totalrecord>` / `<totalpage>` tag
+    (lowercase, tag-form — not matched by the `totalRecord:` config pattern),
+    so parse those too.
     """
-    total_m = re.search(r"totalRecord[\"']?\s*[:=]\s*[\"']?(\d+)", html)
-    if total_m:
-        total = int(total_m.group(1))
+    totals = [
+        int(x)
+        for x in re.findall(
+            r"totalRecord[\"']?\s*[:=]\s*[\"']?(\d+)", html, re.IGNORECASE
+        )
+    ]
+    totals += [
+        int(x)
+        for x in re.findall(r"<totalrecord>\s*(\d+)\s*</totalrecord>", html, re.IGNORECASE)
+    ]
+    if totals:
+        total = max(totals)
         return (total + _PAGE_SIZE - 1) // _PAGE_SIZE
+    # jpage XML API response carries an explicit page count.
+    m = re.search(r"<totalpage>\s*(\d+)\s*</totalpage>", html, re.IGNORECASE)
+    if m:
+        return int(m.group(1))
     # Fallback patterns
     m = re.search(r"createPageHTML\((\d+),", html)
     if m:
@@ -292,9 +315,15 @@ def _extract_doc_number(title: str) -> str:
 
 
 def crawl_section(
-    conn, section: str, section_name: str, fetch_bodies: bool = True
+    conn, section: str, section_name: str, fetch_bodies: bool = True,
+    max_pages: int = 0,
 ):
-    """Crawl all listing pages in a section and fetch document details."""
+    """Crawl all listing pages in a section and fetch document details.
+
+    max_pages > 0 bounds how many listing pages are walked (page 0 + up to
+    max_pages-1 API pages) — used for cheap validation / smoke runs so a probe
+    doesn't fetch the full multi-thousand-doc archive.
+    """
     log.info(f"--- Section: {section_name} ({section}) ---")
 
     first_url = _section_url(section, 0)
@@ -305,6 +334,8 @@ def crawl_section(
         return 0
 
     total_pages = _get_total_pages(html)
+    if max_pages > 0:
+        total_pages = min(total_pages, max_pages)
     log.info(f"  {total_pages} listing pages")
 
     all_items = _parse_listing(html, first_url)
@@ -398,7 +429,8 @@ def crawl_section(
     return stored
 
 
-def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True):
+def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True,
+              max_pages: int = 0):
     """Crawl all (or specified) Jiangsu sections."""
     if sections is None:
         sections = {k: v[0] for k, v in SECTIONS.items()}
@@ -406,7 +438,7 @@ def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True):
     store_site(conn, SITE_KEY, SITE_CFG)
     total = 0
     for section, name in sections.items():
-        total += crawl_section(conn, section, name, fetch_bodies)
+        total += crawl_section(conn, section, name, fetch_bodies, max_pages)
         time.sleep(REQUEST_DELAY)
 
     log.info(f"=== Jiangsu total: {total} documents ===")
@@ -428,6 +460,10 @@ def main():
     parser.add_argument(
         "--db", type=str, help="Path to SQLite database (default: documents.db)",
     )
+    parser.add_argument(
+        "--max-pages", type=int, default=0,
+        help="Bound listing pages walked per section (0 = all). For validation.",
+    )
     args = parser.parse_args()
 
     conn = init_db(Path(args.db) if args.db else None)
@@ -440,7 +476,8 @@ def main():
     sections = (
         {args.section: SECTIONS[args.section][0]} if args.section else None
     )
-    crawl_all(conn, sections, fetch_bodies=not args.list_only)
+    crawl_all(conn, sections, fetch_bodies=not args.list_only,
+              max_pages=args.max_pages)
     show_stats(conn)
     conn.close()
 
