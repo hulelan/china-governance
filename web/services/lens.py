@@ -24,6 +24,31 @@ from . import documents as docsvc
 CACHE_TTL = 3600  # seconds
 _topic_cache: dict = {}
 _doc_cache: dict = {}
+_totals_cache: dict = {}
+
+
+async def _yearly_totals(db):
+    """Per-year TOTAL document count (topic-independent), cached once for an hour.
+
+    The corpus grows ~70x across 2013-2026, so a topic's raw docs/year mostly
+    tracks that ramp. Dividing by the yearly total turns volume into a *share* —
+    the honest measure of whether attention to a topic actually rose, per the
+    research-agenda note. Uses date_written (unix ts), same field/clip as the
+    topic timeline so numerator and denominator are comparable.
+    """
+    hit = _totals_cache.get("v")
+    now = time.time()
+    if hit and now - hit["ts"] < CACHE_TTL:
+        return hit["data"]
+    rows = await db.fetch(
+        """SELECT CAST(strftime('%Y', date_written, 'unixepoch') AS INTEGER) AS yr,
+                  COUNT(*) AS c
+           FROM documents
+           WHERE date_written > 0
+           GROUP BY yr HAVING yr BETWEEN 2013 AND 2035""")
+    data = {r["yr"]: r["c"] for r in rows}
+    _totals_cache["v"] = {"data": data, "ts": now}
+    return data
 
 
 async def get_topic_lens(db, q: str):
@@ -51,7 +76,15 @@ async def get_topic_lens(db, q: str):
            GROUP BY yr
            HAVING yr BETWEEN 2013 AND 2035
            ORDER BY yr""", pat)
-    timeline = [{"year": r["yr"], "count": r["c"]} for r in tl_rows]
+    totals = await _yearly_totals(db)
+    timeline = []
+    for r in tl_rows:
+        yr, c = r["yr"], r["c"]
+        tot = totals.get(yr, 0)
+        # share expressed per 1,000 documents that year (‰) — readable for the
+        # small shares typical of a single topic.
+        share = (1000.0 * c / tot) if tot else 0.0
+        timeline.append({"year": yr, "count": c, "total": tot, "share": share})
 
     # Breakdown by administrative level (join sites).
     lv_rows = await db.fetch(
@@ -104,6 +137,7 @@ async def get_topic_lens(db, q: str):
         "genres": genres,
         "anchors": anchors,
         "timeline_max": max((t["count"] for t in timeline), default=0),
+        "share_max": max((t["share"] for t in timeline), default=0.0),
         "level_max": max((l["count"] for l in levels), default=0),
         "site_max": max((s["count"] for s in top_sites), default=0),
         "genre_max": max((g["count"] for g in genres), default=0),

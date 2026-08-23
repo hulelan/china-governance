@@ -132,10 +132,21 @@
 
     <!-- Attention timeline -->
     <div class="mb-8">
-        <span class="lab">Attention over time · documents per year</span>
+        <span class="lab">Attention over time</span>
+        <p class="text-muted text-xs mb-2 leading-relaxed max-w-3xl">
+            The whole corpus grows ~70× over this window, so raw <span class="text-teal">volume</span> mostly tracks that ramp.
+            <span class="text-brand">Share</span> — this topic as ‰ (per&nbsp;1,000) of <em>all</em> documents that year —
+            is the honest signal: a rising share means attention genuinely gained ground, not just that the archive got bigger.
+        </p>
         <div class="card table-scroll">
         <table class="data-table">
-            <thead><tr><th class="w-16">Year</th><th>Volume</th><th class="w-16 text-right">Count</th></tr></thead>
+            <thead><tr>
+                <th class="w-14">Year</th>
+                <th>Volume <span class="text-muted font-normal">· docs</span></th>
+                <th class="w-16 text-right">Count</th>
+                <th>Share <span class="text-muted font-normal">· ‰ of year</span></th>
+                <th class="w-14 text-right">‰</th>
+            </tr></thead>
             <tbody>
             {% for t in topic.timeline %}
                 <tr>
@@ -144,6 +155,10 @@
                         <div class="h-3 bg-teal" style="width: {{ ((t.count / topic.timeline_max) * 100)|round(1) if topic.timeline_max else 0 }}%; min-width: 2px;"></div>
                     </td>
                     <td class="text-right mono">{{ "{:,}".format(t.count) }}</td>
+                    <td>
+                        <div class="h-3 bg-brand" style="width: {{ ((t.share / topic.share_max) * 100)|round(1) if topic.share_max else 0 }}%; min-width: 2px;"></div>
+                    </td>
+                    <td class="text-right mono {% if topic.share_max and t.share == topic.share_max %}text-brand font-semibold{% endif %}">{{ "%.1f"|format(t.share) }}</td>
                 </tr>
             {% endfor %}
             </tbody>
