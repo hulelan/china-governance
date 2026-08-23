@@ -36,6 +36,19 @@ Chinese government document corpus + web app. Crawls policy documents from centr
   annotations), source-type **ontology** (`data/source_ontology.yaml` + "exclude
   news" filter on search/browse), **BM25 relevance** search (below), Canvas-rendered
   network graph (bounded + cached, ~5s→0.3s).
+- **Research layer (2026-08-22 — pivot from crawl-volume to analysis).** Goal
+  clarified: political-science research on China as a bureaucracy (institutional /
+  comparative governance). See `memory/project_research_pivot.md`. Shipped:
+  - **Policy Lens** — `/lens` (`web/services/lens.py`, `templates/lens.html`): a
+    topic/document dossier. `?q=<topic>` → attention timeline, admin-level &
+    genre & issuer breakdowns, most-cited anchor docs (title-match only, no body
+    scans, 1h cache). `?doc=<id>` → outbound/inbound citation neighborhood.
+  - **Genre typer** — `scripts/rnd/classification/genre_typer.py` (wired into
+    `compute_scores.classify_doc_type`): strips HTML/文号/date tails + adds ~11
+    genres; cut `algo_doc_type='other'` from ~50% → ~37.6%.
+  - **Docs**: `docs/research/research-agenda.md` (12 tiered research questions +
+    operationalizations) and `docs/research/consumption-diffusion.md` (worked
+    proof: the 2024–26 以旧换新/提振消费 top-down cascade — GD +20d, ~49d median lag).
 - **base.fetch() now gunzips** gzip/deflate responses (some gov servers force-gzip).
 - **Coverage audit**: `docs/working/coverage.csv` (rebuild via
   `scripts/rnd/discovery/build_coverage_csv.py`) — ~14/34 provincial units crawled;
@@ -410,6 +423,20 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   on both sides, so the resolved counts intentionally went UP (named→114,966,
   llm→66,423, formal→29,545; docs-with-inbound ~12,102→35,880) — the old
   "byte-identical" baseline no longer applies.
+  **(2026-08-22 round-2 + DIAGNOSIS)** Citation resolution sits at a **~51%
+  ceiling that is COVERAGE-bound, not matching-bound.** A full audit of the ~219k
+  unresolved edges found re-running the resolver on them resolves **0** — the
+  overwhelming majority are genuine coverage gaps (the cited doc isn't in the
+  corpus: other-city municipal docs, 1990s–2000s historical docs, never-crawled
+  central docs, foreign laws, and non-document refs like "中央经济工作会议").
+  Resolution can't exceed ~52–54% by matching alone; **it only rises by ingesting
+  the cited documents** — i.e. the unresolved refs are a prioritized crawl shopping
+  list (ties into the coverage campaign). A conservative round-2 matcher fix
+  (`_agg_docnum`/`_core_docnum` 文号 folding + `resolve_ref` 《》 title-core
+  fallback, length-gated ≥10, zero-regression) recovers the fixable minority:
+  **+2,803 edges → 51.5%**. Applied by nightly Phase 2b. NOTE: ~2% of unresolved
+  named refs are **character-scrambled inside `body_text_cn`** (anti-scraping
+  artifact) — unrecoverable without re-extracting those bodies.
 - **(2026-07) Crawler timeouts.** `CRAWLER_TIMEOUT=1800` (30 min/crawler). Recent
   runs see ~11 crawlers hit the cap (cac, samr, mofcom, beijing, shanghai,
   jiangsu, suzhou, heilongjiang, xinhua, miit, most) → ~10h total run. Likely
