@@ -102,6 +102,55 @@ def _core_docnum(s):
     return f"{m.group(1)}{m.group(2)}{m.group(3)}号"
 
 
+# --- Resolver-recall upgrade (2026-08, round 3) -----------------------------
+# Two more representable formal-ref misses, both proven on the live unresolved set:
+#   (1) ZERO-PADDING. A heavily-cited ref like 财库〔2022〕4号 (demand 130) is held in
+#       the corpus as 财库〔2022〕004号. Every existing docnum key keeps the sequence
+#       number verbatim, so 4号 != 004号 and the ref never resolves. _core_zs_key
+#       strips the number's leading zeros so the two collide.
+#   (2) EMPTY document_number (75% of docs). A formal 文号 citation can't reach a held
+#       doc via the docnum indices when that doc stored no document_number — but the
+#       文号 usually lives in the TITLE. We index title-embedded 文号 (zero-strip core)
+#       so such refs resolve. To keep precision we prefer the "own-number position"
+#       (right after a 发文字号/文号 label, or trailing in （…） at the end) over a mere
+#       mid-title mention of some OTHER doc's number.
+# Both are added as FINAL tiers of resolve_formal that fire ONLY after the whole
+# existing chain misses (existing indices untouched), so the currently-resolved
+# edge set stays a strict subset — no regression by construction.
+
+def _core_zs_key(s):
+    """Zero-padding-insensitive 文号 key: like _core_docnum but strips leading zeros
+    from the sequence number, so 财库〔2022〕4号 and 财库〔2022〕004号 (same document,
+    padded differently) map to one key. Returns None when no 文号 core is present."""
+    ms = list(_CORE_DOCNUM.finditer(s or ""))
+    if not ms:
+        return None
+    m = ms[-1]
+    num = m.group(3).lstrip("0") or "0"
+    return f"{m.group(1)}{m.group(2)}{num}号"
+
+
+# 发文字号/文号/字号 label immediately preceding a title-embedded 文号 → it is the
+# document's OWN number (not a reference to a different doc).
+_OWN_NUM_MARK = re.compile(r'(?:发文字号|文\s*号|字\s*号)[：:\s]{0,3}$')
+
+
+def _title_docnums(title):
+    """Yield (zs_key, is_own_number) for each 文号 core found in a title. is_own_number
+    is True when the 文号 sits in an own-number position — right after a 发文字号/文号
+    label, or trailing at the very end inside （…） — which distinguishes a doc's own
+    number from an in-title mention of some OTHER doc's number (e.g. '…（X号批次）')."""
+    for m in _CORE_DOCNUM.finditer(title or ""):
+        k = _core_zs_key(m.group(0))
+        if not k:
+            continue
+        pre = title[max(0, m.start() - 8):m.start()]
+        tail = title[m.end():]
+        is_own = bool(_OWN_NUM_MARK.search(pre)) or all(
+            ch in ')）]】〕 ' for ch in tail)
+        yield k, is_own
+
+
 # 《...》 inner title (>=8 chars) and an END-anchored trailing qualifier group.
 # The trailing set is deliberately limited to qualifiers that do NOT change a
 # document's identity (试行/暂行/征求意见稿/…); we intentionally do NOT strip a bare
@@ -223,6 +272,7 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
     docnum_to_id = {}
     docnum_agg = {}   # aggressive key (full-width digits + all punctuation folded)
     docnum_core = {}  # canonical issuer+year+num号 core key
+    docnum_core_zs = {}  # zero-padding-insensitive core key (round-3)
     for row in conn.execute(
         "SELECT id, document_number FROM documents WHERE document_number <> ''"
     ).fetchall():
@@ -237,20 +287,43 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
         cd = _core_docnum(dn)
         if cd:
             docnum_core.setdefault(_agg_docnum(cd), did)
+        zk = _core_zs_key(dn)
+        if zk:
+            docnum_core_zs.setdefault(zk, did)
+
+    # title-embedded 文号 index (round-3): key -> id, own-number positions winning
+    # over mere in-title mentions. Populated after title_to_doc is built, below.
+    title_docnum_zs = {}
 
     def resolve_formal(ref):
-        """docnum resolution: raw -> bracket-norm -> aggressive -> canonical core."""
-        return (docnum_to_id.get(ref)
-                or docnum_to_id.get(_norm_docnum(ref))
-                or docnum_agg.get(_agg_docnum(ref))
-                or docnum_core.get(_agg_docnum(_core_docnum(ref) or "")))
+        """docnum resolution: raw -> bracket-norm -> aggressive -> canonical core, then
+        (round-3 FINAL tiers, only on a miss) zero-strip core over document_number, then
+        the zero-strip core embedded in a stored TITLE. The round-3 tiers fire strictly
+        after the existing chain, so already-resolved refs are unchanged."""
+        did = (docnum_to_id.get(ref)
+               or docnum_to_id.get(_norm_docnum(ref))
+               or docnum_agg.get(_agg_docnum(ref))
+               or docnum_core.get(_agg_docnum(_core_docnum(ref) or "")))
+        if did:
+            return did
+        zk = _core_zs_key(ref)
+        if zk:
+            return docnum_core_zs.get(zk) or title_docnum_zs.get(zk)
+        return None
 
     # title -> (id, site_key) for named ref resolution (only titles >= 8 chars (was 10 — excluded 9-char provincial 条例))
     title_to_doc = {}
+    _title_dn_strong = {}  # own-number-position 文号 in a title
+    _title_dn_weak = {}    # mid-title mention of a 文号 (fallback only)
     for row in conn.execute(
         "SELECT id, title, site_key FROM documents WHERE LENGTH(title) >= 8"
     ).fetchall():
         title_to_doc[row[1]] = (row[0], row[2])
+        for zk, is_own in _title_docnums(row[1]):
+            (_title_dn_strong if is_own else _title_dn_weak).setdefault(zk, row[0])
+    # own-number positions win over mere in-title mentions of another doc's number
+    title_docnum_zs.update(_title_dn_weak)
+    title_docnum_zs.update(_title_dn_strong)
 
     # site_key -> admin_level
     site_levels = {}
