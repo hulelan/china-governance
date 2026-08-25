@@ -91,9 +91,18 @@ SITES = {
         "sections": ["/yaowen/", "/szyw/zwlb/"],
     },
     "fujian": {
+        # Province portal. tzgg/mszx = 通知公告 + 民生资讯 (recent window). Added
+        # 2026-08: /zwgk/flfg/{dfxfg,szfgz} = 地方性法规 (local statutes) + 省政府规章
+        # (provincial gov rules) — primary provincial law the portal otherwise didn't
+        # expose (we held 0). These are single-page t-date lists (~16-50 items each;
+        # index_N.htm is a ~2KB stub, so --deep no-ops — page 0 is the whole set).
+        # NOTE: the province's 闽政/闽政办 省政府文件 and dept 规范性文件 (职称/招聘/闽科规…)
+        # live in the JS/search-gated 政策文件库 (/zck/, WAS5 search), NOT a t-date
+        # section, so they are NOT reachable by this dialect (see Fujian backfill probe).
         "name": "Fujian Province (福建省)",
         "base_url": "http://www.fujian.gov.cn", "admin_level": "provincial",
-        "sections": ["/zwgk/tzgg/", "/xwdt/mszx/"],
+        "sections": ["/zwgk/tzgg/", "/xwdt/mszx/",
+                     "/zwgk/flfg/dfxfg/", "/zwgk/flfg/szfgz/"],
     },
     "hunan": {
         "name": "Hunan Province (湖南省)",
