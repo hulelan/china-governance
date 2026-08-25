@@ -21,7 +21,8 @@ Chinese government document corpus + web app. Crawls policy documents from centr
 - Title translations: ~99.7% of titles have `title_en` (free Google/deep-translator
   pass). References: `references_source` on ~133k docs (`regex_v1` + `deepseek_v2`).
 - Corpus counts above are an April-2026 snapshot (~135k); the live total is
-  higher (**~252k as of Aug 2026**). Check `/api/v1/stats` for the current number.
+  higher (**~277k as of Aug 2026**, after the citation-driven historical backfill —
+  see the Research layer below). Check `/api/v1/stats` for the current number.
 
 **Aug 2026 additions (this build-out):**
 - **Provincial department tier** (119 sites, ~10.8k docs) via `govcms --group dept`:
@@ -49,6 +50,25 @@ Chinese government document corpus + web app. Crawls policy documents from centr
   - **Docs**: `docs/research/research-agenda.md` (12 tiered research questions +
     operationalizations) and `docs/research/consumption-diffusion.md` (worked
     proof: the 2024–26 以旧换新/提振消费 top-down cascade — GD +20d, ~49d median lag).
+  - **Citation-driven crawl queue** — `scripts/rnd/discovery/build_citation_crawl_queue.py`
+    + `docs/working/citation-crawl-queue.csv`: ranks the ~219k UNRESOLVED citation
+    edges into ~125k distinct missing documents by inbound demand, so the citation
+    graph itself is the "what to crawl next" list.
+  - **Historical backfill (2026-08-23)** — fleet-fixed 6 crawlers to reach archives
+    they under-crawled; recovered **+13,165 docs** (263,805→276,970) and **+16,119
+    resolved citations** (→248,115). Per-institution: Beijing 5,721 (Pager pagination
+    fix, zcjd archive to 2006), Jiangsu 4,116 (`_get_total_pages` placeholder-cap fix,
+    to 2003), MOF 1,880 (财政部文告 gazette walker, 2000–), Chongqing 584 (废止失效
+    metadata), Shanghai 156 (沪府办规), Shenzhen 94 (gkmlpt `--search` JSONP index).
+    **KEY FINDING — the coverage ceiling is real:** resolution % held ~flat
+    (52.05→52.16) despite +16k resolved, because the 13k new docs brought +30k of
+    their OWN citations (many dangling). The absolute resolved count, not the %, is
+    the honest metric. The single highest-demand missing docs (苏住建规〔2011〕4号,
+    深圳市行政听证办法, 采购供应商信用信息管理办法, 广东省控规条例) are permanently
+    **DELISTED** from origin sites — recoverable only via 北大法宝 / 国家法律法规数据库
+    / archive.org, a separate project. The queue's `coverage_status`/demand are noisy
+    (false-`have`, already-resolved, delisted), so per-institution investigation
+    (not blind mass-crawl) is required — Chongqing was ~98% already complete.
 - **base.fetch() now gunzips** gzip/deflate responses (some gov servers force-gzip).
 - **Coverage audit**: `docs/working/coverage.csv` (rebuild via
   `scripts/rnd/discovery/build_coverage_csv.py`) — ~14/34 provincial units crawled;
