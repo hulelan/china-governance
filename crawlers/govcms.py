@@ -455,8 +455,12 @@ SITES = {
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
-        # DEFERRED: the droplet IP serves the homepage (200) but 404s these section
-        # pages — datacenter geo-fence. Configured but NOT wired into daily_sync.
+        # DEFERRED — PROXY-GATED (re-verified 2026-08-26): the droplet IP serves the
+        # homepage (200) but 404s ALL these section pages — datacenter geo-fence. A
+        # 2026-08 run confirmed 0 docs. NOT a quick win despite homepage-200: the
+        # homepage/individual-article 200s are a FALSE POSITIVE; the listing pages
+        # (which the crawler needs to discover articles) are geo-fenced. Do NOT wire
+        # into daily_sync — it belongs in the residential-proxy bucket with NHC/MNR/etc.
         "name": "National Energy Administration (国家能源局)",
         "base_url": "http://www.nea.gov.cn", "admin_level": "central",
         "sections": ["/n/xwzx/index.htm", "/n/policy/zxwj.htm", "/n/nyflfg/index.htm",
