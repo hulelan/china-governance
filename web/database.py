@@ -109,7 +109,13 @@ async def lifespan(app):
     import aiosqlite
     conn = await aiosqlite.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
     conn.row_factory = aiosqlite.Row
-    await conn.execute("PRAGMA cache_size = -32000")
+    # Perf tuning for a ~10 GB DB on a 4 GB box (read-only WAL reader — safe):
+    # a 4 GB memory-map window lets SQLite fault pages in directly + share them,
+    # a 256 MB page cache keeps hot b-tree/index pages resident between requests,
+    # and temp B-trees (e.g. browse ORDER BY) build in RAM instead of on disk.
+    await conn.execute("PRAGMA cache_size = -262144")   # 256 MB page cache
+    await conn.execute("PRAGMA mmap_size = 4294967296")  # 4 GB mmap window
+    await conn.execute("PRAGMA temp_store = MEMORY")
     app.state.db = SQLiteDB(conn)
 
     # Open officials.db (separate read-only connection) if it exists

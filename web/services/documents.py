@@ -488,11 +488,18 @@ async def _search_seg_bm25(db, match, date_clause, date_params, site_clause,
            LIMIT ${limit_idx} OFFSET ${offset_idx}""",
         match, *date_params, *site_params, search_pattern, per_page, offset
     )
-    total = await db.fetchval(
-        f"""SELECT COUNT(*) FROM doc_search_seg s JOIN documents d ON d.id = s.rowid
-           WHERE doc_search_seg MATCH $1 {date_clause}{site_clause}""",
-        match, *date_params, *site_params
-    )
+    if not date_clause and not site_clause:
+        # No d.* filter → the JOIN was only doing one PK lookup per match just to
+        # count. Count straight off the FTS index (tens of thousands of random row
+        # lookups avoided; common-term count ~0.75s → ~0.15s).
+        total = await db.fetchval(
+            "SELECT COUNT(*) FROM doc_search_seg WHERE doc_search_seg MATCH $1", match)
+    else:
+        total = await db.fetchval(
+            f"""SELECT COUNT(*) FROM doc_search_seg s JOIN documents d ON d.id = s.rowid
+               WHERE doc_search_seg MATCH $1 {date_clause}{site_clause}""",
+            match, *date_params, *site_params
+        )
     return rows, total
 
 
@@ -587,11 +594,15 @@ async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
                LIMIT ${limit_idx} OFFSET ${offset_idx}""",
             match, *date_params, *site_params, search_pattern, per_page, offset
         )
-        total = await db.fetchval(
-            f"""SELECT COUNT(*) FROM doc_search s JOIN documents d ON d.id = s.rowid
-               WHERE doc_search MATCH $1 {date_clause}{site_clause}""",
-            match, *date_params, *site_params
-        )
+        if not date_clause and not site_clause:
+            total = await db.fetchval(
+                "SELECT COUNT(*) FROM doc_search WHERE doc_search MATCH $1", match)
+        else:
+            total = await db.fetchval(
+                f"""SELECT COUNT(*) FROM doc_search s JOIN documents d ON d.id = s.rowid
+                   WHERE doc_search MATCH $1 {date_clause}{site_clause}""",
+                match, *date_params, *site_params
+            )
 
     # --- Path 3: LIKE scan (short queries, no indexes, or still no hits) --------
     if rows is None or total == 0:

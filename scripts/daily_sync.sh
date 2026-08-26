@@ -306,6 +306,16 @@ if [ -f .is_production_droplet ]; then
     sqlite3 documents.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true
     [ -f officials.db ] && sqlite3 officials.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true
     systemctl restart chinagovernance >> "$LOG" 2>&1 || true
+    # Warm-up: the restart drops all in-proc caches + the OS page cache is cold for
+    # the ~10 GB DB, so the FIRST real visitor otherwise eats a 5–15s cold build on
+    # heavy endpoints. Prime them in the background so that cost is paid here, not by
+    # a user (and doesn't pin a worker under bot load).
+    sleep 4
+    for p in / /browse "/browse?site=gov" /structure /network \
+             "/api/v1/network?min_degree=3" "/api/v1/stats" /officials; do
+        curl -s -o /dev/null "http://localhost:8001$p" || true
+    done
+    log "  Warm-up pings sent"
     REMOTE_COUNT=$(sqlite3 documents.db "SELECT COUNT(*) FROM documents" 2>/dev/null || echo "?")
     log "  Published: $REMOTE_COUNT docs (web app restarted)"
     PUBLISH_OK=true
