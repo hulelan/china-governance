@@ -109,15 +109,15 @@ async def lifespan(app):
     import aiosqlite
     conn = await aiosqlite.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
     conn.row_factory = aiosqlite.Row
-    # Perf tuning for a ~10 GB DB on a 4 GB box (read-only WAL reader — safe).
-    # Kept MODERATE on purpose: the box runs ~swap-full, so an aggressive
-    # cache_size/mmap over-commits memory and made the cold first-hit THRASH
-    # (a 4 GB mmap window pushed browse-by-site to ~58 s cold). A 128 MB cache +
-    # 512 MB mmap + in-RAM temp sorts speeds warm/steady-state without the churn;
-    # the real cold-start fix is the Phase-3 warm-up ping in daily_sync.sh.
-    await conn.execute("PRAGMA cache_size = -131072")   # 128 MB page cache (was 32 MB)
-    await conn.execute("PRAGMA mmap_size = 536870912")   # 512 MB mmap window
-    await conn.execute("PRAGMA temp_store = MEMORY")     # temp B-trees (ORDER BY) in RAM
+    # NOTE: do NOT enable mmap_size or a big cache_size here. This box is
+    # memory-starved (10 GB DB, 4 GB RAM, ~swap-full); mmap maps file pages that
+    # count as resident RSS, so a 512 MB–4 GB mmap window ballooned each of the 2
+    # workers to ~2 GB, filled swap, and made COLD reads catastrophic (~60 s vs
+    # ~15 s). The real wins are memory-free: the (site_key, date_written) index,
+    # the FTS-only search COUNT, nginx gzip, and the Phase-3 warm-up ping. Keep
+    # the cache at the original 32 MB; temp_store=MEMORY is cheap (tiny temp b-trees).
+    await conn.execute("PRAGMA cache_size = -32000")    # 32 MB page cache (lean, proven)
+    await conn.execute("PRAGMA temp_store = MEMORY")
     app.state.db = SQLiteDB(conn)
 
     # Open officials.db (separate read-only connection) if it exists
