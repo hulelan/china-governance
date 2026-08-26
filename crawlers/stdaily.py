@@ -2,9 +2,12 @@
 Science & Technology Daily (科技日报 / stdaily.com) crawler.
 
 stdaily is the official newspaper of the Ministry of Science and Technology
-(MOST) — effectively a central-government publication about tech/innovation
-policy, AI, and industrial R&D. We treat it as admin_level='central' even
-though it looks like a newspaper, because its voice is MOST's voice.
+(MOST) — journalism about tech/innovation policy, AI, and industrial R&D.
+admin_level='media': it is a NEWSPAPER (news coverage/commentary), not a
+primary government document. (It was previously mislabeled 'central' on the
+theory that "its voice is MOST's voice", but that conflates a news outlet with
+the documents it reports on and made it show up alongside actual central
+policy sources; it belongs with Xinhua/People's Daily under media.)
 
 Discovery surfaces:
     sitemap.xml    — rolling ~200 most-recent URLs (last ~4 days)
@@ -57,7 +60,7 @@ SITE_KEY = "stdaily"
 SITE_CFG = {
     "name": "Science & Technology Daily (科技日报)",
     "base_url": "https://www.stdaily.com",
-    "admin_level": "central",
+    "admin_level": "media",  # newspaper, not a primary central document
 }
 
 SITEMAP_URL = "https://www.stdaily.com/sitemap.xml"

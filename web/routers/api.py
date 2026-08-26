@@ -226,7 +226,7 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
         chunk = node_list[i:i + CHUNK]
         placeholders = ",".join("?" for _ in chunk)
         rows = await db.fetch(
-            f"SELECT document_number, title, site_key, algo_doc_type "
+            f"SELECT id, document_number, title, site_key, algo_doc_type "
             f"FROM documents WHERE document_number IN ({placeholders})",
             *chunk,
         )
@@ -243,6 +243,7 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
             "citations": info.get("count", 0),
             "title": resolved["title"] if resolved else "",
             "resolved": bool(resolved),
+            "doc_id": resolved["id"] if resolved else None,
             "doc_type": (resolved["algo_doc_type"] or "") if resolved else "",
         })
 

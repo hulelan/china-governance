@@ -17,6 +17,25 @@
     background:rgba(255,255,255,.75); padding:2px 6px; border-radius:3px;
     pointer-events:none;
   }
+  /* Clickable popup shown on node click (distinct from the pointer-events:none hover tip) */
+  #net-popup {
+    position:fixed; z-index:60; display:none; max-width:20rem;
+    background:var(--panel,#fff); color:var(--ink,#1c1c1c);
+    border:1px solid var(--rule,#c3bcab); border-radius:4px;
+    box-shadow:0 4px 16px rgba(0,0,0,.18); font-size:12px; overflow:hidden;
+  }
+  #net-popup .np-head { display:flex; justify-content:space-between; align-items:center;
+    gap:.5rem; padding:.3rem .5rem; background:var(--teal,#1f4e46); color:#e8f0ed; }
+  #net-popup .np-num { font-family:ui-monospace,monospace; font-size:11px; }
+  #net-popup .np-close { cursor:pointer; font-size:14px; line-height:1; opacity:.85; }
+  #net-popup .np-close:hover { opacity:1; }
+  #net-popup .np-body { padding:.5rem .55rem; }
+  #net-popup .np-title { margin-bottom:.35rem; line-height:1.35; }
+  #net-popup .np-cites { color:var(--muted,#6f685c); font-size:11px; margin-bottom:.5rem; }
+  #net-popup a.np-open { display:inline-block; background:var(--teal,#1f4e46); color:#fff;
+    padding:.25rem .6rem; border-radius:3px; text-decoration:none; font-size:12px; }
+  #net-popup a.np-open:hover { background:#163a34; }
+  #net-popup .np-missing { color:var(--muted,#6f685c); font-style:italic; }
 </style>
 {% endblock %}
 {% block content %}
@@ -101,6 +120,15 @@
     </div>
 </div>
 <div id="net-tooltip"></div>
+<div id="net-popup">
+  <div class="np-head"><span class="np-num" id="np-num"></span><span class="np-close" id="np-close" title="Close">&times;</span></div>
+  <div class="np-body">
+    <div class="np-title font-zh" id="np-title"></div>
+    <div class="np-cites" id="np-cites"></div>
+    <a class="np-open" id="np-open" href="#">Open article &rarr;</a>
+    <div class="np-missing" id="np-missing" style="display:none;">Not in the corpus — no article to open.</div>
+  </div>
+</div>
 {% endblock %}
 {% block scripts %}
 <script>
@@ -180,6 +208,11 @@ function nodeAt(clientX, clientY) {
     return simulation.find(x, y, 24 / transform.k);
 }
 
+function hideNetPopup() {
+    const p = document.getElementById('net-popup');
+    if (p) p.style.display = 'none';
+}
+
 async function updateNetwork(site, minDeg, dateStart, dateEnd, docType) {
     let url = `/api/v1/network?min_degree=${minDeg}`;
     if (site) url += `&site=${site}`;
@@ -188,6 +221,7 @@ async function updateNetwork(site, minDeg, dateStart, dateEnd, docType) {
     if (docType) url += `&doc_type=${docType}`;
 
     statusEl().textContent = 'Loading…';
+    hideNetPopup();
     const data = await fetch(url).then(r => r.json());
 
     nodeById = new Map(data.nodes.map(n => [n.id, n]));
@@ -225,6 +259,7 @@ function initGraph() {
 
     const zoom = d3.zoom().scaleExtent([0.08, 8]).on('zoom', (e) => {
         transform = e.transform;
+        hideNetPopup();  // node moves under a fixed-position popup; close it
         draw();
     });
 
@@ -268,17 +303,50 @@ function initGraph() {
     });
     canvas.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
 
-    // Click → selected-node panel
+    // Click → clickable popup at the node (with a real link into the article)
+    const popup = document.getElementById('net-popup');
+    document.getElementById('np-close').addEventListener('click', (e) => {
+        e.stopPropagation(); hideNetPopup();
+    });
     canvas.addEventListener('click', (ev) => {
         const n = nodes.length ? nodeAt(ev.clientX, ev.clientY) : null;
-        if (!n) return;
+        if (!n) { hideNetPopup(); return; }  // click on empty space closes the popup
+
+        document.getElementById('np-num').textContent = n.id;
+        const npTitle = document.getElementById('np-title');
+        npTitle.textContent = n.title || '';
+        npTitle.style.display = n.title ? 'block' : 'none';
+        document.getElementById('np-cites').textContent =
+            n.citations + ' inbound citation' + (n.citations === 1 ? '' : 's');
+        const open = document.getElementById('np-open');
+        const missing = document.getElementById('np-missing');
+        if (n.resolved && n.doc_id) {
+            open.href = `/document/${n.doc_id}`;
+            open.style.display = 'inline-block';
+            missing.style.display = 'none';
+        } else {
+            open.style.display = 'none';
+            missing.style.display = 'block';
+        }
+
+        // Show, then position near the click, clamped to the viewport.
+        popup.style.display = 'block';
+        const pw = popup.offsetWidth || 260, ph = popup.offsetHeight || 120;
+        let px = ev.clientX + 12, py = ev.clientY + 12;
+        if (px + pw > window.innerWidth - 8) px = ev.clientX - pw - 12;
+        if (py + ph > window.innerHeight - 8) py = window.innerHeight - ph - 8;
+        popup.style.left = Math.max(8, px) + 'px';
+        popup.style.top = Math.max(8, py) + 'px';
+
+        // Mirror into the sidebar panel too (fixed to link at the article, not search).
         document.getElementById('node-info').classList.remove('hidden');
         document.getElementById('node-docnum').textContent = n.id;
         document.getElementById('node-title').textContent = n.title || '(not in corpus)';
         document.getElementById('node-citations').textContent = n.citations + ' citations';
         const link = document.getElementById('node-link');
-        if (n.resolved) {
-            link.href = `/search?q=${encodeURIComponent(n.id)}`;
+        if (n.resolved && n.doc_id) {
+            link.href = `/document/${n.doc_id}`;
+            link.textContent = 'View document →';
             link.classList.remove('hidden');
         } else {
             link.classList.add('hidden');
