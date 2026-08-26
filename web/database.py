@@ -109,13 +109,15 @@ async def lifespan(app):
     import aiosqlite
     conn = await aiosqlite.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
     conn.row_factory = aiosqlite.Row
-    # Perf tuning for a ~10 GB DB on a 4 GB box (read-only WAL reader — safe):
-    # a 4 GB memory-map window lets SQLite fault pages in directly + share them,
-    # a 256 MB page cache keeps hot b-tree/index pages resident between requests,
-    # and temp B-trees (e.g. browse ORDER BY) build in RAM instead of on disk.
-    await conn.execute("PRAGMA cache_size = -262144")   # 256 MB page cache
-    await conn.execute("PRAGMA mmap_size = 4294967296")  # 4 GB mmap window
-    await conn.execute("PRAGMA temp_store = MEMORY")
+    # Perf tuning for a ~10 GB DB on a 4 GB box (read-only WAL reader — safe).
+    # Kept MODERATE on purpose: the box runs ~swap-full, so an aggressive
+    # cache_size/mmap over-commits memory and made the cold first-hit THRASH
+    # (a 4 GB mmap window pushed browse-by-site to ~58 s cold). A 128 MB cache +
+    # 512 MB mmap + in-RAM temp sorts speeds warm/steady-state without the churn;
+    # the real cold-start fix is the Phase-3 warm-up ping in daily_sync.sh.
+    await conn.execute("PRAGMA cache_size = -131072")   # 128 MB page cache (was 32 MB)
+    await conn.execute("PRAGMA mmap_size = 536870912")   # 512 MB mmap window
+    await conn.execute("PRAGMA temp_store = MEMORY")     # temp B-trees (ORDER BY) in RAM
     app.state.db = SQLiteDB(conn)
 
     # Open officials.db (separate read-only connection) if it exists
