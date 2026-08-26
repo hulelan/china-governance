@@ -109,15 +109,14 @@ async def lifespan(app):
     import aiosqlite
     conn = await aiosqlite.connect(f"file:{SQLITE_PATH}?mode=ro", uri=True)
     conn.row_factory = aiosqlite.Row
-    # NOTE: do NOT enable mmap_size or a big cache_size here. This box is
-    # memory-starved (10 GB DB, 4 GB RAM, ~swap-full); mmap maps file pages that
-    # count as resident RSS, so a 512 MB–4 GB mmap window ballooned each of the 2
-    # workers to ~2 GB, filled swap, and made COLD reads catastrophic (~60 s vs
-    # ~15 s). The real wins are memory-free: the (site_key, date_written) index,
-    # the FTS-only search COUNT, nginx gzip, and the Phase-3 warm-up ping. Keep
-    # the cache at the original 32 MB; temp_store=MEMORY is cheap (tiny temp b-trees).
-    await conn.execute("PRAGMA cache_size = -32000")    # 32 MB page cache (lean, proven)
-    await conn.execute("PRAGMA temp_store = MEMORY")
+    # Keep this LEAN. The box is memory-starved (10 GB DB, 4 GB RAM, ~swap-full):
+    # bigger cache_size / any mmap_size map file pages into resident RSS, balloon
+    # the 2 workers past RAM, fill swap, and make COLD reads catastrophic. Tested
+    # empirically — mmap/big-cache regressed cold browse to ~60 s. The perf wins
+    # here are all memory-free: the (site_key, date_written) index, the FTS-only
+    # search COUNT, nginx gzip, and the Phase-3 warm-up ping. The structural fixes
+    # (RO connection pool R1, or simply more RAM) are the real cold-start answer.
+    await conn.execute("PRAGMA cache_size = -32000")    # 32 MB page cache (original, proven)
     app.state.db = SQLiteDB(conn)
 
     # Open officials.db (separate read-only connection) if it exists
