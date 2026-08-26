@@ -15,6 +15,7 @@ from fastapi.templating import Jinja2Templates
 
 from web.services.documents import (
     get_documents, get_document, get_document_citations,
+    annotate_body_with_citations,
     get_sites, get_stats, get_categories, search_documents,
     get_citation_neighborhood, date_str_to_timestamp,
     REF_PATTERN, get_admin_level,
@@ -118,8 +119,10 @@ async def document_detail(request: Request, doc_id: int):
     if not doc:
         return HTMLResponse("<h1>Not found</h1>", status_code=404)
     cites, cited_by = await get_document_citations(db, doc_id)
+    annotated_body, mark_count = annotate_body_with_citations(doc["body_text_cn"] or "", cites)
     return templates.TemplateResponse("document.html", {
         "request": request, "doc": doc, "cites": cites, "cited_by": cited_by,
+        "annotated_body": annotated_body, "mark_count": mark_count,
         "stats": await get_stats(db),
     })
 

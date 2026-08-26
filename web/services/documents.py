@@ -283,6 +283,78 @@ async def get_document_citations(db, doc_id: int):
     return cites, cited_by
 
 
+import html as _htmlmod
+
+_MIN_REF_LEN = 6   # shortest reference string we'll mark inline (avoid noise)
+_MAX_MARKS = 300   # safety cap on inline annotations per document
+
+
+def annotate_body_with_citations(body, cites):
+    """Wrap each cited reference where it appears in the body with an inline
+    annotation span (Google-Docs-comment style). Returns (html, mark_count).
+
+    For every citation this document makes, find occurrences of the reference
+    string in the body and wrap them in <span class="cite-mark"> carrying the
+    referenced doc's id/title, so the page can show a popover that links to the
+    cited article. Matches are non-overlapping, longest-ref-first (so a 《title》
+    wins over a 文号 nested inside it). Falls back to the plain escaped body.
+    """
+    esc = _htmlmod.escape
+
+    def plain(b):
+        return esc(b).replace("\n", "<br>\n")
+
+    if not body:
+        return "", 0
+
+    # Distinct refs; keep the resolved cite if a ref appears on multiple rows.
+    refs = {}
+    for c in cites:
+        ref = (c.get("ref") or "").strip()
+        if len(ref) < _MIN_REF_LEN:
+            continue
+        if ref not in refs or (c.get("resolved") and not refs[ref].get("resolved")):
+            refs[ref] = c
+    if not refs:
+        return plain(body), 0
+
+    taken = []
+
+    def overlaps(s, e):
+        return any(s < te and e > ts for ts, te in taken)
+
+    spans = []
+    for ref in sorted(refs, key=len, reverse=True):
+        start = 0
+        while len(spans) < _MAX_MARKS:
+            idx = body.find(ref, start)
+            if idx < 0:
+                break
+            end = idx + len(ref)
+            if not overlaps(idx, end):
+                spans.append((idx, end, ref))
+                taken.append((idx, end))
+            start = end
+    if not spans:
+        return plain(body), 0
+    spans.sort(key=lambda x: x[0])
+
+    out, pos = [], 0
+    for s, e, ref in spans:
+        out.append(esc(body[pos:s]))
+        c = refs[ref]
+        res = c.get("resolved")
+        cls = "cite-mark " + ("resolved" if res else "unresolved")
+        attrs = [f'data-type="{esc(c.get("type") or "", quote=True)}"']
+        if res:
+            attrs.append(f'data-doc-id="{res["id"]}"')
+            attrs.append(f'data-title="{esc(res.get("title") or "", quote=True)}"')
+        out.append(f'<span class="{cls}" {" ".join(attrs)}>{esc(body[s:e])}</span>')
+        pos = e
+    out.append(esc(body[pos:]))
+    return "".join(out).replace("\n", "<br>\n"), len(spans)
+
+
 _sites_cache = {"data": None, "ts": 0}
 
 async def get_sites(db):

@@ -4,6 +4,33 @@
 {% block meta_description %}{% if doc.summary_en %}{{ doc.summary_en[:220] }}{% else %}{{ doc.publisher or doc.site_key }}{% if doc.document_number %} · {{ doc.document_number }}{% endif %}{% if doc.date_published %} ({{ doc.date_published }}){% endif %} — {{ doc.title[:140] }}{% endif %}{% endblock %}
 {% block head %}
 <script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  /* Inline reference marks in the body (Google-Docs-comment style) */
+  .cite-mark { cursor:pointer; border-radius:2px; padding:0 1px;
+    transition:background .12s; }
+  .cite-mark.resolved { background:rgba(31,78,70,.10);
+    border-bottom:1.5px solid var(--teal,#1f4e46); }
+  .cite-mark.resolved:hover { background:rgba(31,78,70,.20); }
+  .cite-mark.unresolved { border-bottom:1.5px dotted var(--muted,#6f685c); }
+  .cite-mark.unresolved:hover { background:rgba(111,104,92,.10); }
+  .cite-mark.active { background:rgba(154,90,32,.20) !important; }
+  #cite-popover { position:fixed; z-index:60; display:none; max-width:21rem;
+    background:var(--panel,#fff); color:var(--ink,#1c1c1c);
+    border:1px solid var(--rule,#c3bcab); border-radius:4px;
+    box-shadow:0 4px 16px rgba(0,0,0,.18); font-size:12px; overflow:hidden; }
+  #cite-popover .cp-head { display:flex; justify-content:space-between; align-items:center;
+    gap:.5rem; padding:.3rem .55rem; background:var(--teal,#1f4e46); color:#e8f0ed;
+    font-size:10px; letter-spacing:.12em; text-transform:uppercase; }
+  #cite-popover .cp-close { cursor:pointer; font-size:14px; line-height:1; }
+  #cite-popover .cp-body { padding:.5rem .6rem; }
+  #cite-popover .cp-ref { font-family:ui-monospace,monospace; color:var(--muted,#6f685c);
+    font-size:11px; margin-bottom:.35rem; word-break:break-all; }
+  #cite-popover .cp-title { line-height:1.4; margin-bottom:.5rem; }
+  #cite-popover a.cp-open { display:inline-block; background:var(--teal,#1f4e46);
+    color:#fff; padding:.25rem .6rem; border-radius:3px; text-decoration:none; }
+  #cite-popover a.cp-open:hover { background:#163a34; }
+  #cite-popover .cp-missing { color:var(--muted,#6f685c); font-style:italic; }
+</style>
 {% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto">
@@ -58,8 +85,14 @@
                 <span class="lab" style="margin-bottom:0">Full text · 原文</span>
                 {% if doc.body_text_cn %}<span class="text-muted text-xs mono">{{ "{:,}".format(doc.body_text_cn|length) }} 字</span>{% endif %}
             </div>
+            {% if mark_count %}
+            <div class="text-xs text-muted mb-3 flex items-center gap-1.5">
+                <span class="inline-block px-1" style="background:rgba(31,78,70,.10);border-bottom:1.5px solid var(--teal)">&nbsp;</span>
+                {{ mark_count }} reference{{ 's' if mark_count != 1 else '' }} marked inline — click a highlighted passage to open the cited document.
+            </div>
+            {% endif %}
             {% if doc.body_text_cn %}
-                <div class="font-zh text-[17px] leading-[2.0] text-[#2a271f] text-justify">{{ doc.body_text_cn|e|replace('\n', '<br>\n')|safe }}</div>
+                <div id="doc-body" class="font-zh text-[17px] leading-[2.0] text-[#2a271f] text-justify">{{ annotated_body|safe }}</div>
             {% else %}
                 <div class="text-muted italic py-10 text-center border border-dashed border-rule">
                     Body text not extracted for this record.<br>
@@ -158,8 +191,63 @@
         </aside>
     </div>
 </div>
+<div id="cite-popover">
+  <div class="cp-head"><span>Referenced document</span><span class="cp-close" id="cp-close" title="Close">&times;</span></div>
+  <div class="cp-body">
+    <div class="cp-ref" id="cp-ref"></div>
+    <div class="cp-title font-zh" id="cp-title"></div>
+    <a class="cp-open" id="cp-open" href="#">Open cited document &rarr;</a>
+    <div class="cp-missing" id="cp-missing" style="display:none;">Referenced, but not held in the corpus.</div>
+  </div>
+</div>
 {% endblock %}
 {% block scripts %}
+<script>
+// Inline reference popover: click a highlighted passage to see + open the cited doc.
+(function () {
+    const body = document.getElementById('doc-body');
+    const pop = document.getElementById('cite-popover');
+    if (!body || !pop) return;
+    let active = null;
+    function hide() { pop.style.display = 'none'; if (active) { active.classList.remove('active'); active = null; } }
+    document.getElementById('cp-close').addEventListener('click', (e) => { e.stopPropagation(); hide(); });
+
+    body.addEventListener('click', (ev) => {
+        const mark = ev.target.closest('.cite-mark');
+        if (!mark) return;
+        ev.stopPropagation();
+        if (active) active.classList.remove('active');
+        active = mark; mark.classList.add('active');
+
+        const docId = mark.getAttribute('data-doc-id');
+        const title = mark.getAttribute('data-title') || '';
+        document.getElementById('cp-ref').textContent = mark.textContent;
+        const tEl = document.getElementById('cp-title');
+        tEl.textContent = title; tEl.style.display = title ? 'block' : 'none';
+        const open = document.getElementById('cp-open');
+        const missing = document.getElementById('cp-missing');
+        if (docId) {
+            open.href = '/document/' + docId; open.style.display = 'inline-block';
+            missing.style.display = 'none';
+        } else {
+            open.style.display = 'none'; missing.style.display = 'block';
+        }
+
+        pop.style.display = 'block';
+        const r = mark.getBoundingClientRect();
+        const pw = pop.offsetWidth || 260, ph = pop.offsetHeight || 120;
+        let px = r.left, py = r.bottom + 6;
+        if (px + pw > window.innerWidth - 8) px = window.innerWidth - pw - 8;
+        if (py + ph > window.innerHeight - 8) py = r.top - ph - 6;
+        pop.style.left = Math.max(8, px) + 'px';
+        pop.style.top = Math.max(8, py) + 'px';
+    });
+    document.addEventListener('click', (ev) => {
+        if (!pop.contains(ev.target) && !ev.target.closest('.cite-mark')) hide();
+    });
+    window.addEventListener('scroll', hide, true);
+})();
+</script>
 {% if cites or cited_by %}
 <script>
 const COLORS = {central:'#6d2b2b', provincial:'#9a5a20', municipal:'#1f4e46', district:'#4a5a2c', unknown:'#9a948a'};
