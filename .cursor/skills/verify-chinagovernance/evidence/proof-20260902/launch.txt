@@ -1,0 +1,2 @@
+launched pid=3392 url=http://127.0.0.1:18001 sqlite=/tmp/verify-chinagovernance-proof-20260902/fixture.db evidence=/workspace/.cursor/skills/verify-chinagovernance/evidence/proof-20260902
+ready: GET http://127.0.0.1:18001/api/v1/stats -> 200
