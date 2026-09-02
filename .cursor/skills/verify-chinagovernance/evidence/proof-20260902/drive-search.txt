@@ -1,0 +1,6 @@
+feature: search
+entry: GET http://127.0.0.1:18001/search then GET /search?q=人工智能
+action: submit catalog search form (method=get, input[name=q])
+result: 4 hits for 人工智能; housing title absent; exclude_news drops Xinhua → 3
+follow: GET /document/1 shows ACC. 1, CN title, #doc-body
+api_corroboration: /api/v1/search total=4 ids=1,2,3,4 (fixture, not production corpus)

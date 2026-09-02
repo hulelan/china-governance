@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" class="archive">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XQC35E381X"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XQC35E381X');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search — ChinaGovernance</title>
+
+    <!-- SEO / social -->
+    <meta name="description" content="A searchable archive of 180,000+ Chinese government policy documents — from central ministries down to district implementation, linked by the citations between them.">
+    <link rel="canonical" href="http://127.0.0.1:18001/search">
+    <meta property="og:site_name" content="Governance Archive · 中国政策档案">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://127.0.0.1:18001/search">
+    <meta property="og:title" content="Search — ChinaGovernance">
+    <meta property="og:description" content="A searchable archive of 180,000+ Chinese government policy documents — from central ministries down to district implementation, linked by the citations between them.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Search — ChinaGovernance">
+    <meta name="twitter:description" content="A searchable archive of 180,000+ Chinese government policy documents — from central ministries down to district implementation, linked by the citations between them.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    sans: ['IBM Plex Sans', 'system-ui', 'sans-serif'],
+                    serif: ['Noto Serif SC', 'Georgia', 'serif'],
+                    zh: ['Noto Serif SC', 'Source Han Serif SC', 'SimSun', 'serif'],
+                    mono: ['IBM Plex Mono', 'monospace'],
+                },
+                colors: {
+                    brand: { DEFAULT: '#6d2b2b', light: '#8a3a3a' },
+                    ink: '#23201b', paper: '#edeae1', panel: '#f4f1e9',
+                    rule: '#c3bcab', muted: '#6f685c', teal: '#1f4e46',
+                }
+            }
+        }
+    }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        /* ---- Archive design system ---- */
+        :root{
+          --paper:#edeae1; --panel:#f4f1e9; --ink:#23201b; --accent:#6d2b2b;
+          --rule:#c3bcab; --muted:#6f685c; --teal:#1f4e46;
+        }
+        body { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px;
+            color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; }
+        .font-zh, .zh { font-family: 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', serif; }
+        .mono { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+        .sc { font-variant: small-caps; letter-spacing: .06em; }
+        mark { background: #e8e0c8; color: #6d5a1e; padding: 0 2px; }
+
+        /* Section label — small caps rule (replaces uppercase card-header) */
+        .lab { font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+            color: var(--muted); border-bottom: 2px solid var(--ink);
+            padding-bottom: 6px; margin-bottom: 12px; display: block; }
+
+        /* Tables — ruled catalog style */
+        .data-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 7px 12px; font-size: 11px; font-weight: 500;
+            color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
+            border-bottom: 2px solid var(--ink); }
+        .data-table td { padding: 8px 12px; border-bottom: 1px solid var(--rule); }
+        .data-table tr:hover { background: var(--panel); }
+
+        /* Level colors */
+        .level-central { color: #6d2b2b; } .level-provincial { color: #9a5a20; }
+        .level-municipal { color: #1f4e46; } .level-district { color: #4a5a2c; }
+        .level-department { color: #5b4a6b; } .level-media { color: #6b3a6b; }
+        .level-research { color: #1f4e57; } .level-unknown { color: #9a948a; }
+
+        /* Badges — squared archival tags */
+        .badge { display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 10px;
+            font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: #fff; }
+        .badge-central { background: #6d2b2b; } .badge-provincial { background: #9a5a20; }
+        .badge-municipal { background: #1f4e46; } .badge-district { background: #4a5a2c; }
+        .badge-department { background: #5b4a6b; } .badge-media { background: #6b3a6b; }
+        .badge-research { background: #1f4e57; } .badge-unknown { background: #8a847a; }
+
+        /* Links */
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Card — squared panel with ruled header */
+        .card { background: var(--panel); border: 1px solid var(--rule); border-radius: 0; }
+        .card-header { padding: 8px 14px; border-bottom: 1px solid var(--rule);
+            font-size: 11px; font-weight: 500; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.12em; }
+
+        /* Forms */
+        select, input[type="text"], input[type="date"], input[type="search"] {
+            background: #fdfcf9; border: 1px solid var(--rule); border-radius: 2px;
+            padding: 6px 10px; font-size: 13px; color: var(--ink); }
+        select:focus, input:focus { outline: none; border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(31,78,70,0.10); }
+
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: var(--panel); }
+        ::-webkit-scrollbar-thumb { background: var(--rule); }
+        [x-cloak] { display: none !important; }
+
+        /* ---- Masthead ---- */
+        .masthead { background: var(--ink); color: var(--paper); }
+        .masthead .cn { font-family: 'Noto Serif SC', serif; font-size: 21px; letter-spacing: .1em; }
+        .masthead .en { font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: #c9c2b2; }
+        .masthead .stat { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #b7b0a0; letter-spacing: .03em; }
+        .subnav { background: var(--teal); }
+        .subnav a { color: #dbe6e2; padding: 9px 16px; font-size: 12px; letter-spacing: .1em;
+            text-transform: uppercase; border-right: 1px solid rgba(255,255,255,.12); }
+        .subnav a:hover { background: rgba(0,0,0,.16); text-decoration: none; color: #fff; }
+        .subnav a.active { background: rgba(0,0,0,.22); color: #fff; }
+        /* Research dropdown */
+        .navdrop { position: relative; display: inline-flex; }
+        .navdrop > a::after { content: "▾"; font-size: 9px; opacity: .7; margin-left: 5px; }
+        .navmenu { position: absolute; left: 0; top: 100%; min-width: 260px; z-index: 60;
+            background: var(--paper); border: 1px solid rgba(0,0,0,.16);
+            box-shadow: 0 8px 22px rgba(0,0,0,.20); display: none; }
+        .navdrop:hover .navmenu, .navdrop:focus-within .navmenu { display: block; }
+        .navmenu a { display: block; color: var(--ink); text-transform: none; letter-spacing: 0;
+            padding: 10px 14px; border-right: 0; border-bottom: 1px solid rgba(0,0,0,.08); }
+        .navmenu a:last-child { border-bottom: 0; }
+        .navmenu a:hover { background: rgba(0,0,0,.05); color: var(--ink); }
+        .navmenu strong { display: block; font-size: 12px; font-weight: 600;
+            letter-spacing: .08em; text-transform: uppercase; }
+        .navmenu .desc { display: block; font-size: 11px; color: #6b6558;
+            text-transform: none; letter-spacing: 0; margin-top: 3px; }
+
+        /* Reusable horizontal-scroll wrapper for wide tables/diagrams so the
+           page body never scrolls sideways on a phone. */
+        .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* ---- Mobile (≤640px) ---- */
+        @media (max-width: 640px) {
+            main { padding-left: 1rem; padding-right: 1rem; }
+            .masthead .px-6 { padding-left: 1rem; padding-right: 1rem; }
+            .masthead .cn { font-size: 17px; letter-spacing: .06em; }
+            .masthead .en { letter-spacing: .14em; }
+            .masthead .stat { font-size: 10.5px; }
+            /* Nav becomes a single swipeable strip instead of a jumbled 3-row wrap. */
+            .subnav .max-w-7xl { flex-wrap: nowrap; overflow-x: auto;
+                -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .subnav .max-w-7xl::-webkit-scrollbar { display: none; }
+            .subnav a { padding: 10px 13px; letter-spacing: .06em; font-size: 11px;
+                white-space: nowrap; flex: 0 0 auto; }
+            /* The Research dropdown can't hover on touch — show it as a plain link
+               (it navigates to /collections, which lists both sub-pages). */
+            .navdrop > a::after { display: none; }
+            .navmenu { display: none !important; }
+            .data-table th, .data-table td { padding-left: 8px; padding-right: 8px; }
+        }
+    </style>
+    
+</head>
+<body class="min-h-screen">
+    <!-- Masthead -->
+    <header class="masthead">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between gap-x-3 gap-y-1 flex-wrap py-3.5">
+            <a href="/" class="flex items-baseline gap-3.5 no-underline hover:no-underline">
+                <span class="cn">中国政策档案</span>
+                <span class="en">Governance Archive</span>
+            </a>
+            <span class="stat">HOLDINGS 6 · FONDS 4</span>
+        </div>
+        <nav class="subnav border-t border-black/10">
+            <div class="max-w-7xl mx-auto px-6 flex flex-wrap">
+                
+                <a href="/browse" class="">Catalog</a>
+                <a href="/search" class="">Search</a>
+                <a href="/lens" class="">Lens</a>
+                <div class="navdrop">
+                    <a href="/collections" class="">Research</a>
+                    <div class="navmenu">
+                        <a href="/collections"><strong>Collections</strong><span class="desc">Topical dossiers — every document on a theme, filterable</span></a>
+                        <a href="/annotations"><strong>Annotations</strong><span class="desc">Close readings — a landmark policy, clause by clause</span></a>
+                    </div>
+                </div>
+                <a href="/network" class="">Citations</a>
+                <a href="/structure" class="">Structure</a>
+                <a href="/officials" class="">Officials</a>
+                <a href="/admin" class="">Admin</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-6">
+        
+<div class="max-w-5xl mx-auto">
+    <form action="/search" method="get" class="mb-5">
+        <input type="text" name="q" value="" autofocus
+               placeholder="Search by title, body text, document number, keyword..."
+               class="w-full px-4 py-2.5 text-sm rounded-none border border-gray-300 focus:border-teal focus:ring-2 focus:ring-teal mb-2">
+        <div class="flex gap-3 items-center text-sm flex-wrap">
+            <label class="text-gray-400 text-xs">From:</label>
+            <input type="date" name="date_start" value="" class="text-sm">
+            <label class="text-gray-400 text-xs">To:</label>
+            <input type="date" name="date_end" value="" class="text-sm">
+            <label class="flex items-center gap-1.5 text-gray-600 cursor-pointer select-none"
+                   title="Hide Xinhua, People's Daily, Guancha, Phoenix and all other news/media sources">
+                <input type="checkbox" name="exclude_news" value="1" 
+                       class="border-gray-300">
+                Exclude news
+            </label>
+            <button type="submit" class="bg-teal hover:bg-teal text-white px-4 py-1.5 rounded-none text-sm font-medium">Search</button>
+        </div>
+    </form>
+
+    
+    
+</div>
+
+    </main>
+
+    
+</body>
+</html>
