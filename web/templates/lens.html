@@ -206,9 +206,30 @@
         </div>
     </div>
 
+    <!-- By region -->
+    {% if topic.regions %}
+    <div class="mb-8">
+        <span class="lab">By region · province rollup</span>
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Region</th><th>Share</th><th class="w-16 text-right">Count</th></tr></thead>
+            <tbody>
+            {% for r in topic.regions %}
+                <tr>
+                    <td>{{ r.region }}</td>
+                    <td><div class="h-3 bg-teal" style="width: {{ ((r.count / topic.region_max) * 100)|round(1) if topic.region_max else 0 }}%; min-width: 2px;"></div></td>
+                    <td class="text-right mono">{{ "{:,}".format(r.count) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Top issuing sites -->
     <div class="mb-8">
-        <span class="lab">Top issuing bodies</span>
+        <span class="lab">Top issuing bodies · author</span>
         <div class="card table-scroll">
         <table class="data-table">
             <thead><tr><th>Source</th><th class="w-16">Level</th><th>Share</th><th class="w-16 text-right">Count</th></tr></thead>

@@ -26,6 +26,65 @@ _topic_cache: dict = {}
 _doc_cache: dict = {}
 _totals_cache: dict = {}
 
+# --- Region rollup (derive a province/region from a site) --------------------
+# Our sites table has no region column, but site_key prefixes and the English
+# site names carry the locale. Roll municipalities/districts/departments up to
+# their province so the Lens can show a "By region" facet (richer than the
+# central/provincial/... admin_level alone). Prefix rules win (most reliable for
+# the dept/district tiers); then name-substring; else fall back by admin_level.
+_REGION_PREFIX = {
+    "bjd_": "Beijing", "bjb_": "Beijing",
+    "shb_": "Shanghai",
+    "njd_": "Jiangsu", "js_": "Jiangsu",
+    "whd_": "Hubei",
+    "cqd_": "Chongqing", "cq_": "Chongqing",
+    "fj_": "Fujian", "xz_": "Xizang", "nx_": "Ningxia", "ln_": "Liaoning",
+    "sd_": "Shandong", "hn_": "Hunan", "jl_": "Jilin", "gd_": "Guangdong",
+    "sz": "Guangdong",  # Shenzhen main + its districts/bureaus (szXX, szeb, ...)
+}
+_REGION_NAME = {
+    "beijing": "Beijing", "shanghai": "Shanghai", "tianjin": "Tianjin",
+    "chongqing": "Chongqing", "guangdong": "Guangdong", "shenzhen": "Guangdong",
+    "guangzhou": "Guangdong", "zhuhai": "Guangdong", "huizhou": "Guangdong",
+    "jiangmen": "Guangdong", "zhongshan": "Guangdong", "shantou": "Guangdong",
+    "foshan": "Guangdong", "dongguan": "Guangdong", "heyuan": "Guangdong",
+    "zhaoqing": "Guangdong", "zhanjiang": "Guangdong", "maoming": "Guangdong",
+    "meizhou": "Guangdong", "qingyuan": "Guangdong", "yangjiang": "Guangdong",
+    "chaozhou": "Guangdong", "jieyang": "Guangdong", "shanwei": "Guangdong",
+    "yunfu": "Guangdong", "shaoguan": "Guangdong",
+    "jiangsu": "Jiangsu", "suzhou": "Jiangsu", "nanjing": "Jiangsu", "wuxi": "Jiangsu",
+    "zhejiang": "Zhejiang", "hangzhou": "Zhejiang", "wuhan": "Hubei", "hubei": "Hubei",
+    "heilongjiang": "Heilongjiang", "liaoning": "Liaoning", "shenyang": "Liaoning",
+    "dalian": "Liaoning", "jilin": "Jilin", "shandong": "Shandong", "jinan": "Shandong",
+    "qingdao": "Shandong", "fujian": "Fujian", "hunan": "Hunan", "hainan": "Hainan",
+    "henan": "Henan", "hebei": "Hebei", "anhui": "Anhui", "jiangxi": "Jiangxi",
+    "guangxi": "Guangxi", "yunnan": "Yunnan", "guizhou": "Guizhou", "sichuan": "Sichuan",
+    "shaanxi": "Shaanxi", "gansu": "Gansu", "qinghai": "Qinghai", "ningxia": "Ningxia",
+    "xinjiang": "Xinjiang", "xizang": "Xizang", "tibet": "Xizang", "shanxi": "Shanxi",
+    "inner mongolia": "Inner Mongolia", "nmg": "Inner Mongolia", "qingdao": "Shandong",
+}
+# The bare-named Shenzhen department sites (no prefix/locale in the name).
+_SZ_DEPTS = {"audit", "fgw", "ga", "hrss", "jtys", "mzj", "sf", "stic",
+             "swj", "szeb", "wjw", "yjgl", "zjj"}
+
+
+def _region_for(site_key, name, admin_level):
+    sk = (site_key or "").lower()
+    for pre, reg in _REGION_PREFIX.items():
+        if sk.startswith(pre):
+            return reg
+    if sk in _SZ_DEPTS:
+        return "Guangdong"
+    nm = (name or "").lower()
+    for kw, reg in _REGION_NAME.items():
+        if kw in nm:
+            return reg
+    if admin_level == "central":
+        return "Central"
+    if admin_level == "media":
+        return "National media"
+    return "Other"
+
 
 async def _yearly_totals(db):
     """Per-year TOTAL document count (topic-independent), cached once for an hour.
@@ -95,17 +154,24 @@ async def get_topic_lens(db, q: str):
            ORDER BY c DESC""", pat)
     levels = [{"level": r["lvl"], "count": r["c"]} for r in lv_rows]
 
-    # Top issuing sites.
+    # Issuing sites (all, ordered) — feeds both the top-issuers panel and the
+    # region rollup below (one query instead of two).
     site_rows = await db.fetch(
         """SELECT s.name, s.site_key,
                   COALESCE(NULLIF(s.admin_level, ''), 'unknown') AS lvl, COUNT(*) AS c
            FROM documents d JOIN sites s ON s.site_key = d.site_key
            WHERE d.title LIKE $1
            GROUP BY d.site_key
-           ORDER BY c DESC
-           LIMIT 12""", pat)
+           ORDER BY c DESC""", pat)
     top_sites = [{"name": r["name"], "site_key": r["site_key"],
-                  "level": r["lvl"], "count": r["c"]} for r in site_rows]
+                  "level": r["lvl"], "count": r["c"]} for r in site_rows[:12]]
+
+    # Region rollup (province-level; author facet is the top-issuers panel above).
+    from collections import Counter as _Counter
+    reg_counts = _Counter()
+    for r in site_rows:
+        reg_counts[_region_for(r["site_key"], r["name"], r["lvl"])] += r["c"]
+    regions = [{"region": k, "count": v} for k, v in reg_counts.most_common()]
 
     # Genre mix (algorithmic doc type).
     genre_rows = await db.fetch(
@@ -133,12 +199,14 @@ async def get_topic_lens(db, q: str):
         "total": total or 0,
         "timeline": timeline,
         "levels": levels,
+        "regions": regions,
         "top_sites": top_sites,
         "genres": genres,
         "anchors": anchors,
         "timeline_max": max((t["count"] for t in timeline), default=0),
         "share_max": max((t["share"] for t in timeline), default=0.0),
         "level_max": max((l["count"] for l in levels), default=0),
+        "region_max": max((r["count"] for r in regions), default=0),
         "site_max": max((s["count"] for s in top_sites), default=0),
         "genre_max": max((g["count"] for g in genres), default=0),
     }
