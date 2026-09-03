@@ -4,7 +4,8 @@
 status that used to be scattered across `reconnect-sources.md`,
 `new-source-candidates.md`, `china-vantage-options.md`, and CLAUDE.md's Open Questions.
 
-- **Last verified:** 2026-09-03 (central + provincial tiers; city tier sampled).
+- **Last verified:** 2026-09-03 (central + provincial fully; 368-unit city tier mapped,
+  reachability sampled — full list in `source-map-cities.csv`).
 - **Vantage:** the droplet's NYC datacenter IP (`104.236.88.45`, AS14061 DigitalOcean).
   Reachability is IP-specific — a residential-China proxy changes most "blocked" rows.
 
@@ -87,11 +88,25 @@ Docs exist but only behind a JS search API, not a browsable list.
 
 ---
 
-## City tier (~335 prefecture cities)
+## City tier (368 units) — full list in `source-map-cities.csv`
 
-<!-- filled from docs/working/source-map-cities.csv (agent-built). ~20 HAVE, ~315 NEW;
-     sampled reachability ratio below. -->
-_Pending consolidation from `source-map-cities.csv`._
+Recovered in full from ReConnect's public JS bundle (taxonomy only, no doc scraping):
+**335 prefecture cities + 4 municipalities + 29 special county-level units** (XPCC/兵团,
+Hainan counties, Hubei 天门/仙桃/潜江/神农架, 河南济源, 香港/澳门).
+
+- **Coverage: 23 HAVE / 345 NEW.** HAVE = 20 cities (14 GD via gkmlpt + Suzhou, Wuhan,
+  Hangzhou, Qingdao, Jinan, Shenyang) + 3 municipalities (Beijing, Shanghai, Chongqing).
+  **天津 Tianjin is the one NEW municipality** (but its portal is dead — Tier F above).
+- **Sampled reachability (25 representative NEW cities from our NYC IP): ~28% crawlable
+  / ~72% blocked** (7 reachable · 3 WAF · 15 blackhole). So of the 345 NEW cities,
+  order-of-magnitude **~90 are directly crawlable** (no proxy), the rest are proxy-gated.
+  This is the **long tail** — low citation-demand per city; pick targets by policy
+  relevance, not en masse.
+- **Domain caveat:** `candidate_domain` in the CSV is the `www.<pinyin>.gov.cn` heuristic
+  and is WRONG for abbreviation-domain cities (石家庄=sjz, 西安=xa, 大连=dl, 南昌=nc,
+  昆明=km, 贵阳=gy, 长春=cc, 宁波=nb, 兰州=lz, 东莞=dg, 厦门=xm, …). The 25 sampled rows
+  carry VERIFIED domains; 51 autonomous-prefecture/county rows are flagged `(verify)`;
+  343 rows are `untested`. Verify a city's real portal (byte-check) before crawling it.
 
 ---
 

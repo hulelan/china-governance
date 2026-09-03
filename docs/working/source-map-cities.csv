@@ -1,0 +1,384 @@
+# ReConnect China CITY-tier source map vs. our coverage — built 2026-09-03
+# Source: PUBLIC facet taxonomy from reconnectchina.org JS bundle assets/search-CdkYhrVp.js
+#   arrays b3 (335 prefecture cities) + Bn (4 municipalities) + F3 (29 special county-level units).
+#   Pinyin/English from assets/item-url-BR2Rzb8A.js name->EN dict. NO document endpoints touched.
+# TOTALS: 368 city-tier units = 335 cities + 4 municipalities + 29 special.
+# COVERAGE: 23 HAVE (we already crawl) / 345 NEW.
+#   HAVE = 20 cities (14 Guangdong: gz sz zhuhai zhongshan huizhou yangjiang shantou shanwei
+#   shaoguan jiangmen jieyang heyuan yunfu zhaoqing; + suzhou wuhan hangzhou qingdao jinan shenyang)
+#   + 3 municipalities (bj Beijing, shb_* Shanghai depts, cq Chongqing). Tianjin=NEW.
+# REACHABILITY SAMPLE (25 representative NEW cities, curl from droplet NYC IP, verified domains):
+#   7 reachable(200) / 3 waf(4xx) / 15 blackhole(000)  ->  ~28% crawlable from NYC, ~72% blocked (need residential/proxy).
+#   Matches CLAUDE.md finding: most CN gov portals blackhole datacenter IPs. Only ~1 in 4 NEW cities is directly crawlable.
+# NOTE candidate_domain is the pinyin heuristic (www.<pinyin>.gov.cn); the 25 SAMPLED rows carry a VERIFIED domain
+#   (several real portals use abbreviations, e.g. 石家庄=sjz, 西安=xa, 大连=dl, 南昌=nc, 昆明=km, 贵阳=gy). '(verify)' flags
+#   autonomous prefectures/counties/leagues/regions where the pinyin rule is unreliable. reachability=untested = not sampled.
+city_cn,city_pinyin,candidate_domain,tier,coverage,reachability
+七台河市,qitaihe,www.qitaihe.gov.cn,city,NEW,untested
+三亚市,sanya,www.sanya.gov.cn,city,NEW,untested
+三明市,sanming,www.sanming.gov.cn,city,NEW,untested
+三门峡市,sanmenxia,www.sanmenxia.gov.cn,city,NEW,untested
+上饶市,shangrao,www.shangrao.gov.cn,city,NEW,untested
+东营市,dongying,www.dongying.gov.cn,city,NEW,untested
+中卫市,zhongwei,www.zhongwei.gov.cn,city,NEW,untested
+临夏回族自治州,linxia,www.linxia.gov.cn  (verify),city,NEW,untested
+临汾市,linfen,www.linfen.gov.cn,city,NEW,untested
+临沂市,linyi,www.linyi.gov.cn,city,NEW,untested
+临沧市,lincang,www.lincang.gov.cn,city,NEW,untested
+丹东市,dandong,www.dandong.gov.cn,city,NEW,untested
+丽水市,lishui,www.lishui.gov.cn,city,NEW,untested
+丽江市,lijiang,www.lijiang.gov.cn,city,NEW,untested
+乌鲁木齐市,urumqi,www.urumqi.gov.cn,city,NEW,untested
+乐山市,leshan,www.leshan.gov.cn,city,NEW,untested
+九江市,jiujiang,www.jiujiang.gov.cn,city,NEW,untested
+云浮市,yunfu,www.yunfu.gov.cn,city,HAVE:yunfu,untested
+亳州市,bozhou,www.bozhou.gov.cn,city,NEW,untested
+伊春市,yichun,www.yichun.gov.cn,city,NEW,untested
+伊犁哈萨克自治州,ili,www.ili.gov.cn  (verify),city,NEW,untested
+佛山市,foshan,www.foshan.gov.cn,city,NEW,blackhole
+佳木斯市,jiamusi,www.jiamusi.gov.cn,city,NEW,untested
+保定市,baoding,www.baoding.gov.cn,city,NEW,untested
+保山市,baoshan,www.baoshan.gov.cn,city,NEW,untested
+信阳市,xinyang,www.xinyang.gov.cn,city,NEW,untested
+儋州市,danzhou,www.danzhou.gov.cn,city,NEW,untested
+克孜勒苏柯尔克孜自治州,kizilsu,www.kizilsu.gov.cn  (verify),city,NEW,untested
+克拉玛依市,karamay,www.karamay.gov.cn,city,NEW,untested
+六安市,luan,www.luan.gov.cn,city,NEW,untested
+六盘水市,liupanshui,www.liupanshui.gov.cn,city,NEW,untested
+兰州市,lanzhou,www.lz.gov.cn,city,NEW,blackhole
+兴安盟,xingan,www.xingan.gov.cn  (verify),city,NEW,untested
+内江市,neijiang,www.neijiang.gov.cn,city,NEW,untested
+凉山彝族自治州,liangshan,www.liangshan.gov.cn  (verify),city,NEW,untested
+北海市,beihai,www.beihai.gov.cn,city,NEW,untested
+十堰市,shiyan,www.shiyan.gov.cn,city,NEW,untested
+南京市,nanjing,www.nanjing.gov.cn,city,NEW,untested
+南充市,nanchong,www.nanchong.gov.cn,city,NEW,untested
+南宁市,nanning,www.nanning.gov.cn,city,NEW,blackhole
+南平市,nanping,www.nanping.gov.cn,city,NEW,untested
+南昌市,nanchang,www.nc.gov.cn,city,NEW,blackhole
+南通市,nantong,www.nantong.gov.cn,city,NEW,waf
+南阳市,nanyang,www.nanyang.gov.cn,city,NEW,untested
+博尔塔拉蒙古自治州,bortala,www.bortala.gov.cn  (verify),city,NEW,untested
+厦门市,xiamen,www.xm.gov.cn,city,NEW,blackhole
+双鸭山市,shuangyashan,www.shuangyashan.gov.cn,city,NEW,untested
+台州市,taizhou,www.taizhou.gov.cn,city,NEW,untested
+合肥市,hefei,www.hefei.gov.cn,city,NEW,blackhole
+吉安市,jian,www.jian.gov.cn,city,NEW,untested
+吉林市,jilin,www.jilin.gov.cn,city,NEW,untested
+吐鲁番市,turpan,www.turpan.gov.cn,city,NEW,untested
+吕梁市,lliang,www.lliang.gov.cn,city,NEW,untested
+吴忠市,wuzhong,www.wuzhong.gov.cn,city,NEW,untested
+周口市,zhoukou,www.zhoukou.gov.cn,city,NEW,untested
+和田地区,hotan,www.hotan.gov.cn  (verify),city,NEW,untested
+咸宁市,xianning,www.xianning.gov.cn,city,NEW,untested
+咸阳市,xianyang,www.xianyang.gov.cn,city,NEW,untested
+哈密市,hami,www.hami.gov.cn,city,NEW,untested
+哈尔滨市,harbin,www.harbin.gov.cn,city,NEW,blackhole
+唐山市,tangshan,www.tangshan.gov.cn,city,NEW,untested
+商丘市,shangqiu,www.shangqiu.gov.cn,city,NEW,untested
+商洛市,shangluo,www.shangluo.gov.cn,city,NEW,untested
+喀什地区,kashgar,www.kashgar.gov.cn  (verify),city,NEW,untested
+嘉兴市,jiaxing,www.jiaxing.gov.cn,city,NEW,untested
+嘉峪关市,jiayuguan,www.jiayuguan.gov.cn,city,NEW,untested
+四平市,siping,www.siping.gov.cn,city,NEW,untested
+固原市,guyuan,www.guyuan.gov.cn,city,NEW,untested
+塔城地区,tacheng,www.tacheng.gov.cn  (verify),city,NEW,untested
+大兴安岭地区,daxinganling,www.daxinganling.gov.cn  (verify),city,NEW,untested
+大同市,datong,www.datong.gov.cn,city,NEW,untested
+大庆市,daqing,www.daqing.gov.cn,city,NEW,untested
+大理白族自治州,dali,www.dali.gov.cn  (verify),city,NEW,untested
+大连市,dalian,www.dl.gov.cn,city,NEW,blackhole
+天水市,tianshui,www.tianshui.gov.cn,city,NEW,untested
+太原市,taiyuan,www.taiyuan.gov.cn,city,NEW,blackhole
+威海市,weihai,www.weihai.gov.cn,city,NEW,untested
+娄底市,loudi,www.loudi.gov.cn,city,NEW,untested
+孝感市,xiaogan,www.xiaogan.gov.cn,city,NEW,untested
+宁德市,ningde,www.ningde.gov.cn,city,NEW,untested
+宁波市,ningbo,www.nb.gov.cn,city,NEW,blackhole
+安庆市,anqing,www.anqing.gov.cn,city,NEW,untested
+安康市,ankang,www.ankang.gov.cn,city,NEW,untested
+安阳市,anyang,www.anyang.gov.cn,city,NEW,untested
+安顺市,anshun,www.anshun.gov.cn,city,NEW,untested
+定西市,dingxi,www.dingxi.gov.cn,city,NEW,untested
+宜宾市,yibin,www.yibin.gov.cn,city,NEW,untested
+宜昌市,yichang,www.yichang.gov.cn,city,NEW,untested
+宜春市,yichun,www.yichun.gov.cn,city,NEW,untested
+宝鸡市,baoji,www.baoji.gov.cn,city,NEW,untested
+宣城市,xuancheng,www.xuancheng.gov.cn,city,NEW,untested
+宿州市,suzhou,www.suzhou.gov.cn,city,NEW,untested
+宿迁市,suqian,www.suqian.gov.cn,city,NEW,untested
+山南市,shannan,www.shannan.gov.cn,city,NEW,untested
+岳阳市,yueyang,www.yueyang.gov.cn,city,NEW,untested
+崇左市,chongzuo,www.chongzuo.gov.cn,city,NEW,untested
+巴中市,bazhong,www.bazhong.gov.cn,city,NEW,untested
+巴音郭楞蒙古自治州,bayingolin,www.bayingolin.gov.cn  (verify),city,NEW,untested
+常州市,changzhou,www.changzhou.gov.cn,city,NEW,untested
+常德市,changde,www.changde.gov.cn,city,NEW,untested
+平凉市,pingliang,www.pingliang.gov.cn,city,NEW,untested
+平顶山市,pingdingshan,www.pingdingshan.gov.cn,city,NEW,untested
+广元市,guangyuan,www.guangyuan.gov.cn,city,NEW,untested
+广安市,guangan,www.guangan.gov.cn,city,NEW,untested
+广州市,guangzhou,www.guangzhou.gov.cn,city,HAVE:gz,untested
+庆阳市,qingyang,www.qingyang.gov.cn,city,NEW,untested
+廊坊市,langfang,www.langfang.gov.cn,city,NEW,untested
+延安市,yanan,www.yanan.gov.cn,city,NEW,untested
+延边朝鲜族自治州,yanbian,www.yanbian.gov.cn  (verify),city,NEW,untested
+开封市,kaifeng,www.kaifeng.gov.cn,city,NEW,untested
+张家口市,zhangjiakou,www.zhangjiakou.gov.cn,city,NEW,untested
+张家界市,zhangjiajie,www.zhangjiajie.gov.cn,city,NEW,untested
+张掖市,zhangye,www.zhangye.gov.cn,city,NEW,untested
+徐州市,xuzhou,www.xuzhou.gov.cn,city,NEW,untested
+德宏傣族景颇族自治州,dehong,www.dehong.gov.cn  (verify),city,NEW,untested
+德州市,dezhou,www.dezhou.gov.cn,city,NEW,untested
+德阳市,deyang,www.deyang.gov.cn,city,NEW,untested
+忻州市,xinzhou,www.xinzhou.gov.cn,city,NEW,untested
+怀化市,huaihua,www.huaihua.gov.cn,city,NEW,untested
+怒江傈僳族自治州,nujiang,www.nujiang.gov.cn  (verify),city,NEW,untested
+恩施土家族苗族自治州,enshi,www.enshi.gov.cn  (verify),city,NEW,untested
+惠州市,huizhou,www.huizhou.gov.cn,city,HAVE:huizhou,untested
+成都市,chengdu,www.chengdu.gov.cn,city,NEW,waf
+扬州市,yangzhou,www.yangzhou.gov.cn,city,NEW,untested
+承德市,chengde,www.chengde.gov.cn,city,NEW,untested
+抚州市,fuzhou,www.fuzhou.gov.cn,city,NEW,untested
+抚顺市,fushun,www.fushun.gov.cn,city,NEW,untested
+拉萨市,lhasa,www.lhasa.gov.cn,city,NEW,untested
+揭阳市,jieyang,www.jieyang.gov.cn,city,HAVE:jieyang,untested
+攀枝花市,panzhihua,www.panzhihua.gov.cn,city,NEW,untested
+文山壮族苗族自治州,wenshan,www.wenshan.gov.cn  (verify),city,NEW,untested
+新乡市,xinxiang,www.xinxiang.gov.cn,city,NEW,untested
+新余市,xinyu,www.xinyu.gov.cn,city,NEW,untested
+无锡市,wuxi,www.wuxi.gov.cn,city,NEW,reachable
+日喀则市,shigatse,www.shigatse.gov.cn,city,NEW,untested
+日照市,rizhao,www.rizhao.gov.cn,city,NEW,untested
+昆明市,kunming,www.km.gov.cn,city,NEW,blackhole
+昌吉回族自治州,changji,www.changji.gov.cn  (verify),city,NEW,untested
+昌都市,qamdo,www.qamdo.gov.cn,city,NEW,untested
+昭通市,zhaotong,www.zhaotong.gov.cn,city,NEW,untested
+晋中市,jinzhong,www.jinzhong.gov.cn,city,NEW,untested
+晋城市,jincheng,www.jincheng.gov.cn,city,NEW,untested
+普洱市,puer,www.puer.gov.cn,city,NEW,untested
+景德镇市,jingdezhen,www.jingdezhen.gov.cn,city,NEW,untested
+曲靖市,qujing,www.qujing.gov.cn,city,NEW,untested
+朔州市,shuozhou,www.shuozhou.gov.cn,city,NEW,untested
+朝阳市,chaoyang,www.chaoyang.gov.cn,city,NEW,untested
+本溪市,benxi,www.benxi.gov.cn,city,NEW,untested
+来宾市,laibin,www.laibin.gov.cn,city,NEW,untested
+杭州市,hangzhou,www.hangzhou.gov.cn,city,HAVE:hangzhou,untested
+松原市,songyuan,www.songyuan.gov.cn,city,NEW,untested
+林芝市,nyingchi,www.nyingchi.gov.cn,city,NEW,untested
+果洛藏族自治州,golog,www.golog.gov.cn  (verify),city,NEW,untested
+枣庄市,zaozhuang,www.zaozhuang.gov.cn,city,NEW,untested
+柳州市,liuzhou,www.liuzhou.gov.cn,city,NEW,untested
+株洲市,zhuzhou,www.zhuzhou.gov.cn,city,NEW,untested
+桂林市,guilin,www.guilin.gov.cn,city,NEW,untested
+梅州市,meizhou,www.meizhou.gov.cn,city,NEW,untested
+梧州市,wuzhou,www.wuzhou.gov.cn,city,NEW,untested
+楚雄彝族自治州,chuxiong,www.chuxiong.gov.cn  (verify),city,NEW,untested
+榆林市,yulin,www.yulin.gov.cn,city,NEW,untested
+武威市,wuwei,www.wuwei.gov.cn,city,NEW,untested
+武汉市,wuhan,www.wuhan.gov.cn,city,HAVE:wuhan,untested
+毕节市,bijie,www.bijie.gov.cn,city,NEW,untested
+永州市,yongzhou,www.yongzhou.gov.cn,city,NEW,untested
+汉中市,hanzhong,www.hanzhong.gov.cn,city,NEW,untested
+汕头市,shantou,www.shantou.gov.cn,city,HAVE:shantou,untested
+汕尾市,shanwei,www.shanwei.gov.cn,city,HAVE:shanwei,untested
+江门市,jiangmen,www.jiangmen.gov.cn,city,HAVE:jiangmen,untested
+池州市,chizhou,www.chizhou.gov.cn,city,NEW,untested
+沈阳市,shenyang,www.shenyang.gov.cn,city,HAVE:shenyang,untested
+沧州市,cangzhou,www.cangzhou.gov.cn,city,NEW,untested
+河池市,hechi,www.hechi.gov.cn,city,NEW,untested
+河源市,heyuan,www.heyuan.gov.cn,city,HAVE:heyuan,untested
+泉州市,quanzhou,www.quanzhou.gov.cn,city,NEW,untested
+泰安市,taian,www.taian.gov.cn,city,NEW,untested
+泰州市,taizhou,www.taizhou.gov.cn,city,NEW,untested
+泸州市,luzhou,www.luzhou.gov.cn,city,NEW,untested
+洛阳市,luoyang,www.luoyang.gov.cn,city,NEW,untested
+济南市,jinan,www.jinan.gov.cn,city,HAVE:jinan,untested
+济宁市,jining,www.jining.gov.cn,city,NEW,untested
+海东市,haidong,www.haidong.gov.cn,city,NEW,untested
+海北藏族自治州,haibei,www.haibei.gov.cn  (verify),city,NEW,untested
+海南藏族自治州,hainan,www.hainan.gov.cn  (verify),city,NEW,untested
+海口市,haikou,www.haikou.gov.cn,city,NEW,reachable
+海西蒙古族藏族自治州,haixi,www.haixi.gov.cn  (verify),city,NEW,untested
+淄博市,zibo,www.zibo.gov.cn,city,NEW,untested
+淮北市,huaibei,www.huaibei.gov.cn,city,NEW,untested
+淮南市,huainan,www.huainan.gov.cn,city,NEW,untested
+淮安市,huaian,www.huaian.gov.cn,city,NEW,untested
+深圳市,shenzhen,www.shenzhen.gov.cn,city,HAVE:sz,untested
+清远市,qingyuan,www.qingyuan.gov.cn,city,NEW,untested
+温州市,wenzhou,www.wenzhou.gov.cn,city,NEW,blackhole
+渭南市,weinan,www.weinan.gov.cn,city,NEW,untested
+湖州市,huzhou,www.huzhou.gov.cn,city,NEW,untested
+湘潭市,xiangtan,www.xiangtan.gov.cn,city,NEW,untested
+湘西土家族苗族自治州,xiangxi,www.xiangxi.gov.cn  (verify),city,NEW,untested
+湛江市,zhanjiang,www.zhanjiang.gov.cn,city,NEW,untested
+滁州市,chuzhou,www.chuzhou.gov.cn,city,NEW,untested
+滨州市,binzhou,www.binzhou.gov.cn,city,NEW,untested
+漯河市,luohe,www.luohe.gov.cn,city,NEW,untested
+漳州市,zhangzhou,www.zhangzhou.gov.cn,city,NEW,untested
+潍坊市,weifang,www.weifang.gov.cn,city,NEW,untested
+潮州市,chaozhou,www.chaozhou.gov.cn,city,NEW,untested
+濮阳市,puyang,www.puyang.gov.cn,city,NEW,untested
+烟台市,yantai,www.yantai.gov.cn,city,NEW,untested
+焦作市,jiaozuo,www.jiaozuo.gov.cn,city,NEW,untested
+牡丹江市,mudanjiang,www.mudanjiang.gov.cn,city,NEW,untested
+玉林市,yulin,www.yulin.gov.cn,city,NEW,untested
+玉树藏族自治县,yushu,www.yushu.gov.cn  (verify),city,NEW,untested
+玉树藏族自治州,yushu,www.yushu.gov.cn  (verify),city,NEW,untested
+玉溪市,yuxi,www.yuxi.gov.cn,city,NEW,untested
+珠海市,zhuhai,www.zhuhai.gov.cn,city,HAVE:zhuhai,untested
+甘南藏族自治州,gannan,www.gannan.gov.cn  (verify),city,NEW,untested
+甘孜藏族自治州,garz,www.garz.gov.cn  (verify),city,NEW,untested
+白城市,baicheng,www.baicheng.gov.cn,city,NEW,untested
+白山市,baishan,www.baishan.gov.cn,city,NEW,untested
+白银市,baiyin,www.baiyin.gov.cn,city,NEW,untested
+百色市,baise,www.baise.gov.cn,city,NEW,untested
+益阳市,yiyang,www.yiyang.gov.cn,city,NEW,untested
+盐城市,yancheng,www.yancheng.gov.cn,city,NEW,untested
+盘锦市,panjin,www.panjin.gov.cn,city,NEW,untested
+眉山市,meishan,www.meishan.gov.cn,city,NEW,untested
+石嘴山市,shizuishan,www.shizuishan.gov.cn,city,NEW,untested
+石家庄市,shijiazhuang,www.sjz.gov.cn,city,NEW,reachable
+福州市,fuzhou,www.fuzhou.gov.cn,city,NEW,reachable
+秦皇岛市,qinhuangdao,www.qinhuangdao.gov.cn,city,NEW,untested
+红河哈尼族彝族自治州,honghe,www.honghe.gov.cn  (verify),city,NEW,untested
+绍兴市,shaoxing,www.shaoxing.gov.cn,city,NEW,untested
+绥化市,suihua,www.suihua.gov.cn,city,NEW,untested
+绵阳市,mianyang,www.mianyang.gov.cn,city,NEW,untested
+聊城市,liaocheng,www.liaocheng.gov.cn,city,NEW,untested
+肇庆市,zhaoqing,www.zhaoqing.gov.cn,city,HAVE:zhaoqing,untested
+自贡市,zigong,www.zigong.gov.cn,city,NEW,untested
+舟山市,zhoushan,www.zhoushan.gov.cn,city,NEW,untested
+芜湖市,wuhu,www.wuhu.gov.cn,city,NEW,untested
+苏州市,suzhou,www.suzhou.gov.cn,city,HAVE:suzhou,untested
+茂名市,maoming,www.maoming.gov.cn,city,NEW,untested
+荆州市,jingzhou,www.jingzhou.gov.cn,city,NEW,untested
+荆门市,jingmen,www.jingmen.gov.cn,city,NEW,untested
+莆田市,putian,www.putian.gov.cn,city,NEW,untested
+莱芜市,laiwu,www.laiwu.gov.cn,city,NEW,untested
+菏泽市,heze,www.heze.gov.cn,city,NEW,untested
+萍乡市,pingxiang,www.pingxiang.gov.cn,city,NEW,untested
+营口市,yingkou,www.yingkou.gov.cn,city,NEW,untested
+葫芦岛市,huludao,www.huludao.gov.cn,city,NEW,untested
+蚌埠市,bengbu,www.bengbu.gov.cn,city,NEW,untested
+衡水市,hengshui,www.hengshui.gov.cn,city,NEW,untested
+衡阳市,hengyang,www.hengyang.gov.cn,city,NEW,untested
+衢州市,quzhou,www.quzhou.gov.cn,city,NEW,untested
+襄阳市,xiangyang,www.xiangyang.gov.cn,city,NEW,untested
+西双版纳傣族自治州,xishuangbanna,www.xishuangbanna.gov.cn  (verify),city,NEW,untested
+西宁市,xining,www.xining.gov.cn,city,NEW,untested
+西安市,xian,www.xa.gov.cn,city,NEW,reachable
+许昌市,xuchang,www.xuchang.gov.cn,city,NEW,untested
+贵港市,guigang,www.guigang.gov.cn,city,NEW,untested
+贵阳市,guiyang,www.gy.gov.cn,city,NEW,waf
+贺州市,hezhou,www.hezhou.gov.cn,city,NEW,untested
+资阳市,ziyang,www.ziyang.gov.cn,city,NEW,untested
+赣州市,ganzhou,www.ganzhou.gov.cn,city,NEW,untested
+辽源市,liaoyuan,www.liaoyuan.gov.cn,city,NEW,untested
+辽阳市,liaoyang,www.liaoyang.gov.cn,city,NEW,untested
+达州市,dazhou,www.dazhou.gov.cn,city,NEW,untested
+运城市,yuncheng,www.yuncheng.gov.cn,city,NEW,untested
+连云港市,lianyungang,www.lianyungang.gov.cn,city,NEW,untested
+迪庆藏族自治州,diqing,www.diqing.gov.cn  (verify),city,NEW,untested
+通化市,tonghua,www.tonghua.gov.cn,city,NEW,untested
+遂宁市,suining,www.suining.gov.cn,city,NEW,untested
+遵义市,zunyi,www.zunyi.gov.cn,city,NEW,untested
+邢台市,xingtai,www.xingtai.gov.cn,city,NEW,untested
+那曲地区,nagqu,www.nagqu.gov.cn  (verify),city,NEW,untested
+邯郸市,handan,www.handan.gov.cn,city,NEW,untested
+邵阳市,shaoyang,www.shaoyang.gov.cn,city,NEW,untested
+郑州市,zhengzhou,www.zhengzhou.gov.cn,city,NEW,reachable
+郴州市,chenzhou,www.chenzhou.gov.cn,city,NEW,untested
+鄂州市,ezhou,www.ezhou.gov.cn,city,NEW,untested
+酒泉市,jiuquan,www.jiuquan.gov.cn,city,NEW,untested
+金华市,jinhua,www.jinhua.gov.cn,city,NEW,untested
+金昌市,jinchang,www.jinchang.gov.cn,city,NEW,untested
+钦州市,qinzhou,www.qinzhou.gov.cn,city,NEW,untested
+铁岭市,tieling,www.tieling.gov.cn,city,NEW,untested
+铜仁市,tongren,www.tongren.gov.cn,city,NEW,untested
+铜川市,tongchuan,www.tongchuan.gov.cn,city,NEW,untested
+铜陵市,tongling,www.tongling.gov.cn,city,NEW,untested
+银川市,yinchuan,www.yinchuan.gov.cn,city,NEW,reachable
+锡林郭勒盟,xilin,www.xilin.gov.cn  (verify),city,NEW,untested
+锦州市,jinzhou,www.jinzhou.gov.cn,city,NEW,untested
+镇江市,zhenjiang,www.zhenjiang.gov.cn,city,NEW,untested
+长春市,changchun,www.cc.gov.cn,city,NEW,blackhole
+长沙市,changsha,www.changsha.gov.cn,city,NEW,blackhole
+长治市,changzhi,www.changzhi.gov.cn,city,NEW,untested
+阜新市,fuxin,www.fuxin.gov.cn,city,NEW,untested
+阜阳市,fuyang,www.fuyang.gov.cn,city,NEW,untested
+防城港市,fangchenggang,www.fangchenggang.gov.cn,city,NEW,untested
+阳江市,yangjiang,www.yangjiang.gov.cn,city,HAVE:yangjiang,untested
+阳泉市,yangquan,www.yangquan.gov.cn,city,NEW,untested
+阿克苏地区,aksu,www.aksu.gov.cn  (verify),city,NEW,untested
+阿勒泰地区,altay,www.altay.gov.cn  (verify),city,NEW,untested
+阿坝藏族羌族自治州,ngawa,www.ngawa.gov.cn  (verify),city,NEW,untested
+阿拉善盟,alxa,www.alxa.gov.cn  (verify),city,NEW,untested
+阿里地区,ngari,www.ngari.gov.cn  (verify),city,NEW,untested
+陇南市,longnan,www.longnan.gov.cn,city,NEW,untested
+随州市,suizhou,www.suizhou.gov.cn,city,NEW,untested
+雅安市,yaan,www.yaan.gov.cn,city,NEW,untested
+青岛市,qingdao,www.qingdao.gov.cn,city,HAVE:qingdao,untested
+鞍山市,anshan,www.anshan.gov.cn,city,NEW,untested
+韶关市,shaoguan,www.shaoguan.gov.cn,city,HAVE:shaoguan,untested
+马鞍山市,maanshan,www.maanshan.gov.cn,city,NEW,untested
+驻马店市,zhumadian,www.zhumadian.gov.cn,city,NEW,untested
+鸡西市,jixi,www.jixi.gov.cn,city,NEW,untested
+鹤壁市,hebi,www.hebi.gov.cn,city,NEW,untested
+鹤岗市,hegang,www.hegang.gov.cn,city,NEW,untested
+鹰潭市,yingtan,www.yingtan.gov.cn,city,NEW,untested
+黄冈市,huanggang,www.huanggang.gov.cn,city,NEW,untested
+黄南藏族自治州,huangnan,www.huangnan.gov.cn  (verify),city,NEW,untested
+黄山市,huangshan,www.huangshan.gov.cn,city,NEW,untested
+黄石市,huangshi,www.huangshi.gov.cn,city,NEW,untested
+黑河市,heihe,www.heihe.gov.cn,city,NEW,untested
+黔东南苗族侗族自治州,qiandongnan,www.qiandongnan.gov.cn  (verify),city,NEW,untested
+黔南布依族苗族自治州,qiannan,www.qiannan.gov.cn  (verify),city,NEW,untested
+黔西南布依族苗族自治州,qianxinan,www.qianxinan.gov.cn  (verify),city,NEW,untested
+齐齐哈尔市,qiqihar,www.qiqihar.gov.cn,city,NEW,untested
+龙岩市,longyan,www.longyan.gov.cn,city,NEW,untested
+呼和浩特市,hohhot,www.hohhot.gov.cn,city,NEW,untested
+包头市,baotou,www.baotou.gov.cn,city,NEW,untested
+乌海市,wuhai,www.wuhai.gov.cn,city,NEW,untested
+赤峰市,chifeng,www.chifeng.gov.cn,city,NEW,untested
+通辽市,tongliao,www.tongliao.gov.cn,city,NEW,untested
+呼伦贝尔市,hulunbuir,www.hulunbuir.gov.cn,city,NEW,untested
+鄂尔多斯市,ordos,www.ordos.gov.cn,city,NEW,untested
+巴彦淖尔市,bayannur,www.bayannur.gov.cn,city,NEW,untested
+乌兰察布市,ulanqab,www.ulanqab.gov.cn,city,NEW,untested
+东莞市,dongguan,www.dg.gov.cn,city,NEW,blackhole
+中山市,zhongshan,www.zhongshan.gov.cn,city,HAVE:zhongshan,untested
+三沙市,sansha,www.sansha.gov.cn,city,NEW,untested
+上海市,shanghai,www.shanghai.gov.cn,municipality,HAVE:shb_*,untested
+北京市,beijing,www.beijing.gov.cn,municipality,HAVE:bj,untested
+天津市,tianjin,www.tianjin.gov.cn,municipality,NEW,untested
+重庆市,chongqing,www.chongqing.gov.cn,municipality,HAVE:cq,untested
+阿拉尔市,alar,www.alar.gov.cn,special,NEW,untested
+澳门特别行政区,macau,www.macau.gov.cn  (verify),special,NEW,untested
+白沙黎族自治县,baisha,www.baisha.gov.cn  (verify),special,NEW,untested
+保亭黎族苗族自治县,baoting,www.baoting.gov.cn  (verify),special,NEW,untested
+北屯市,beitun,www.beitun.gov.cn,special,NEW,untested
+昌江黎族自治县,changjiang,www.changjiang.gov.cn  (verify),special,NEW,untested
+澄迈县,chengmai,www.chengmai.gov.cn,special,NEW,untested
+定安县,dingan,www.dingan.gov.cn,special,NEW,untested
+东方市,dongfang,www.dongfang.gov.cn,special,NEW,untested
+胡杨河市,huyanghe,www.huyanghe.gov.cn,special,NEW,untested
+济源市,jiyuan,www.jiyuan.gov.cn,special,NEW,untested
+乐东黎族自治县,ledong,www.ledong.gov.cn  (verify),special,NEW,untested
+临高县,lingao,www.lingao.gov.cn,special,NEW,untested
+陵水黎族自治县,lingshui,www.lingshui.gov.cn  (verify),special,NEW,untested
+潜江市,qianjiang,www.qianjiang.gov.cn,special,NEW,untested
+琼海市,qionghai,www.qionghai.gov.cn,special,NEW,untested
+琼中黎族苗族自治县,qiongzhong,www.qiongzhong.gov.cn  (verify),special,NEW,untested
+神农架林区,shennongjia,www.shennongjia.gov.cn  (verify),special,NEW,untested
+石河子市,shihezi,www.shihezi.gov.cn,special,NEW,untested
+天门市,tianmen,www.tianmen.gov.cn,special,NEW,untested
+图木舒克市,tumxuk,www.tumxuk.gov.cn,special,NEW,untested
+屯昌县,tunchang,www.tunchang.gov.cn,special,NEW,untested
+万宁市,wanning,www.wanning.gov.cn,special,NEW,untested
+文昌市,wenchang,www.wenchang.gov.cn,special,NEW,untested
+五家渠市,wujiaqu,www.wujiaqu.gov.cn,special,NEW,untested
+五指山市,wuzhishan,www.wuzhishan.gov.cn,special,NEW,untested
+仙桃市,xiantao,www.xiantao.gov.cn,special,NEW,untested
+香港特别行政区,hong,www.hong.gov.cn  (verify),special,NEW,untested
+白杨市,baiyang,www.baiyang.gov.cn,special,NEW,untested
