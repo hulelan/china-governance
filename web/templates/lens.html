@@ -166,6 +166,28 @@
         </div>
     </div>
 
+    <!-- By topic (algorithmic, 29 policy categories; multi-label) -->
+    {% if topic.topics %}
+    <div class="mb-8">
+        <span class="lab">By policy topic · subject</span>
+        <p class="text-muted text-xs mb-2">Algorithmic subject tags over 29 policy categories (aligned with ReConnect China). Documents can carry more than one, so shares overlap.</p>
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Topic</th><th>Share</th><th class="w-16 text-right">Count</th></tr></thead>
+            <tbody>
+            {% for t in topic.topics %}
+                <tr>
+                    <td>{{ t.topic }}</td>
+                    <td><div class="h-3 bg-brand" style="width: {{ ((t.count / topic.topic_max) * 100)|round(1) if topic.topic_max else 0 }}%; min-width: 2px;"></div></td>
+                    <td class="text-right mono">{{ "{:,}".format(t.count) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <!-- By admin level -->
         <div>

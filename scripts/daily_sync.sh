@@ -281,6 +281,9 @@ timeout 10800 python3 scripts/rnd/citations/extract_citations.py >> "$LOG" 2>&1 
 log "Phase 2b: Algorithmic scoring (citation_rank, algo_doc_type, ai_relevance)..."
 timeout 1800 python3 scripts/compute_scores.py >> "$LOG" 2>&1 || log "  compute_scores had errors"
 
+log "Phase 2b: Topic tagging (topics_algo, 29 policy categories)..."
+timeout 900 python3 scripts/compute_topics.py >> "$LOG" 2>&1 || log "  compute_topics had errors"
+
 # --- Phase 2c: Refresh the BM25 (word-segmented) search index -----------------
 # doc_search (trigram) is trigger-maintained, but doc_search_seg (jieba words, the
 # BM25 relevance path) segments in Python so it CAN'T be a SQL trigger — it needs a

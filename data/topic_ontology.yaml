@@ -1,0 +1,892 @@
+# Topic (SUBJECT) ontology for the corpus.
+#
+# This is a flat list of 29 POLICY-TOPIC categories — WHAT a document is ABOUT
+# (its subject matter), NOT what KIND of document it is. It is ORTHOGONAL to:
+#   - data/source_ontology.yaml   (who PUBLISHED it — a source-type tree)
+#   - algo_doc_type / genre_typer (what GENRE it is — 通知/规定/意见)
+#
+# The 29 categories are adopted VERBATIM from reconnectchina.org's policy-topic
+# facet, so our tagging aligns 1:1 with theirs. Documents are MULTI-LABEL: an
+# 新能源汽车充电基础设施 doc is legitimately Energy + Transport + Infrastructure.
+#
+# HOW IT WORKS
+#   - `scripts/rnd/classification/topic_typer.py` loads this file and, for each
+#     category, compiles its `patterns` into one alternation regex. A document is
+#     tagged with a category when >=1 of its patterns matches the (title [+ keywords
+#     + optional body]). The number of DISTINCT patterns that hit is the match
+#     strength, used to ORDER the returned labels (strongest topic first).
+#   - Patterns are Python regex fragments, but almost all are plain substrings.
+#     Matching is done on the raw CN text (no word segmentation needed).
+#
+# PRECISION DISCIPLINE (why the lists look the way they do)
+#   - Titles almost always LEAD with the issuing organ ("XX市人民政府关于……").
+#     So issuer-organ words that appear on nearly every doc (政府 / 人民政府 /
+#     办公厅 / 委员会) are NEVER used as topic keys — they would tag everything.
+#     Category keys describe the SUBJECT, not the issuer. (A few narrow issuer
+#     bodies — e.g. 财政厅, 气象局 — are topically diagnostic and kept.)
+#   - Bare high-frequency chars (安全 / 法 / 卫生 / 文化) that collide across
+#     categories are AVOIDED in favor of distinctive bigrams (安全生产 vs 国家安全,
+#     卫生健康 vs 环境卫生). This trades a little recall for a lot of precision.
+#   - Genre words (条例/办法/规定/通知) are deliberately NOT topic keys — they're
+#     the genre_typer's job. "Legal" here means judiciary/law-making SUBJECTS
+#     (司法/法院/普法/执法), not "this happens to be a 条例".
+#
+# MAINTENANCE
+#   - Add a distinctive term -> append to the right category's `patterns`.
+#   - If a term is causing false positives, either delete it or lengthen it into
+#     a more specific phrase. Re-run `topic_typer.py --sample 8000` to see the
+#     coverage + per-topic distribution shift.
+#   - Keep the 29 category IDs stable (they mirror reconnectchina); only edit
+#     patterns.
+
+version: 1
+
+categories:
+  # ── Agriculture ──────────────────────────────────────────────────────────
+  # Farming, rural development, food/grain security, land. NOT 林业/森林 (→ Env)
+  # unless clearly agro. 三农 = 农业/农村/农民.
+  - id: Agriculture
+    label_zh: 农业
+    patterns:
+      - 农业
+      - 农村
+      - 农民
+      - 三农
+      - 乡村振兴
+      - 乡村建设
+      - 种植
+      - 养殖
+      - 畜牧
+      - 渔业
+      - 水产
+      - 粮食
+      - 耕地
+      - 农产品
+      - 农田
+      - 高标准农田
+      - 种业
+      - 种子
+      - 农机
+      - 农资
+      - 化肥
+      - 农药
+      - 合作社
+      - 脱贫
+      - 扶贫
+      - 农业农村
+      - 生猪
+      - 农垦
+      - 惠农
+      - 强农
+
+  # ── Awards ───────────────────────────────────────────────────────────────
+  # Honors, commendations, prizes. Distinct from 补贴/subsidy (that's funding).
+  - id: Awards
+    label_zh: 奖励表彰
+    patterns:
+      - 表彰
+      - 荣誉称号
+      - 先进个人
+      - 先进集体
+      - 先进工作者
+      - 劳动模范
+      - 优秀成果奖
+      - 评选表彰
+      - 授予.{0,8}称号
+      - 授予.{0,8}荣誉
+      - 功勋
+      - 嘉奖
+      - 记功
+      - 颁奖
+      - 优秀共产党员
+      - 三八红旗手
+      - 五一劳动奖
+      - 道德模范
+      - 优秀奖
+      - 表扬
+
+  # ── Commerce ─────────────────────────────────────────────────────────────
+  # DOMESTIC commerce & consumption (vs Trade = foreign). 商务/消费/流通/零售.
+  - id: Commerce
+    label_zh: 商务消费
+    patterns:
+      - 商务
+      - 商贸
+      - 零售
+      - 消费
+      - 促消费
+      - 消费券
+      - 以旧换新
+      - 电子商务
+      - 电商
+      - 内贸
+      - 流通
+      - 商圈
+      - 批发
+      - 连锁
+      - 便利店
+      - 家政
+      - 商业综合体
+      - 首店
+      - 夜经济
+      - 市场秩序
+      - 拉动消费
+      - 提振消费
+
+  # ── Credit ───────────────────────────────────────────────────────────────
+  # Social credit / creditworthiness system (信用体系), NOT bank credit 信贷.
+  - id: Credit
+    label_zh: 信用
+    patterns:
+      - 社会信用
+      - 信用体系
+      - 信用信息
+      - 信用评级
+      - 信用评价
+      - 守信
+      - 失信
+      - 诚信
+      - 联合惩戒
+      - 红黑名单
+      - 信用监管
+      - 征信
+      - 信用修复
+      - 信用承诺
+
+  # ── Culture ──────────────────────────────────────────────────────────────
+  # Cultural affairs, heritage, arts, media/publishing (as sector).
+  - id: Culture
+    label_zh: 文化
+    patterns:
+      - 文化
+      - 文物
+      - 非遗
+      - 非物质文化遗产
+      - 文化遗产
+      - 艺术
+      - 博物馆
+      - 图书馆
+      - 美术馆
+      - 广播电视
+      - 广电
+      - 新闻出版
+      - 文艺
+      - 文创
+      - 影视
+      - 电影
+      - 演出
+      - 戏曲
+      - 文化产业
+      - 公共文化
+      - 版权
+      - 网络文学
+      - 哲学社会科学
+
+  # ── Diplomacy ────────────────────────────────────────────────────────────
+  # Foreign affairs, cross-strait/HK-Macau, leader diplomacy, treaties.
+  - id: Diplomacy
+    label_zh: 外交
+    patterns:
+      - 外交
+      - 涉外
+      - 领事
+      - 使馆
+      - 大使
+      - 外事
+      - 双边
+      - 多边
+      - 建交
+      - 元首
+      - 国事访问
+      - 联合声明
+      - 会见
+      - 会晤
+      - 台湾
+      - 涉台
+      - 对台
+      - 国台办
+      - 港澳
+      - 一国两制
+      - 侨务
+      - 华侨
+      - 外国政要
+      - 中美
+      - 中欧
+      - 上合组织
+      - 金砖
+      - 联合国
+
+  # ── Education ────────────────────────────────────────────────────────────
+  - id: Education
+    label_zh: 教育
+    patterns:
+      - 教育
+      - 学校
+      - 学生
+      - 教师
+      - 高校
+      - 大学
+      - 中小学
+      - 义务教育
+      - 职业教育
+      - 学历
+      - 学位
+      - 招生
+      - 双减
+      - 幼儿园
+      - 学前教育
+      - 课程
+      - 办学
+      - 教学
+      - 高考
+      - 中考
+      - 校园
+      - 师范
+      - 研究生
+      - 学科建设
+      - 育人
+      - 教育部
+
+  # ── Emergency ────────────────────────────────────────────────────────────
+  # Disaster response & emergency management (distinct from routine Safety).
+  - id: Emergency
+    label_zh: 应急
+    patterns:
+      - 应急
+      - 救灾
+      - 抢险
+      - 防汛
+      - 抗旱
+      - 防洪
+      - 地震
+      - 突发事件
+      - 应急管理
+      - 救援
+      - 防灾减灾
+      - 灾害
+      - 应急预案
+      - 抗震
+      - 洪涝
+      - 疏散
+      - 险情
+      - 应急演练
+
+  # ── Energy ───────────────────────────────────────────────────────────────
+  - id: Energy
+    label_zh: 能源
+    patterns:
+      - 能源
+      - 电力
+      - 煤炭
+      - 油气
+      - 石油
+      - 天然气
+      - 新能源
+      - 光伏
+      - 风电
+      - 风能
+      - 储能
+      - 电网
+      - 核电
+      - 煤电
+      - 电价
+      - 用电
+      - 发电
+      - 氢能
+      - 充电桩
+      - 充电基础设施
+      - 能耗
+      - 电动汽车
+      - 电力体制
+      - 供电
+      - 燃气
+      - 成品油
+      - 抽水蓄能
+
+  # ── Environment ──────────────────────────────────────────────────────────
+  # Ecology, pollution control, climate/carbon, conservation, forestry.
+  - id: Environment
+    label_zh: 生态环境
+    patterns:
+      - 生态环境
+      - 环境保护
+      - 环保
+      - 污染
+      - 排污
+      - 减排
+      - 碳排放
+      - 碳达峰
+      - 碳中和
+      - 双碳
+      - 大气
+      - 水质
+      - 水污染
+      - 饮用水
+      - 水源保护
+      - 土壤
+      - 生态保护
+      - 生态修复
+      - 生态文明
+      - 绿色低碳
+      - 循环经济
+      - 污染防治
+      - 垃圾分类
+      - 固废
+      - 危险废物
+      - 森林
+      - 林业
+      - 湿地
+      - 自然保护区
+      - 荒漠化
+      - 生物多样性
+      - 河长
+      - 节能减排
+      - 绿化
+
+  # ── Finance ──────────────────────────────────────────────────────────────
+  # Public finance (财政/税) + financial sector (金融/银行/证券). Large by design.
+  - id: Finance
+    label_zh: 财政金融
+    patterns:
+      - 财政
+      - 财税
+      - 税收
+      - 税务
+      - 纳税
+      - 减税
+      - 退税
+      - 增值税
+      - 所得税
+      - 金融
+      - 银行
+      - 证券
+      - 保险
+      - 基金
+      - 债券
+      - 货币
+      - 信贷
+      - 融资
+      - 资本市场
+      - 上市公司
+      - 国资
+      - 国有资产
+      - 政府采购
+      - 专项债
+      - 普惠金融
+      - 会计
+      - 审计
+      - 资产管理
+      - 预算管理
+      - 预算
+      - 决算
+      - 国库
+
+  # ── Government ───────────────────────────────────────────────────────────
+  # Public administration & governance reform (the SUBJECT). Excludes bare 政府/
+  # 人民政府 (issuer on ~every doc). Large by design.
+  - id: Government
+    label_zh: 政府治理
+    patterns:
+      - 政务服务
+      - 行政审批
+      - 机构改革
+      - 放管服
+      - 优化营商环境
+      - 营商环境
+      - 政务公开
+      - 政府信息公开
+      - 依法行政
+      - 政府工作报告
+      - 一网通办
+      - 证明事项
+      - 规范性文件
+      - 机关事务
+      - 电子政务
+      - 数字政府
+      - 政府职能
+      - 督查
+      - 绩效考核
+      - 事业单位改革
+      - 综合行政执法
+      - 政府购买服务
+      - 行政区划
+      - 政务大厅
+
+  # ── Health ───────────────────────────────────────────────────────────────
+  - id: Health
+    label_zh: 卫生健康
+    patterns:
+      - 卫生健康
+      - 医疗
+      - 医保
+      - 医疗保障
+      - 疾病
+      - 疾控
+      - 药品
+      - 疫情
+      - 医院
+      - 公共卫生
+      - 医药
+      - 防疫
+      - 中医
+      - 中医药
+      - 护理
+      - 疫苗
+      - 传染病
+      - 卫生院
+      - 就医
+      - 健康中国
+      - 生育
+      - 计划生育
+      - 医师
+      - 医疗卫生
+      - 血液
+
+  # ── Housing ──────────────────────────────────────────────────────────────
+  - id: Housing
+    label_zh: 住房
+    patterns:
+      - 住房
+      - 房地产
+      - 楼市
+      - 保障房
+      - 保障性住房
+      - 公租房
+      - 廉租房
+      - 物业
+      - 公积金
+      - 租赁住房
+      - 商品房
+      - 棚改
+      - 棚户区
+      - 旧改
+      - 房屋征收
+      - 征收补偿
+      - 不动产
+      - 安居
+      - 人才住房
+      - 住宅
+      - 房价
+
+  # ── Infrastructure ───────────────────────────────────────────────────────
+  # General construction, utilities, municipal works (roads → also Transport).
+  - id: Infrastructure
+    label_zh: 基础设施
+    patterns:
+      - 基础设施
+      - 基建
+      - 新基建
+      - 工程建设
+      - 市政
+      - 供水
+      - 供气
+      - 管网
+      - 水利
+      - 水库
+      - 大坝
+      - 桥梁
+      - 城市更新
+      - 老旧小区改造
+      - 综合管廊
+      - 排水
+      - 污水处理
+      - 城乡建设
+      - 建筑业
+      - 招投标
+      - 重大项目
+      - 项目建设
+      - 城镇化
+
+  # ── Legal ────────────────────────────────────────────────────────────────
+  # Judiciary & law-making as SUBJECT (not the genre of the doc). No bare 法/条例.
+  - id: Legal
+    label_zh: 法治司法
+    patterns:
+      - 法治
+      - 司法
+      - 法院
+      - 检察
+      - 法官
+      - 检察官
+      - 律师
+      - 诉讼
+      - 仲裁
+      - 审判
+      - 立法
+      - 普法
+      - 执法
+      - 行政处罚
+      - 行政复议
+      - 行政诉讼
+      - 法律法规
+      - 法律援助
+      - 公证
+      - 监狱
+      - 社区矫正
+      - 法制
+      - 法律服务
+      - 知识产权
+      - 反垄断
+      - 合规
+      - 民法典
+
+  # ── Military ─────────────────────────────────────────────────────────────
+  # Armed forces & national defense (退役军人 → Veterans, not here).
+  - id: Military
+    label_zh: 军事国防
+    patterns:
+      - 军队
+      - 国防
+      - 军事
+      - 部队
+      - 武器
+      - 军工
+      - 军民融合
+      - 征兵
+      - 演习
+      - 解放军
+      - 武警
+      - 国防动员
+      - 军人
+      - 军营
+      - 空军
+      - 海军
+      - 火箭军
+      - 军委
+      - 战区
+      - 民兵
+
+  # ── Party ────────────────────────────────────────────────────────────────
+  # CPC party affairs & discipline (organs 党委/纪委 as subject is diagnostic).
+  - id: Party
+    label_zh: 党建
+    patterns:
+      - 党建
+      - 党委
+      - 纪委
+      - 党员
+      - 中央委员会
+      - 巡视
+      - 巡察
+      - 党风
+      - 党纪
+      - 党组
+      - 党支部
+      - 党课
+      - 党史
+      - 意识形态
+      - 统战
+      - 组织部
+      - 纪检监察
+      - 廉政
+      - 反腐
+      - 全面从严治党
+      - 管党治党
+      - 主题教育
+      - 政治建设
+      - 三会一课
+      - 党内
+      - 共产党
+
+  # ── Personnel ────────────────────────────────────────────────────────────
+  # Appointments, civil service, HR, talent (干部 overlaps Party; multi-label OK).
+  - id: Personnel
+    label_zh: 人事
+    patterns:
+      - 任免
+      - 任命
+      - 免职
+      - 干部
+      - 公务员
+      - 招聘
+      - 职称
+      - 人事
+      - 选拔
+      - 聘用
+      - 聘任
+      - 编制
+      - 人才
+      - 事业单位
+      - 遴选
+      - 录用
+      - 工资
+      - 选调
+      - 拟任
+      - 任职
+      - 职务任免
+      - 事业编
+      - 用工
+      - 劳动关系
+      - 就业
+
+  # ── Safety ───────────────────────────────────────────────────────────────
+  # Production/workplace/product safety & fire (vs Security = national/public).
+  - id: Safety
+    label_zh: 安全生产
+    patterns:
+      - 安全生产
+      - 生产安全
+      - 消防
+      - 食品安全
+      - 食品
+      - 餐饮服务
+      - 交通安全
+      - 危化品
+      - 危险化学品
+      - 安全隐患
+      - 隐患排查
+      - 安全事故
+      - 特种设备
+      - 电梯
+      - 事故隐患
+      - 职业健康
+      - 建筑安全
+      - 燃气安全
+      - 用电安全
+      - 校园安全
+      - 生产经营单位
+      - 安全监管
+      - 矿山安全
+      - 事故调查
+
+  # ── Security ─────────────────────────────────────────────────────────────
+  # National & public security, policing, cyber/data security, counter-terror.
+  - id: Security
+    label_zh: 国家与公共安全
+    patterns:
+      - 国家安全
+      - 公共安全
+      - 治安
+      - 反恐
+      - 网络安全
+      - 数据安全
+      - 公安
+      - 警务
+      - 维稳
+      - 社会治安
+      - 反诈
+      - 电信网络诈骗
+      - 边防
+      - 反间谍
+      - 保密
+      - 出入境
+      - 户籍
+      - 信访
+      - 扫黑除恶
+      - 平安建设
+      - 社会治理
+      - 网络诈骗
+      - 网信
+
+  # ── Sports ───────────────────────────────────────────────────────────────
+  - id: Sports
+    label_zh: 体育
+    patterns:
+      - 体育
+      - 运动会
+      - 奥运
+      - 全运会
+      - 亚运
+      - 健身
+      - 竞技
+      - 足球
+      - 篮球
+      - 排球
+      - 体育产业
+      - 赛事
+      - 冬奥
+      - 马拉松
+      - 全民健身
+      - 运动员
+      - 体育场馆
+
+  # ── Tech ─────────────────────────────────────────────────────────────────
+  # Science, technology & digital economy. Overlaps Legal on 知识产权 (OK).
+  - id: Tech
+    label_zh: 科技
+    patterns:
+      - 科技
+      - 科学技术
+      - 技术创新
+      - 科技创新
+      - 人工智能
+      - 大数据
+      - 数字经济
+      - 互联网
+      - 信息化
+      - 研发
+      - 高新技术
+      - 5G
+      - 6G
+      - 半导体
+      - 芯片
+      - 集成电路
+      - 工业互联网
+      - 区块链
+      - 算力
+      - 大模型
+      - 数字化转型
+      - 云计算
+      - 物联网
+      - 智能制造
+      - 机器人
+      - 量子
+      - 生物技术
+      - 新质生产力
+      - 数据要素
+      - 科研
+
+  # ── Tourism ──────────────────────────────────────────────────────────────
+  - id: Tourism
+    label_zh: 旅游
+    patterns:
+      - 旅游
+      - 文旅
+      - 景区
+      - 民宿
+      - 度假
+      - 旅行社
+      - 游客
+      - 乡村旅游
+      - 全域旅游
+      - 旅游业
+      - 景点
+      - 3A景区
+      - 4A景区
+      - 5A景区
+      - 红色旅游
+      - 康养旅游
+      - 旅游度假区
+
+  # ── Trade ────────────────────────────────────────────────────────────────
+  # FOREIGN trade & investment (vs Commerce = domestic). 一带一路/自贸/海关/外资.
+  - id: Trade
+    label_zh: 对外贸易
+    patterns:
+      - 对外贸易
+      - 进出口
+      - 外贸
+      - 关税
+      - 海关
+      - 自贸
+      - 自由贸易
+      - 跨境
+      - 外资
+      - 外商投资
+      - 出口
+      - 进口
+      - 招商引资
+      - 一带一路
+      - 保税
+      - 口岸
+      - 贸易
+      - 外经贸
+      - 服务贸易
+      - 双边贸易
+      - 加工贸易
+      - 利用外资
+      - 走出去
+
+  # ── Transport ────────────────────────────────────────────────────────────
+  - id: Transport
+    label_zh: 交通运输
+    patterns:
+      - 交通运输
+      - 公路
+      - 铁路
+      - 高铁
+      - 公交
+      - 公共交通
+      - 机场
+      - 航站
+      - 地铁
+      - 港口
+      - 民航
+      - 航空
+      - 物流
+      - 道路运输
+      - 道路交通
+      - 高速公路
+      - 航运
+      - 轨道交通
+      - 机动车
+      - 驾驶证
+      - 客运
+      - 货运
+      - 车辆
+      - 停车
+      - 城市交通
+      - 快递
+      - 网约车
+      - 交通枢纽
+
+  # ── Veterans ─────────────────────────────────────────────────────────────
+  - id: Veterans
+    label_zh: 退役军人
+    patterns:
+      - 退役军人
+      - 优抚
+      - 拥军
+      - 双拥
+      - 军属
+      - 复员
+      - 转业
+      - 退伍
+      - 烈士
+      - 军烈属
+      - 优待
+      - 抚恤
+
+  # ── Weather ──────────────────────────────────────────────────────────────
+  # Meteorology & weather events (climate/carbon → Environment).
+  - id: Weather
+    label_zh: 气象
+    patterns:
+      - 气象
+      - 台风
+      - 天气
+      - 降水
+      - 暴雨
+      - 暴雪
+      - 高温预警
+      - 寒潮
+      - 雷电
+      - 大雾
+      - 气象局
+      - 气象预警
+      - 强对流
+      - 降雨
+      - 天气预报
+      - 气象灾害
+
+  # ── Welfare ──────────────────────────────────────────────────────────────
+  # Social security,民政, aid, elderly/child/disabled welfare, charity.
+  - id: Welfare
+    label_zh: 社会保障民政
+    patterns:
+      - 社会保障
+      - 社保
+      - 养老
+      - 低保
+      - 社会救助
+      # 民政 but NOT as a substring of 人民政府 / 便民政务 / 惠民政策 / 利民政策 …
+      - (?<!人)(?<!便)(?<!惠)(?<!利)(?<!为)民政(?!策)
+      - 残疾人
+      - 儿童福利
+      - 养老金
+      - 慈善
+      - 公益
+      - 困难群众
+      - 五保
+      - 最低生活保障
+      - 优待
+      - 托育
+      - 社会组织
+      - 社会福利
+      - 养老保险
+      - 失业保险
+      - 工伤保险
+      - 救助
+      - 特困
+      - 婚姻登记
+      - 殡葬

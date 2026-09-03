@@ -173,6 +173,23 @@ async def get_topic_lens(db, q: str):
         reg_counts[_region_for(r["site_key"], r["name"], r["lvl"])] += r["c"]
     regions = [{"region": k, "count": v} for k, v in reg_counts.most_common()]
 
+    # Topic mix (algorithmic multi-label over the 29 policy categories). The
+    # topics_algo column is populated by scripts/compute_topics.py; guard against
+    # it being absent (pre-backfill) so the Lens still renders.
+    topics = []
+    try:
+        trows = await db.fetch(
+            "SELECT topics_algo FROM documents WHERE title LIKE $1 AND topics_algo != ''",
+            pat)
+        tc = _Counter()
+        for r in trows:
+            for t in r["topics_algo"].split(","):
+                if t:
+                    tc[t] += 1
+        topics = [{"topic": k, "count": v} for k, v in tc.most_common()]
+    except Exception:
+        topics = []
+
     # Genre mix (algorithmic doc type).
     genre_rows = await db.fetch(
         """SELECT COALESCE(NULLIF(algo_doc_type, ''), '(unclassified)') AS g, COUNT(*) AS c
@@ -200,6 +217,7 @@ async def get_topic_lens(db, q: str):
         "timeline": timeline,
         "levels": levels,
         "regions": regions,
+        "topics": topics,
         "top_sites": top_sites,
         "genres": genres,
         "anchors": anchors,
@@ -207,6 +225,7 @@ async def get_topic_lens(db, q: str):
         "share_max": max((t["share"] for t in timeline), default=0.0),
         "level_max": max((l["count"] for l in levels), default=0),
         "region_max": max((r["count"] for r in regions), default=0),
+        "topic_max": max((t["count"] for t in topics), default=0),
         "site_max": max((s["count"] for s in top_sites), default=0),
         "genre_max": max((g["count"] for g in genres), default=0),
     }
