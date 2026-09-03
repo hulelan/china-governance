@@ -75,6 +75,13 @@ Chinese government document corpus + web app. Crawls policy documents from centr
   the gap is mostly **datacenter-IP-BLOCKED** province portals (the droplet's NYC IP;
   need a residential fetch vantage — browser reads them but the crawler still hits
   the WAF on policy sections). Tier-1 (北上广深) all covered.
+- **Source ACCESS map (what we CAN/CANNOT reach)**: `docs/working/source-access-map.md`
+  — the authoritative, living reachability record (Tier A crawled / B reachable-new /
+  C proxy-gated / D anti-bot / E SPA-search-gated / F dead). **Refresh** it by re-running
+  `scripts/rnd/discovery/reachability_sweep.sh <list>` ON THE DROPLET (its NYC IP is the
+  vantage). KEY METHOD: HTTP 200 is unreliable for CN gov sites (200 + 160-byte redirect
+  stub / ~1KB anti-bot shell) — always byte-check + follow redirects. Reachable-new
+  targets found 2026-09: 青海/云南/新疆 provinces + 民委 NEAC (no proxy needed).
 
 ## Key Commands
 
