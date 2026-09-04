@@ -29,6 +29,20 @@ geo-fenced sections (NEA pattern).
 
 ---
 
+## Crawled this run (2026-09-04) — Tier B actioned ✅
+
+Turned the reachable-new frontier into live crawlers: **37 sources configured, 34
+yielding, +1,595 docs** (corpus 285,659 → 287,254), **+849 citations resolved**. All
+`no-proxy`. Now in Tier A:
+- **青海 Qinghai** (113), **新疆 Xinjiang** (49), **民委 NEAC** (16) — 2 new dialects
+  (U `qhsys`, V `cmon`) added to `govcms.py`.
+- **31 prefecture cities** (top: liuzhou 118, liaoyuan 114, shannan 96, linxia 74,
+  suzhou_ah 67, changzhi 62, ganzhou 59, hanzhong 58 …).
+- **3 zero-yield** (need a section-path/dialect fix, low priority): **zhoukou, quanzhou,
+  jiyuan** — configured but their listing sections rendered no articles (JS or wrong path).
+- Wired into the nightly (`--group city` + qinghai/neac/xinjiang in the govcms loop),
+  so they stay synced. Full per-site table: `logs/citycrawl_*.log` on the droplet.
+
 ## Tier A — CRAWLED (we already ingest these) ✅
 
 - **Central (~40 bodies):** State Council (`gov`), NPC, SPC, PBoC, MoT, MARA, MOJ,
@@ -48,10 +62,14 @@ Content-verified real portals we do **not** yet crawl. Highest-value action item
 
 | Source | Domain | Evidence | Note |
 |---|---|---|---|
-| **青海 Qinghai** (province) | www.qinghai.gov.cn | 107 KB real | standard portal |
-| **云南 Yunnan** (province) | www.yn.gov.cn | 301 → 146 KB real | needs redirect-follow |
-| **新疆 Xinjiang** (province) | www.xinjiang.gov.cn | redirect → 108 KB real | |
-| **民委 NEAC** (central, ethnic affairs) | www.neac.gov.cn | 171 KB real | |
+| **青海 Qinghai** (province) | **http://**www.qinghai.gov.cn | 162 KB real (HTTPS is blackholed) | crawlable — /zwgk/xwdt/ sections; new dialect U |
+| **新疆 Xinjiang** (province) | www.xinjiang.gov.cn | 108 KB real | crawlable — already configured (was mis-tagged residential) |
+| **民委 NEAC** (central, ethnic affairs) | www.neac.gov.cn | 171 KB real | crawlable — /seac/xxgk/ sections; new dialect V |
+
+> **Correction (2026-09-04):** 云南 Yunnan was a FALSE POSITIVE here — its homepage
+> loads (146 KB) but **every `/zwgk/*` policy section returns a 403 WAF shell** from our
+> IP. Moved to Tier C (proxy-gated). Lesson reinforced: verify the *policy sections*, not
+> just the homepage.
 
 ## Tier C — PROXY-GATED (datacenter-IP blocked) → needs residential-CN proxy 🔒
 
@@ -62,7 +80,8 @@ Real sites, but our NYC IP is blocked (blackhole/WAF). See `china-vantage-option
   (blackhole), 卫健委 NHC (412), 公安部 MPS (521), 国家能源局 NEA (home 200 but sections 404).
 - **Provinces:** 四川 Sichuan, 山西 Shanxi, 广西 Guangxi, 江西 Jiangxi, 河北 Hebei,
   海南 Hainan, 贵州 Guizhou, 陕西 Shaanxi (all blackhole); 河南 Henan, 安徽 Anhui,
-  内蒙古 Inner Mongolia (403); 湖北 Hubei, 甘肃 Gansu (412).
+  内蒙古 Inner Mongolia (403); 湖北 Hubei, 甘肃 Gansu (412);
+  **云南 Yunnan (403 on all policy sections — homepage 200 is a false positive).**
 - **GD cities:** 惠州 Huizhou, 阳江 Yangjiang (blackhole).
 
 ## Tier D — ANTI-BOT (needs a browser/cookie-solving fetch) 🤖
