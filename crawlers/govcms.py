@@ -345,11 +345,64 @@ SITES = {
         "admin_level": "provincial", "group": "residential",
         "sections": ["/hainan/zfwj/szfzcwj.shtml", "/hainan/fdzdgknr/newxxgk_list.shtml"],
     },
-    "xinjiang": {  # 新疆 — hexmon dialect I (same CMS as Hainan).
+    "xinjiang": {  # 新疆 — hexmon dialect I. Un-tagged from 'residential' 2026-09-04:
+        # now droplet-reachable (200/108KB), so it joins the nightly govcms loop.
         "name": "Xinjiang (新疆维吾尔自治区)", "base_url": "https://www.xinjiang.gov.cn",
-        "admin_level": "provincial", "group": "residential",
+        "admin_level": "provincial",
         "sections": ["/xinjiang/zfl/zfxxgk_zhengce_list.shtml", "/xinjiang/zwgk/zw.shtml"],
     },
+    # ═══ ReConnect Tier-B reachable-new sources (added 2026-09-04). Provincial/central
+    #     join the nightly govcms site loop; cities carry group="city" (`--group city`).
+    #     See docs/working/source-access-map.md + newcrawl-configs-*.md.
+    "qinghai": {  # 青海省 — NEW dialect (U) qhsys /zwgk/system/YYYY/MM/DD/<num>.shtml.
+        # HTTP ONLY (https blackholed from the droplet); /xxgk/ policy tree is 412-fenced,
+        # so the reachable listings are the /zwgk/xwdt/ sections.
+        "name": "Qinghai (青海省)",
+        "base_url": "http://www.qinghai.gov.cn", "admin_level": "provincial",
+        "sections": ["/zwgk/xwdt/tzgg/", "/zwgk/xwdt/qhyw/"],
+    },
+    "neac": {  # 国家民委 — NEW dialect (V) cmon /seac/c<col>/<YYYYMM>/<num>.shtml (TRS-WCM).
+        "name": "State Ethnic Affairs Commission (国家民委)",
+        "base_url": "https://www.neac.gov.cn", "admin_level": "central",
+        "sections": ["/seac/xxgk/zcfb/index.shtml", "/seac/xxgk/zcjd/index.shtml",
+                     "/seac/xxgk/tzgg/index.shtml"],
+    },
+    # -- City tier (existing dialects A/B/I/Q/S; group="city") --
+    "baoji": {"name": "Baoji (宝鸡市)", "base_url": "https://www.baoji.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col46/col47/", "/col46/col52/"]},
+    "shannan": {"name": "Shannan (山南市)", "base_url": "https://www.shannan.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zwgk/", "/jytadf/"]},
+    "wuzhong": {"name": "Wuzhong (吴忠市)", "base_url": "https://www.wuzhong.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/sy/zcjd/"]},
+    "zhangye": {"name": "Zhangye (张掖市)", "base_url": "https://www.zhangye.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/dzdt/tzgg/", "/zyszfxxgk/zfwj_5652/zcjd_8944/sjzcjd_8947/"]},
+    "zhoukou": {"name": "Zhoukou (周口市)", "base_url": "https://www.zhoukou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/sitesources/zksrmzf/page_pc/xwzx/tzgg/"]},
+    "dingxi": {"name": "Dingxi (定西市)", "base_url": "https://www.dingxi.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col/col15863/", "/col/col15887/"]},
+    "weihai": {"name": "Weihai (威海市)", "base_url": "https://www.weihai.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col/col102604/"]},
+    "linxia": {"name": "Linxia Hui Prefecture (临夏回族自治州)", "base_url": "https://www.linxia.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/lxz/zwgk/fdzdgknr/lzyj/gfxwj/", "/lxz/ywdt/tzgg/"]},
+    "pingliang": {"name": "Pingliang (平凉市)", "base_url": "https://www.pingliang.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zfxxgk/fdzdgknr/lzyj/zcwj/", "/xwzx/tzgg/"]},
+    "suzhou_ah": {"name": "Suzhou, Anhui (宿州市)", "base_url": "https://www.suzhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col/col168035/"]},
+    "yushu": {"name": "Yushu (玉树藏族自治州)", "base_url": "http://www.yushu.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/xxgk/qwfb/gsgg/"]},
+    "shuozhou": {"name": "Shuozhou (朔州市)", "base_url": "http://szxxgk.shuozhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/szfxxgk/fdzdgknr/gzwj/gfxwj/", "/szfxxgk/fdzdgknr/gzwj/zfwj/", "/szfxxgk/fdzdgknr/zcjd/"]},
+    "quanzhou": {"name": "Quanzhou (泉州市)", "base_url": "http://www.quanzhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zfb/xxgk/zfxxgkzl/qzdt/qzyw/"]},
+    "yuxi": {"name": "Yuxi (玉溪市)", "base_url": "http://www.yuxi.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/yxs/tzgg/", "/yxs/tzggsy/"]},
+    "suihua": {"name": "Suihua (绥化市)", "base_url": "http://www.suihua.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/sh/gfxwj/zfxxgk.shtml", "/sh/zfxxgkzd/zfxxgk.shtml"]},
+    "huaihua": {"name": "Huaihua (怀化市)", "base_url": "http://www.huaihua.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/huaihua/c100231/zfxxgkMultiList.shtml", "/huaihua/c100238/zfxxgkMultiList.shtml"]},
+    "laiwu": {"name": "Laiwu (莱芜)", "base_url": "http://www.laiwu.gov.cn", "admin_level": "district", "group": "city", "sections": ["/col116924/index.html"]},
+    "liuzhou": {"name": "Liuzhou (柳州市)", "base_url": "http://www.liuzhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/"]},
+    "fuzhou_fj": {"name": "Fuzhou (福州市)", "base_url": "http://www.fuzhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/"]},
+    "hanzhong": {"name": "Hanzhong (汉中市)", "base_url": "http://www.hanzhong.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/"]},
+    "taizhou_js": {"name": "Taizhou (泰州市)", "base_url": "http://www.taizhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/"]},
+    "yantai": {"name": "Yantai (烟台市)", "base_url": "http://www.yantai.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/"]},
+    "shijiazhuang": {"name": "Shijiazhuang (石家庄市)", "base_url": "http://www.sjz.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zfxxgk/columns/0f9f6cdc-69ca-4a72-bd39-66b553cc0674/index.html", "/zfxxgk/columns/6ac6458a-126e-47ce-a1eb-12930061231e/index.html", "/"]},
+    "changzhi": {"name": "Changzhi (长治市)", "base_url": "https://www.changzhi.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/xxgkml/czsrmzf/zfwj_3465/", "/xxgkml/czsrmzf/zbwj_3466/", "/xxgkml/czsrmzf/zcjd/", "/xwzx/tzgg/"]},
+    "huangshi": {"name": "Huangshi (黄石市)", "base_url": "https://www.huangshi.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/xxxgk/2020_zc/", "/xwdt/2020_gggs/"]},
+    "liaoyuan": {"name": "Liaoyuan (辽源市)", "base_url": "https://www.liaoyuan.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/xxgk/zwxxgkfl/zfwj/", "/xxgk/"]},
+    "longyan": {"name": "Longyan (龙岩市)", "base_url": "https://www.longyan.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/gk/flgk/gg/", "/gk/flgk/jd/"]},
+    "ordos": {"name": "Ordos (鄂尔多斯市)", "base_url": "https://www.ordos.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/xw_127672/gsgg/", "/gk_128120/zfxxgkzl/zdgksxmlqd/"]},
+    "tongliao": {"name": "Tongliao (通辽市)", "base_url": "https://www.tongliao.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zwgk/", "/xwzx/"]},
+    "yinchuan": {"name": "Yinchuan (银川市)", "base_url": "https://www.yinchuan.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/xxgk/zcwj/zcjd/ycszc/", "/xwzx/gsgg/", "/xxgk/zcwj/qtzfwj/wjlist.html"]},
+    "tianmen": {"name": "Tianmen (天门市)", "base_url": "https://www.tianmen.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zwgk/zc/tzgg/", "/zwgk/zc/zcjd/"]},
+    "qianjiang": {"name": "Qianjiang (潜江市)", "base_url": "https://www.qianjiang.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zwgk_210/zfxxgkml/zcwj_qzf/qzfgfxwj/", "/zwgk_210/zfxxgkml/zcwj_qzf/qtwj/", "/zwxx_210/gsgg/"]},
+    "jiyuan": {"name": "Jiyuan (济源市)", "base_url": "https://www.jiyuan.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zwgk/zcwjk/", "/zwgk/"]},
+    "ganzhou": {"name": "Ganzhou (赣州市)", "base_url": "https://www.ganzhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/gzszf/c100051/2021_zwgk.shtml", "/gzszf/c100023/list.shtml", "/zwgk/zcwj/", "/zwgk/tzgg/"]},
+    "hegang": {"name": "Hegang (鹤岗市)", "base_url": "https://www.hegang.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/hegang/szfgfxwj/zwgk_zc.shtml", "/hegang/tzgg/list.shtml", "/hegang/zcjd/zcjd_sec.shtml"]},
     "hebei": {  # 河北省 — hbuuid dialect S (/columns/<UUID>/YYYYMM/DD/<UUID>.html).
         "name": "Hebei Province (河北省)", "base_url": "https://www.hebei.gov.cn",
         "admin_level": "provincial", "group": "residential",
@@ -901,6 +954,17 @@ _ART_HBUUID_RE = re.compile(
 #      (distinct from D /YYYYMMDD/<hex>/c.html, I /YYYYMM/<hex>.shtml, Q /YYYYMMDD/<num>).
 _ART_SHHEX_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/(\d{4})(\d{2})(\d{2})/[0-9a-f]{32}\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (U) qhsys: …/system/YYYY/MM/DD/<numeric-id>.shtml  (青海省). Anchored on /system/ so the
+#      loose date path can't false-match other sites. Distinct from R schex (32-hex file),
+#      Q ymd8 (no slashes), O datepath (dashes).
+_ART_QHSYS_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/system/(\d{4})/(\d{2})/(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (V) cmon: …/c<col>/<YYYYMM>/<numeric-id>.shtml  (国家民委 NEAC, TRS-WCM). Column dir
+#      c<digits> + YYYYMM month dir + NUMERIC file. Distinct from I hexmon (32-hex file) and
+#      K ccontent (literal content.html). Row date (_DATE_NEAR) overrides the YYYYMM-01.
+#      Added LAST so existing dialects win the URL de-dupe.
+_ART_CMON_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/c\d+/(\d{4})(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -1047,6 +1111,13 @@ def _list_articles(page_html: str, page_url: str) -> list:
         y, mo, d = m.group(2), m.group(3), m.group(4)
         date_str = f"{y}-{mo}-{d}" if 1 <= int(mo) <= 12 and 1 <= int(d) <= 31 else ""
         matches.append((m, m.group(1), m.group(5), date_str))
+    for m in _ART_QHSYS_RE.finditer(page_html):        # (U) qhsys (Qinghai): full date in /system/ path
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        matches.append((m, m.group(1), m.group(5), f"{y}-{mo}-{d}"))
+    for m in _ART_CMON_RE.finditer(page_html):         # (V) cmon (NEAC): YYYYMM dir → -01, row date wins
+        ym4, mo = m.group(2), m.group(3)
+        date_str = f"{ym4}-{mo}-01" if 1 <= int(mo) <= 12 else ""
+        matches.append((m, m.group(1), m.group(4), date_str))
     out, seen = [], set()
     page_host = urlparse(page_url).netloc
     for m, href, inner, url_date in matches:
