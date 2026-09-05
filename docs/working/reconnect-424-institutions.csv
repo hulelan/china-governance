@@ -1,0 +1,422 @@
+idx,institution_cn,institution_en,level
+0,中华人民共和国全国人民代表大会,National People's Congress of the People's Republic of China,central
+1,中华人民共和国最高人民法院,Supreme People's Court of the People's Republic of China,central
+2,人力资源和社会保障部,Ministry of Human Resources and Social Security,central
+3,公安部,Ministry of Public Security,central
+4,农业农村部,Ministry of Agriculture and Rural Affairs,central
+5,司法部,Ministry of Justice,central
+6,国家发展和改革委员会,National Development and Reform Commission,central
+7,国家安全部,Ministry of State Security,central
+8,国家民族事务委员会,National Ethnic Affairs Commission,central
+9,国防部,Ministry of National Defense,central
+10,外交部,Ministry of Foreign Affairs,central
+11,审计署,National Audit Office,central
+12,宣传部,Communication Department,central
+13,教育部,Ministry of Education,central
+14,文化和旅游部,Ministry of Culture and Tourism,central
+15,民政部,Ministry of Civil Affairs,central
+16,水利部,Ministry of Water Resources,central
+17,科学技术部,Ministry of Science and Technology,central
+18,自然资源部,Ministry of Natural Resources,central
+19,退役军人事务部,Ministry of Veterans Affairs,central
+20,上海市,Shanghai (provincial-level unit),provincial
+21,云南省,Yunnan (provincial-level unit),provincial
+22,内蒙古自治区,Inner Mongolia (provincial-level unit),provincial
+23,吉林省,Jilin (provincial-level unit),provincial
+24,天津市,Tianjin (provincial-level unit),provincial
+25,宁夏回族自治区,Ningxia (provincial-level unit),provincial
+26,安徽省,Anhui (provincial-level unit),provincial
+27,山东省,Shandong (provincial-level unit),provincial
+28,江西省,Jiangxi (provincial-level unit),provincial
+29,山西省,Shanxi (provincial-level unit),provincial
+30,广西壮族自治区,Guangxi (provincial-level unit),provincial
+31,新疆维吾尔自治区,Xinjiang (provincial-level unit),provincial
+32,江苏省,Jiangsu (provincial-level unit),provincial
+33,福建省,Fujian (provincial-level unit),provincial
+34,河北省,Hebei (provincial-level unit),provincial
+35,河南省,Henan (provincial-level unit),provincial
+36,浙江省,Zhejiang (provincial-level unit),provincial
+37,海南省,Hainan (provincial-level unit),provincial
+38,湖北省,Hubei (provincial-level unit),provincial
+39,湖南省,Hunan (provincial-level unit),provincial
+40,甘肃省,Gansu (provincial-level unit),provincial
+41,西藏自治区,Tibet (provincial-level unit),provincial
+42,贵州省,Guizhou (provincial-level unit),provincial
+43,辽宁省,Liaoning (provincial-level unit),provincial
+44,重庆市,Chongqing (provincial-level unit),provincial
+45,陕西省,Shaanxi (provincial-level unit),provincial
+46,青海省,Qinghai (provincial-level unit),provincial
+47,七台河市,Qitaihe,municipal/prefecture
+48,三亚市,Sanya,municipal/prefecture
+49,三明市,Sanming,municipal/prefecture
+50,三门峡市,Sanmenxia,municipal/prefecture
+51,上饶市,Shangrao,municipal/prefecture
+52,东营市,Dongying,municipal/prefecture
+53,中卫市,Zhongwei,municipal/prefecture
+54,临夏回族自治州,Linxia Hui Autonomous Prefecture,municipal/prefecture
+55,临汾市,Linfen,municipal/prefecture
+56,临沂市,Linyi,municipal/prefecture
+57,临沧市,Lincang,municipal/prefecture
+58,丹东市,Dandong,municipal/prefecture
+59,丽水市,Lishui,municipal/prefecture
+60,丽江市,Lijiang,municipal/prefecture
+61,乌鲁木齐市,Urumqi,municipal/prefecture
+62,乐山市,Leshan,municipal/prefecture
+63,九江市,Jiujiang,municipal/prefecture
+64,云浮市,Yunfu,municipal/prefecture
+65,亳州市,Bozhou,municipal/prefecture
+66,伊春市,Yichun,municipal/prefecture
+67,伊犁哈萨克自治州,Ili Kazakh Autonomous Prefecture,municipal/prefecture
+68,佛山市,Foshan,municipal/prefecture
+69,佳木斯市,Jiamusi,municipal/prefecture
+70,保定市,Baoding,municipal/prefecture
+71,保山市,Baoshan,municipal/prefecture
+72,信阳市,Xinyang,municipal/prefecture
+73,儋州市,Danzhou,municipal/prefecture
+74,克孜勒苏柯尔克孜自治州,Kizilsu Kirghiz Autonomous Prefecture,municipal/prefecture
+75,克拉玛依市,Karamay,municipal/prefecture
+76,六安市,Lu'an,municipal/prefecture
+77,六盘水市,Liupanshui,municipal/prefecture
+78,兰州市,Lanzhou,municipal/prefecture
+79,兴安盟,Xing'an League,municipal/prefecture
+80,内江市,Neijiang,municipal/prefecture
+81,凉山彝族自治州,Liangshan Yi Autonomous Prefecture,municipal/prefecture
+82,北海市,Beihai,municipal/prefecture
+83,十堰市,Shiyan,municipal/prefecture
+84,南京市,Nanjing,municipal/prefecture
+85,南充市,Nanchong,municipal/prefecture
+86,南宁市,Nanning,municipal/prefecture
+87,南平市,Nanping,municipal/prefecture
+88,南昌市,Nanchang,municipal/prefecture
+89,南通市,Nantong,municipal/prefecture
+90,南阳市,Nanyang,municipal/prefecture
+91,博尔塔拉蒙古自治州,Bortala Mongol Autonomous Prefecture,municipal/prefecture
+92,厦门市,Xiamen,municipal/prefecture
+93,双鸭山市,Shuangyashan,municipal/prefecture
+94,台州市,Taizhou,municipal/prefecture
+95,合肥市,Hefei,municipal/prefecture
+96,吉安市,Ji'an,municipal/prefecture
+97,吉林市,Jilin City,municipal/prefecture
+98,吐鲁番市,Turpan,municipal/prefecture
+99,吕梁市,Lüliang,municipal/prefecture
+100,吴忠市,Wuzhong,municipal/prefecture
+101,周口市,Zhoukou,municipal/prefecture
+102,和田地区,Hotan Prefecture,municipal/prefecture
+103,咸宁市,Xianning,municipal/prefecture
+104,咸阳市,Xianyang,municipal/prefecture
+105,哈密市,Hami,municipal/prefecture
+106,哈尔滨市,Harbin,municipal/prefecture
+107,唐山市,Tangshan,municipal/prefecture
+108,商丘市,Shangqiu,municipal/prefecture
+109,商洛市,Shangluo,municipal/prefecture
+110,喀什地区,Kashgar Prefecture,municipal/prefecture
+111,嘉兴市,Jiaxing,municipal/prefecture
+112,嘉峪关市,Jiayuguan,municipal/prefecture
+113,四平市,Siping,municipal/prefecture
+114,固原市,Guyuan,municipal/prefecture
+115,塔城地区,Tacheng Prefecture,municipal/prefecture
+116,大兴安岭地区,Daxing'anling Prefecture,municipal/prefecture
+117,大同市,Datong,municipal/prefecture
+118,大庆市,Daqing,municipal/prefecture
+119,大理白族自治州,Dali Bai Autonomous Prefecture,municipal/prefecture
+120,大连市,Dalian,municipal/prefecture
+121,天水市,Tianshui,municipal/prefecture
+122,太原市,Taiyuan,municipal/prefecture
+123,威海市,Weihai,municipal/prefecture
+124,娄底市,Loudi,municipal/prefecture
+125,孝感市,Xiaogan,municipal/prefecture
+126,宁德市,Ningde,municipal/prefecture
+127,宁波市,Ningbo,municipal/prefecture
+128,安庆市,Anqing,municipal/prefecture
+129,安康市,Ankang,municipal/prefecture
+130,安阳市,Anyang,municipal/prefecture
+131,安顺市,Anshun,municipal/prefecture
+132,定西市,Dingxi,municipal/prefecture
+133,宜宾市,Yibin,municipal/prefecture
+134,宜昌市,Yichang,municipal/prefecture
+135,宜春市,Yichun,municipal/prefecture
+136,宝鸡市,Baoji,municipal/prefecture
+137,宣城市,Xuancheng,municipal/prefecture
+138,宿州市,Suzhou,municipal/prefecture
+139,宿迁市,Suqian,municipal/prefecture
+140,山南市,Shannan,municipal/prefecture
+141,岳阳市,Yueyang,municipal/prefecture
+142,崇左市,Chongzuo,municipal/prefecture
+143,巴中市,Bazhong,municipal/prefecture
+144,巴音郭楞蒙古自治州,Bayingolin Mongol Autonomous Prefecture,municipal/prefecture
+145,常州市,Changzhou,municipal/prefecture
+146,常德市,Changde,municipal/prefecture
+147,平凉市,Pingliang,municipal/prefecture
+148,平顶山市,Pingdingshan,municipal/prefecture
+149,广元市,Guangyuan,municipal/prefecture
+150,广安市,Guang'an,municipal/prefecture
+151,广州市,Guangzhou,municipal/prefecture
+152,庆阳市,Qingyang,municipal/prefecture
+153,廊坊市,Langfang,municipal/prefecture
+154,延安市,Yan'an,municipal/prefecture
+155,延边朝鲜族自治州,Yanbian Korean Autonomous Prefecture,municipal/prefecture
+156,开封市,Kaifeng,municipal/prefecture
+157,张家口市,Zhangjiakou,municipal/prefecture
+158,张家界市,Zhangjiajie,municipal/prefecture
+159,张掖市,Zhangye,municipal/prefecture
+160,徐州市,Xuzhou,municipal/prefecture
+161,德宏傣族景颇族自治州,Dehong Dai and Jingpo Autonomous Prefecture,municipal/prefecture
+162,德州市,Dezhou,municipal/prefecture
+163,德阳市,Deyang,municipal/prefecture
+164,忻州市,Xinzhou,municipal/prefecture
+165,怀化市,Huaihua,municipal/prefecture
+166,怒江傈僳族自治州,Nujiang Lisu Autonomous Prefecture,municipal/prefecture
+167,恩施土家族苗族自治州,Enshi Tujia and Miao Autonomous Prefecture,municipal/prefecture
+168,惠州市,Huizhou,municipal/prefecture
+169,成都市,Chengdu,municipal/prefecture
+170,扬州市,Yangzhou,municipal/prefecture
+171,承德市,Chengde,municipal/prefecture
+172,抚州市,Fuzhou,municipal/prefecture
+173,抚顺市,Fushun,municipal/prefecture
+174,拉萨市,Lhasa,municipal/prefecture
+175,揭阳市,Jieyang,municipal/prefecture
+176,攀枝花市,Panzhihua,municipal/prefecture
+177,文山壮族苗族自治州,Wenshan Zhuang and Miao Autonomous Prefecture,municipal/prefecture
+178,新乡市,Xinxiang,municipal/prefecture
+179,新余市,Xinyu,municipal/prefecture
+180,无锡市,Wuxi,municipal/prefecture
+181,日喀则市,Shigatse,municipal/prefecture
+182,日照市,Rizhao,municipal/prefecture
+183,昆明市,Kunming,municipal/prefecture
+184,昌吉回族自治州,Changji Hui Autonomous Prefecture,municipal/prefecture
+185,昌都市,Qamdo,municipal/prefecture
+186,昭通市,Zhaotong,municipal/prefecture
+187,晋中市,Jinzhong,municipal/prefecture
+188,晋城市,Jincheng,municipal/prefecture
+189,普洱市,Pu'er,municipal/prefecture
+190,景德镇市,Jingdezhen,municipal/prefecture
+191,曲靖市,Qujing,municipal/prefecture
+192,朔州市,Shuozhou,municipal/prefecture
+193,朝阳市,Chaoyang,municipal/prefecture
+194,本溪市,Benxi,municipal/prefecture
+195,来宾市,Laibin,municipal/prefecture
+196,杭州市,Hangzhou,municipal/prefecture
+197,松原市,Songyuan,municipal/prefecture
+198,林芝市,Nyingchi,municipal/prefecture
+199,果洛藏族自治州,Golog Tibetan Autonomous Prefecture,municipal/prefecture
+200,枣庄市,Zaozhuang,municipal/prefecture
+201,柳州市,Liuzhou,municipal/prefecture
+202,株洲市,Zhuzhou,municipal/prefecture
+203,桂林市,Guilin,municipal/prefecture
+204,梅州市,Meizhou,municipal/prefecture
+205,梧州市,Wuzhou,municipal/prefecture
+206,楚雄彝族自治州,Chuxiong Yi Autonomous Prefecture,municipal/prefecture
+207,榆林市,Yulin,municipal/prefecture
+208,武威市,Wuwei,municipal/prefecture
+209,武汉市,Wuhan,municipal/prefecture
+210,毕节市,Bijie,municipal/prefecture
+211,永州市,Yongzhou,municipal/prefecture
+212,汉中市,Hanzhong,municipal/prefecture
+213,汕头市,Shantou,municipal/prefecture
+214,汕尾市,Shanwei,municipal/prefecture
+215,江门市,Jiangmen,municipal/prefecture
+216,池州市,Chizhou,municipal/prefecture
+217,沈阳市,Shenyang,municipal/prefecture
+218,沧州市,Cangzhou,municipal/prefecture
+219,河池市,Hechi,municipal/prefecture
+220,河源市,Heyuan,municipal/prefecture
+221,泉州市,Quanzhou,municipal/prefecture
+222,泰安市,Tai'an,municipal/prefecture
+223,泰州市,Taizhou,municipal/prefecture
+224,泸州市,Luzhou,municipal/prefecture
+225,洛阳市,Luoyang,municipal/prefecture
+226,济南市,Jinan,municipal/prefecture
+227,济宁市,Jining,municipal/prefecture
+228,海东市,Haidong,municipal/prefecture
+229,海北藏族自治州,Haibei Tibetan Autonomous Prefecture,municipal/prefecture
+230,海南藏族自治州,Hainan Tibetan Autonomous Prefecture,municipal/prefecture
+231,海口市,Haikou,municipal/prefecture
+232,海西蒙古族藏族自治州,Haixi Mongol and Tibetan Autonomous Prefecture,municipal/prefecture
+233,淄博市,Zibo,municipal/prefecture
+234,淮北市,Huaibei,municipal/prefecture
+235,淮南市,Huainan,municipal/prefecture
+236,淮安市,Huai'an,municipal/prefecture
+237,深圳市,Shenzhen,municipal/prefecture
+238,清远市,Qingyuan,municipal/prefecture
+239,温州市,Wenzhou,municipal/prefecture
+240,渭南市,Weinan,municipal/prefecture
+241,湖州市,Huzhou,municipal/prefecture
+242,湘潭市,Xiangtan,municipal/prefecture
+243,湘西土家族苗族自治州,Xiangxi Tujia and Miao Autonomous Prefecture,municipal/prefecture
+244,湛江市,Zhanjiang,municipal/prefecture
+245,滁州市,Chuzhou,municipal/prefecture
+246,滨州市,Binzhou,municipal/prefecture
+247,漯河市,Luohe,municipal/prefecture
+248,漳州市,Zhangzhou,municipal/prefecture
+249,潍坊市,Weifang,municipal/prefecture
+250,潮州市,Chaozhou,municipal/prefecture
+251,濮阳市,Puyang,municipal/prefecture
+252,烟台市,Yantai,municipal/prefecture
+253,焦作市,Jiaozuo,municipal/prefecture
+254,牡丹江市,Mudanjiang,municipal/prefecture
+255,玉林市,Yulin,municipal/prefecture
+256,玉树藏族自治县,Yushu Tibetan Autonomous County,municipal/prefecture
+257,玉树藏族自治州,Yushu Tibetan Autonomous Prefecture,municipal/prefecture
+258,玉溪市,Yuxi,municipal/prefecture
+259,珠海市,Zhuhai,municipal/prefecture
+260,甘南藏族自治州,Gannan Tibetan Autonomous Prefecture,municipal/prefecture
+261,甘孜藏族自治州,Garzê Tibetan Autonomous Prefecture,municipal/prefecture
+262,白城市,Baicheng,municipal/prefecture
+263,白山市,Baishan,municipal/prefecture
+264,白银市,Baiyin,municipal/prefecture
+265,百色市,Baise,municipal/prefecture
+266,益阳市,Yiyang,municipal/prefecture
+267,盐城市,Yancheng,municipal/prefecture
+268,盘锦市,Panjin,municipal/prefecture
+269,眉山市,Meishan,municipal/prefecture
+270,石嘴山市,Shizuishan,municipal/prefecture
+271,石家庄市,Shijiazhuang,municipal/prefecture
+272,福州市,Fuzhou,municipal/prefecture
+273,秦皇岛市,Qinhuangdao,municipal/prefecture
+274,红河哈尼族彝族自治州,Honghe Hani and Yi Autonomous Prefecture,municipal/prefecture
+275,绍兴市,Shaoxing,municipal/prefecture
+276,绥化市,Suihua,municipal/prefecture
+277,绵阳市,Mianyang,municipal/prefecture
+278,聊城市,Liaocheng,municipal/prefecture
+279,肇庆市,Zhaoqing,municipal/prefecture
+280,自贡市,Zigong,municipal/prefecture
+281,舟山市,Zhoushan,municipal/prefecture
+282,芜湖市,Wuhu,municipal/prefecture
+283,苏州市,Suzhou,municipal/prefecture
+284,茂名市,Maoming,municipal/prefecture
+285,荆州市,Jingzhou,municipal/prefecture
+286,荆门市,Jingmen,municipal/prefecture
+287,莆田市,Putian,municipal/prefecture
+288,莱芜市,Laiwu,municipal/prefecture
+289,菏泽市,Heze,municipal/prefecture
+290,萍乡市,Pingxiang,municipal/prefecture
+291,营口市,Yingkou,municipal/prefecture
+292,葫芦岛市,Huludao,municipal/prefecture
+293,蚌埠市,Bengbu,municipal/prefecture
+294,衡水市,Hengshui,municipal/prefecture
+295,衡阳市,Hengyang,municipal/prefecture
+296,衢州市,Quzhou,municipal/prefecture
+297,襄阳市,Xiangyang,municipal/prefecture
+298,西双版纳傣族自治州,Xishuangbanna Dai Autonomous Prefecture,municipal/prefecture
+299,西宁市,Xining,municipal/prefecture
+300,西安市,Xi'an,municipal/prefecture
+301,许昌市,Xuchang,municipal/prefecture
+302,贵港市,Guigang,municipal/prefecture
+303,贵阳市,Guiyang,municipal/prefecture
+304,贺州市,Hezhou,municipal/prefecture
+305,资阳市,Ziyang,municipal/prefecture
+306,赣州市,Ganzhou,municipal/prefecture
+307,辽源市,Liaoyuan,municipal/prefecture
+308,辽阳市,Liaoyang,municipal/prefecture
+309,达州市,Dazhou,municipal/prefecture
+310,运城市,Yuncheng,municipal/prefecture
+311,连云港市,Lianyungang,municipal/prefecture
+312,迪庆藏族自治州,Diqing Tibetan Autonomous Prefecture,municipal/prefecture
+313,通化市,Tonghua,municipal/prefecture
+314,遂宁市,Suining,municipal/prefecture
+315,遵义市,Zunyi,municipal/prefecture
+316,邢台市,Xingtai,municipal/prefecture
+317,那曲地区,Nagqu,municipal/prefecture
+318,邯郸市,Handan,municipal/prefecture
+319,邵阳市,Shaoyang,municipal/prefecture
+320,郑州市,Zhengzhou,municipal/prefecture
+321,郴州市,Chenzhou,municipal/prefecture
+322,鄂州市,Ezhou,municipal/prefecture
+323,酒泉市,Jiuquan,municipal/prefecture
+324,金华市,Jinhua,municipal/prefecture
+325,金昌市,Jinchang,municipal/prefecture
+326,钦州市,Qinzhou,municipal/prefecture
+327,铁岭市,Tieling,municipal/prefecture
+328,铜仁市,Tongren,municipal/prefecture
+329,铜川市,Tongchuan,municipal/prefecture
+330,铜陵市,Tongling,municipal/prefecture
+331,银川市,Yinchuan,municipal/prefecture
+332,锡林郭勒盟,Xilin Gol League,municipal/prefecture
+333,锦州市,Jinzhou,municipal/prefecture
+334,镇江市,Zhenjiang,municipal/prefecture
+335,长春市,Changchun,municipal/prefecture
+336,长沙市,Changsha,municipal/prefecture
+337,长治市,Changzhi,municipal/prefecture
+338,阜新市,Fuxin,municipal/prefecture
+339,阜阳市,Fuyang,municipal/prefecture
+340,防城港市,Fangchenggang,municipal/prefecture
+341,阳江市,Yangjiang,municipal/prefecture
+342,阳泉市,Yangquan,municipal/prefecture
+343,阿克苏地区,Aksu Prefecture,municipal/prefecture
+344,阿勒泰地区,Altay Prefecture,municipal/prefecture
+345,阿坝藏族羌族自治州,Ngawa Tibetan and Qiang Autonomous Prefecture,municipal/prefecture
+346,阿拉善盟,Alxa League,municipal/prefecture
+347,阿里地区,Ngari Prefecture,municipal/prefecture
+348,陇南市,Longnan,municipal/prefecture
+349,随州市,Suizhou,municipal/prefecture
+350,雅安市,Ya'an,municipal/prefecture
+351,青岛市,Qingdao,municipal/prefecture
+352,鞍山市,Anshan,municipal/prefecture
+353,韶关市,Shaoguan,municipal/prefecture
+354,马鞍山市,Ma'anshan,municipal/prefecture
+355,驻马店市,Zhumadian,municipal/prefecture
+356,鸡西市,Jixi,municipal/prefecture
+357,鹤壁市,Hebi,municipal/prefecture
+358,鹤岗市,Hegang,municipal/prefecture
+359,鹰潭市,Yingtan,municipal/prefecture
+360,黄冈市,Huanggang,municipal/prefecture
+361,黄南藏族自治州,Huangnan Tibetan Autonomous Prefecture,municipal/prefecture
+362,黄山市,Huangshan,municipal/prefecture
+363,黄石市,Huangshi,municipal/prefecture
+364,黑河市,Heihe,municipal/prefecture
+365,黔东南苗族侗族自治州,Qiandongnan Miao and Dong Autonomous Prefecture,municipal/prefecture
+366,黔南布依族苗族自治州,Qiannan Buyei and Miao Autonomous Prefecture,municipal/prefecture
+367,黔西南布依族苗族自治州,Qianxinan Buyei and Miao Autonomous Prefecture,municipal/prefecture
+368,齐齐哈尔市,Qiqihar,municipal/prefecture
+369,龙岩市,Longyan,municipal/prefecture
+370,呼和浩特市,Hohhot,municipal/prefecture
+371,包头市,Baotou,municipal/prefecture
+372,乌海市,Wuhai,municipal/prefecture
+373,赤峰市,Chifeng,municipal/prefecture
+374,通辽市,Tongliao,municipal/prefecture
+375,呼伦贝尔市,Hulunbuir,municipal/prefecture
+376,鄂尔多斯市,Ordos,municipal/prefecture
+377,巴彦淖尔市,Bayannur,municipal/prefecture
+378,乌兰察布市,Ulanqab,municipal/prefecture
+379,东莞市,Dongguan,municipal/prefecture
+380,中山市,Zhongshan,municipal/prefecture
+381,三沙市,Sansha,municipal/prefecture
+382,北京市,Beijing,municipal/prefecture
+383,阿拉尔市,Alar,municipal/prefecture
+384,澳门特别行政区,Macau Special Administrative Region,municipal/prefecture
+385,白沙黎族自治县,Baisha Li Autonomous County,municipal/prefecture
+386,保亭黎族苗族自治县,Baoting Li and Miao Autonomous County,municipal/prefecture
+387,北屯市,Beitun,municipal/prefecture
+388,昌江黎族自治县,Changjiang Li Autonomous County,municipal/prefecture
+389,澄迈县,Chengmai County,municipal/prefecture
+390,定安县,Ding'an County,municipal/prefecture
+391,东方市,Dongfang,municipal/prefecture
+392,胡杨河市,Huyanghe,municipal/prefecture
+393,济源市,Jiyuan,municipal/prefecture
+394,乐东黎族自治县,Ledong Li Autonomous County,municipal/prefecture
+395,临高县,Lingao County,municipal/prefecture
+396,陵水黎族自治县,Lingshui Li Autonomous County,municipal/prefecture
+397,潜江市,Qianjiang,municipal/prefecture
+398,琼海市,Qionghai,municipal/prefecture
+399,琼中黎族苗族自治县,Qiongzhong Li and Miao Autonomous County,municipal/prefecture
+400,神农架林区,Shennongjia Forestry District,municipal/prefecture
+401,石河子市,Shihezi,municipal/prefecture
+402,天门市,Tianmen,municipal/prefecture
+403,图木舒克市,Tumxuk,municipal/prefecture
+404,屯昌县,Tunchang County,municipal/prefecture
+405,万宁市,Wanning,municipal/prefecture
+406,文昌市,Wenchang,municipal/prefecture
+407,五家渠市,Wujiaqu,municipal/prefecture
+408,五指山市,Wuzhishan,municipal/prefecture
+409,仙桃市,Xiantao,municipal/prefecture
+410,香港特别行政区,Hong Kong Special Administrative Region,municipal/prefecture
+411,白杨市,Baiyang,municipal/prefecture
+412,政务微博账号（2万+）,"Official Weibo accounts of government units and news organisations (>20,000 accounts)",mixed
+413,（未具名）政务投诉集中网站,Centralized website for citizen complaints to the government,central
+414,成都市科学技术局网站,Chengdu Science and Technology Bureau website,municipal
+415,重庆市科学技术局网站,Chongqing Science and Technology Bureau website,municipal
+416,上市公司章程修订网站（未具名）,Website storing amendments to charters of listed companies,unknown
+417,全国省/地级行政区划列表,List of all province- and prefecture-level units of China (geographic directory),mixed
+418,约320个部委与地方网站,"~320 ministries and localities with ~3,000 webscrapers (coverage statement)",mixed
+419,中国新闻机构/使馆/外交官推特账号,"Twitter/X accounts of Chinese news organisations, embassies, and diplomats (>300)",non_gov_social
+420,新浪微博,Weibo (Sina Weibo) platform,non_gov_social
