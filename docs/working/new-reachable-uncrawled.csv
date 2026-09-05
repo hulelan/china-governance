@@ -1,0 +1,99 @@
+institution_cn,institution_en,level,url,confidence,reachable
+中华人民共和国全国人民代表大会,National People's Congress of the People's Republic of China,central,http://www.npc.gov.cn/,high,REACHABLE
+国防部,Ministry of National Defense,central,http://www.mod.gov.cn/,high,REACHABLE
+云南省,Yunnan (provincial-level unit),provincial,http://www.yn.gov.cn/,high,REACHABLE
+三明市,Sanming,municipal/prefecture,https://www.sm.gov.cn/,high,REACHABLE
+三门峡市,Sanmenxia,municipal/prefecture,https://www.smx.gov.cn/,high,REACHABLE
+临沂市,Linyi,municipal/prefecture,https://www.linyi.gov.cn/,med,REACHABLE
+丹东市,Dandong,municipal/prefecture,https://www.dandong.gov.cn/,med,REACHABLE
+乌鲁木齐市,Urumqi,municipal/prefecture,https://www.wlmq.gov.cn/,high,REACHABLE
+乐山市,Leshan,municipal/prefecture,https://www.leshan.gov.cn/,med,REACHABLE
+亳州市,Bozhou,municipal/prefecture,https://www.bozhou.gov.cn/,med,REACHABLE
+伊春市,Yichun (Heilongjiang),municipal/prefecture,https://www.yc.gov.cn/,high,REACHABLE
+伊犁哈萨克自治州,Ili Kazakh Autonomous Prefecture,municipal/prefecture,https://www.xjyl.gov.cn/,high,REACHABLE
+保山市,Baoshan,municipal/prefecture,https://www.baoshan.gov.cn/,med,REACHABLE
+克孜勒苏柯尔克孜自治州,Kizilsu Kirghiz Autonomous Prefecture,municipal/prefecture,https://www.xjkz.gov.cn/,high,REACHABLE
+克拉玛依市,Karamay,municipal/prefecture,https://www.klmy.gov.cn/,high,REACHABLE
+六安市,Lu'an,municipal/prefecture,https://www.luan.gov.cn/,high,REACHABLE
+南通市,Nantong,municipal/prefecture,https://www.nantong.gov.cn/,med,REACHABLE
+博尔塔拉蒙古自治州,Bortala Mongol Autonomous Prefecture,municipal/prefecture,https://www.xjboz.gov.cn/,high,REACHABLE
+双鸭山市,Shuangyashan,municipal/prefecture,https://www.shuangyashan.gov.cn/,med,REACHABLE
+吐鲁番市,Turpan,municipal/prefecture,https://www.tlf.gov.cn/,high,REACHABLE
+吕梁市,Lüliang,municipal/prefecture,https://www.lvliang.gov.cn/,high,REACHABLE
+和田地区,Hotan Prefecture,municipal/prefecture,https://www.xjht.gov.cn/,high,REACHABLE
+哈密市,Hami,municipal/prefecture,https://www.hami.gov.cn/,high,REACHABLE
+喀什地区,Kashgar Prefecture,municipal/prefecture,https://www.kashi.gov.cn/,high,REACHABLE
+四平市,Siping,municipal/prefecture,https://www.siping.gov.cn/,med,REACHABLE
+塔城地区,Tacheng Prefecture,municipal/prefecture,https://www.xjtc.gov.cn/,high,REACHABLE
+大兴安岭地区,Daxing'anling Prefecture,municipal/prefecture,https://www.dxal.gov.cn/,high,REACHABLE
+安康市,Ankang,municipal/prefecture,https://www.ankang.gov.cn/,med,REACHABLE
+宜昌市,Yichang,municipal/prefecture,https://www.yichang.gov.cn/,med,REACHABLE
+宣城市,Xuancheng,municipal/prefecture,https://www.xuancheng.gov.cn/,high,REACHABLE
+宿州市,Suzhou (Anhui),municipal/prefecture,https://www.ahsz.gov.cn/,high,REACHABLE
+岳阳市,Yueyang,municipal/prefecture,https://www.yueyang.gov.cn/,high,REACHABLE
+巴音郭楞蒙古自治州,Bayingolin Mongol Autonomous Prefecture,municipal/prefecture,https://www.xjbz.gov.cn/,high,REACHABLE
+常州市,Changzhou,municipal/prefecture,https://www.changzhou.gov.cn/,high,REACHABLE
+常德市,Changde,municipal/prefecture,https://www.changde.gov.cn/,high,REACHABLE
+平顶山市,Pingdingshan,municipal/prefecture,https://www.pds.gov.cn/,high,REACHABLE
+廊坊市,Langfang,municipal/prefecture,https://www.lf.gov.cn/,high,REACHABLE
+延边朝鲜族自治州,Yanbian Korean Autonomous Prefecture,municipal/prefecture,http://www.yanbian.gov.cn/,high,REACHABLE
+成都市,Chengdu,municipal/prefecture,http://www.chengdu.gov.cn/,high,REACHABLE
+抚顺市,Fushun,municipal/prefecture,https://www.fushun.gov.cn/,high,REACHABLE
+拉萨市,Lhasa,municipal/prefecture,https://www.lasa.gov.cn/,high,REACHABLE
+新乡市,Xinxiang,municipal/prefecture,https://www.xinxiang.gov.cn/,high,REACHABLE
+无锡市,Wuxi,municipal/prefecture,https://www.wuxi.gov.cn/,high,REACHABLE
+昌吉回族自治州,Changji Hui Autonomous Prefecture,municipal/prefecture,https://www.cj.gov.cn/,high,REACHABLE
+昌都市,Qamdo,municipal/prefecture,https://www.changdu.gov.cn/,high,REACHABLE
+晋城市,Jincheng,municipal/prefecture,https://www.jcgov.gov.cn/,high,REACHABLE
+景德镇市,Jingdezhen,municipal/prefecture,https://www.jdz.gov.cn/,high,REACHABLE
+曲靖市,Qujing,municipal/prefecture,https://www.qj.gov.cn/,high,REACHABLE
+朔州市,Shuozhou,municipal/prefecture,http://www.shuozhou.gov.cn/,high,REACHABLE
+朝阳市,Chaoyang,municipal/prefecture,https://www.chaoyang.gov.cn/,high,REACHABLE
+林芝市,Nyingchi,municipal/prefecture,http://www.linzhi.gov.cn/,high,REACHABLE
+泰安市,Tai'an,municipal/prefecture,http://www.taian.gov.cn/,med,REACHABLE
+济宁市,Jining,municipal/prefecture,http://www.jining.gov.cn/,med,REACHABLE
+海南藏族自治州,Hainan Tibetan Autonomous Prefecture,municipal/prefecture,https://www.hainanzhou.gov.cn/,high,REACHABLE
+海口市,Haikou,municipal/prefecture,https://www.haikou.gov.cn/,high,REACHABLE
+淄博市,Zibo,municipal/prefecture,https://www.zibo.gov.cn/,high,REACHABLE
+淮北市,Huaibei,municipal/prefecture,https://www.huaibei.gov.cn/,high,REACHABLE
+淮南市,Huainan,municipal/prefecture,https://www.huainan.gov.cn/,high,REACHABLE
+淮安市,Huai'an,municipal/prefecture,https://www.huaian.gov.cn/,high,REACHABLE
+湛江市,Zhanjiang,municipal/prefecture,https://www.zhanjiang.gov.cn/,high,REACHABLE
+甘南藏族自治州,Gannan Tibetan Autonomous Prefecture,municipal/prefecture,https://www.gnzrmzf.gov.cn/,high,REACHABLE
+白银市,Baiyin,municipal/prefecture,https://www.baiyin.gov.cn/,high,REACHABLE
+盐城市,Yancheng,municipal/prefecture,https://www.yancheng.gov.cn/,high,REACHABLE
+盘锦市,Panjin,municipal/prefecture,https://www.panjin.gov.cn/,high,REACHABLE
+石嘴山市,Shizuishan,municipal/prefecture,https://www.shizuishan.gov.cn/,high,REACHABLE
+红河哈尼族彝族自治州,Honghe Hani and Yi Autonomous Prefecture,municipal/prefecture,https://www.hh.gov.cn/,high,REACHABLE
+聊城市,Liaocheng,municipal/prefecture,https://www.liaocheng.gov.cn/,high,REACHABLE
+芜湖市,Wuhu,municipal/prefecture,https://www.wuhu.gov.cn/,high,REACHABLE
+茂名市,Maoming,municipal/prefecture,https://www.maoming.gov.cn/,high,REACHABLE
+菏泽市,Heze,municipal/prefecture,https://www.heze.gov.cn/,high,REACHABLE
+营口市,Yingkou,municipal/prefecture,https://www.yingkou.gov.cn/,high,REACHABLE
+西安市,Xi'an,municipal/prefecture,https://www.xa.gov.cn/,high,REACHABLE
+许昌市,Xuchang,municipal/prefecture,https://www.xuchang.gov.cn/,high,REACHABLE
+连云港市,Lianyungang,municipal/prefecture,https://www.lyg.gov.cn/,high,REACHABLE
+通化市,Tonghua,municipal/prefecture,https://www.tonghua.gov.cn/,high,REACHABLE
+那曲地区,Nagqu,municipal/prefecture,https://www.naqu.gov.cn/,high,REACHABLE
+郑州市,Zhengzhou,municipal/prefecture,https://www.zhengzhou.gov.cn/,high,REACHABLE
+铜陵市,Tongling,municipal/prefecture,https://www.tl.gov.cn/,low,REACHABLE
+锡林郭勒盟,Xilin Gol League,municipal/prefecture,https://www.xlgl.gov.cn/,high,REACHABLE
+长春市,Changchun,municipal/prefecture,http://www.changchun.gov.cn/,high,REACHABLE
+阜新市,Fuxin,municipal/prefecture,https://www.fuxin.gov.cn/,med,REACHABLE
+阜阳市,Fuyang,municipal/prefecture,https://www.fuyang.gov.cn/,low,REACHABLE
+阿坝藏族羌族自治州,Ngawa Tibetan and Qiang Autonomous Prefecture,municipal/prefecture,https://www.abazhou.gov.cn/,high,REACHABLE
+阿里地区,Ngari Prefecture,municipal/prefecture,https://www.al.gov.cn/,high,REACHABLE
+随州市,Suizhou,municipal/prefecture,https://www.suizhou.gov.cn/,med,REACHABLE
+鸡西市,Jixi,municipal/prefecture,https://www.jixi.gov.cn/,med,REACHABLE
+黑河市,Heihe,municipal/prefecture,https://www.heihe.gov.cn/,med,REACHABLE
+乌海市,Wuhai,municipal/prefecture,https://www.wuhai.gov.cn/,med,REACHABLE
+巴彦淖尔市,Bayannur,municipal/prefecture,https://www.bynr.gov.cn/,high,REACHABLE
+阿拉尔市,Alar,municipal/prefecture,http://www.ale.gov.cn/,high,REACHABLE
+澳门特别行政区,Macau Special Administrative Region,municipal/prefecture,https://www.gov.mo/,high,REACHABLE
+北屯市,Beitun,municipal/prefecture,http://www.bts.gov.cn/,high,REACHABLE
+胡杨河市,Huyanghe,municipal/prefecture,https://www.nqs.gov.cn/,high,REACHABLE
+潜江市,Qianjiang,municipal/prefecture,https://www.hbqj.gov.cn/,high,REACHABLE
+五家渠市,Wujiaqu,municipal/prefecture,https://www.wjq.gov.cn/,high,REACHABLE
+香港特别行政区,Hong Kong Special Administrative Region,municipal/prefecture,https://www.gov.hk/,high,REACHABLE
+（未具名）政务投诉集中网站,Centralized website for citizen complaints to the government,central,https://tousu.www.gov.cn/dc/index.htm,med,REACHABLE
+新浪微博,Weibo (Sina Weibo) platform,non_gov_social,https://weibo.com/,high,REACHABLE

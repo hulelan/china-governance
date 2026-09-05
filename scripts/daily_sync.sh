@@ -184,6 +184,8 @@ done
 run_crawler "govcms (dept group)" python3 -m crawlers.govcms --group dept
 # City tier (ReConnect Tier-B reachable-new prefecture cities, tagged group=city).
 run_crawler "govcms (city group)" python3 -m crawlers.govcms --group city
+# City tier batch 2 (reachable-uncrawled from the 421-URL map; homepage-seed, group=city2).
+run_crawler "govcms (city2 group)" python3 -m crawlers.govcms --group city2
 
 for crawler in beijing shanghai jiangsu chongqing wuhan suzhou heilongjiang; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
