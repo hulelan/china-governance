@@ -1,422 +1,422 @@
-idx,institution_cn,institution_en,level,official_url,confidence,notes
-0,中华人民共和国全国人民代表大会,National People's Congress of the People's Republic of China,central,http://www.npc.gov.cn/,high,NPC official portal.
-1,中华人民共和国最高人民法院,Supreme People's Court of the People's Republic of China,central,https://www.court.gov.cn/,high,SPC official portal (中国法院网 is separate at chinacourt.org).
-2,人力资源和社会保障部,Ministry of Human Resources and Social Security,central,http://www.mohrss.gov.cn/,high,MOHRSS official portal.
-3,公安部,Ministry of Public Security,central,https://www.mps.gov.cn/,high,MPS official portal.
-4,农业农村部,Ministry of Agriculture and Rural Affairs,central,https://www.moa.gov.cn/,high,Verified: MARA portal is moa.gov.cn (also National Rural Revitalization Bureau).
-5,司法部,Ministry of Justice,central,https://www.moj.gov.cn/,high,MOJ official portal.
-6,国家发展和改革委员会,National Development and Reform Commission,central,https://www.ndrc.gov.cn/,high,NDRC official portal.
-7,国家安全部,Ministry of State Security,central,,low,MSS has NO public policy portal; no standalone .gov.cn site. Genuinely none.
-8,国家民族事务委员会,National Ethnic Affairs Commission,central,https://www.neac.gov.cn/,high,Verified: State Ethnic Affairs Commission portal neac.gov.cn.
-9,国防部,Ministry of National Defense,central,http://www.mod.gov.cn/,high,MND official portal (news/spokesperson oriented; limited policy docs).
-10,外交部,Ministry of Foreign Affairs,central,https://www.mfa.gov.cn/,high,Verified: MFA now primary at mfa.gov.cn; www.fmprc.gov.cn is the legacy/alias domain.
-11,审计署,National Audit Office,central,https://www.audit.gov.cn/,high,CNAO official portal.
-12,宣传部,Communication Department,central,,low,CPC Publicity/Propaganda Dept has NO standalone .gov portal; publishes via 12371.gov.cn (共产党员网) and 中国文明网 (wenming.cn).
-13,教育部,Ministry of Education,central,http://www.moe.gov.cn/,high,MOE official portal.
-14,文化和旅游部,Ministry of Culture and Tourism,central,https://www.mct.gov.cn/,high,MCT official portal.
-15,民政部,Ministry of Civil Affairs,central,https://www.mca.gov.cn/,high,MCA official portal.
-16,水利部,Ministry of Water Resources,central,http://www.mwr.gov.cn/,high,MWR official portal.
-17,科学技术部,Ministry of Science and Technology,central,https://www.most.gov.cn/,high,MOST official portal.
-18,自然资源部,Ministry of Natural Resources,central,https://www.mnr.gov.cn/,high,MNR official portal.
-19,退役军人事务部,Ministry of Veterans Affairs,central,https://www.mva.gov.cn/,high,Verified: MVA portal mva.gov.cn (launched 2018).
-20,上海市,Shanghai (provincial-level unit),provincial,https://www.shanghai.gov.cn/,high,Shanghai municipal government portal (中国上海).
-21,云南省,Yunnan (provincial-level unit),provincial,http://www.yn.gov.cn/,high,Yunnan provincial portal.
-22,内蒙古自治区,Inner Mongolia (provincial-level unit),provincial,https://www.nmg.gov.cn/,high,Inner Mongolia autonomous region portal.
-23,吉林省,Jilin (provincial-level unit),provincial,https://www.jl.gov.cn/,high,Verified: Jilin provincial portal jl.gov.cn.
-24,天津市,Tianjin (provincial-level unit),provincial,http://www.tj.gov.cn/,high,Tianjin municipal government portal.
-25,宁夏回族自治区,Ningxia (provincial-level unit),provincial,https://www.nx.gov.cn/,high,Ningxia autonomous region portal.
-26,安徽省,Anhui (provincial-level unit),provincial,https://www.ah.gov.cn/,high,Anhui provincial portal.
-27,山东省,Shandong (provincial-level unit),provincial,http://www.shandong.gov.cn/,high,Verified: Shandong provincial portal shandong.gov.cn (served over http).
-28,江西省,Jiangxi (provincial-level unit),provincial,http://www.jiangxi.gov.cn/,high,Jiangxi provincial portal.
-29,山西省,Shanxi (provincial-level unit),provincial,http://www.shanxi.gov.cn/,high,Shanxi (太原) provincial portal; distinct from Shaanxi (shaanxi.gov.cn).
-30,广西壮族自治区,Guangxi (provincial-level unit),provincial,http://www.gxzf.gov.cn/,high,Guangxi autonomous region portal (gxzf = 广西政府).
-31,新疆维吾尔自治区,Xinjiang (provincial-level unit),provincial,http://www.xinjiang.gov.cn/,high,Xinjiang autonomous region portal.
-32,江苏省,Jiangsu (provincial-level unit),provincial,https://www.jiangsu.gov.cn/,high,Jiangsu provincial portal.
-33,福建省,Fujian (provincial-level unit),provincial,https://www.fujian.gov.cn/,high,Fujian provincial portal.
-34,河北省,Hebei (provincial-level unit),provincial,http://www.hebei.gov.cn/,high,Hebei provincial portal.
-35,河南省,Henan (provincial-level unit),provincial,https://www.henan.gov.cn/,high,Henan provincial portal.
-36,浙江省,Zhejiang (provincial-level unit),provincial,https://www.zj.gov.cn/,high,Zhejiang provincial portal (zj.gov.cn).
-37,海南省,Hainan (provincial-level unit),provincial,https://www.hainan.gov.cn/,high,Hainan provincial portal.
-38,湖北省,Hubei (provincial-level unit),provincial,https://www.hubei.gov.cn/,high,Hubei provincial portal.
-39,湖南省,Hunan (provincial-level unit),provincial,https://www.hunan.gov.cn/,high,Hunan provincial portal.
-40,甘肃省,Gansu (provincial-level unit),provincial,https://www.gansu.gov.cn/,high,Gansu provincial portal.
-41,西藏自治区,Tibet (provincial-level unit),provincial,https://www.xizang.gov.cn/,high,Verified: Tibet autonomous region portal xizang.gov.cn.
-42,贵州省,Guizhou (provincial-level unit),provincial,https://www.guizhou.gov.cn/,high,Guizhou provincial portal.
-43,辽宁省,Liaoning (provincial-level unit),provincial,https://www.ln.gov.cn/,high,Verified: Liaoning provincial portal ln.gov.cn.
-44,重庆市,Chongqing (provincial-level unit),provincial,http://www.cq.gov.cn/,high,Chongqing municipal government portal.
-45,陕西省,Shaanxi (provincial-level unit),provincial,http://www.shaanxi.gov.cn/,high,Shaanxi (西安) provincial portal; distinct from Shanxi (shanxi.gov.cn).
-46,青海省,Qinghai (provincial-level unit),provincial,http://www.qinghai.gov.cn/,high,Qinghai provincial portal.
-47,七台河市,Qitaihe,municipal/prefecture,https://www.qitaihe.gov.cn/,med,standard pinyin heuristic; not verified in-session
-48,三亚市,Sanya,municipal/prefecture,https://www.sanya.gov.cn/,med,standard pinyin (well-known Hainan portal); not verified in-session
-49,三明市,Sanming,municipal/prefecture,https://www.sm.gov.cn/,high,verified abbreviation sm (Fujian); www.sanming.gov.cn also resolves
-50,三门峡市,Sanmenxia,municipal/prefecture,https://www.smx.gov.cn/,high,verified abbreviation smx (Henan)
-51,上饶市,Shangrao,municipal/prefecture,https://www.shangrao.gov.cn/,med,standard pinyin heuristic; not verified in-session
-52,东营市,Dongying,municipal/prefecture,https://www.dongying.gov.cn/,med,standard pinyin heuristic; not verified in-session
-53,中卫市,Zhongwei,municipal/prefecture,https://www.zhongwei.gov.cn/,med,standard pinyin (Ningxia); not verified in-session
-54,临夏回族自治州,Linxia Hui Autonomous Prefecture,municipal/prefecture,https://www.linxia.gov.cn/,high,verified official prefecture portal
-55,临汾市,Linfen,municipal/prefecture,https://www.linfen.gov.cn/,med,standard pinyin heuristic; not verified in-session
-56,临沂市,Linyi,municipal/prefecture,https://www.linyi.gov.cn/,med,standard pinyin heuristic; not verified in-session
-57,临沧市,Lincang,municipal/prefecture,https://www.lincang.gov.cn/,med,standard pinyin (Yunnan); not verified in-session
-58,丹东市,Dandong,municipal/prefecture,https://www.dandong.gov.cn/,med,standard pinyin heuristic; not verified in-session
-59,丽水市,Lishui,municipal/prefecture,https://www.lishui.gov.cn/,med,standard pinyin (Zhejiang); not verified in-session
-60,丽江市,Lijiang,municipal/prefecture,https://www.lijiang.gov.cn/,med,standard pinyin (Yunnan); not verified in-session
-61,乌鲁木齐市,Urumqi,municipal/prefecture,https://www.wlmq.gov.cn/,high,verified abbreviation wlmq; www.urumqi.gov.cn also resolves
-62,乐山市,Leshan,municipal/prefecture,https://www.leshan.gov.cn/,med,standard pinyin (Sichuan); not verified in-session
-63,九江市,Jiujiang,municipal/prefecture,https://www.jiujiang.gov.cn/,med,standard pinyin (Jiangxi); not verified in-session
-64,云浮市,Yunfu,municipal/prefecture,https://www.yunfu.gov.cn/,med,standard pinyin (Guangdong); not verified in-session
-65,亳州市,Bozhou,municipal/prefecture,https://www.bozhou.gov.cn/,med,standard pinyin (Anhui); not verified in-session
-66,伊春市,Yichun (Heilongjiang),municipal/prefecture,https://www.yc.gov.cn/,high,verified abbreviation yc; resolves name-collision vs 宜春 Jiangxi (yichun.gov.cn)
-67,伊犁哈萨克自治州,Ili Kazakh Autonomous Prefecture,municipal/prefecture,https://www.xjyl.gov.cn/,high,verified; xj-prefixed Xinjiang prefecture domain (NOT ili)
-68,佛山市,Foshan,municipal/prefecture,https://www.foshan.gov.cn/,med,standard pinyin (well-known Guangdong); not verified in-session
-69,佳木斯市,Jiamusi,municipal/prefecture,https://www.jiamusi.gov.cn/,med,standard pinyin (Heilongjiang); not verified in-session
-70,保定市,Baoding,municipal/prefecture,https://www.baoding.gov.cn/,med,standard pinyin (Hebei); not verified in-session
-71,保山市,Baoshan,municipal/prefecture,https://www.baoshan.gov.cn/,med,standard pinyin (Yunnan); not verified in-session
-72,信阳市,Xinyang,municipal/prefecture,https://www.xinyang.gov.cn/,med,standard pinyin (Henan); not verified in-session
-73,儋州市,Danzhou,municipal/prefecture,https://www.danzhou.gov.cn/,med,standard pinyin (Hainan); not verified in-session
-74,克孜勒苏柯尔克孜自治州,Kizilsu Kirghiz Autonomous Prefecture,municipal/prefecture,https://www.xjkz.gov.cn/,high,verified; xj-prefixed Xinjiang prefecture domain (NOT kizilsu)
-75,克拉玛依市,Karamay,municipal/prefecture,https://www.klmy.gov.cn/,high,verified abbreviation klmy (Xinjiang)
-76,六安市,Lu'an,municipal/prefecture,https://www.luan.gov.cn/,high,verified (Anhui)
-77,六盘水市,Liupanshui,municipal/prefecture,https://www.liupanshui.gov.cn/,med,standard pinyin (Guizhou); not verified in-session
-78,兰州市,Lanzhou,municipal/prefecture,https://www.lanzhou.gov.cn/,high,verified full pinyin (NOT lz as older refs suggest)
-79,兴安盟,Xing'an League,municipal/prefecture,https://www.xam.gov.cn/,high,verified league admin office (行政公署) abbreviation xam
-80,内江市,Neijiang,municipal/prefecture,https://www.neijiang.gov.cn/,med,standard pinyin (Sichuan); not verified in-session
-81,凉山彝族自治州,Liangshan Yi Autonomous Prefecture,municipal/prefecture,https://www.lsz.gov.cn/,high,verified abbreviation lsz (NOT liangshan)
-82,北海市,Beihai,municipal/prefecture,https://www.beihai.gov.cn/,med,standard pinyin (Guangxi); not verified in-session
-83,十堰市,Shiyan,municipal/prefecture,https://www.shiyan.gov.cn/,med,standard pinyin (Hubei); not verified in-session
-84,南京市,Nanjing,municipal/prefecture,https://www.nanjing.gov.cn/,med,standard pinyin (well-known Jiangsu capital); not verified in-session
-85,南充市,Nanchong,municipal/prefecture,https://www.nanchong.gov.cn/,med,standard pinyin (Sichuan); not verified in-session
-86,南宁市,Nanning,municipal/prefecture,https://www.nanning.gov.cn/,med,standard pinyin (Guangxi capital); not verified in-session
-87,南平市,Nanping,municipal/prefecture,https://www.np.gov.cn/,high,verified abbreviation np (Fujian)
-88,南昌市,Nanchang,municipal/prefecture,https://www.nc.gov.cn/,high,verified abbreviation nc (Jiangxi capital)
-89,南通市,Nantong,municipal/prefecture,https://www.nantong.gov.cn/,med,standard pinyin (Jiangsu); not verified in-session
-90,南阳市,Nanyang,municipal/prefecture,https://www.nanyang.gov.cn/,med,standard pinyin (Henan); not verified in-session
-91,博尔塔拉蒙古自治州,Bortala Mongol Autonomous Prefecture,municipal/prefecture,https://www.xjboz.gov.cn/,high,verified; xj-prefixed Xinjiang prefecture domain (NOT bortala)
-92,厦门市,Xiamen,municipal/prefecture,https://www.xm.gov.cn/,high,verified abbreviation xm (Fujian)
-93,双鸭山市,Shuangyashan,municipal/prefecture,https://www.shuangyashan.gov.cn/,med,standard pinyin (Heilongjiang); not verified in-session
-94,台州市,Taizhou (Zhejiang),municipal/prefecture,https://www.zjtz.gov.cn/,high,verified abbreviation zjtz (Zhejiang; distinct from Jiangsu Taizhou)
-95,合肥市,Hefei,municipal/prefecture,https://www.hefei.gov.cn/,med,standard pinyin (Anhui capital); not verified in-session
-96,吉安市,Ji'an,municipal/prefecture,https://www.jian.gov.cn/,high,verified (Jiangxi)
-97,吉林市,Jilin City,municipal/prefecture,https://www.jlcity.gov.cn/,high,verified jlcity (distinct from Jilin province jl.gov.cn)
-98,吐鲁番市,Turpan,municipal/prefecture,https://www.tlf.gov.cn/,high,verified abbreviation tlf (Xinjiang)
-99,吕梁市,Lüliang,municipal/prefecture,https://www.lvliang.gov.cn/,high,verified lvliang (Shanxi; NOT lliang)
-100,吴忠市,Wuzhong,municipal/prefecture,https://www.wuzhong.gov.cn/,med,standard pinyin (Ningxia); not verified in-session
-101,周口市,Zhoukou,municipal/prefecture,https://www.zhoukou.gov.cn/,med,standard pinyin (Henan); not verified in-session
-102,和田地区,Hotan Prefecture,municipal/prefecture,https://www.xjht.gov.cn/,high,verified; Xinjiang admin office (行政公署) xj-prefix (NOT hotan)
-103,咸宁市,Xianning,municipal/prefecture,https://www.xianning.gov.cn/,med,standard pinyin (Hubei); not verified in-session
-104,咸阳市,Xianyang,municipal/prefecture,https://www.xianyang.gov.cn/,med,standard pinyin (Shaanxi); not verified in-session
-105,哈密市,Hami,municipal/prefecture,https://www.hami.gov.cn/,high,verified (Xinjiang)
-106,哈尔滨市,Harbin,municipal/prefecture,https://www.harbin.gov.cn/,med,established convention harbin (Heilongjiang capital); not verified in-session
-107,唐山市,Tangshan,municipal/prefecture,https://www.tangshan.gov.cn/,med,standard pinyin (Hebei); not verified in-session
-108,商丘市,Shangqiu,municipal/prefecture,https://www.shangqiu.gov.cn/,med,standard pinyin (Henan); not verified in-session
-109,商洛市,Shangluo,municipal/prefecture,https://www.shangluo.gov.cn/,med,standard pinyin (Shaanxi); not verified in-session
-110,喀什地区,Kashgar Prefecture,municipal/prefecture,https://www.kashi.gov.cn/,high,verified; admin office (行政公署) kashi (NOT kashgar)
-111,嘉兴市,Jiaxing,municipal/prefecture,https://www.jiaxing.gov.cn/,med,standard pinyin (Zhejiang); not verified in-session
-112,嘉峪关市,Jiayuguan,municipal/prefecture,https://www.jiayuguan.gov.cn/,med,standard pinyin (Gansu); not verified in-session
-113,四平市,Siping,municipal/prefecture,https://www.siping.gov.cn/,med,standard pinyin (Jilin); not verified in-session
-114,固原市,Guyuan,municipal/prefecture,https://www.guyuan.gov.cn/,med,standard pinyin (Ningxia); not verified in-session
-115,塔城地区,Tacheng Prefecture,municipal/prefecture,https://www.xjtc.gov.cn/,high,verified; Xinjiang admin office xj-prefix (NOT tacheng)
-116,大兴安岭地区,Daxing'anling Prefecture,municipal/prefecture,https://www.dxal.gov.cn/,high,verified abbreviation dxal (Heilongjiang admin office)
-117,大同市,Datong,municipal/prefecture,https://www.datong.gov.cn/,med,standard pinyin (Shanxi); not verified in-session
-118,大庆市,Daqing,municipal/prefecture,https://www.daqing.gov.cn/,med,standard pinyin (Heilongjiang); not verified in-session
-119,大理白族自治州,Dali Bai Autonomous Prefecture,municipal/prefecture,https://www.dali.gov.cn/,high,verified (Yunnan; city portal is separate yndali.gov.cn)
-120,大连市,Dalian,municipal/prefecture,https://www.dl.gov.cn/,high,verified abbreviation dl (Liaoning)
-121,天水市,Tianshui,municipal/prefecture,https://www.tianshui.gov.cn/,med,standard pinyin (Gansu); not verified in-session
-122,太原市,Taiyuan,municipal/prefecture,https://www.taiyuan.gov.cn/,med,standard pinyin (Shanxi capital); not verified in-session
-123,威海市,Weihai,municipal/prefecture,https://www.weihai.gov.cn/,med,standard pinyin (Shandong); not verified in-session
-124,娄底市,Loudi,municipal/prefecture,https://www.loudi.gov.cn/,med,standard pinyin (Hunan); not verified in-session
-125,孝感市,Xiaogan,municipal/prefecture,https://www.xiaogan.gov.cn/,med,standard pinyin (Hubei); not verified in-session
-126,宁德市,Ningde,municipal/prefecture,https://www.ningde.gov.cn/,med,Fujian; abbreviation risk (some Fujian cities use abbrevs) - unverified in-session
-127,宁波市,Ningbo,municipal/prefecture,https://www.ningbo.gov.cn/,high,verified full pinyin (NOT nb as older refs suggest)
-128,安庆市,Anqing,municipal/prefecture,https://www.anqing.gov.cn/,med,standard pinyin (Anhui); not verified in-session
-129,安康市,Ankang,municipal/prefecture,https://www.ankang.gov.cn/,med,standard pinyin (Shaanxi); not verified in-session
-130,安阳市,Anyang,municipal/prefecture,https://www.anyang.gov.cn/,med,standard pinyin (Henan); not verified in-session
-131,安顺市,Anshun,municipal/prefecture,https://www.anshun.gov.cn/,med,standard pinyin (Guizhou); not verified in-session
-132,定西市,Dingxi,municipal/prefecture,https://www.dingxi.gov.cn/,med,standard pinyin (Gansu); not verified in-session
-133,宜宾市,Yibin,municipal/prefecture,https://www.yibin.gov.cn/,med,standard pinyin (Sichuan); not verified in-session
-134,宜昌市,Yichang,municipal/prefecture,https://www.yichang.gov.cn/,med,standard pinyin (Hubei); not verified in-session
-135,宜春市,Yichun (Jiangxi),municipal/prefecture,https://www.yichun.gov.cn/,high,verified full pinyin (collision partner 伊春 Heilongjiang uses yc.gov.cn)
-136,宝鸡市,Baoji,municipal/prefecture,https://www.baoji.gov.cn/,med,standard pinyin (Shaanxi); not verified in-session
-137,宣城市,Xuancheng,municipal/prefecture,https://www.xuancheng.gov.cn/,high,verified via subdomain zrzyghj.xuancheng.gov.cn (Anhui)
-138,宿州市,Suzhou (Anhui),municipal/prefecture,https://www.ahsz.gov.cn/,high,verified abbreviation ahsz (Anhui; distinct from Jiangsu Suzhou suzhou.gov.cn)
-139,宿迁市,Suqian,municipal/prefecture,https://www.suqian.gov.cn/,high,verified via websearch
-140,山南市,Shannan,municipal/prefecture,https://www.shannan.gov.cn/,high,verified; Tibet
-141,岳阳市,Yueyang,municipal/prefecture,https://www.yueyang.gov.cn/,high,verified
-142,崇左市,Chongzuo,municipal/prefecture,http://www.chongzuo.gov.cn/,high,verified; Guangxi
-143,巴中市,Bazhong,municipal/prefecture,https://www.cnbz.gov.cn/,high,verified; abbrev cnbz (hint bazhong wrong)
-144,巴音郭楞蒙古自治州,Bayingolin Mongol Autonomous Prefecture,municipal/prefecture,https://www.xjbz.gov.cn/,high,verified; abbrev xjbz (Xinjiang Bazhou)
-145,常州市,Changzhou,municipal/prefecture,https://www.changzhou.gov.cn/,high,verified
-146,常德市,Changde,municipal/prefecture,https://www.changde.gov.cn/,high,verified
-147,平凉市,Pingliang,municipal/prefecture,https://www.pingliang.gov.cn/,high,verified; Gansu
-148,平顶山市,Pingdingshan,municipal/prefecture,https://www.pds.gov.cn/,high,verified; abbrev pds (hint pingdingshan wrong)
-149,广元市,Guangyuan,municipal/prefecture,https://www.cngy.gov.cn/,high,verified; abbrev cngy (hint guangyuan wrong)
-150,广安市,Guang'an,municipal/prefecture,https://www.guang-an.gov.cn/,high,verified; hyphenated guang-an (hint guangan wrong)
-151,广州市,Guangzhou,municipal/prefecture,https://www.gz.gov.cn/,high,verified; abbrev gz (hint guangzhou wrong)
-152,庆阳市,Qingyang,municipal/prefecture,https://www.zgqingyang.gov.cn/,high,verified; zgqingyang (hint qingyang wrong); Gansu
-153,廊坊市,Langfang,municipal/prefecture,https://www.lf.gov.cn/,high,verified; abbrev lf (hint langfang wrong)
-154,延安市,Yan'an,municipal/prefecture,http://www.yanan.gov.cn/,high,verified; Shaanxi
-155,延边朝鲜族自治州,Yanbian Korean Autonomous Prefecture,municipal/prefecture,http://www.yanbian.gov.cn/,high,verified; Jilin
-156,开封市,Kaifeng,municipal/prefecture,https://www.kaifeng.gov.cn/,high,verified
-157,张家口市,Zhangjiakou,municipal/prefecture,http://www.zjk.gov.cn/,high,verified; abbrev zjk (hint zhangjiakou wrong)
-158,张家界市,Zhangjiajie,municipal/prefecture,http://www.zjj.gov.cn/,high,verified; abbrev zjj (hint zhangjiajie wrong)
-159,张掖市,Zhangye,municipal/prefecture,https://www.zhangye.gov.cn/,high,verified; Gansu
-160,徐州市,Xuzhou,municipal/prefecture,https://www.xz.gov.cn/,high,verified; abbrev xz (hint xuzhou wrong)
-161,德宏傣族景颇族自治州,Dehong Dai and Jingpo Autonomous Prefecture,municipal/prefecture,https://www.dh.gov.cn/,high,verified; abbrev dh (hint dehong wrong); Yunnan
-162,德州市,Dezhou,municipal/prefecture,https://www.dezhou.gov.cn/,high,verified; Shandong
-163,德阳市,Deyang,municipal/prefecture,https://www.deyang.gov.cn/,high,verified
-164,忻州市,Xinzhou,municipal/prefecture,https://www.sxxz.gov.cn/,high,verified; abbrev sxxz (hint xinzhou wrong); Shanxi
-165,怀化市,Huaihua,municipal/prefecture,https://www.huaihua.gov.cn/,high,verified
-166,怒江傈僳族自治州,Nujiang Lisu Autonomous Prefecture,municipal/prefecture,https://www.nujiang.gov.cn/,high,verified; Yunnan
-167,恩施土家族苗族自治州,Enshi Tujia and Miao Autonomous Prefecture,municipal/prefecture,http://www.enshi.gov.cn/,high,verified; Hubei
-168,惠州市,Huizhou,municipal/prefecture,https://www.huizhou.gov.cn/,high,verified; Guangdong
-169,成都市,Chengdu,municipal/prefecture,http://www.chengdu.gov.cn/,high,verified
-170,扬州市,Yangzhou,municipal/prefecture,https://www.yangzhou.gov.cn/,high,verified
-171,承德市,Chengde,municipal/prefecture,https://www.chengde.gov.cn/,high,verified; Hebei
-172,抚州市,Fuzhou,municipal/prefecture,http://www.jxfz.gov.cn/,high,verified; abbrev jxfz (Jiangxi Fuzhou; avoids clash with Fujian 福州)
-173,抚顺市,Fushun,municipal/prefecture,https://www.fushun.gov.cn/,high,verified; Liaoning
-174,拉萨市,Lhasa,municipal/prefecture,https://www.lasa.gov.cn/,high,verified; lasa (hint lhasa wrong); Tibet
-175,揭阳市,Jieyang,municipal/prefecture,http://www.jieyang.gov.cn/,high,verified; Guangdong
-176,攀枝花市,Panzhihua,municipal/prefecture,http://www.panzhihua.gov.cn/,high,verified
-177,文山壮族苗族自治州,Wenshan Zhuang and Miao Autonomous Prefecture,municipal/prefecture,https://www.ynws.gov.cn/,high,verified; abbrev ynws (hint wenshan wrong); Yunnan
-178,新乡市,Xinxiang,municipal/prefecture,https://www.xinxiang.gov.cn/,high,verified
-179,新余市,Xinyu,municipal/prefecture,http://www.xinyu.gov.cn/,high,verified; Jiangxi
-180,无锡市,Wuxi,municipal/prefecture,https://www.wuxi.gov.cn/,high,verified
-181,日喀则市,Shigatse,municipal/prefecture,http://www.rikaze.gov.cn/,high,verified; rikaze (hint shigatse wrong); Tibet
-182,日照市,Rizhao,municipal/prefecture,http://www.rizhao.gov.cn/,high,verified; Shandong
-183,昆明市,Kunming,municipal/prefecture,https://www.km.gov.cn/,high,verified; abbrev km
-184,昌吉回族自治州,Changji Hui Autonomous Prefecture,municipal/prefecture,https://www.cj.gov.cn/,high,verified; abbrev cj (hint changji wrong); Xinjiang
-185,昌都市,Qamdo,municipal/prefecture,https://www.changdu.gov.cn/,high,verified; changdu (hint qamdo wrong); Tibet
-186,昭通市,Zhaotong,municipal/prefecture,http://www.zt.gov.cn/,high,verified; abbrev zt (hint zhaotong wrong); Yunnan
-187,晋中市,Jinzhong,municipal/prefecture,https://www.sxjz.gov.cn/,high,verified; abbrev sxjz (hint jinzhong wrong); Shanxi
-188,晋城市,Jincheng,municipal/prefecture,https://www.jcgov.gov.cn/,high,verified; jcgov (hint jincheng wrong); Shanxi
-189,普洱市,Pu'er,municipal/prefecture,https://www.puershi.gov.cn/,high,verified; puershi (hint puer wrong); Yunnan
-190,景德镇市,Jingdezhen,municipal/prefecture,https://www.jdz.gov.cn/,high,verified; abbrev jdz (hint jingdezhen wrong); Jiangxi
-191,曲靖市,Qujing,municipal/prefecture,https://www.qj.gov.cn/,high,verified; abbrev qj (hint qujing wrong); Yunnan
-192,朔州市,Shuozhou,municipal/prefecture,http://www.shuozhou.gov.cn/,high,verified; Shanxi
-193,朝阳市,Chaoyang,municipal/prefecture,https://www.chaoyang.gov.cn/,high,verified; Liaoning (city
-194,本溪市,Benxi,municipal/prefecture,https://www.benxi.gov.cn/,high,verified; Liaoning
-195,来宾市,Laibin,municipal/prefecture,http://www.laibin.gov.cn/,high,verified; Guangxi
-196,杭州市,Hangzhou,municipal/prefecture,https://www.hangzhou.gov.cn/,high,verified
-197,松原市,Songyuan,municipal/prefecture,http://www.jlsy.gov.cn/,high,verified; abbrev jlsy (hint songyuan wrong); Jilin
-198,林芝市,Nyingchi,municipal/prefecture,http://www.linzhi.gov.cn/,high,verified; linzhi (hint nyingchi wrong); Tibet
-199,果洛藏族自治州,Golog Tibetan Autonomous Prefecture,municipal/prefecture,http://www.guoluo.gov.cn/,high,verified; guoluo (hint golog wrong); Qinghai
-200,枣庄市,Zaozhuang,municipal/prefecture,https://www.zaozhuang.gov.cn/,med,zaozhuang.gov.cn domain confirmed via subdomain (spfw.zaozhuang.gov.cn); www homepage not directly confirmed before search budget exhausted
-201,柳州市,Liuzhou,municipal/prefecture,http://www.liuzhou.gov.cn/,high,verified; Guangxi
-202,株洲市,Zhuzhou,municipal/prefecture,http://www.zhuzhou.gov.cn/,high,verified
-203,桂林市,Guilin,municipal/prefecture,https://www.guilin.gov.cn/,high,verified; Guangxi
-204,梅州市,Meizhou,municipal/prefecture,https://www.meizhou.gov.cn/,med,from knowledge; unverified (websearch budget exhausted); Guangdong
-205,梧州市,Wuzhou,municipal/prefecture,http://www.wuzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Guangxi
-206,楚雄彝族自治州,Chuxiong Yi Autonomous Prefecture,municipal/prefecture,https://www.cxz.gov.cn/,high,verified; abbrev cxz (chuxiong.gov.cn also resolves); Yunnan
-207,榆林市,Yulin,municipal/prefecture,https://www.yl.gov.cn/,high,verified; abbrev yl (hint yulin wrong; yulin.gov.cn is Guangxi 玉林)
-208,武威市,Wuwei,municipal/prefecture,http://www.wuwei.gov.cn/,med,from knowledge; unverified (budget exhausted); Gansu
-209,武汉市,Wuhan,municipal/prefecture,http://www.wuhan.gov.cn/,high,well-known standard domain (already in corpus per project notes)
-210,毕节市,Bijie,municipal/prefecture,http://www.bijie.gov.cn/,med,from knowledge; unverified (budget exhausted); Guizhou
-211,永州市,Yongzhou,municipal/prefecture,http://www.yongzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Hunan
-212,汉中市,Hanzhong,municipal/prefecture,http://www.hanzhong.gov.cn/,med,from knowledge; unverified (budget exhausted); Shaanxi
-213,汕头市,Shantou,municipal/prefecture,http://www.shantou.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Guangdong
-214,汕尾市,Shanwei,municipal/prefecture,http://www.shanwei.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Guangdong
-215,江门市,Jiangmen,municipal/prefecture,http://www.jiangmen.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Guangdong
-216,池州市,Chizhou,municipal/prefecture,http://www.chizhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Anhui
-217,沈阳市,Shenyang,municipal/prefecture,http://www.shenyang.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Liaoning
-218,沧州市,Cangzhou,municipal/prefecture,http://www.cangzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Hebei
-219,河池市,Hechi,municipal/prefecture,http://www.hechi.gov.cn/,med,from knowledge; unverified (budget exhausted); Guangxi
-220,河源市,Heyuan,municipal/prefecture,http://www.heyuan.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Guangdong
-221,泉州市,Quanzhou,municipal/prefecture,http://www.quanzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Fujian
-222,泰安市,Tai'an,municipal/prefecture,http://www.taian.gov.cn/,med,from knowledge; unverified (budget exhausted); Shandong
-223,泰州市,Taizhou,municipal/prefecture,https://www.taizhou.gov.cn/,high,verified; Jiangsu Taizhou (台州 Zhejiang uses zjtz.gov.cn)
-224,泸州市,Luzhou,municipal/prefecture,http://www.luzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Sichuan
-225,洛阳市,Luoyang,municipal/prefecture,https://www.ly.gov.cn/,low,unverified; likely abbrev ly.gov.cn but could be luoyang.gov.cn — NEEDS verification
-226,济南市,Jinan,municipal/prefecture,http://www.jinan.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Shandong
-227,济宁市,Jining,municipal/prefecture,http://www.jining.gov.cn/,med,from knowledge; unverified (budget exhausted); Shandong
-228,海东市,Haidong,municipal/prefecture,http://www.haidong.gov.cn/,high,verified; Qinghai
-229,海北藏族自治州,Haibei Tibetan Autonomous Prefecture,municipal/prefecture,https://www.haibei.gov.cn/,high,verified; Qinghai
-230,海南藏族自治州,Hainan Tibetan Autonomous Prefecture,municipal/prefecture,https://www.hainanzhou.gov.cn/,high,verified; hainanzhou (hint hainan wrong — that is Hainan Province); Qinghai
-231,海口市,Haikou,municipal/prefecture,https://www.haikou.gov.cn/,high,
-232,海西蒙古族藏族自治州,Haixi Mongol and Tibetan Autonomous Prefecture,municipal/prefecture,https://www.haixi.gov.cn/,high,Qinghai autonomous prefecture
-233,淄博市,Zibo,municipal/prefecture,https://www.zibo.gov.cn/,high,
-234,淮北市,Huaibei,municipal/prefecture,https://www.huaibei.gov.cn/,high,
-235,淮南市,Huainan,municipal/prefecture,https://www.huainan.gov.cn/,high,
-236,淮安市,Huai'an,municipal/prefecture,https://www.huaian.gov.cn/,high,
-237,深圳市,Shenzhen,municipal/prefecture,https://www.sz.gov.cn/,high,abbreviation domain sz
-238,清远市,Qingyuan,municipal/prefecture,https://www.gdqy.gov.cn/,high,GD-prefix abbreviation gdqy (not qingyuan)
-239,温州市,Wenzhou,municipal/prefecture,https://www.wenzhou.gov.cn/,high,hint flagged blackhole from datacenter IP
-240,渭南市,Weinan,municipal/prefecture,https://www.weinan.gov.cn/,high,
-241,湖州市,Huzhou,municipal/prefecture,https://www.huzhou.gov.cn/,high,
-242,湘潭市,Xiangtan,municipal/prefecture,https://www.xiangtan.gov.cn/,high,
-243,湘西土家族苗族自治州,Xiangxi Tujia and Miao Autonomous Prefecture,municipal/prefecture,https://www.xxz.gov.cn/,high,abbreviation domain xxz (Hunan)
-244,湛江市,Zhanjiang,municipal/prefecture,https://www.zhanjiang.gov.cn/,high,
-245,滁州市,Chuzhou,municipal/prefecture,https://www.chuzhou.gov.cn/,high,
-246,滨州市,Binzhou,municipal/prefecture,https://www.binzhou.gov.cn/,high,
-247,漯河市,Luohe,municipal/prefecture,https://www.luohe.gov.cn/,high,
-248,漳州市,Zhangzhou,municipal/prefecture,https://www.zhangzhou.gov.cn/,high,
-249,潍坊市,Weifang,municipal/prefecture,https://www.weifang.gov.cn/,high,
-250,潮州市,Chaozhou,municipal/prefecture,https://www.chaozhou.gov.cn/,high,
-251,濮阳市,Puyang,municipal/prefecture,https://www.puyang.gov.cn/,high,
-252,烟台市,Yantai,municipal/prefecture,https://www.yantai.gov.cn/,high,
-253,焦作市,Jiaozuo,municipal/prefecture,https://www.jiaozuo.gov.cn/,high,
-254,牡丹江市,Mudanjiang,municipal/prefecture,https://www.mdj.gov.cn/,high,abbreviation domain mdj
-255,玉林市,Yulin,municipal/prefecture,https://www.yulin.gov.cn/,high,Guangxi Yulin
-256,玉树藏族自治县,Yushu Tibetan Autonomous County,municipal/prefecture,https://www.yushushi.gov.cn/,med,"label is a misnomer; entity is county-level 玉树市 (Yushu City), portal yushushi.gov.cn; prefecture-level portal is yushuzhou.gov.cn"
-257,玉树藏族自治州,Yushu Tibetan Autonomous Prefecture,municipal/prefecture,https://www.yushuzhou.gov.cn/,high,abbreviation domain yushuzhou (Qinghai)
-258,玉溪市,Yuxi,municipal/prefecture,https://www.yuxi.gov.cn/,high,
-259,珠海市,Zhuhai,municipal/prefecture,https://www.zhuhai.gov.cn/,high,
-260,甘南藏族自治州,Gannan Tibetan Autonomous Prefecture,municipal/prefecture,https://www.gnzrmzf.gov.cn/,high,unusual domain gnzrmzf (not gannan); Gansu
-261,甘孜藏族自治州,Garzê Tibetan Autonomous Prefecture,municipal/prefecture,https://www.gzz.gov.cn/,high,abbreviation domain gzz (not garz); Sichuan
-262,白城市,Baicheng,municipal/prefecture,https://www.baicheng.gov.cn/,high,
-263,白山市,Baishan,municipal/prefecture,https://www.baishan.gov.cn/,high,
-264,白银市,Baiyin,municipal/prefecture,https://www.baiyin.gov.cn/,high,
-265,百色市,Baise,municipal/prefecture,https://www.baise.gov.cn/,high,
-266,益阳市,Yiyang,municipal/prefecture,https://www.yiyang.gov.cn/,high,
-267,盐城市,Yancheng,municipal/prefecture,https://www.yancheng.gov.cn/,high,
-268,盘锦市,Panjin,municipal/prefecture,https://www.panjin.gov.cn/,high,
-269,眉山市,Meishan,municipal/prefecture,https://www.ms.gov.cn/,high,abbreviation domain ms
-270,石嘴山市,Shizuishan,municipal/prefecture,https://www.shizuishan.gov.cn/,high,Ningxia
-271,石家庄市,Shijiazhuang,municipal/prefecture,https://www.sjz.gov.cn/,high,abbreviation domain sjz
-272,福州市,Fuzhou,municipal/prefecture,https://www.fuzhou.gov.cn/,high,
-273,秦皇岛市,Qinhuangdao,municipal/prefecture,https://www.qinhuangdao.gov.cn/,high,main portal qinhuangdao (dept subdomains use qhd)
-274,红河哈尼族彝族自治州,Honghe Hani and Yi Autonomous Prefecture,municipal/prefecture,https://www.hh.gov.cn/,high,abbreviation domain hh (not honghe); Yunnan
-275,绍兴市,Shaoxing,municipal/prefecture,https://www.sx.gov.cn/,high,abbreviation domain sx
-276,绥化市,Suihua,municipal/prefecture,https://www.suihua.gov.cn/,high,
-277,绵阳市,Mianyang,municipal/prefecture,https://www.my.gov.cn/,high,abbreviation domain my
-278,聊城市,Liaocheng,municipal/prefecture,https://www.liaocheng.gov.cn/,high,
-279,肇庆市,Zhaoqing,municipal/prefecture,https://www.zhaoqing.gov.cn/,high,
-280,自贡市,Zigong,municipal/prefecture,https://www.zg.gov.cn/,high,abbreviation domain zg
-281,舟山市,Zhoushan,municipal/prefecture,https://www.zhoushan.gov.cn/,high,
-282,芜湖市,Wuhu,municipal/prefecture,https://www.wuhu.gov.cn/,high,
-283,苏州市,Suzhou,municipal/prefecture,https://www.suzhou.gov.cn/,high,
-284,茂名市,Maoming,municipal/prefecture,https://www.maoming.gov.cn/,high,
-285,荆州市,Jingzhou,municipal/prefecture,https://www.jingzhou.gov.cn/,high,
-286,荆门市,Jingmen,municipal/prefecture,https://www.jingmen.gov.cn/,high,
-287,莆田市,Putian,municipal/prefecture,https://www.putian.gov.cn/,high,
-288,莱芜市,Laiwu,municipal/prefecture,https://www.laiwu.gov.cn/,med,merged into Jinan as 莱芜区 in 2019; laiwu.gov.cn still resolves but city-tier status ended
-289,菏泽市,Heze,municipal/prefecture,https://www.heze.gov.cn/,high,
-290,萍乡市,Pingxiang,municipal/prefecture,https://www.pingxiang.gov.cn/,high,Jiangxi Pingxiang
-291,营口市,Yingkou,municipal/prefecture,https://www.yingkou.gov.cn/,high,
-292,葫芦岛市,Huludao,municipal/prefecture,https://www.hld.gov.cn/,high,abbreviation domain hld
-293,蚌埠市,Bengbu,municipal/prefecture,https://www.bengbu.gov.cn/,high,
-294,衡水市,Hengshui,municipal/prefecture,https://www.hengshui.gov.cn/,high,
-295,衡阳市,Hengyang,municipal/prefecture,https://www.hengyang.gov.cn/,high,
-296,衢州市,Quzhou,municipal/prefecture,https://www.quzhou.gov.cn/,high,
-297,襄阳市,Xiangyang,municipal/prefecture,https://www.xiangyang.gov.cn/,high,
-298,西双版纳傣族自治州,Xishuangbanna Dai Autonomous Prefecture,municipal/prefecture,https://www.xsbn.gov.cn/,high,abbreviation domain xsbn; Yunnan
-299,西宁市,Xining,municipal/prefecture,https://www.xining.gov.cn/,high,
-300,西安市,Xi'an,municipal/prefecture,https://www.xa.gov.cn/,high,abbreviation domain xa
-301,许昌市,Xuchang,municipal/prefecture,https://www.xuchang.gov.cn/,high,
-302,贵港市,Guigang,municipal/prefecture,https://www.guigang.gov.cn/,high,
-303,贵阳市,Guiyang,municipal/prefecture,https://www.guiyang.gov.cn/,high,full pinyin guiyang (hint's gy.gov.cn was wrong)
-304,贺州市,Hezhou,municipal/prefecture,https://www.hezhou.gov.cn/,high,
-305,资阳市,Ziyang,municipal/prefecture,https://www.ziyang.gov.cn/,high,Sichuan Ziyang (not Hunan 益阳资阳区)
-306,赣州市,Ganzhou,municipal/prefecture,https://www.ganzhou.gov.cn/,high,
-307,辽源市,Liaoyuan,municipal/prefecture,https://www.liaoyuan.gov.cn/,high,
-308,辽阳市,Liaoyang,municipal/prefecture,https://www.liaoyang.gov.cn/,high,
-309,达州市,Dazhou,municipal/prefecture,https://www.dazhou.gov.cn/,high,
-310,运城市,Yuncheng,municipal/prefecture,https://www.yuncheng.gov.cn/,high,
-311,连云港市,Lianyungang,municipal/prefecture,https://www.lyg.gov.cn/,high,abbreviation domain lyg
-312,迪庆藏族自治州,Diqing Tibetan Autonomous Prefecture,municipal/prefecture,https://www.diqing.gov.cn/,high,Yunnan
-313,通化市,Tonghua,municipal/prefecture,https://www.tonghua.gov.cn/,high,
-314,遂宁市,Suining,municipal/prefecture,https://www.suining.gov.cn/,high,
-315,遵义市,Zunyi,municipal/prefecture,https://www.zunyi.gov.cn/,high,
-316,邢台市,Xingtai,municipal/prefecture,https://www.xingtai.gov.cn/,high,
-317,那曲地区,Nagqu,municipal/prefecture,https://www.naqu.gov.cn/,high,upgraded to prefecture-level 那曲市 (Naqu City) in 2018; portal naqu.gov.cn
-318,邯郸市,Handan,municipal/prefecture,https://www.handan.gov.cn/,high,
-319,邵阳市,Shaoyang,municipal/prefecture,https://www.shaoyang.gov.cn/,high,
-320,郑州市,Zhengzhou,municipal/prefecture,https://www.zhengzhou.gov.cn/,high,
-321,郴州市,Chenzhou,municipal/prefecture,https://www.czs.gov.cn/,high,abbreviation domain czs
-322,鄂州市,Ezhou,municipal/prefecture,https://www.ezhou.gov.cn/,high,
-323,酒泉市,Jiuquan,municipal/prefecture,https://www.jiuquan.gov.cn/,high,Well-known Gansu city; standard pinyin domain (source-map candidate).
-324,金华市,Jinhua,municipal/prefecture,https://www.jinhua.gov.cn/,high,Well-known Zhejiang city; standard pinyin domain.
-325,金昌市,Jinchang,municipal/prefecture,https://www.jinchang.gov.cn/,med,Unverified (search budget exhausted); standard pinyin / source-map candidate.
-326,钦州市,Qinzhou,municipal/prefecture,http://www.qinzhou.gov.cn/,high,Verified via search — Guangxi.
-327,铁岭市,Tieling,municipal/prefecture,https://www.tieling.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Liaoning).
-328,铜仁市,Tongren,municipal/prefecture,https://www.trs.gov.cn/,high,Verified — real gov portal is abbreviation www.trs.gov.cn (Guizhou); tongren.gov.cn is a media portal.
-329,铜川市,Tongchuan,municipal/prefecture,https://www.tongchuan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Shaanxi).
-330,铜陵市,Tongling,municipal/prefecture,https://www.tl.gov.cn/,low,Unverified; Tongling (Anhui) likely uses abbreviation www.tl.gov.cn — source-map alt www.tongling.gov.cn. Re-check.
-331,银川市,Yinchuan,municipal/prefecture,https://www.yinchuan.gov.cn/,high,Well-known Ningxia capital; standard pinyin domain (source-map: reachable).
-332,锡林郭勒盟,Xilin Gol League,municipal/prefecture,https://www.xlgl.gov.cn/,high,Verified — Inner Mongolia league administrative office (行政公署); abbreviation www.xlgl.gov.cn.
-333,锦州市,Jinzhou,municipal/prefecture,https://www.jinzhou.gov.cn/,low,Unverified; Jinzhou (Liaoning) may use abbreviation www.jz.gov.cn — source-map candidate jinzhou. Re-check.
-334,镇江市,Zhenjiang,municipal/prefecture,http://www.zhenjiang.gov.cn/,high,Well-known Jiangsu city; standard pinyin domain.
-335,长春市,Changchun,municipal/prefecture,http://www.changchun.gov.cn/,high,Verified — Jilin capital. NOTE real domain is www.changchun.gov.cn (source-map's www.cc.gov.cn was a blackholed stale guess).
-336,长沙市,Changsha,municipal/prefecture,http://www.changsha.gov.cn/,high,Hunan capital; standard pinyin domain.
-337,长治市,Changzhi,municipal/prefecture,https://www.changzhi.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Shanxi).
-338,阜新市,Fuxin,municipal/prefecture,https://www.fuxin.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Liaoning).
-339,阜阳市,Fuyang,municipal/prefecture,https://www.fuyang.gov.cn/,low,Unverified; Fuyang (Anhui) may use abbreviation www.fy.gov.cn — source-map candidate fuyang. Re-check.
-340,防城港市,Fangchenggang,municipal/prefecture,https://www.fangchenggang.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Guangxi).
-341,阳江市,Yangjiang,municipal/prefecture,http://www.yangjiang.gov.cn/,high,Guangdong; already in corpus (source-map HAVE:yangjiang); standard pinyin domain.
-342,阳泉市,Yangquan,municipal/prefecture,https://www.yangquan.gov.cn/,low,Unverified; Yangquan (Shanxi) may use abbreviation www.yq.gov.cn — source-map candidate yangquan. Re-check.
-343,阿克苏地区,Aksu Prefecture,municipal/prefecture,https://www.aks.gov.cn/,high,Verified — Xinjiang prefecture administrative office (行政公署); abbreviation www.aks.gov.cn.
-344,阿勒泰地区,Altay Prefecture,municipal/prefecture,https://xjalt.gov.cn/,high,Verified — Xinjiang prefecture administrative office is xjalt.gov.cn (no www). NOTE www.alt.gov.cn is Altay CITY (阿勒泰市)
-345,阿坝藏族羌族自治州,Ngawa Tibetan and Qiang Autonomous Prefecture,municipal/prefecture,https://www.abazhou.gov.cn/,high,Verified — Sichuan autonomous prefecture; www.abazhou.gov.cn.
-346,阿拉善盟,Alxa League,municipal/prefecture,https://www.als.gov.cn/,high,Verified — Inner Mongolia league administrative office; abbreviation www.als.gov.cn.
-347,阿里地区,Ngari Prefecture,municipal/prefecture,https://www.al.gov.cn/,high,Verified — Tibet prefecture administrative office; abbreviation www.al.gov.cn.
-348,陇南市,Longnan,municipal/prefecture,https://www.longnan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Gansu).
-349,随州市,Suizhou,municipal/prefecture,https://www.suizhou.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Hubei).
-350,雅安市,Ya'an,municipal/prefecture,https://www.yaan.gov.cn/,high,Verified — Sichuan; www.yaan.gov.cn.
-351,青岛市,Qingdao,municipal/prefecture,https://www.qingdao.gov.cn/,high,Well-known sub-provincial city; already in corpus (HAVE:qingdao).
-352,鞍山市,Anshan,municipal/prefecture,https://www.anshan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Liaoning; possible alt as.gov.cn).
-353,韶关市,Shaoguan,municipal/prefecture,http://www.shaoguan.gov.cn/,high,Guangdong; already in corpus (HAVE:shaoguan); standard pinyin domain.
-354,马鞍山市,Ma'anshan,municipal/prefecture,https://www.mas.gov.cn/,high,Verified — Anhui; abbreviation www.mas.gov.cn (NOT maanshan).
-355,驻马店市,Zhumadian,municipal/prefecture,https://www.zhumadian.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Henan).
-356,鸡西市,Jixi,municipal/prefecture,https://www.jixi.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Heilongjiang).
-357,鹤壁市,Hebi,municipal/prefecture,https://www.hebi.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Henan).
-358,鹤岗市,Hegang,municipal/prefecture,https://www.hegang.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Heilongjiang).
-359,鹰潭市,Yingtan,municipal/prefecture,https://www.yingtan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Jiangxi).
-360,黄冈市,Huanggang,municipal/prefecture,https://www.huanggang.gov.cn/,low,Unverified; Huanggang (Hubei) may use abbreviation www.hg.gov.cn — source-map candidate huanggang. Re-check.
-361,黄南藏族自治州,Huangnan Tibetan Autonomous Prefecture,municipal/prefecture,http://www.huangnan.gov.cn/,high,Verified — Qinghai autonomous prefecture; www.huangnan.gov.cn.
-362,黄山市,Huangshan,municipal/prefecture,https://www.huangshan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Anhui).
-363,黄石市,Huangshi,municipal/prefecture,https://www.huangshi.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Hubei).
-364,黑河市,Heihe,municipal/prefecture,https://www.heihe.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Heilongjiang).
-365,黔东南苗族侗族自治州,Qiandongnan Miao and Dong Autonomous Prefecture,municipal/prefecture,https://www.qdn.gov.cn/,high,Verified — Guizhou autonomous prefecture; abbreviation www.qdn.gov.cn.
-366,黔南布依族苗族自治州,Qiannan Buyei and Miao Autonomous Prefecture,municipal/prefecture,https://www.qiannan.gov.cn/,high,Verified — Guizhou autonomous prefecture; www.qiannan.gov.cn.
-367,黔西南布依族苗族自治州,Qianxinan Buyei and Miao Autonomous Prefecture,municipal/prefecture,https://www.qxn.gov.cn/,high,Verified — Guizhou autonomous prefecture; abbreviation www.qxn.gov.cn.
-368,齐齐哈尔市,Qiqihar,municipal/prefecture,https://www.qqhr.gov.cn/,high,Verified — Heilongjiang; abbreviation www.qqhr.gov.cn.
-369,龙岩市,Longyan,municipal/prefecture,https://www.longyan.gov.cn/,high,Verified — Fujian; www.longyan.gov.cn.
-370,呼和浩特市,Hohhot,municipal/prefecture,http://www.huhhot.gov.cn/,high,Verified — Inner Mongolia capital; domain uses www.huhhot.gov.cn.
-371,包头市,Baotou,municipal/prefecture,https://www.baotou.gov.cn/,high,Well-known Inner Mongolia city; standard pinyin domain.
-372,乌海市,Wuhai,municipal/prefecture,https://www.wuhai.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Inner Mongolia).
-373,赤峰市,Chifeng,municipal/prefecture,https://www.chifeng.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Inner Mongolia).
-374,通辽市,Tongliao,municipal/prefecture,https://www.tongliao.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Inner Mongolia).
-375,呼伦贝尔市,Hulunbuir,municipal/prefecture,https://www.hlbe.gov.cn/,high,Verified — Inner Mongolia; abbreviation www.hlbe.gov.cn.
-376,鄂尔多斯市,Ordos,municipal/prefecture,https://www.ordos.gov.cn/,high,Verified — Inner Mongolia; www.ordos.gov.cn.
-377,巴彦淖尔市,Bayannur,municipal/prefecture,https://www.bynr.gov.cn/,high,Verified — Inner Mongolia; abbreviation www.bynr.gov.cn.
-378,乌兰察布市,Ulanqab,municipal/prefecture,https://www.wulanchabu.gov.cn/,high,Verified — Inner Mongolia; www.wulanchabu.gov.cn.
-379,东莞市,Dongguan,municipal/prefecture,https://www.dg.gov.cn/,high,Verified — Guangdong; abbreviation www.dg.gov.cn.
-380,中山市,Zhongshan,municipal/prefecture,https://www.zhongshan.gov.cn/,high,Guangdong; already in corpus (HAVE:zhongshan); standard pinyin domain.
-381,三沙市,Sansha,municipal/prefecture,http://www.sansha.gov.cn/,high,Verified — Hainan; www.sansha.gov.cn.
-382,北京市,Beijing,municipal/prefecture,https://www.beijing.gov.cn/,high,Municipality (direct-controlled); already in corpus (HAVE:bj); www.beijing.gov.cn.
-383,阿拉尔市,Alar,municipal/prefecture,http://www.ale.gov.cn/,high,Verified — XPCC 1st Division / Alar city (师市合一); www.ale.gov.cn.
-384,澳门特别行政区,Macau Special Administrative Region,municipal/prefecture,https://www.gov.mo/,high,Verified — Macau SAR government portal (.gov.mo
-385,白沙黎族自治县,Baisha Li Autonomous County,municipal/prefecture,https://baisha.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-386,保亭黎族苗族自治县,Baoting Li and Miao Autonomous County,municipal/prefecture,https://baoting.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-387,北屯市,Beitun,municipal/prefecture,http://www.bts.gov.cn/,high,Verified — XPCC 10th Division / Beitun city (师市合一); abbreviation www.bts.gov.cn.
-388,昌江黎族自治县,Changjiang Li Autonomous County,municipal/prefecture,https://changjiang.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-389,澄迈县,Chengmai County,municipal/prefecture,http://chengmai.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-390,定安县,Ding'an County,municipal/prefecture,http://dingan.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-391,东方市,Dongfang,municipal/prefecture,https://dongfang.hainan.gov.cn/,high,Verified — Hainan county-level city; subdomain of hainan.gov.cn.
-392,胡杨河市,Huyanghe,municipal/prefecture,https://www.nqs.gov.cn/,high,Verified — XPCC 7th Division / Huyanghe city (师市合一); abbreviation www.nqs.gov.cn.
-393,济源市,Jiyuan,municipal/prefecture,https://www.jiyuan.gov.cn/,high,Verified — Henan provincial-directly-administered city (Jiyuan Demonstration Zone); www.jiyuan.gov.cn.
-394,乐东黎族自治县,Ledong Li Autonomous County,municipal/prefecture,http://ledong.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-395,临高县,Lingao County,municipal/prefecture,https://lingao.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-396,陵水黎族自治县,Lingshui Li Autonomous County,municipal/prefecture,http://lingshui.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-397,潜江市,Qianjiang,municipal/prefecture,https://www.hbqj.gov.cn/,high,Verified — Hubei provincial-directly-administered city; abbreviation www.hbqj.gov.cn (NOT qianjiang).
-398,琼海市,Qionghai,municipal/prefecture,https://qionghai.hainan.gov.cn/,high,Verified — Hainan county-level city; subdomain of hainan.gov.cn.
-399,琼中黎族苗族自治县,Qiongzhong Li and Miao Autonomous County,municipal/prefecture,https://qiongzhong.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-400,神农架林区,Shennongjia Forestry District,municipal/prefecture,http://www.snj.gov.cn/,high,Verified — Hubei provincial-directly-administered forestry district; abbreviation www.snj.gov.cn.
-401,石河子市,Shihezi,municipal/prefecture,https://www.shz.gov.cn/,high,Verified — XPCC 8th Division / Shihezi city (师市合一); abbreviation www.shz.gov.cn.
-402,天门市,Tianmen,municipal/prefecture,https://www.tianmen.gov.cn/,high,Verified — Hubei provincial-directly-administered city; www.tianmen.gov.cn.
-403,图木舒克市,Tumxuk,municipal/prefecture,https://www.xjbtnss.gov.cn/,high,Verified — XPCC 3rd Division / Tumxuk city (师市合一); www.xjbtnss.gov.cn.
-404,屯昌县,Tunchang County,municipal/prefecture,https://tunchang.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.
-405,万宁市,Wanning,municipal/prefecture,https://wanning.hainan.gov.cn/,high,Verified — Hainan county-level city; subdomain of hainan.gov.cn.
-406,文昌市,Wenchang,municipal/prefecture,http://wenchang.hainan.gov.cn/,high,Verified — Hainan county-level city; subdomain of hainan.gov.cn.
-407,五家渠市,Wujiaqu,municipal/prefecture,https://www.wjq.gov.cn/,high,Verified — XPCC 6th Division / Wujiaqu city (师市合一); abbreviation www.wjq.gov.cn.
-408,五指山市,Wuzhishan,municipal/prefecture,https://wzs.hainan.gov.cn/,high,Verified — Hainan county-level city; abbreviation subdomain wzs.hainan.gov.cn.
-409,仙桃市,Xiantao,municipal/prefecture,https://www.xiantao.gov.cn/,high,Verified — Hubei provincial-directly-administered city; www.xiantao.gov.cn.
-410,香港特别行政区,Hong Kong Special Administrative Region,municipal/prefecture,https://www.gov.hk/,high,Verified — Hong Kong SAR government portal GovHK (.gov.hk
-411,白杨市,Baiyang,municipal/prefecture,https://www.njs.gov.cn/,low,XPCC 9th Division / Baiyang city (est. 2022
-412,政务微博账号（2万+）,Official Weibo accounts of government units and news organisations (>20000 accounts),mixed,,low,No single portal — an aggregate of >20k government Weibo accounts hosted on Sina Weibo (weibo.com). Not a gov.cn site; each account is a separate handle. Genuinely no consolidated portal.
-413,（未具名）政务投诉集中网站,Centralized website for citizen complaints to the government,central,https://tousu.www.gov.cn/dc/index.htm,med,Best match = 国务院“互联网+督查”/“国家政务服务投诉与建议” platform on 中国政府网 (tousu.www.gov.cn). Source is unnamed; could also mean 人民网领导留言板 (liuyan.people.com.cn). Inferred.
-414,成都市科学技术局网站,Chengdu Science and Technology Bureau website,municipal,https://kjj.chengdu.gov.cn/,med,Chengdu S&T Bureau; likely kjj.chengdu.gov.cn (dept subdomain of Chengdu portal). Unverified (budget); alt www.cdst.gov.cn. Re-check.
-415,重庆市科学技术局网站,Chongqing Science and Technology Bureau website,municipal,https://kjj.cq.gov.cn/,med,Chongqing S&T Bureau; likely kjj.cq.gov.cn (dept subdomain of Chongqing portal cq.gov.cn). Unverified (budget). Re-check.
-416,上市公司章程修订网站（未具名）,Website storing amendments to charters of listed companies,unknown,http://www.cninfo.com.cn/,med,Best match = 巨潮资讯网 (CNINFO)
-417,全国省/地级行政区划列表,List of all province- and prefecture-level units of China (geographic directory),mixed,http://xzqh.mca.gov.cn/,med,民政部 全国行政区划信息查询平台 (Ministry of Civil Affairs). As of ~2026 division-code data migrated to 国家地名信息库 dmfw.mca.gov.cn; codes also at 国家统计局 stats.gov.cn (统计用区划代码). A reference directory
-418,约320个部委与地方网站,~320 ministries and localities with ~3000 webscrapers (coverage statement),mixed,,low,Not an institution — a meta/coverage statement describing ReConnect's ~320 crawled ministry+locality sites. No single URL exists. Genuinely none.
-419,中国新闻机构/使馆/外交官推特账号,"Twitter/X accounts of Chinese news organisations, embassies, and diplomats (>300)",non_gov_social,,low,Aggregate of >300 Twitter/X handles on x.com (platform); no gov.cn portal. Each is a separate social account. Genuinely no consolidated portal.
-420,新浪微博,Weibo (Sina Weibo) platform,non_gov_social,https://weibo.com/,high,Commercial social-media platform (Sina Weibo)
+idx,institution_cn,institution_en,level,official_url,confidence,notes,reachable
+0,中华人民共和国全国人民代表大会,National People's Congress of the People's Republic of China,central,http://www.npc.gov.cn/,high,NPC official portal.,REACHABLE
+1,中华人民共和国最高人民法院,Supreme People's Court of the People's Republic of China,central,https://www.court.gov.cn/,high,SPC official portal (中国法院网 is separate at chinacourt.org).,REACHABLE
+2,人力资源和社会保障部,Ministry of Human Resources and Social Security,central,http://www.mohrss.gov.cn/,high,MOHRSS official portal.,STUB
+3,公安部,Ministry of Public Security,central,https://www.mps.gov.cn/,high,MPS official portal.,ANTI-BOT/origin(521)
+4,农业农村部,Ministry of Agriculture and Rural Affairs,central,https://www.moa.gov.cn/,high,Verified: MARA portal is moa.gov.cn (also National Rural Revitalization Bureau).,REACHABLE
+5,司法部,Ministry of Justice,central,https://www.moj.gov.cn/,high,MOJ official portal.,STUB
+6,国家发展和改革委员会,National Development and Reform Commission,central,https://www.ndrc.gov.cn/,high,NDRC official portal.,WAF403
+7,国家安全部,Ministry of State Security,central,,low,MSS has NO public policy portal; no standalone .gov.cn site. Genuinely none.,no-url
+8,国家民族事务委员会,National Ethnic Affairs Commission,central,https://www.neac.gov.cn/,high,Verified: State Ethnic Affairs Commission portal neac.gov.cn.,REACHABLE
+9,国防部,Ministry of National Defense,central,http://www.mod.gov.cn/,high,MND official portal (news/spokesperson oriented; limited policy docs).,REACHABLE
+10,外交部,Ministry of Foreign Affairs,central,https://www.mfa.gov.cn/,high,Verified: MFA now primary at mfa.gov.cn; www.fmprc.gov.cn is the legacy/alias domain.,REACHABLE
+11,审计署,National Audit Office,central,https://www.audit.gov.cn/,high,CNAO official portal.,REACHABLE
+12,宣传部,Communication Department,central,,low,CPC Publicity/Propaganda Dept has NO standalone .gov portal; publishes via 12371.gov.cn (共产党员网) and 中国文明网 (wenming.cn).,no-url
+13,教育部,Ministry of Education,central,http://www.moe.gov.cn/,high,MOE official portal.,REACHABLE
+14,文化和旅游部,Ministry of Culture and Tourism,central,https://www.mct.gov.cn/,high,MCT official portal.,REACHABLE
+15,民政部,Ministry of Civil Affairs,central,https://www.mca.gov.cn/,high,MCA official portal.,BLACKHOLE
+16,水利部,Ministry of Water Resources,central,http://www.mwr.gov.cn/,high,MWR official portal.,REACHABLE
+17,科学技术部,Ministry of Science and Technology,central,https://www.most.gov.cn/,high,MOST official portal.,STUB
+18,自然资源部,Ministry of Natural Resources,central,https://www.mnr.gov.cn/,high,MNR official portal.,BLACKHOLE
+19,退役军人事务部,Ministry of Veterans Affairs,central,https://www.mva.gov.cn/,high,Verified: MVA portal mva.gov.cn (launched 2018).,WAF403
+20,上海市,Shanghai (provincial-level unit),provincial,https://www.shanghai.gov.cn/,high,Shanghai municipal government portal (中国上海).,REACHABLE
+21,云南省,Yunnan (provincial-level unit),provincial,http://www.yn.gov.cn/,high,Yunnan provincial portal.,REACHABLE
+22,内蒙古自治区,Inner Mongolia (provincial-level unit),provincial,https://www.nmg.gov.cn/,high,Inner Mongolia autonomous region portal.,WAF403
+23,吉林省,Jilin (provincial-level unit),provincial,https://www.jl.gov.cn/,high,Verified: Jilin provincial portal jl.gov.cn.,REACHABLE
+24,天津市,Tianjin (provincial-level unit),provincial,http://www.tj.gov.cn/,high,Tianjin municipal government portal.,REACHABLE
+25,宁夏回族自治区,Ningxia (provincial-level unit),provincial,https://www.nx.gov.cn/,high,Ningxia autonomous region portal.,REACHABLE
+26,安徽省,Anhui (provincial-level unit),provincial,https://www.ah.gov.cn/,high,Anhui provincial portal.,WAF403
+27,山东省,Shandong (provincial-level unit),provincial,http://www.shandong.gov.cn/,high,Verified: Shandong provincial portal shandong.gov.cn (served over http).,REACHABLE
+28,江西省,Jiangxi (provincial-level unit),provincial,http://www.jiangxi.gov.cn/,high,Jiangxi provincial portal.,BLACKHOLE
+29,山西省,Shanxi (provincial-level unit),provincial,http://www.shanxi.gov.cn/,high,Shanxi (太原) provincial portal; distinct from Shaanxi (shaanxi.gov.cn).,BLACKHOLE
+30,广西壮族自治区,Guangxi (provincial-level unit),provincial,http://www.gxzf.gov.cn/,high,Guangxi autonomous region portal (gxzf = 广西政府).,BLACKHOLE
+31,新疆维吾尔自治区,Xinjiang (provincial-level unit),provincial,http://www.xinjiang.gov.cn/,high,Xinjiang autonomous region portal.,REACHABLE
+32,江苏省,Jiangsu (provincial-level unit),provincial,https://www.jiangsu.gov.cn/,high,Jiangsu provincial portal.,REACHABLE
+33,福建省,Fujian (provincial-level unit),provincial,https://www.fujian.gov.cn/,high,Fujian provincial portal.,REACHABLE
+34,河北省,Hebei (provincial-level unit),provincial,http://www.hebei.gov.cn/,high,Hebei provincial portal.,BLACKHOLE
+35,河南省,Henan (provincial-level unit),provincial,https://www.henan.gov.cn/,high,Henan provincial portal.,WAF403
+36,浙江省,Zhejiang (provincial-level unit),provincial,https://www.zj.gov.cn/,high,Zhejiang provincial portal (zj.gov.cn).,BLACKHOLE
+37,海南省,Hainan (provincial-level unit),provincial,https://www.hainan.gov.cn/,high,Hainan provincial portal.,BLACKHOLE
+38,湖北省,Hubei (provincial-level unit),provincial,https://www.hubei.gov.cn/,high,Hubei provincial portal.,WAF412
+39,湖南省,Hunan (provincial-level unit),provincial,https://www.hunan.gov.cn/,high,Hunan provincial portal.,REACHABLE
+40,甘肃省,Gansu (provincial-level unit),provincial,https://www.gansu.gov.cn/,high,Gansu provincial portal.,WAF412
+41,西藏自治区,Tibet (provincial-level unit),provincial,https://www.xizang.gov.cn/,high,Verified: Tibet autonomous region portal xizang.gov.cn.,REACHABLE
+42,贵州省,Guizhou (provincial-level unit),provincial,https://www.guizhou.gov.cn/,high,Guizhou provincial portal.,BLACKHOLE
+43,辽宁省,Liaoning (provincial-level unit),provincial,https://www.ln.gov.cn/,high,Verified: Liaoning provincial portal ln.gov.cn.,REACHABLE
+44,重庆市,Chongqing (provincial-level unit),provincial,http://www.cq.gov.cn/,high,Chongqing municipal government portal.,WAF403
+45,陕西省,Shaanxi (provincial-level unit),provincial,http://www.shaanxi.gov.cn/,high,Shaanxi (西安) provincial portal; distinct from Shanxi (shanxi.gov.cn).,BLACKHOLE
+46,青海省,Qinghai (provincial-level unit),provincial,http://www.qinghai.gov.cn/,high,Qinghai provincial portal.,REACHABLE
+47,七台河市,Qitaihe,municipal/prefecture,https://www.qitaihe.gov.cn/,med,standard pinyin heuristic; not verified in-session,BLACKHOLE
+48,三亚市,Sanya,municipal/prefecture,https://www.sanya.gov.cn/,med,standard pinyin (well-known Hainan portal); not verified in-session,BLACKHOLE
+49,三明市,Sanming,municipal/prefecture,https://www.sm.gov.cn/,high,verified abbreviation sm (Fujian); www.sanming.gov.cn also resolves,REACHABLE
+50,三门峡市,Sanmenxia,municipal/prefecture,https://www.smx.gov.cn/,high,verified abbreviation smx (Henan),REACHABLE
+51,上饶市,Shangrao,municipal/prefecture,https://www.shangrao.gov.cn/,med,standard pinyin heuristic; not verified in-session,BLACKHOLE
+52,东营市,Dongying,municipal/prefecture,https://www.dongying.gov.cn/,med,standard pinyin heuristic; not verified in-session,BLACKHOLE
+53,中卫市,Zhongwei,municipal/prefecture,https://www.zhongwei.gov.cn/,med,standard pinyin (Ningxia); not verified in-session,BLACKHOLE
+54,临夏回族自治州,Linxia Hui Autonomous Prefecture,municipal/prefecture,https://www.linxia.gov.cn/,high,verified official prefecture portal,REACHABLE
+55,临汾市,Linfen,municipal/prefecture,https://www.linfen.gov.cn/,med,standard pinyin heuristic; not verified in-session,BLACKHOLE
+56,临沂市,Linyi,municipal/prefecture,https://www.linyi.gov.cn/,med,standard pinyin heuristic; not verified in-session,REACHABLE
+57,临沧市,Lincang,municipal/prefecture,https://www.lincang.gov.cn/,med,standard pinyin (Yunnan); not verified in-session,BLACKHOLE
+58,丹东市,Dandong,municipal/prefecture,https://www.dandong.gov.cn/,med,standard pinyin heuristic; not verified in-session,REACHABLE
+59,丽水市,Lishui,municipal/prefecture,https://www.lishui.gov.cn/,med,standard pinyin (Zhejiang); not verified in-session,BLACKHOLE
+60,丽江市,Lijiang,municipal/prefecture,https://www.lijiang.gov.cn/,med,standard pinyin (Yunnan); not verified in-session,BLACKHOLE
+61,乌鲁木齐市,Urumqi,municipal/prefecture,https://www.wlmq.gov.cn/,high,verified abbreviation wlmq; www.urumqi.gov.cn also resolves,REACHABLE
+62,乐山市,Leshan,municipal/prefecture,https://www.leshan.gov.cn/,med,standard pinyin (Sichuan); not verified in-session,REACHABLE
+63,九江市,Jiujiang,municipal/prefecture,https://www.jiujiang.gov.cn/,med,standard pinyin (Jiangxi); not verified in-session,BLACKHOLE
+64,云浮市,Yunfu,municipal/prefecture,https://www.yunfu.gov.cn/,med,standard pinyin (Guangdong); not verified in-session,REACHABLE
+65,亳州市,Bozhou,municipal/prefecture,https://www.bozhou.gov.cn/,med,standard pinyin (Anhui); not verified in-session,REACHABLE
+66,伊春市,Yichun (Heilongjiang),municipal/prefecture,https://www.yc.gov.cn/,high,verified abbreviation yc; resolves name-collision vs 宜春 Jiangxi (yichun.gov.cn),REACHABLE
+67,伊犁哈萨克自治州,Ili Kazakh Autonomous Prefecture,municipal/prefecture,https://www.xjyl.gov.cn/,high,verified; xj-prefixed Xinjiang prefecture domain (NOT ili),REACHABLE
+68,佛山市,Foshan,municipal/prefecture,https://www.foshan.gov.cn/,med,standard pinyin (well-known Guangdong); not verified in-session,BLACKHOLE
+69,佳木斯市,Jiamusi,municipal/prefecture,https://www.jiamusi.gov.cn/,med,standard pinyin (Heilongjiang); not verified in-session,BLACKHOLE
+70,保定市,Baoding,municipal/prefecture,https://www.baoding.gov.cn/,med,standard pinyin (Hebei); not verified in-session,BLACKHOLE
+71,保山市,Baoshan,municipal/prefecture,https://www.baoshan.gov.cn/,med,standard pinyin (Yunnan); not verified in-session,REACHABLE
+72,信阳市,Xinyang,municipal/prefecture,https://www.xinyang.gov.cn/,med,standard pinyin (Henan); not verified in-session,WAF403
+73,儋州市,Danzhou,municipal/prefecture,https://www.danzhou.gov.cn/,med,standard pinyin (Hainan); not verified in-session,BLACKHOLE
+74,克孜勒苏柯尔克孜自治州,Kizilsu Kirghiz Autonomous Prefecture,municipal/prefecture,https://www.xjkz.gov.cn/,high,verified; xj-prefixed Xinjiang prefecture domain (NOT kizilsu),REACHABLE
+75,克拉玛依市,Karamay,municipal/prefecture,https://www.klmy.gov.cn/,high,verified abbreviation klmy (Xinjiang),REACHABLE
+76,六安市,Lu'an,municipal/prefecture,https://www.luan.gov.cn/,high,verified (Anhui),REACHABLE
+77,六盘水市,Liupanshui,municipal/prefecture,https://www.liupanshui.gov.cn/,med,standard pinyin (Guizhou); not verified in-session,BLACKHOLE
+78,兰州市,Lanzhou,municipal/prefecture,https://www.lanzhou.gov.cn/,high,verified full pinyin (NOT lz as older refs suggest),BLACKHOLE
+79,兴安盟,Xing'an League,municipal/prefecture,https://www.xam.gov.cn/,high,verified league admin office (行政公署) abbreviation xam,WAF403
+80,内江市,Neijiang,municipal/prefecture,https://www.neijiang.gov.cn/,med,standard pinyin (Sichuan); not verified in-session,BLACKHOLE
+81,凉山彝族自治州,Liangshan Yi Autonomous Prefecture,municipal/prefecture,https://www.lsz.gov.cn/,high,verified abbreviation lsz (NOT liangshan),BLACKHOLE
+82,北海市,Beihai,municipal/prefecture,https://www.beihai.gov.cn/,med,standard pinyin (Guangxi); not verified in-session,BLACKHOLE
+83,十堰市,Shiyan,municipal/prefecture,https://www.shiyan.gov.cn/,med,standard pinyin (Hubei); not verified in-session,BLACKHOLE
+84,南京市,Nanjing,municipal/prefecture,https://www.nanjing.gov.cn/,med,standard pinyin (well-known Jiangsu capital); not verified in-session,STUB
+85,南充市,Nanchong,municipal/prefecture,https://www.nanchong.gov.cn/,med,standard pinyin (Sichuan); not verified in-session,BLACKHOLE
+86,南宁市,Nanning,municipal/prefecture,https://www.nanning.gov.cn/,med,standard pinyin (Guangxi capital); not verified in-session,BLACKHOLE
+87,南平市,Nanping,municipal/prefecture,https://www.np.gov.cn/,high,verified abbreviation np (Fujian),BLACKHOLE
+88,南昌市,Nanchang,municipal/prefecture,https://www.nc.gov.cn/,high,verified abbreviation nc (Jiangxi capital),BLACKHOLE
+89,南通市,Nantong,municipal/prefecture,https://www.nantong.gov.cn/,med,standard pinyin (Jiangsu); not verified in-session,REACHABLE
+90,南阳市,Nanyang,municipal/prefecture,https://www.nanyang.gov.cn/,med,standard pinyin (Henan); not verified in-session,WAF403
+91,博尔塔拉蒙古自治州,Bortala Mongol Autonomous Prefecture,municipal/prefecture,https://www.xjboz.gov.cn/,high,verified; xj-prefixed Xinjiang prefecture domain (NOT bortala),REACHABLE
+92,厦门市,Xiamen,municipal/prefecture,https://www.xm.gov.cn/,high,verified abbreviation xm (Fujian),BLACKHOLE
+93,双鸭山市,Shuangyashan,municipal/prefecture,https://www.shuangyashan.gov.cn/,med,standard pinyin (Heilongjiang); not verified in-session,REACHABLE
+94,台州市,Taizhou (Zhejiang),municipal/prefecture,https://www.zjtz.gov.cn/,high,verified abbreviation zjtz (Zhejiang; distinct from Jiangsu Taizhou),BLACKHOLE
+95,合肥市,Hefei,municipal/prefecture,https://www.hefei.gov.cn/,med,standard pinyin (Anhui capital); not verified in-session,BLACKHOLE
+96,吉安市,Ji'an,municipal/prefecture,https://www.jian.gov.cn/,high,verified (Jiangxi),BLACKHOLE
+97,吉林市,Jilin City,municipal/prefecture,https://www.jlcity.gov.cn/,high,verified jlcity (distinct from Jilin province jl.gov.cn),STUB
+98,吐鲁番市,Turpan,municipal/prefecture,https://www.tlf.gov.cn/,high,verified abbreviation tlf (Xinjiang),REACHABLE
+99,吕梁市,Lüliang,municipal/prefecture,https://www.lvliang.gov.cn/,high,verified lvliang (Shanxi; NOT lliang),REACHABLE
+100,吴忠市,Wuzhong,municipal/prefecture,https://www.wuzhong.gov.cn/,med,standard pinyin (Ningxia); not verified in-session,REACHABLE
+101,周口市,Zhoukou,municipal/prefecture,https://www.zhoukou.gov.cn/,med,standard pinyin (Henan); not verified in-session,REACHABLE
+102,和田地区,Hotan Prefecture,municipal/prefecture,https://www.xjht.gov.cn/,high,verified; Xinjiang admin office (行政公署) xj-prefix (NOT hotan),REACHABLE
+103,咸宁市,Xianning,municipal/prefecture,https://www.xianning.gov.cn/,med,standard pinyin (Hubei); not verified in-session,other(502)
+104,咸阳市,Xianyang,municipal/prefecture,https://www.xianyang.gov.cn/,med,standard pinyin (Shaanxi); not verified in-session,BLACKHOLE
+105,哈密市,Hami,municipal/prefecture,https://www.hami.gov.cn/,high,verified (Xinjiang),REACHABLE
+106,哈尔滨市,Harbin,municipal/prefecture,https://www.harbin.gov.cn/,med,established convention harbin (Heilongjiang capital); not verified in-session,BLACKHOLE
+107,唐山市,Tangshan,municipal/prefecture,https://www.tangshan.gov.cn/,med,standard pinyin (Hebei); not verified in-session,other(405)
+108,商丘市,Shangqiu,municipal/prefecture,https://www.shangqiu.gov.cn/,med,standard pinyin (Henan); not verified in-session,BLACKHOLE
+109,商洛市,Shangluo,municipal/prefecture,https://www.shangluo.gov.cn/,med,standard pinyin (Shaanxi); not verified in-session,BLACKHOLE
+110,喀什地区,Kashgar Prefecture,municipal/prefecture,https://www.kashi.gov.cn/,high,verified; admin office (行政公署) kashi (NOT kashgar),REACHABLE
+111,嘉兴市,Jiaxing,municipal/prefecture,https://www.jiaxing.gov.cn/,med,standard pinyin (Zhejiang); not verified in-session,BLACKHOLE
+112,嘉峪关市,Jiayuguan,municipal/prefecture,https://www.jiayuguan.gov.cn/,med,standard pinyin (Gansu); not verified in-session,BLACKHOLE
+113,四平市,Siping,municipal/prefecture,https://www.siping.gov.cn/,med,standard pinyin (Jilin); not verified in-session,REACHABLE
+114,固原市,Guyuan,municipal/prefecture,https://www.guyuan.gov.cn/,med,standard pinyin (Ningxia); not verified in-session,BLACKHOLE
+115,塔城地区,Tacheng Prefecture,municipal/prefecture,https://www.xjtc.gov.cn/,high,verified; Xinjiang admin office xj-prefix (NOT tacheng),REACHABLE
+116,大兴安岭地区,Daxing'anling Prefecture,municipal/prefecture,https://www.dxal.gov.cn/,high,verified abbreviation dxal (Heilongjiang admin office),REACHABLE
+117,大同市,Datong,municipal/prefecture,https://www.datong.gov.cn/,med,standard pinyin (Shanxi); not verified in-session,BLACKHOLE
+118,大庆市,Daqing,municipal/prefecture,https://www.daqing.gov.cn/,med,standard pinyin (Heilongjiang); not verified in-session,BLACKHOLE
+119,大理白族自治州,Dali Bai Autonomous Prefecture,municipal/prefecture,https://www.dali.gov.cn/,high,verified (Yunnan; city portal is separate yndali.gov.cn),STUB
+120,大连市,Dalian,municipal/prefecture,https://www.dl.gov.cn/,high,verified abbreviation dl (Liaoning),BLACKHOLE
+121,天水市,Tianshui,municipal/prefecture,https://www.tianshui.gov.cn/,med,standard pinyin (Gansu); not verified in-session,BLACKHOLE
+122,太原市,Taiyuan,municipal/prefecture,https://www.taiyuan.gov.cn/,med,standard pinyin (Shanxi capital); not verified in-session,BLACKHOLE
+123,威海市,Weihai,municipal/prefecture,https://www.weihai.gov.cn/,med,standard pinyin (Shandong); not verified in-session,REACHABLE
+124,娄底市,Loudi,municipal/prefecture,https://www.loudi.gov.cn/,med,standard pinyin (Hunan); not verified in-session,BLACKHOLE
+125,孝感市,Xiaogan,municipal/prefecture,https://www.xiaogan.gov.cn/,med,standard pinyin (Hubei); not verified in-session,BLACKHOLE
+126,宁德市,Ningde,municipal/prefecture,https://www.ningde.gov.cn/,med,Fujian; abbreviation risk (some Fujian cities use abbrevs) - unverified in-session,WAF403
+127,宁波市,Ningbo,municipal/prefecture,https://www.ningbo.gov.cn/,high,verified full pinyin (NOT nb as older refs suggest),BLACKHOLE
+128,安庆市,Anqing,municipal/prefecture,https://www.anqing.gov.cn/,med,standard pinyin (Anhui); not verified in-session,WAF403
+129,安康市,Ankang,municipal/prefecture,https://www.ankang.gov.cn/,med,standard pinyin (Shaanxi); not verified in-session,REACHABLE
+130,安阳市,Anyang,municipal/prefecture,https://www.anyang.gov.cn/,med,standard pinyin (Henan); not verified in-session,BLACKHOLE
+131,安顺市,Anshun,municipal/prefecture,https://www.anshun.gov.cn/,med,standard pinyin (Guizhou); not verified in-session,BLACKHOLE
+132,定西市,Dingxi,municipal/prefecture,https://www.dingxi.gov.cn/,med,standard pinyin (Gansu); not verified in-session,REACHABLE
+133,宜宾市,Yibin,municipal/prefecture,https://www.yibin.gov.cn/,med,standard pinyin (Sichuan); not verified in-session,BLACKHOLE
+134,宜昌市,Yichang,municipal/prefecture,https://www.yichang.gov.cn/,med,standard pinyin (Hubei); not verified in-session,REACHABLE
+135,宜春市,Yichun (Jiangxi),municipal/prefecture,https://www.yichun.gov.cn/,high,verified full pinyin (collision partner 伊春 Heilongjiang uses yc.gov.cn),BLACKHOLE
+136,宝鸡市,Baoji,municipal/prefecture,https://www.baoji.gov.cn/,med,standard pinyin (Shaanxi); not verified in-session,REACHABLE
+137,宣城市,Xuancheng,municipal/prefecture,https://www.xuancheng.gov.cn/,high,verified via subdomain zrzyghj.xuancheng.gov.cn (Anhui),REACHABLE
+138,宿州市,Suzhou (Anhui),municipal/prefecture,https://www.ahsz.gov.cn/,high,verified abbreviation ahsz (Anhui; distinct from Jiangsu Suzhou suzhou.gov.cn),REACHABLE
+139,宿迁市,Suqian,municipal/prefecture,https://www.suqian.gov.cn/,high,verified via websearch,other(493)
+140,山南市,Shannan,municipal/prefecture,https://www.shannan.gov.cn/,high,verified; Tibet,REACHABLE
+141,岳阳市,Yueyang,municipal/prefecture,https://www.yueyang.gov.cn/,high,verified,REACHABLE
+142,崇左市,Chongzuo,municipal/prefecture,http://www.chongzuo.gov.cn/,high,verified; Guangxi,BLACKHOLE
+143,巴中市,Bazhong,municipal/prefecture,https://www.cnbz.gov.cn/,high,verified; abbrev cnbz (hint bazhong wrong),WAF403
+144,巴音郭楞蒙古自治州,Bayingolin Mongol Autonomous Prefecture,municipal/prefecture,https://www.xjbz.gov.cn/,high,verified; abbrev xjbz (Xinjiang Bazhou),REACHABLE
+145,常州市,Changzhou,municipal/prefecture,https://www.changzhou.gov.cn/,high,verified,REACHABLE
+146,常德市,Changde,municipal/prefecture,https://www.changde.gov.cn/,high,verified,REACHABLE
+147,平凉市,Pingliang,municipal/prefecture,https://www.pingliang.gov.cn/,high,verified; Gansu,WAF403
+148,平顶山市,Pingdingshan,municipal/prefecture,https://www.pds.gov.cn/,high,verified; abbrev pds (hint pingdingshan wrong),REACHABLE
+149,广元市,Guangyuan,municipal/prefecture,https://www.cngy.gov.cn/,high,verified; abbrev cngy (hint guangyuan wrong),other(405)
+150,广安市,Guang'an,municipal/prefecture,https://www.guang-an.gov.cn/,high,verified; hyphenated guang-an (hint guangan wrong),STUB
+151,广州市,Guangzhou,municipal/prefecture,https://www.gz.gov.cn/,high,verified; abbrev gz (hint guangzhou wrong),REACHABLE
+152,庆阳市,Qingyang,municipal/prefecture,https://www.zgqingyang.gov.cn/,high,verified; zgqingyang (hint qingyang wrong); Gansu,ANTI-BOT/origin(521)
+153,廊坊市,Langfang,municipal/prefecture,https://www.lf.gov.cn/,high,verified; abbrev lf (hint langfang wrong),REACHABLE
+154,延安市,Yan'an,municipal/prefecture,http://www.yanan.gov.cn/,high,verified; Shaanxi,BLACKHOLE
+155,延边朝鲜族自治州,Yanbian Korean Autonomous Prefecture,municipal/prefecture,http://www.yanbian.gov.cn/,high,verified; Jilin,REACHABLE
+156,开封市,Kaifeng,municipal/prefecture,https://www.kaifeng.gov.cn/,high,verified,WAF403
+157,张家口市,Zhangjiakou,municipal/prefecture,http://www.zjk.gov.cn/,high,verified; abbrev zjk (hint zhangjiakou wrong),BLACKHOLE
+158,张家界市,Zhangjiajie,municipal/prefecture,http://www.zjj.gov.cn/,high,verified; abbrev zjj (hint zhangjiajie wrong),BLACKHOLE
+159,张掖市,Zhangye,municipal/prefecture,https://www.zhangye.gov.cn/,high,verified; Gansu,REACHABLE
+160,徐州市,Xuzhou,municipal/prefecture,https://www.xz.gov.cn/,high,verified; abbrev xz (hint xuzhou wrong),BLACKHOLE
+161,德宏傣族景颇族自治州,Dehong Dai and Jingpo Autonomous Prefecture,municipal/prefecture,https://www.dh.gov.cn/,high,verified; abbrev dh (hint dehong wrong); Yunnan,BLACKHOLE
+162,德州市,Dezhou,municipal/prefecture,https://www.dezhou.gov.cn/,high,verified; Shandong,BLACKHOLE
+163,德阳市,Deyang,municipal/prefecture,https://www.deyang.gov.cn/,high,verified,BLACKHOLE
+164,忻州市,Xinzhou,municipal/prefecture,https://www.sxxz.gov.cn/,high,verified; abbrev sxxz (hint xinzhou wrong); Shanxi,BLACKHOLE
+165,怀化市,Huaihua,municipal/prefecture,https://www.huaihua.gov.cn/,high,verified,REACHABLE
+166,怒江傈僳族自治州,Nujiang Lisu Autonomous Prefecture,municipal/prefecture,https://www.nujiang.gov.cn/,high,verified; Yunnan,BLACKHOLE
+167,恩施土家族苗族自治州,Enshi Tujia and Miao Autonomous Prefecture,municipal/prefecture,http://www.enshi.gov.cn/,high,verified; Hubei,BLACKHOLE
+168,惠州市,Huizhou,municipal/prefecture,https://www.huizhou.gov.cn/,high,verified; Guangdong,BLACKHOLE
+169,成都市,Chengdu,municipal/prefecture,http://www.chengdu.gov.cn/,high,verified,REACHABLE
+170,扬州市,Yangzhou,municipal/prefecture,https://www.yangzhou.gov.cn/,high,verified,WAF403
+171,承德市,Chengde,municipal/prefecture,https://www.chengde.gov.cn/,high,verified; Hebei,BLACKHOLE
+172,抚州市,Fuzhou,municipal/prefecture,http://www.jxfz.gov.cn/,high,verified; abbrev jxfz (Jiangxi Fuzhou; avoids clash with Fujian 福州),WAF403
+173,抚顺市,Fushun,municipal/prefecture,https://www.fushun.gov.cn/,high,verified; Liaoning,REACHABLE
+174,拉萨市,Lhasa,municipal/prefecture,https://www.lasa.gov.cn/,high,verified; lasa (hint lhasa wrong); Tibet,REACHABLE
+175,揭阳市,Jieyang,municipal/prefecture,http://www.jieyang.gov.cn/,high,verified; Guangdong,REACHABLE
+176,攀枝花市,Panzhihua,municipal/prefecture,http://www.panzhihua.gov.cn/,high,verified,BLACKHOLE
+177,文山壮族苗族自治州,Wenshan Zhuang and Miao Autonomous Prefecture,municipal/prefecture,https://www.ynws.gov.cn/,high,verified; abbrev ynws (hint wenshan wrong); Yunnan,BLACKHOLE
+178,新乡市,Xinxiang,municipal/prefecture,https://www.xinxiang.gov.cn/,high,verified,REACHABLE
+179,新余市,Xinyu,municipal/prefecture,http://www.xinyu.gov.cn/,high,verified; Jiangxi,BLACKHOLE
+180,无锡市,Wuxi,municipal/prefecture,https://www.wuxi.gov.cn/,high,verified,REACHABLE
+181,日喀则市,Shigatse,municipal/prefecture,http://www.rikaze.gov.cn/,high,verified; rikaze (hint shigatse wrong); Tibet,BLACKHOLE
+182,日照市,Rizhao,municipal/prefecture,http://www.rizhao.gov.cn/,high,verified; Shandong,BLACKHOLE
+183,昆明市,Kunming,municipal/prefecture,https://www.km.gov.cn/,high,verified; abbrev km,STUB
+184,昌吉回族自治州,Changji Hui Autonomous Prefecture,municipal/prefecture,https://www.cj.gov.cn/,high,verified; abbrev cj (hint changji wrong); Xinjiang,REACHABLE
+185,昌都市,Qamdo,municipal/prefecture,https://www.changdu.gov.cn/,high,verified; changdu (hint qamdo wrong); Tibet,REACHABLE
+186,昭通市,Zhaotong,municipal/prefecture,http://www.zt.gov.cn/,high,verified; abbrev zt (hint zhaotong wrong); Yunnan,other(444)
+187,晋中市,Jinzhong,municipal/prefecture,https://www.sxjz.gov.cn/,high,verified; abbrev sxjz (hint jinzhong wrong); Shanxi,BLACKHOLE
+188,晋城市,Jincheng,municipal/prefecture,https://www.jcgov.gov.cn/,high,verified; jcgov (hint jincheng wrong); Shanxi,REACHABLE
+189,普洱市,Pu'er,municipal/prefecture,https://www.puershi.gov.cn/,high,verified; puershi (hint puer wrong); Yunnan,BLACKHOLE
+190,景德镇市,Jingdezhen,municipal/prefecture,https://www.jdz.gov.cn/,high,verified; abbrev jdz (hint jingdezhen wrong); Jiangxi,REACHABLE
+191,曲靖市,Qujing,municipal/prefecture,https://www.qj.gov.cn/,high,verified; abbrev qj (hint qujing wrong); Yunnan,REACHABLE
+192,朔州市,Shuozhou,municipal/prefecture,http://www.shuozhou.gov.cn/,high,verified; Shanxi,REACHABLE
+193,朝阳市,Chaoyang,municipal/prefecture,https://www.chaoyang.gov.cn/,high,verified; Liaoning (city,REACHABLE
+194,本溪市,Benxi,municipal/prefecture,https://www.benxi.gov.cn/,high,verified; Liaoning,BLACKHOLE
+195,来宾市,Laibin,municipal/prefecture,http://www.laibin.gov.cn/,high,verified; Guangxi,BLACKHOLE
+196,杭州市,Hangzhou,municipal/prefecture,https://www.hangzhou.gov.cn/,high,verified,BLACKHOLE
+197,松原市,Songyuan,municipal/prefecture,http://www.jlsy.gov.cn/,high,verified; abbrev jlsy (hint songyuan wrong); Jilin,WAF403
+198,林芝市,Nyingchi,municipal/prefecture,http://www.linzhi.gov.cn/,high,verified; linzhi (hint nyingchi wrong); Tibet,REACHABLE
+199,果洛藏族自治州,Golog Tibetan Autonomous Prefecture,municipal/prefecture,http://www.guoluo.gov.cn/,high,verified; guoluo (hint golog wrong); Qinghai,WAF412
+200,枣庄市,Zaozhuang,municipal/prefecture,https://www.zaozhuang.gov.cn/,med,zaozhuang.gov.cn domain confirmed via subdomain (spfw.zaozhuang.gov.cn); www homepage not directly confirmed before search budget exhausted,other(404)
+201,柳州市,Liuzhou,municipal/prefecture,http://www.liuzhou.gov.cn/,high,verified; Guangxi,BLACKHOLE
+202,株洲市,Zhuzhou,municipal/prefecture,http://www.zhuzhou.gov.cn/,high,verified,BLACKHOLE
+203,桂林市,Guilin,municipal/prefecture,https://www.guilin.gov.cn/,high,verified; Guangxi,BLACKHOLE
+204,梅州市,Meizhou,municipal/prefecture,https://www.meizhou.gov.cn/,med,from knowledge; unverified (websearch budget exhausted); Guangdong,ANTI-BOT/origin(521)
+205,梧州市,Wuzhou,municipal/prefecture,http://www.wuzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Guangxi,BLACKHOLE
+206,楚雄彝族自治州,Chuxiong Yi Autonomous Prefecture,municipal/prefecture,https://www.cxz.gov.cn/,high,verified; abbrev cxz (chuxiong.gov.cn also resolves); Yunnan,WAF403
+207,榆林市,Yulin,municipal/prefecture,https://www.yl.gov.cn/,high,verified; abbrev yl (hint yulin wrong; yulin.gov.cn is Guangxi 玉林),WAF403
+208,武威市,Wuwei,municipal/prefecture,http://www.wuwei.gov.cn/,med,from knowledge; unverified (budget exhausted); Gansu,BLACKHOLE
+209,武汉市,Wuhan,municipal/prefecture,http://www.wuhan.gov.cn/,high,well-known standard domain (already in corpus per project notes),REACHABLE
+210,毕节市,Bijie,municipal/prefecture,http://www.bijie.gov.cn/,med,from knowledge; unverified (budget exhausted); Guizhou,BLACKHOLE
+211,永州市,Yongzhou,municipal/prefecture,http://www.yongzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Hunan,STUB
+212,汉中市,Hanzhong,municipal/prefecture,http://www.hanzhong.gov.cn/,med,from knowledge; unverified (budget exhausted); Shaanxi,REACHABLE
+213,汕头市,Shantou,municipal/prefecture,http://www.shantou.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Guangdong,REACHABLE
+214,汕尾市,Shanwei,municipal/prefecture,http://www.shanwei.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Guangdong,REACHABLE
+215,江门市,Jiangmen,municipal/prefecture,http://www.jiangmen.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Guangdong,REACHABLE
+216,池州市,Chizhou,municipal/prefecture,http://www.chizhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Anhui,BLACKHOLE
+217,沈阳市,Shenyang,municipal/prefecture,http://www.shenyang.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Liaoning,REACHABLE
+218,沧州市,Cangzhou,municipal/prefecture,http://www.cangzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Hebei,BLACKHOLE
+219,河池市,Hechi,municipal/prefecture,http://www.hechi.gov.cn/,med,from knowledge; unverified (budget exhausted); Guangxi,BLACKHOLE
+220,河源市,Heyuan,municipal/prefecture,http://www.heyuan.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Guangdong,REACHABLE
+221,泉州市,Quanzhou,municipal/prefecture,http://www.quanzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Fujian,REACHABLE
+222,泰安市,Tai'an,municipal/prefecture,http://www.taian.gov.cn/,med,from knowledge; unverified (budget exhausted); Shandong,REACHABLE
+223,泰州市,Taizhou,municipal/prefecture,https://www.taizhou.gov.cn/,high,verified; Jiangsu Taizhou (台州 Zhejiang uses zjtz.gov.cn),REACHABLE
+224,泸州市,Luzhou,municipal/prefecture,http://www.luzhou.gov.cn/,med,from knowledge; unverified (budget exhausted); Sichuan,BLACKHOLE
+225,洛阳市,Luoyang,municipal/prefecture,https://www.ly.gov.cn/,low,unverified; likely abbrev ly.gov.cn but could be luoyang.gov.cn — NEEDS verification,BLACKHOLE
+226,济南市,Jinan,municipal/prefecture,http://www.jinan.gov.cn/,med,from knowledge (in corpus per project notes); unverified this run; Shandong,REACHABLE
+227,济宁市,Jining,municipal/prefecture,http://www.jining.gov.cn/,med,from knowledge; unverified (budget exhausted); Shandong,REACHABLE
+228,海东市,Haidong,municipal/prefecture,http://www.haidong.gov.cn/,high,verified; Qinghai,other(307)
+229,海北藏族自治州,Haibei Tibetan Autonomous Prefecture,municipal/prefecture,https://www.haibei.gov.cn/,high,verified; Qinghai,BLACKHOLE
+230,海南藏族自治州,Hainan Tibetan Autonomous Prefecture,municipal/prefecture,https://www.hainanzhou.gov.cn/,high,verified; hainanzhou (hint hainan wrong — that is Hainan Province); Qinghai,REACHABLE
+231,海口市,Haikou,municipal/prefecture,https://www.haikou.gov.cn/,high,,REACHABLE
+232,海西蒙古族藏族自治州,Haixi Mongol and Tibetan Autonomous Prefecture,municipal/prefecture,https://www.haixi.gov.cn/,high,Qinghai autonomous prefecture,BLACKHOLE
+233,淄博市,Zibo,municipal/prefecture,https://www.zibo.gov.cn/,high,,REACHABLE
+234,淮北市,Huaibei,municipal/prefecture,https://www.huaibei.gov.cn/,high,,REACHABLE
+235,淮南市,Huainan,municipal/prefecture,https://www.huainan.gov.cn/,high,,REACHABLE
+236,淮安市,Huai'an,municipal/prefecture,https://www.huaian.gov.cn/,high,,REACHABLE
+237,深圳市,Shenzhen,municipal/prefecture,https://www.sz.gov.cn/,high,abbreviation domain sz,REACHABLE
+238,清远市,Qingyuan,municipal/prefecture,https://www.gdqy.gov.cn/,high,GD-prefix abbreviation gdqy (not qingyuan),WAF412
+239,温州市,Wenzhou,municipal/prefecture,https://www.wenzhou.gov.cn/,high,hint flagged blackhole from datacenter IP,BLACKHOLE
+240,渭南市,Weinan,municipal/prefecture,https://www.weinan.gov.cn/,high,,BLACKHOLE
+241,湖州市,Huzhou,municipal/prefecture,https://www.huzhou.gov.cn/,high,,BLACKHOLE
+242,湘潭市,Xiangtan,municipal/prefecture,https://www.xiangtan.gov.cn/,high,,BLACKHOLE
+243,湘西土家族苗族自治州,Xiangxi Tujia and Miao Autonomous Prefecture,municipal/prefecture,https://www.xxz.gov.cn/,high,abbreviation domain xxz (Hunan),other(503)
+244,湛江市,Zhanjiang,municipal/prefecture,https://www.zhanjiang.gov.cn/,high,,REACHABLE
+245,滁州市,Chuzhou,municipal/prefecture,https://www.chuzhou.gov.cn/,high,,WAF403
+246,滨州市,Binzhou,municipal/prefecture,https://www.binzhou.gov.cn/,high,,BLACKHOLE
+247,漯河市,Luohe,municipal/prefecture,https://www.luohe.gov.cn/,high,,BLACKHOLE
+248,漳州市,Zhangzhou,municipal/prefecture,https://www.zhangzhou.gov.cn/,high,,BLACKHOLE
+249,潍坊市,Weifang,municipal/prefecture,https://www.weifang.gov.cn/,high,,BLACKHOLE
+250,潮州市,Chaozhou,municipal/prefecture,https://www.chaozhou.gov.cn/,high,,BLACKHOLE
+251,濮阳市,Puyang,municipal/prefecture,https://www.puyang.gov.cn/,high,,BLACKHOLE
+252,烟台市,Yantai,municipal/prefecture,https://www.yantai.gov.cn/,high,,REACHABLE
+253,焦作市,Jiaozuo,municipal/prefecture,https://www.jiaozuo.gov.cn/,high,,WAF403
+254,牡丹江市,Mudanjiang,municipal/prefecture,https://www.mdj.gov.cn/,high,abbreviation domain mdj,other(420)
+255,玉林市,Yulin,municipal/prefecture,https://www.yulin.gov.cn/,high,Guangxi Yulin,BLACKHOLE
+256,玉树藏族自治县,Yushu Tibetan Autonomous County,municipal/prefecture,https://www.yushushi.gov.cn/,med,"label is a misnomer; entity is county-level 玉树市 (Yushu City), portal yushushi.gov.cn; prefecture-level portal is yushuzhou.gov.cn",BLACKHOLE
+257,玉树藏族自治州,Yushu Tibetan Autonomous Prefecture,municipal/prefecture,https://www.yushuzhou.gov.cn/,high,abbreviation domain yushuzhou (Qinghai),BLACKHOLE
+258,玉溪市,Yuxi,municipal/prefecture,https://www.yuxi.gov.cn/,high,,REACHABLE
+259,珠海市,Zhuhai,municipal/prefecture,https://www.zhuhai.gov.cn/,high,,REACHABLE
+260,甘南藏族自治州,Gannan Tibetan Autonomous Prefecture,municipal/prefecture,https://www.gnzrmzf.gov.cn/,high,unusual domain gnzrmzf (not gannan); Gansu,REACHABLE
+261,甘孜藏族自治州,Garzê Tibetan Autonomous Prefecture,municipal/prefecture,https://www.gzz.gov.cn/,high,abbreviation domain gzz (not garz); Sichuan,BLACKHOLE
+262,白城市,Baicheng,municipal/prefecture,https://www.baicheng.gov.cn/,high,,BLACKHOLE
+263,白山市,Baishan,municipal/prefecture,https://www.baishan.gov.cn/,high,,BLACKHOLE
+264,白银市,Baiyin,municipal/prefecture,https://www.baiyin.gov.cn/,high,,REACHABLE
+265,百色市,Baise,municipal/prefecture,https://www.baise.gov.cn/,high,,BLACKHOLE
+266,益阳市,Yiyang,municipal/prefecture,https://www.yiyang.gov.cn/,high,,STUB
+267,盐城市,Yancheng,municipal/prefecture,https://www.yancheng.gov.cn/,high,,REACHABLE
+268,盘锦市,Panjin,municipal/prefecture,https://www.panjin.gov.cn/,high,,REACHABLE
+269,眉山市,Meishan,municipal/prefecture,https://www.ms.gov.cn/,high,abbreviation domain ms,BLACKHOLE
+270,石嘴山市,Shizuishan,municipal/prefecture,https://www.shizuishan.gov.cn/,high,Ningxia,REACHABLE
+271,石家庄市,Shijiazhuang,municipal/prefecture,https://www.sjz.gov.cn/,high,abbreviation domain sjz,REACHABLE
+272,福州市,Fuzhou,municipal/prefecture,https://www.fuzhou.gov.cn/,high,,REACHABLE
+273,秦皇岛市,Qinhuangdao,municipal/prefecture,https://www.qinhuangdao.gov.cn/,high,main portal qinhuangdao (dept subdomains use qhd),BLACKHOLE
+274,红河哈尼族彝族自治州,Honghe Hani and Yi Autonomous Prefecture,municipal/prefecture,https://www.hh.gov.cn/,high,abbreviation domain hh (not honghe); Yunnan,REACHABLE
+275,绍兴市,Shaoxing,municipal/prefecture,https://www.sx.gov.cn/,high,abbreviation domain sx,BLACKHOLE
+276,绥化市,Suihua,municipal/prefecture,https://www.suihua.gov.cn/,high,,REACHABLE
+277,绵阳市,Mianyang,municipal/prefecture,https://www.my.gov.cn/,high,abbreviation domain my,BLACKHOLE
+278,聊城市,Liaocheng,municipal/prefecture,https://www.liaocheng.gov.cn/,high,,REACHABLE
+279,肇庆市,Zhaoqing,municipal/prefecture,https://www.zhaoqing.gov.cn/,high,,BLACKHOLE
+280,自贡市,Zigong,municipal/prefecture,https://www.zg.gov.cn/,high,abbreviation domain zg,BLACKHOLE
+281,舟山市,Zhoushan,municipal/prefecture,https://www.zhoushan.gov.cn/,high,,BLACKHOLE
+282,芜湖市,Wuhu,municipal/prefecture,https://www.wuhu.gov.cn/,high,,REACHABLE
+283,苏州市,Suzhou,municipal/prefecture,https://www.suzhou.gov.cn/,high,,REACHABLE
+284,茂名市,Maoming,municipal/prefecture,https://www.maoming.gov.cn/,high,,REACHABLE
+285,荆州市,Jingzhou,municipal/prefecture,https://www.jingzhou.gov.cn/,high,,BLACKHOLE
+286,荆门市,Jingmen,municipal/prefecture,https://www.jingmen.gov.cn/,high,,BLACKHOLE
+287,莆田市,Putian,municipal/prefecture,https://www.putian.gov.cn/,high,,BLACKHOLE
+288,莱芜市,Laiwu,municipal/prefecture,https://www.laiwu.gov.cn/,med,merged into Jinan as 莱芜区 in 2019; laiwu.gov.cn still resolves but city-tier status ended,REACHABLE
+289,菏泽市,Heze,municipal/prefecture,https://www.heze.gov.cn/,high,,REACHABLE
+290,萍乡市,Pingxiang,municipal/prefecture,https://www.pingxiang.gov.cn/,high,Jiangxi Pingxiang,STUB
+291,营口市,Yingkou,municipal/prefecture,https://www.yingkou.gov.cn/,high,,REACHABLE
+292,葫芦岛市,Huludao,municipal/prefecture,https://www.hld.gov.cn/,high,abbreviation domain hld,BLACKHOLE
+293,蚌埠市,Bengbu,municipal/prefecture,https://www.bengbu.gov.cn/,high,,WAF403
+294,衡水市,Hengshui,municipal/prefecture,https://www.hengshui.gov.cn/,high,,BLACKHOLE
+295,衡阳市,Hengyang,municipal/prefecture,https://www.hengyang.gov.cn/,high,,STUB
+296,衢州市,Quzhou,municipal/prefecture,https://www.quzhou.gov.cn/,high,,BLACKHOLE
+297,襄阳市,Xiangyang,municipal/prefecture,https://www.xiangyang.gov.cn/,high,,BLACKHOLE
+298,西双版纳傣族自治州,Xishuangbanna Dai Autonomous Prefecture,municipal/prefecture,https://www.xsbn.gov.cn/,high,abbreviation domain xsbn; Yunnan,BLACKHOLE
+299,西宁市,Xining,municipal/prefecture,https://www.xining.gov.cn/,high,,WAF403
+300,西安市,Xi'an,municipal/prefecture,https://www.xa.gov.cn/,high,abbreviation domain xa,REACHABLE
+301,许昌市,Xuchang,municipal/prefecture,https://www.xuchang.gov.cn/,high,,REACHABLE
+302,贵港市,Guigang,municipal/prefecture,https://www.guigang.gov.cn/,high,,BLACKHOLE
+303,贵阳市,Guiyang,municipal/prefecture,https://www.guiyang.gov.cn/,high,full pinyin guiyang (hint's gy.gov.cn was wrong),BLACKHOLE
+304,贺州市,Hezhou,municipal/prefecture,https://www.hezhou.gov.cn/,high,,BLACKHOLE
+305,资阳市,Ziyang,municipal/prefecture,https://www.ziyang.gov.cn/,high,Sichuan Ziyang (not Hunan 益阳资阳区),BLACKHOLE
+306,赣州市,Ganzhou,municipal/prefecture,https://www.ganzhou.gov.cn/,high,,REACHABLE
+307,辽源市,Liaoyuan,municipal/prefecture,https://www.liaoyuan.gov.cn/,high,,BLACKHOLE
+308,辽阳市,Liaoyang,municipal/prefecture,https://www.liaoyang.gov.cn/,high,,BLACKHOLE
+309,达州市,Dazhou,municipal/prefecture,https://www.dazhou.gov.cn/,high,,BLACKHOLE
+310,运城市,Yuncheng,municipal/prefecture,https://www.yuncheng.gov.cn/,high,,BLACKHOLE
+311,连云港市,Lianyungang,municipal/prefecture,https://www.lyg.gov.cn/,high,abbreviation domain lyg,REACHABLE
+312,迪庆藏族自治州,Diqing Tibetan Autonomous Prefecture,municipal/prefecture,https://www.diqing.gov.cn/,high,Yunnan,BLACKHOLE
+313,通化市,Tonghua,municipal/prefecture,https://www.tonghua.gov.cn/,high,,REACHABLE
+314,遂宁市,Suining,municipal/prefecture,https://www.suining.gov.cn/,high,,BLACKHOLE
+315,遵义市,Zunyi,municipal/prefecture,https://www.zunyi.gov.cn/,high,,BLACKHOLE
+316,邢台市,Xingtai,municipal/prefecture,https://www.xingtai.gov.cn/,high,,BLACKHOLE
+317,那曲地区,Nagqu,municipal/prefecture,https://www.naqu.gov.cn/,high,upgraded to prefecture-level 那曲市 (Naqu City) in 2018; portal naqu.gov.cn,REACHABLE
+318,邯郸市,Handan,municipal/prefecture,https://www.handan.gov.cn/,high,,BLACKHOLE
+319,邵阳市,Shaoyang,municipal/prefecture,https://www.shaoyang.gov.cn/,high,,other(502)
+320,郑州市,Zhengzhou,municipal/prefecture,https://www.zhengzhou.gov.cn/,high,,REACHABLE
+321,郴州市,Chenzhou,municipal/prefecture,https://www.czs.gov.cn/,high,abbreviation domain czs,other(503)
+322,鄂州市,Ezhou,municipal/prefecture,https://www.ezhou.gov.cn/,high,,STUB
+323,酒泉市,Jiuquan,municipal/prefecture,https://www.jiuquan.gov.cn/,high,Well-known Gansu city; standard pinyin domain (source-map candidate).,BLACKHOLE
+324,金华市,Jinhua,municipal/prefecture,https://www.jinhua.gov.cn/,high,Well-known Zhejiang city; standard pinyin domain.,BLACKHOLE
+325,金昌市,Jinchang,municipal/prefecture,https://www.jinchang.gov.cn/,med,Unverified (search budget exhausted); standard pinyin / source-map candidate.,BLACKHOLE
+326,钦州市,Qinzhou,municipal/prefecture,http://www.qinzhou.gov.cn/,high,Verified via search — Guangxi.,BLACKHOLE
+327,铁岭市,Tieling,municipal/prefecture,https://www.tieling.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Liaoning).,BLACKHOLE
+328,铜仁市,Tongren,municipal/prefecture,https://www.trs.gov.cn/,high,Verified — real gov portal is abbreviation www.trs.gov.cn (Guizhou); tongren.gov.cn is a media portal.,BLACKHOLE
+329,铜川市,Tongchuan,municipal/prefecture,https://www.tongchuan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Shaanxi).,BLACKHOLE
+330,铜陵市,Tongling,municipal/prefecture,https://www.tl.gov.cn/,low,Unverified; Tongling (Anhui) likely uses abbreviation www.tl.gov.cn — source-map alt www.tongling.gov.cn. Re-check.,REACHABLE
+331,银川市,Yinchuan,municipal/prefecture,https://www.yinchuan.gov.cn/,high,Well-known Ningxia capital; standard pinyin domain (source-map: reachable).,REACHABLE
+332,锡林郭勒盟,Xilin Gol League,municipal/prefecture,https://www.xlgl.gov.cn/,high,Verified — Inner Mongolia league administrative office (行政公署); abbreviation www.xlgl.gov.cn.,REACHABLE
+333,锦州市,Jinzhou,municipal/prefecture,https://www.jinzhou.gov.cn/,low,Unverified; Jinzhou (Liaoning) may use abbreviation www.jz.gov.cn — source-map candidate jinzhou. Re-check.,BLACKHOLE
+334,镇江市,Zhenjiang,municipal/prefecture,http://www.zhenjiang.gov.cn/,high,Well-known Jiangsu city; standard pinyin domain.,BLACKHOLE
+335,长春市,Changchun,municipal/prefecture,http://www.changchun.gov.cn/,high,Verified — Jilin capital. NOTE real domain is www.changchun.gov.cn (source-map's www.cc.gov.cn was a blackholed stale guess).,REACHABLE
+336,长沙市,Changsha,municipal/prefecture,http://www.changsha.gov.cn/,high,Hunan capital; standard pinyin domain.,BLACKHOLE
+337,长治市,Changzhi,municipal/prefecture,https://www.changzhi.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Shanxi).,REACHABLE
+338,阜新市,Fuxin,municipal/prefecture,https://www.fuxin.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Liaoning).,REACHABLE
+339,阜阳市,Fuyang,municipal/prefecture,https://www.fuyang.gov.cn/,low,Unverified; Fuyang (Anhui) may use abbreviation www.fy.gov.cn — source-map candidate fuyang. Re-check.,REACHABLE
+340,防城港市,Fangchenggang,municipal/prefecture,https://www.fangchenggang.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Guangxi).,BLACKHOLE
+341,阳江市,Yangjiang,municipal/prefecture,http://www.yangjiang.gov.cn/,high,Guangdong; already in corpus (source-map HAVE:yangjiang); standard pinyin domain.,REACHABLE
+342,阳泉市,Yangquan,municipal/prefecture,https://www.yangquan.gov.cn/,low,Unverified; Yangquan (Shanxi) may use abbreviation www.yq.gov.cn — source-map candidate yangquan. Re-check.,BLACKHOLE
+343,阿克苏地区,Aksu Prefecture,municipal/prefecture,https://www.aks.gov.cn/,high,Verified — Xinjiang prefecture administrative office (行政公署); abbreviation www.aks.gov.cn.,BLACKHOLE
+344,阿勒泰地区,Altay Prefecture,municipal/prefecture,https://xjalt.gov.cn/,high,Verified — Xinjiang prefecture administrative office is xjalt.gov.cn (no www). NOTE www.alt.gov.cn is Altay CITY (阿勒泰市),BLACKHOLE
+345,阿坝藏族羌族自治州,Ngawa Tibetan and Qiang Autonomous Prefecture,municipal/prefecture,https://www.abazhou.gov.cn/,high,Verified — Sichuan autonomous prefecture; www.abazhou.gov.cn.,REACHABLE
+346,阿拉善盟,Alxa League,municipal/prefecture,https://www.als.gov.cn/,high,Verified — Inner Mongolia league administrative office; abbreviation www.als.gov.cn.,BLACKHOLE
+347,阿里地区,Ngari Prefecture,municipal/prefecture,https://www.al.gov.cn/,high,Verified — Tibet prefecture administrative office; abbreviation www.al.gov.cn.,REACHABLE
+348,陇南市,Longnan,municipal/prefecture,https://www.longnan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Gansu).,BLACKHOLE
+349,随州市,Suizhou,municipal/prefecture,https://www.suizhou.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Hubei).,REACHABLE
+350,雅安市,Ya'an,municipal/prefecture,https://www.yaan.gov.cn/,high,Verified — Sichuan; www.yaan.gov.cn.,BLACKHOLE
+351,青岛市,Qingdao,municipal/prefecture,https://www.qingdao.gov.cn/,high,Well-known sub-provincial city; already in corpus (HAVE:qingdao).,REACHABLE
+352,鞍山市,Anshan,municipal/prefecture,https://www.anshan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Liaoning; possible alt as.gov.cn).,BLACKHOLE
+353,韶关市,Shaoguan,municipal/prefecture,http://www.shaoguan.gov.cn/,high,Guangdong; already in corpus (HAVE:shaoguan); standard pinyin domain.,BLACKHOLE
+354,马鞍山市,Ma'anshan,municipal/prefecture,https://www.mas.gov.cn/,high,Verified — Anhui; abbreviation www.mas.gov.cn (NOT maanshan).,BLACKHOLE
+355,驻马店市,Zhumadian,municipal/prefecture,https://www.zhumadian.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Henan).,BLACKHOLE
+356,鸡西市,Jixi,municipal/prefecture,https://www.jixi.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Heilongjiang).,REACHABLE
+357,鹤壁市,Hebi,municipal/prefecture,https://www.hebi.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Henan).,STUB
+358,鹤岗市,Hegang,municipal/prefecture,https://www.hegang.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Heilongjiang).,REACHABLE
+359,鹰潭市,Yingtan,municipal/prefecture,https://www.yingtan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Jiangxi).,BLACKHOLE
+360,黄冈市,Huanggang,municipal/prefecture,https://www.huanggang.gov.cn/,low,Unverified; Huanggang (Hubei) may use abbreviation www.hg.gov.cn — source-map candidate huanggang. Re-check.,BLACKHOLE
+361,黄南藏族自治州,Huangnan Tibetan Autonomous Prefecture,municipal/prefecture,http://www.huangnan.gov.cn/,high,Verified — Qinghai autonomous prefecture; www.huangnan.gov.cn.,other(405)
+362,黄山市,Huangshan,municipal/prefecture,https://www.huangshan.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Anhui).,WAF412
+363,黄石市,Huangshi,municipal/prefecture,https://www.huangshi.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Hubei).,REACHABLE
+364,黑河市,Heihe,municipal/prefecture,https://www.heihe.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Heilongjiang).,REACHABLE
+365,黔东南苗族侗族自治州,Qiandongnan Miao and Dong Autonomous Prefecture,municipal/prefecture,https://www.qdn.gov.cn/,high,Verified — Guizhou autonomous prefecture; abbreviation www.qdn.gov.cn.,BLACKHOLE
+366,黔南布依族苗族自治州,Qiannan Buyei and Miao Autonomous Prefecture,municipal/prefecture,https://www.qiannan.gov.cn/,high,Verified — Guizhou autonomous prefecture; www.qiannan.gov.cn.,BLACKHOLE
+367,黔西南布依族苗族自治州,Qianxinan Buyei and Miao Autonomous Prefecture,municipal/prefecture,https://www.qxn.gov.cn/,high,Verified — Guizhou autonomous prefecture; abbreviation www.qxn.gov.cn.,BLACKHOLE
+368,齐齐哈尔市,Qiqihar,municipal/prefecture,https://www.qqhr.gov.cn/,high,Verified — Heilongjiang; abbreviation www.qqhr.gov.cn.,BLACKHOLE
+369,龙岩市,Longyan,municipal/prefecture,https://www.longyan.gov.cn/,high,Verified — Fujian; www.longyan.gov.cn.,REACHABLE
+370,呼和浩特市,Hohhot,municipal/prefecture,http://www.huhhot.gov.cn/,high,Verified — Inner Mongolia capital; domain uses www.huhhot.gov.cn.,other(420)
+371,包头市,Baotou,municipal/prefecture,https://www.baotou.gov.cn/,high,Well-known Inner Mongolia city; standard pinyin domain.,BLACKHOLE
+372,乌海市,Wuhai,municipal/prefecture,https://www.wuhai.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Inner Mongolia).,REACHABLE
+373,赤峰市,Chifeng,municipal/prefecture,https://www.chifeng.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Inner Mongolia).,other(308)
+374,通辽市,Tongliao,municipal/prefecture,https://www.tongliao.gov.cn/,med,Unverified; standard pinyin / source-map candidate (Inner Mongolia).,REACHABLE
+375,呼伦贝尔市,Hulunbuir,municipal/prefecture,https://www.hlbe.gov.cn/,high,Verified — Inner Mongolia; abbreviation www.hlbe.gov.cn.,BLACKHOLE
+376,鄂尔多斯市,Ordos,municipal/prefecture,https://www.ordos.gov.cn/,high,Verified — Inner Mongolia; www.ordos.gov.cn.,REACHABLE
+377,巴彦淖尔市,Bayannur,municipal/prefecture,https://www.bynr.gov.cn/,high,Verified — Inner Mongolia; abbreviation www.bynr.gov.cn.,REACHABLE
+378,乌兰察布市,Ulanqab,municipal/prefecture,https://www.wulanchabu.gov.cn/,high,Verified — Inner Mongolia; www.wulanchabu.gov.cn.,BLACKHOLE
+379,东莞市,Dongguan,municipal/prefecture,https://www.dg.gov.cn/,high,Verified — Guangdong; abbreviation www.dg.gov.cn.,BLACKHOLE
+380,中山市,Zhongshan,municipal/prefecture,https://www.zhongshan.gov.cn/,high,Guangdong; already in corpus (HAVE:zhongshan); standard pinyin domain.,BLACKHOLE
+381,三沙市,Sansha,municipal/prefecture,http://www.sansha.gov.cn/,high,Verified — Hainan; www.sansha.gov.cn.,BLACKHOLE
+382,北京市,Beijing,municipal/prefecture,https://www.beijing.gov.cn/,high,Municipality (direct-controlled); already in corpus (HAVE:bj); www.beijing.gov.cn.,other(307)
+383,阿拉尔市,Alar,municipal/prefecture,http://www.ale.gov.cn/,high,Verified — XPCC 1st Division / Alar city (师市合一); www.ale.gov.cn.,REACHABLE
+384,澳门特别行政区,Macau Special Administrative Region,municipal/prefecture,https://www.gov.mo/,high,Verified — Macau SAR government portal (.gov.mo,REACHABLE
+385,白沙黎族自治县,Baisha Li Autonomous County,municipal/prefecture,https://baisha.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+386,保亭黎族苗族自治县,Baoting Li and Miao Autonomous County,municipal/prefecture,https://baoting.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+387,北屯市,Beitun,municipal/prefecture,http://www.bts.gov.cn/,high,Verified — XPCC 10th Division / Beitun city (师市合一); abbreviation www.bts.gov.cn.,REACHABLE
+388,昌江黎族自治县,Changjiang Li Autonomous County,municipal/prefecture,https://changjiang.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+389,澄迈县,Chengmai County,municipal/prefecture,http://chengmai.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+390,定安县,Ding'an County,municipal/prefecture,http://dingan.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+391,东方市,Dongfang,municipal/prefecture,https://dongfang.hainan.gov.cn/,high,Verified — Hainan county-level city; subdomain of hainan.gov.cn.,BLACKHOLE
+392,胡杨河市,Huyanghe,municipal/prefecture,https://www.nqs.gov.cn/,high,Verified — XPCC 7th Division / Huyanghe city (师市合一); abbreviation www.nqs.gov.cn.,REACHABLE
+393,济源市,Jiyuan,municipal/prefecture,https://www.jiyuan.gov.cn/,high,Verified — Henan provincial-directly-administered city (Jiyuan Demonstration Zone); www.jiyuan.gov.cn.,REACHABLE
+394,乐东黎族自治县,Ledong Li Autonomous County,municipal/prefecture,http://ledong.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+395,临高县,Lingao County,municipal/prefecture,https://lingao.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+396,陵水黎族自治县,Lingshui Li Autonomous County,municipal/prefecture,http://lingshui.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+397,潜江市,Qianjiang,municipal/prefecture,https://www.hbqj.gov.cn/,high,Verified — Hubei provincial-directly-administered city; abbreviation www.hbqj.gov.cn (NOT qianjiang).,REACHABLE
+398,琼海市,Qionghai,municipal/prefecture,https://qionghai.hainan.gov.cn/,high,Verified — Hainan county-level city; subdomain of hainan.gov.cn.,BLACKHOLE
+399,琼中黎族苗族自治县,Qiongzhong Li and Miao Autonomous County,municipal/prefecture,https://qiongzhong.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+400,神农架林区,Shennongjia Forestry District,municipal/prefecture,http://www.snj.gov.cn/,high,Verified — Hubei provincial-directly-administered forestry district; abbreviation www.snj.gov.cn.,BLACKHOLE
+401,石河子市,Shihezi,municipal/prefecture,https://www.shz.gov.cn/,high,Verified — XPCC 8th Division / Shihezi city (师市合一); abbreviation www.shz.gov.cn.,BLACKHOLE
+402,天门市,Tianmen,municipal/prefecture,https://www.tianmen.gov.cn/,high,Verified — Hubei provincial-directly-administered city; www.tianmen.gov.cn.,REACHABLE
+403,图木舒克市,Tumxuk,municipal/prefecture,https://www.xjbtnss.gov.cn/,high,Verified — XPCC 3rd Division / Tumxuk city (师市合一); www.xjbtnss.gov.cn.,STUB
+404,屯昌县,Tunchang County,municipal/prefecture,https://tunchang.hainan.gov.cn/,high,Verified — Hainan county; subdomain of hainan.gov.cn.,BLACKHOLE
+405,万宁市,Wanning,municipal/prefecture,https://wanning.hainan.gov.cn/,high,Verified — Hainan county-level city; subdomain of hainan.gov.cn.,BLACKHOLE
+406,文昌市,Wenchang,municipal/prefecture,http://wenchang.hainan.gov.cn/,high,Verified — Hainan county-level city; subdomain of hainan.gov.cn.,BLACKHOLE
+407,五家渠市,Wujiaqu,municipal/prefecture,https://www.wjq.gov.cn/,high,Verified — XPCC 6th Division / Wujiaqu city (师市合一); abbreviation www.wjq.gov.cn.,REACHABLE
+408,五指山市,Wuzhishan,municipal/prefecture,https://wzs.hainan.gov.cn/,high,Verified — Hainan county-level city; abbreviation subdomain wzs.hainan.gov.cn.,BLACKHOLE
+409,仙桃市,Xiantao,municipal/prefecture,https://www.xiantao.gov.cn/,high,Verified — Hubei provincial-directly-administered city; www.xiantao.gov.cn.,BLACKHOLE
+410,香港特别行政区,Hong Kong Special Administrative Region,municipal/prefecture,https://www.gov.hk/,high,Verified — Hong Kong SAR government portal GovHK (.gov.hk,REACHABLE
+411,白杨市,Baiyang,municipal/prefecture,https://www.njs.gov.cn/,low,XPCC 9th Division / Baiyang city (est. 2022,BLACKHOLE
+412,政务微博账号（2万+）,Official Weibo accounts of government units and news organisations (>20000 accounts),mixed,,low,No single portal — an aggregate of >20k government Weibo accounts hosted on Sina Weibo (weibo.com). Not a gov.cn site; each account is a separate handle. Genuinely no consolidated portal.,no-url
+413,（未具名）政务投诉集中网站,Centralized website for citizen complaints to the government,central,https://tousu.www.gov.cn/dc/index.htm,med,Best match = 国务院“互联网+督查”/“国家政务服务投诉与建议” platform on 中国政府网 (tousu.www.gov.cn). Source is unnamed; could also mean 人民网领导留言板 (liuyan.people.com.cn). Inferred.,REACHABLE
+414,成都市科学技术局网站,Chengdu Science and Technology Bureau website,municipal,https://kjj.chengdu.gov.cn/,med,Chengdu S&T Bureau; likely kjj.chengdu.gov.cn (dept subdomain of Chengdu portal). Unverified (budget); alt www.cdst.gov.cn. Re-check.,BLACKHOLE
+415,重庆市科学技术局网站,Chongqing Science and Technology Bureau website,municipal,https://kjj.cq.gov.cn/,med,Chongqing S&T Bureau; likely kjj.cq.gov.cn (dept subdomain of Chongqing portal cq.gov.cn). Unverified (budget). Re-check.,WAF403
+416,上市公司章程修订网站（未具名）,Website storing amendments to charters of listed companies,unknown,http://www.cninfo.com.cn/,med,Best match = 巨潮资讯网 (CNINFO),STUB
+417,全国省/地级行政区划列表,List of all province- and prefecture-level units of China (geographic directory),mixed,http://xzqh.mca.gov.cn/,med,民政部 全国行政区划信息查询平台 (Ministry of Civil Affairs). As of ~2026 division-code data migrated to 国家地名信息库 dmfw.mca.gov.cn; codes also at 国家统计局 stats.gov.cn (统计用区划代码). A reference directory,BLACKHOLE
+418,约320个部委与地方网站,~320 ministries and localities with ~3000 webscrapers (coverage statement),mixed,,low,Not an institution — a meta/coverage statement describing ReConnect's ~320 crawled ministry+locality sites. No single URL exists. Genuinely none.,no-url
+419,中国新闻机构/使馆/外交官推特账号,"Twitter/X accounts of Chinese news organisations, embassies, and diplomats (>300)",non_gov_social,,low,Aggregate of >300 Twitter/X handles on x.com (platform); no gov.cn portal. Each is a separate social account. Genuinely no consolidated portal.,no-url
+420,新浪微博,Weibo (Sina Weibo) platform,non_gov_social,https://weibo.com/,high,Commercial social-media platform (Sina Weibo),REACHABLE
