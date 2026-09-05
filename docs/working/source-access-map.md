@@ -71,6 +71,21 @@ reachability. Verified:
 Full per-row live status: `docs/working/reconnect-inventory-sources.csv` +
 `reconnect-inventory-browser.csv` (`live_status`/`live_notes` columns, tested 2026-09-04).
 
+## Reachable-uncrawled batch (2026-09-05, group=city2) — +1,674 docs
+
+From the 421-URL map, the reachable-and-not-yet-crawled subset (98 → 92 configured,
+excluding HK/Macau SARs, weibo, npc, yn) crawled via **homepage-seed** (`sections=['/']`,
+auto-dialect). Result: **+1,674 docs / +572 citations, 38 of 92 sites yielded.**
+- **Yielded (38, now Tier A):** mostly Xinjiang/Tibet prefectures + smaller cities —
+  jcgov(晋城) 105, lvliang 101, xjboz(博尔塔拉) 99, yc(伊春) 87, xjyl(伊犁) 80, xlgl(锡林郭勒) 79,
+  hbqj(潜江) 77, leshan 76, shizuishan 71, taian 64, klmy(克拉玛依) 52, kashi 48, wlmq 42,
+  changchun 30, lasa 23 …
+- **0-yield (54) → BESPOKE-JS tier:** big cities with JS-rendered homepages (Xi'an,
+  Chengdu, Zhengzhou, Wuxi, Nantong, Zibo, Heze, Huai'an …). Reachable, but their article
+  lists load via JS (Hanweb "datacall"). Need either the site's underlying AJAX/JSON list
+  endpoint configured, or a headless-render crawler — **next crawl project.** They remain
+  configured under group=city2 (harmless 0-yield) pending that.
+
 ## Tier A — CRAWLED (we already ingest these) ✅
 
 - **Central (~40 bodies):** State Council (`gov`), NPC, SPC, PBoC, MoT, MARA, MOJ,
