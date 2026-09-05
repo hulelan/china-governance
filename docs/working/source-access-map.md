@@ -43,6 +43,34 @@ yielding, +1,595 docs** (corpus 285,659 → 287,254), **+849 citations resolved*
 - Wired into the nightly (`--group city` + qinghai/neac/xinjiang in the govcms loop),
   so they stay synced. Full per-site table: `logs/citycrawl_*.log` on the droplet.
 
+## Sub-host & doc-mirror findings (2026-09-04) — "the city URL isn't the sub-dept URL"
+
+Live-tested the URLs in an external ReConnect inventory (`reconnect-inventory-*.csv`).
+Testing a city/ministry *portal* does NOT tell you about its **sub-departments,
+sub-hosts, or the media host a document is mirrored on** — each has independent
+reachability. Verified:
+
+- **拉萨 Lhasa `www.lasa.gov.cn` = REACHABLE** (153 KB, 地方性法规 docs on the hexmon
+  `/lasa/dfxfg/<YYYYMM>/<32-hex>.shtml` pattern) — a NEW crawlable city (Xizang capital),
+  **not yet configured. Quick add (dialect I).** ← the actionable win.
+- **Media-mirror bypass:** blocked issuers' documents are reachable via hosts we ALREADY
+  crawl — the CAC (网信办) 7-department notice is on **news.cn** (Xinhua); central docs sit
+  in the **gov.cn** 政策文件库 (`/zhengce/zhengceku/`). So *some* Tier-C-issuer content is
+  capturable through the media/State-Council mirror without a proxy.
+- **Info-disclosure subdomains are distinct seeds:** `zfxxgk.ndrc.gov.cn` (NDRC 政务公开) =
+  REACHABLE (iteminfo docs); `xxgk.mot.gov.cn` (MOT) = REACHABLE-thin. We have ndrc/mot
+  but not these disclosure sub-hosts — worth a separate crawl probe.
+- **Sub-dept ≠ parent status (both directions):** MOF sub-bureaus `jkw./jrs.mof.gov.cn` =
+  **502** while `www.mof.gov.cn` = 200; Gansu finance dept `czt.gansu.gov.cn` = 412 (blocked
+  like its province, no bypass); Binzhou `rs./cz.binzhou.gov.cn` (host county-level 仲裁委
+  docs) = blackhole. → **must test each sub-host; never infer from the parent.**
+- **Path-specific blocking:** `www.hunan.gov.cn` root REACHES but a `/hnszf/` doc blackholed;
+  `www.baiyin.gov.cn` root 200 but its `/art/` doc pages 403 — a reachable host can still
+  gate specific sections. **`www.hlj.gov.cn` main = 502** (we crawl Heilongjiang via dept subdomains).
+
+Full per-row live status: `docs/working/reconnect-inventory-sources.csv` +
+`reconnect-inventory-browser.csv` (`live_status`/`live_notes` columns, tested 2026-09-04).
+
 ## Tier A — CRAWLED (we already ingest these) ✅
 
 - **Central (~40 bodies):** State Council (`gov`), NPC, SPC, PBoC, MoT, MARA, MOJ,
