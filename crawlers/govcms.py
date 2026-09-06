@@ -409,7 +409,8 @@ SITES = {
     "sm": {"name": "三明市", "base_url": "https://www.sm.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "smx": {"name": "三门峡市", "base_url": "https://www.smx.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "linyi": {"name": "临沂市", "base_url": "https://www.linyi.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "dandong": {"name": "丹东市", "base_url": "https://www.dandong.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "dandong": {"name": "丹东市", "base_url": "https://www.dandong.gov.cn", "admin_level": "municipal", "group": "city3",
+        "sections": ["/zfxxgk/", "/ddszf/gs/zcjd/glist.html"]},   # snow /html/DDSZF/YYYYMM/<id>.html
     "wlmq": {"name": "乌鲁木齐市", "base_url": "https://www.wlmq.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "leshan": {"name": "乐山市", "base_url": "https://www.leshan.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "bozhou": {"name": "亳州市", "base_url": "https://www.bozhou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -425,7 +426,8 @@ SITES = {
     "tlf": {"name": "吐鲁番市", "base_url": "https://www.tlf.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "lvliang": {"name": "吕梁市", "base_url": "https://www.lvliang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xjht": {"name": "和田地区", "base_url": "https://www.xjht.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "hami": {"name": "哈密市", "base_url": "https://www.hami.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "hami": {"name": "哈密市", "base_url": "https://www.hami.gov.cn", "admin_level": "municipal", "group": "city3",
+        "sections": ["/hami/c119983/zwgk.shtml"]},   # hexmon (I) TRS-WCM /c<col>/YYYYMM/<32-hex>.shtml
     "kashi": {"name": "喀什地区", "base_url": "https://www.kashi.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "siping": {"name": "四平市", "base_url": "https://www.siping.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xjtc": {"name": "塔城地区", "base_url": "https://www.xjtc.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -445,14 +447,19 @@ SITES = {
     "fushun": {"name": "抚顺市", "base_url": "https://www.fushun.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "lasa": {"name": "拉萨市", "base_url": "https://www.lasa.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xinxiang": {"name": "新乡市", "base_url": "https://www.xinxiang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "wuxi": {"name": "无锡市", "base_url": "https://www.wuxi.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "wuxi": {"name": "无锡市", "base_url": "https://www.wuxi.gov.cn", "admin_level": "municipal", "group": "city3",
+        "sections": ["/zfxxgk/szfxxgkml/fgwjjjd/zfwj/index.shtml",       # docymd /doc/YYYY/MM/DD/<id>.shtml
+                     "/zfxxgk/szfxxgkml/fgwjjjd/dfxfg/index.shtml",
+                     "/zfxxgk/szfxxgkml/fgwjjjd/zfwj/gfxwj/index.shtml"]},
     "cj": {"name": "昌吉回族自治州", "base_url": "https://www.cj.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "changdu": {"name": "昌都市", "base_url": "https://www.changdu.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "jcgov": {"name": "晋城市", "base_url": "https://www.jcgov.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "jdz": {"name": "景德镇市", "base_url": "https://www.jdz.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "qj": {"name": "曲靖市", "base_url": "https://www.qj.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "shuozhou_c2": {"name": "朔州市", "base_url": "http://www.shuozhou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "chaoyang": {"name": "朝阳市", "base_url": "https://www.chaoyang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "chaoyang": {"name": "朝阳市", "base_url": "https://www.chaoyang.gov.cn", "admin_level": "municipal", "group": "city3",
+        "sections": ["/cyszf/zwgk/zcjd/index.html", "/cyszf/zwgk/index.html",
+                     "/cyszf/ywdt/tzgg/glist.html"]},   # snow /html/CYSZF/YYYYMM/<id>.html
     "linzhi": {"name": "林芝市", "base_url": "http://www.linzhi.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "taian": {"name": "泰安市", "base_url": "http://www.taian.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "jining": {"name": "济宁市", "base_url": "http://www.jining.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -1073,6 +1080,14 @@ _ART_CMON_RE = re.compile(
 #      as numid/pnidpv). Added LAST so every dated dialect wins the URL de-dupe.
 _ART_SNOW_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/\d{13,}\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (X) docymd: …/<prefix>/YYYY/MM/DD/<numeric-id>.shtml  (无锡 & many Jiangsu/Hanweb
+#      "intertid" city portals — /doc/2026/08/18/4819891.shtml). ZERO-PADDED 2-digit
+#      month/day slash-date + NUMERIC file. Distinct from (R) schex (32-hex file),
+#      (O) datepath (dash date), (U) qhsys (/system/ anchor, which runs first so its
+#      subset wins). Date validated (2000–2099 / 1–12 / 1–31) so a non-date padded path
+#      can't false-match. Added LAST so every anchored dialect wins the URL de-dupe.
+_ART_DOCYMD_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(\d{4})/(\d{2})/(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -1228,9 +1243,20 @@ def _list_articles(page_html: str, page_url: str) -> list:
         matches.append((m, m.group(1), m.group(4), date_str))
     for m in _ART_SNOW_RE.finditer(page_html):         # (W) snow: no date in URL → body _PUB_DATE fallback
         matches.append((m, m.group(1), m.group(2), ""))
+    # Authoritative-URL-date dialects: the FULL date lives in the path, so it must NOT be
+    # overridden by a stray _DATE_NEAR hit (these list templates put the date AFTER the
+    # link, and the 240-char lookback would grab the PREVIOUS row's date). Kept in a
+    # separate list so the 23 row-date-preferred dialects above are byte-for-byte unchanged.
+    matches_auth = []
+    for m in _ART_DOCYMD_RE.finditer(page_html):       # (X) docymd (无锡/Jiangsu): validated /YYYY/MM/DD/ path
+        y, mo, d = m.group(2), m.group(3), m.group(4)
+        date_str = (f"{y}-{mo}-{d}" if 2000 <= int(y) <= 2099 and 1 <= int(mo) <= 12
+                    and 1 <= int(d) <= 31 else "")
+        matches_auth.append((m, m.group(1), m.group(5), date_str))
     out, seen = [], set()
     page_host = urlparse(page_url).netloc
-    for m, href, inner, url_date in matches:
+    for m, href, inner, url_date, auth in ([(a, b, c, dt, False) for (a, b, c, dt) in matches]
+                                           + [(a, b, c, dt, True) for (a, b, c, dt) in matches_auth]):
         url = urljoin(page_url, H.unescape(href))
         if url in seen:
             continue
@@ -1244,9 +1270,13 @@ def _list_articles(page_html: str, page_url: str) -> list:
         title = _clean(ta.group(1) if ta else inner)
         if not title:
             continue
-        row = page_html[max(0, m.start() - 240):m.end() + 60]
-        dm = _DATE_NEAR.search(row)
-        out.append({"url": url, "title": title, "date": dm.group(1) if dm else url_date})
+        if auth and url_date:                          # path date is canonical → don't let a stray row date win
+            date = url_date
+        else:
+            row = page_html[max(0, m.start() - 240):m.end() + 60]
+            dm = _DATE_NEAR.search(row)
+            date = dm.group(1) if dm else url_date
+        out.append({"url": url, "title": title, "date": date})
     return out
 
 
