@@ -172,6 +172,42 @@ Hainan counties, Hubei 天门/仙桃/潜江/神农架, 河南济源, 香港/澳�
 
 ---
 
+## 2026-09-05 — the "JS-rendered big-city" tier is mostly STATIC-behind-a-JS-menu
+
+Investigated the 57 `city2` sites that yielded **0 docs** under homepage-seed crawling
+(the ones assumed to need a headless "datacall"/Hanweb solver). **Browser
+network-inspection (Chrome, watching XHR) disproved the premise:** these portals
+server-render their policy lists in the raw HTML — the lists just live at DEEP paths
+behind a JS *menu*, so the homepage seed never reached them, and a probe that stops at
+"hub has no articles" mislabels them JS. Real datacalls are the exception, not the rule.
+
+**Method:** (1) browser to confirm no list-XHR fires on a representative leaf; (2) a BFS
+harvester (`scratchpad/harvest.py`, depth-3, follows list/catalog links, runs the real
+`govcms._list_articles` at each node + reports UNKNOWN article-URL shapes). Full 57-city
+run: **24 SOLVED · 16 NOARTS · 12 BLOCKED** (BLOCKED = residential anti-bot shell even
+from a home IP — retry from the droplet or a different vantage).
+
+**5 new `govcms` dialects (W–AA) + the `city3` group (run `--group city3 --deep`):**
+- **(W) snow** `/…/<≥13-digit-id>.html` — 西安/朝阳/丹东 "gaiban" template. `N.html` pagination.
+- **(X) docymd** `/…/YYYY/MM/DD/<id>.shtml` — 无锡/Jiangsu Hanweb (path date authoritative).
+- **(Y) public** `/…/public/<col>/<id>.html` — 芜湖/淮南/六安/宿州/新乡.
+- **(Z) article** `/content/article/<id>` — 淮北/芜湖/新乡 (no extension).
+- **(AA) pcon** `/(post|content)_<id>.html` — 湛江/昌都/塔城/岳阳/安康.
+- Dateless dialects use a new **`fwd`** date mode (row date sits AFTER the link). All
+  anchored + added last → collision-safe; the 23 pre-existing dialects are unchanged.
+
+**Live (city3, validated on the droplet):** 西安 254 · 朝阳 282 · 无锡 108 (100% body+date) ·
+丹东 109 · 哈密 44 · 芜湖/淮南/六安/宿州/新乡/淮北/湛江 (crawling). Wired into `daily_sync.sh`.
+
+**Still open (follow-up):** the **16 NOARTS** (deeper/odd structure — 常德/岳阳 encoding,
+海南州/塔城 deep `content_` gazette paths, 抚顺 `/N/N/moreinfo.html`, 连云港/鹰口 UUID ids,
+宣城 `/XxgkContent/showList/`) each need a bespoke section or a 1-off dialect; the **12
+BLOCKED** (成都/南通/朔州/双鸭山/四平/亳州/白银/菏泽/阜阳/茂名/随州/乌海) need a droplet-side
+reachability retry (residential shell ≠ droplet reachability). No universal catalog-path
+convention exists across cities — leaf discovery is per-city (harvester or browser dump).
+
+---
+
 ## Bottom line
 
 - **Actionable now (no proxy):** 3 provinces + 1 central body — **Qinghai, Yunnan,

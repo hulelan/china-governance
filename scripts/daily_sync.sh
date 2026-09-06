@@ -186,6 +186,9 @@ run_crawler "govcms (dept group)" python3 -m crawlers.govcms --group dept
 run_crawler "govcms (city group)" python3 -m crawlers.govcms --group city
 # City tier batch 2 (reachable-uncrawled from the 421-URL map; homepage-seed, group=city2).
 run_crawler "govcms (city2 group)" python3 -m crawlers.govcms --group city2
+# City tier batch 3 (static deep-list big-city portals: snow/docymd/public/article/pcon
+# dialects behind JS menus —西安/无锡/朝阳/湛江/芜湖…). --deep walks N.html/index_N pagination.
+run_crawler "govcms (city3 group)" python3 -m crawlers.govcms --group city3 --deep --workers 4
 
 for crawler in beijing shanghai jiangsu chongqing wuhan suzhou heilongjiang; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
