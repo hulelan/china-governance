@@ -474,7 +474,13 @@ SITES = {
     "maoming": {"name": "茂名市", "base_url": "https://www.maoming.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "heze": {"name": "菏泽市", "base_url": "https://www.heze.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "yingkou": {"name": "营口市", "base_url": "https://www.yingkou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "xa": {"name": "西安市", "base_url": "https://www.xa.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    # city3 = static deep-list tier (snow dialect W + N.html pagination; run with --deep).
+    # These "gaiban"-template big-city portals server-render their policy lists at a deep
+    # path; the homepage seed (city2) missed them → 0 docs. Sections point at page 1 of
+    # each policy list; _pages increments N.html.
+    "xa": {"name": "西安市", "base_url": "https://www.xa.gov.cn", "admin_level": "municipal", "group": "city3",
+        "sections": ["/gk/zcfg/zcwj/xaszfwj/1.html", "/gk/zcfg/zcwj/szfbgtwj/1.html",
+                     "/gk/zcfg/gfxwj/zfgfxwj/1.html", "/gk/zcfg/gfxwj/bmgfxwj/1.html"]},
     "xuchang": {"name": "许昌市", "base_url": "https://www.xuchang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "lyg": {"name": "连云港市", "base_url": "https://www.lyg.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "tonghua": {"name": "通化市", "base_url": "https://www.tonghua.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -1059,6 +1065,14 @@ _ART_QHSYS_RE = re.compile(
 #      Added LAST so existing dialects win the URL de-dupe.
 _ART_CMON_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/c\d+/(\d{4})(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (W) snow: …/<section-path>/<≥13-digit-id>.html  (西安市 & many big-city portals using
+#      the static "gaiban" template — server-rendered lists, NOT JS). A Snowflake-style
+#      numeric id file sits directly under the section dir; no date, no /index. The id is
+#      ≥13 digits so it can't steal pagination files (small ints, 1–4 digits) or date dirs
+#      (8 digits). Row carries no nearby date → the _PUB_DATE body fallback fills it (same
+#      as numid/pnidpv). Added LAST so every dated dialect wins the URL de-dupe.
+_ART_SNOW_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/\d{13,}\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -1212,6 +1226,8 @@ def _list_articles(page_html: str, page_url: str) -> list:
         ym4, mo = m.group(2), m.group(3)
         date_str = f"{ym4}-{mo}-01" if 1 <= int(mo) <= 12 else ""
         matches.append((m, m.group(1), m.group(4), date_str))
+    for m in _ART_SNOW_RE.finditer(page_html):         # (W) snow: no date in URL → body _PUB_DATE fallback
+        matches.append((m, m.group(1), m.group(2), ""))
     out, seen = [], set()
     page_host = urlparse(page_url).netloc
     for m, href, inner, url_date in matches:
@@ -1271,6 +1287,23 @@ def _pages(base: str, section: str, deep: bool, max_pages: int):
         return
     if not deep:
         return
+    # Scheme A — section ends in /<int>.html (西安-style bare page files, e.g.
+    # …/xaszfwj/1.html): paginate by incrementing that integer (2.html, 3.html…).
+    pm = re.search(r'^(.*/)(\d+)(\.s?html?)$', section)
+    if pm:
+        prefix, start, ext = pm.group(1), int(pm.group(2)), pm.group(3)
+        for n in range(start + 1, start + max_pages + 1):
+            u = urljoin(base, f"{prefix}{n}{ext}")
+            try:
+                html = fetch(u, headers=UA)
+            except Exception:
+                return
+            if len(html) < 600 or not _list_articles(html, u):  # broken stub / empty → stop
+                return
+            yield u, html
+            time.sleep(REQUEST_DELAY)
+        return
+    # Scheme B — append index_N.html to the section dir (central-ministry default).
     for n in range(1, max_pages + 1):
         u = urljoin(first, f"index_{n}.html")
         try:
