@@ -419,7 +419,7 @@ SITES = {
     "baoshan": {"name": "保山市", "base_url": "https://www.baoshan.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xjkz": {"name": "克孜勒苏柯尔克孜自治州", "base_url": "https://www.xjkz.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "klmy": {"name": "克拉玛依市", "base_url": "https://www.klmy.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "luan": {"name": "六安市", "base_url": "https://www.luan.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "luan": {"name": "六安市", "base_url": "https://www.luan.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/index.html"]},   # public (Y)
     "nantong": {"name": "南通市", "base_url": "https://www.nantong.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xjboz": {"name": "博尔塔拉蒙古自治州", "base_url": "https://www.xjboz.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "shuangyashan": {"name": "双鸭山市", "base_url": "https://www.shuangyashan.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -435,7 +435,7 @@ SITES = {
     "ankang": {"name": "安康市", "base_url": "https://www.ankang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "yichang": {"name": "宜昌市", "base_url": "https://www.yichang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xuancheng": {"name": "宣城市", "base_url": "https://www.xuancheng.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "ahsz": {"name": "宿州市", "base_url": "https://www.ahsz.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "ahsz": {"name": "宿州市", "base_url": "https://www.ahsz.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/index.html"]},   # public (Y)
     "yueyang": {"name": "岳阳市", "base_url": "https://www.yueyang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xjbz": {"name": "巴音郭楞蒙古自治州", "base_url": "https://www.xjbz.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "changzhou": {"name": "常州市", "base_url": "https://www.changzhou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -446,7 +446,7 @@ SITES = {
     "chengdu": {"name": "成都市", "base_url": "http://www.chengdu.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "fushun": {"name": "抚顺市", "base_url": "https://www.fushun.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "lasa": {"name": "拉萨市", "base_url": "https://www.lasa.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "xinxiang": {"name": "新乡市", "base_url": "https://www.xinxiang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "xinxiang": {"name": "新乡市", "base_url": "https://www.xinxiang.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/zwgk/index.html"]},   # public (Y)
     "wuxi": {"name": "无锡市", "base_url": "https://www.wuxi.gov.cn", "admin_level": "municipal", "group": "city3",
         "sections": ["/zfxxgk/szfxxgkml/fgwjjjd/zfwj/index.shtml",       # docymd /doc/YYYY/MM/DD/<id>.shtml
                      "/zfxxgk/szfxxgkml/fgwjjjd/dfxfg/index.shtml",
@@ -466,10 +466,10 @@ SITES = {
     "hainanzhou": {"name": "海南藏族自治州", "base_url": "https://www.hainanzhou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "haikou": {"name": "海口市", "base_url": "https://www.haikou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "zibo": {"name": "淄博市", "base_url": "https://www.zibo.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "huaibei": {"name": "淮北市", "base_url": "https://www.huaibei.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "huainan": {"name": "淮南市", "base_url": "https://www.huainan.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "huaibei": {"name": "淮北市", "base_url": "https://www.huaibei.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/hdjl/index.html"]},   # article (Z)
+    "huainan": {"name": "淮南市", "base_url": "https://www.huainan.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/public/index.html"]},   # public (Y)
     "huaian": {"name": "淮安市", "base_url": "https://www.huaian.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "zhanjiang": {"name": "湛江市", "base_url": "https://www.zhanjiang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "zhanjiang": {"name": "湛江市", "base_url": "https://www.zhanjiang.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/zwgk/index.html"]},   # pcon (AA) /content/post_N.html
     "gnzrmzf": {"name": "甘南藏族自治州", "base_url": "https://www.gnzrmzf.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "baiyin": {"name": "白银市", "base_url": "https://www.baiyin.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "yancheng": {"name": "盐城市", "base_url": "https://www.yancheng.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -477,7 +477,7 @@ SITES = {
     "shizuishan": {"name": "石嘴山市", "base_url": "https://www.shizuishan.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "hh": {"name": "红河哈尼族彝族自治州", "base_url": "https://www.hh.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "liaocheng": {"name": "聊城市", "base_url": "https://www.liaocheng.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "wuhu": {"name": "芜湖市", "base_url": "https://www.wuhu.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "wuhu": {"name": "芜湖市", "base_url": "https://www.wuhu.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/openness/index.html"]},   # public (Y)
     "maoming": {"name": "茂名市", "base_url": "https://www.maoming.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "heze": {"name": "菏泽市", "base_url": "https://www.heze.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "yingkou": {"name": "营口市", "base_url": "https://www.yingkou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -1088,6 +1088,21 @@ _ART_SNOW_RE = re.compile(
 #      can't false-match. Added LAST so every anchored dialect wins the URL de-dupe.
 _ART_DOCYMD_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/(\d{4})/(\d{2})/(\d{2})/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (Y) public: …/public/<colid>/<artid>.html  (Hanweb "public" template — 芜湖/淮南/六安/
+#      宿州/新乡). Two numeric segments after a /public/ dir; no date in URL. Anchored on
+#      /public/ so it can't false-match. Row date follows the link (→ fwd mode).
+_ART_PUBLIC_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/public/\d+/\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (Z) article: /content/article/<id>  (no extension; 淮北/芜湖/新乡). Anchored on
+#      /content/article/ (distinct from (L) portal /portal/article/). Dateless → fwd mode.
+_ART_ARTICLE_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/content/article/\d+)"[^>]*>(.*?)</a>', re.S)
+#  (AA) pcon: …/<prefix>/(post|content)_<id>.html  (湛江 /content/post_N.html; 昌都/海南州/
+#      塔城/岳阳/安康 /…/content_N.html). Bare id filename, no date in URL. The dated
+#      (C) content_ dialect (/YYYY-MM/DD/content_ID) runs FIRST so its version wins the
+#      de-dupe; this adds the dateless bare ones. Row date follows the link (→ fwd mode).
+_ART_PCON_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/(?:post|content)_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -1253,10 +1268,21 @@ def _list_articles(page_html: str, page_url: str) -> list:
         date_str = (f"{y}-{mo}-{d}" if 2000 <= int(y) <= 2099 and 1 <= int(mo) <= 12
                     and 1 <= int(d) <= 31 else "")
         matches_auth.append((m, m.group(1), m.group(5), date_str))
+    # Forward-date dialects: dateless URL + the row's own date sits AFTER the link
+    # (…<a>title</a><span>date</span>…). Searching backward would grab the PREVIOUS
+    # row's date, so these look forward first (→ mode "fwd").
+    matches_fwd = []
+    for m in _ART_PUBLIC_RE.finditer(page_html):       # (Y) public (Hanweb): /public/<col>/<id>.html
+        matches_fwd.append((m, m.group(1), m.group(2), ""))
+    for m in _ART_ARTICLE_RE.finditer(page_html):      # (Z) article: /content/article/<id>
+        matches_fwd.append((m, m.group(1), m.group(2), ""))
+    for m in _ART_PCON_RE.finditer(page_html):         # (AA) pcon: /(post|content)_<id>.html
+        matches_fwd.append((m, m.group(1), m.group(2), ""))
     out, seen = [], set()
     page_host = urlparse(page_url).netloc
-    for m, href, inner, url_date, auth in ([(a, b, c, dt, False) for (a, b, c, dt) in matches]
-                                           + [(a, b, c, dt, True) for (a, b, c, dt) in matches_auth]):
+    for m, href, inner, url_date, mode in ([(a, b, c, dt, "row") for (a, b, c, dt) in matches]
+                                           + [(a, b, c, dt, "auth") for (a, b, c, dt) in matches_auth]
+                                           + [(a, b, c, dt, "fwd") for (a, b, c, dt) in matches_fwd]):
         url = urljoin(page_url, H.unescape(href))
         if url in seen:
             continue
@@ -1270,8 +1296,13 @@ def _list_articles(page_html: str, page_url: str) -> list:
         title = _clean(ta.group(1) if ta else inner)
         if not title:
             continue
-        if auth and url_date:                          # path date is canonical → don't let a stray row date win
+        if mode == "auth" and url_date:                # path date is canonical → don't let a stray row date win
             date = url_date
+        elif mode == "fwd":                            # row date follows the link → look forward first
+            dm = _DATE_NEAR.search(page_html[m.end():m.end() + 110])
+            if not dm:                                 # fall back to the standard window, then body _PUB_DATE
+                dm = _DATE_NEAR.search(page_html[max(0, m.start() - 240):m.end() + 60])
+            date = dm.group(1) if dm else url_date
         else:
             row = page_html[max(0, m.start() - 240):m.end() + 60]
             dm = _DATE_NEAR.search(row)
