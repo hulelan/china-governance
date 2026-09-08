@@ -234,6 +234,36 @@ uncrawled. Rebuild: `scripts/rnd/discovery/build_admin_coverage.py`.
 
 ---
 
+## 2026-09-08 — the armed-force / CMC lane (海警 / 武警 / 军委), NOT State-Council
+
+These sit under the **Central Military Commission**, not a State Council ministry (per
+《海警法》 Art. 2: 中国海警局 = 武警海警总队; 2018 reform put the coast guard into the PAP
+under CMC). We crawl **none** of this lane directly. Public web presence, found via Google:
+
+- **中国海警局 (China Coast Guard) = `ccg.gov.cn`** — THE prize: has real policy content
+  (`/zcfg/` 政策法规 + `/xxgk/` 信息公开), standard **t-date** article pattern
+  (`/zcfg/YYYYMM/tYYYYMMDD_<id>.html`) → trivially parseable by govcms dialect A. **BUT
+  hard CloudWAF block** ("访问被拦截！" HTTP 418) to every NON-BROWSER client — blocks the
+  droplet AND urllib/curl from a residential Mac; only a real browser renders it. So it is
+  **browser-harvest-or-fingerprint-proxy only**, not pipeline-crawlable. Its major
+  announcements DO reach us mirrored on news.cn/gov.cn (**99 doc titles mention 海警**, 10 名
+  中国海警局). Tier C/D.
+- **国防部 (MND, the CMC/PAP public window) = `mod.gov.cn`** — droplet-REACHABLE (70KB). Our
+  `mod` site config exists but had 0 docs (homepage-seed missed it). Sections: `/gfbw/qwfb/`
+  (权威发布, news), `/gfbw/fgwx/wj_213958/` (文件), `/gfbw/jswj/` (军事文件, incl. 军委办公厅
+  印发… notices). Article pattern `/gfbw/<sec>/<7–8-digit>.html` — needs a small new dialect
+  (snow is ≥13-digit). Content is defense-NEWS-heavy; only 文件/jswj are policy.
+- **中国军网 = `81.cn`** — "解放军唯一新闻门户" (CMC-approved). News portal, not a policy-doc
+  repository → low corpus value.
+- **中央军委 (CMC) + 武警 (PAP)** — NO standalone public policy portals. 武警 content is a
+  section under mod.gov.cn (`/wzll/`) + on 81.cn; CMC's public face IS 国防部网.
+
+**Bottom line for this lane:** the only site with genuine policy documents is `ccg.gov.cn`,
+and it is browser/proxy-gated. `mod.gov.cn` is crawlable but mostly news. This lane is best
+covered via the existing news.cn/gov.cn MIRRORS unless a browser-fingerprint proxy is added.
+
+---
+
 ## Bottom line
 
 - **Actionable now (no proxy):** 3 provinces + 1 central body — **Qinghai, Yunnan,
