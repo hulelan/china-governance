@@ -430,16 +430,16 @@ SITES = {
         "sections": ["/hami/c119983/zwgk.shtml"]},   # hexmon (I) TRS-WCM /c<col>/YYYYMM/<32-hex>.shtml
     "kashi": {"name": "喀什地区", "base_url": "https://www.kashi.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "siping": {"name": "四平市", "base_url": "https://www.siping.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "xjtc": {"name": "塔城地区", "base_url": "https://www.xjtc.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "xjtc": {"name": "塔城地区", "base_url": "https://www.xjtc.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/"]},   # pcon content_
     "dxal": {"name": "大兴安岭地区", "base_url": "https://www.dxal.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "ankang": {"name": "安康市", "base_url": "https://www.ankang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "ankang": {"name": "安康市", "base_url": "https://www.ankang.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/seniors/list_1466.html"]},   # pcon content_
     "yichang": {"name": "宜昌市", "base_url": "https://www.yichang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xuancheng": {"name": "宣城市", "base_url": "https://www.xuancheng.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "ahsz": {"name": "宿州市", "base_url": "https://www.ahsz.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/index.html"]},   # public (Y)
     "yueyang": {"name": "岳阳市", "base_url": "https://www.yueyang.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xjbz": {"name": "巴音郭楞蒙古自治州", "base_url": "https://www.xjbz.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "changzhou": {"name": "常州市", "base_url": "https://www.changzhou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "changde": {"name": "常德市", "base_url": "https://www.changde.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "changde": {"name": "常德市", "base_url": "https://www.changde.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/"]},   # pcon content_
     "pds": {"name": "平顶山市", "base_url": "https://www.pds.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "lf": {"name": "廊坊市", "base_url": "https://www.lf.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "yanbian": {"name": "延边朝鲜族自治州", "base_url": "http://www.yanbian.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -463,7 +463,7 @@ SITES = {
     "linzhi": {"name": "林芝市", "base_url": "http://www.linzhi.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "taian": {"name": "泰安市", "base_url": "http://www.taian.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "jining": {"name": "济宁市", "base_url": "http://www.jining.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "hainanzhou": {"name": "海南藏族自治州", "base_url": "https://www.hainanzhou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "hainanzhou": {"name": "海南藏族自治州", "base_url": "https://www.hainanzhou.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/zwgk/"]},   # pcon content_ (人民政府令)
     "haikou": {"name": "海口市", "base_url": "https://www.haikou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "zibo": {"name": "淄博市", "base_url": "https://www.zibo.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "huaibei": {"name": "淮北市", "base_url": "https://www.huaibei.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/hdjl/index.html"]},   # article (Z)
@@ -501,13 +501,13 @@ SITES = {
     "abazhou": {"name": "阿坝藏族羌族自治州", "base_url": "https://www.abazhou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "al": {"name": "阿里地区", "base_url": "https://www.al.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "suizhou": {"name": "随州市", "base_url": "https://www.suizhou.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "jixi": {"name": "鸡西市", "base_url": "https://www.jixi.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "heihe": {"name": "黑河市", "base_url": "https://www.heihe.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "jixi": {"name": "鸡西市", "base_url": "https://www.jixi.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/"]},   # cnc (AB) c<col>_<id>.shtml
+    "heihe": {"name": "黑河市", "base_url": "https://www.heihe.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/"]},   # cnc (AB)
     "wuhai": {"name": "乌海市", "base_url": "https://www.wuhai.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "bynr": {"name": "巴彦淖尔市", "base_url": "https://www.bynr.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "ale": {"name": "阿拉尔市", "base_url": "http://www.ale.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "ale": {"name": "阿拉尔市", "base_url": "http://www.ale.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/xwzx/tzgg/"]},   # pcon content_ (通知公告)
     "bts": {"name": "北屯市", "base_url": "http://www.bts.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
-    "nqs": {"name": "胡杨河市", "base_url": "https://www.nqs.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
+    "nqs": {"name": "胡杨河市", "base_url": "https://www.nqs.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/"]},   # pcon content_
     "hbqj": {"name": "潜江市", "base_url": "https://www.hbqj.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "wjq": {"name": "五家渠市", "base_url": "https://www.wjq.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "hebei": {  # 河北省 — hbuuid dialect S (/columns/<UUID>/YYYYMM/DD/<UUID>.html).
@@ -1102,7 +1102,12 @@ _ART_ARTICLE_RE = re.compile(
 #      (C) content_ dialect (/YYYY-MM/DD/content_ID) runs FIRST so its version wins the
 #      de-dupe; this adds the dateless bare ones. Row date follows the link (→ fwd mode).
 _ART_PCON_RE = re.compile(
-    r'<a\s+[^>]*href="([^"]*?/(?:post|content)_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+    r'<a\s+[^>]*href="([^"]*?/(?:post|content)_\d+(?:\.s?html?)?)"[^>]*>(.*?)</a>', re.S)
+#  (AB) cnc: …/c<col>/<YYYYMM>/c<col>_<id>.shtml  (黑河/鸡西 TRS-WCM, Heilongjiang). Column
+#      dir + YYYYMM month dir + c<col>_<id> filename. Distinct from (V) cmon (NUMERIC file)
+#      and (I) hexmon (32-hex file). Date = YYYYMM (→ -01); row date wins when present.
+_ART_CNC_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/c\d+/(\d{4})(\d{2})/c\d+_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -1253,6 +1258,10 @@ def _list_articles(page_html: str, page_url: str) -> list:
         y, mo, d = m.group(2), m.group(3), m.group(4)
         matches.append((m, m.group(1), m.group(5), f"{y}-{mo}-{d}"))
     for m in _ART_CMON_RE.finditer(page_html):         # (V) cmon (NEAC): YYYYMM dir → -01, row date wins
+        ym4, mo = m.group(2), m.group(3)
+        date_str = f"{ym4}-{mo}-01" if 1 <= int(mo) <= 12 else ""
+        matches.append((m, m.group(1), m.group(4), date_str))
+    for m in _ART_CNC_RE.finditer(page_html):          # (AB) cnc (黑河/鸡西): YYYYMM dir → -01, row date wins
         ym4, mo = m.group(2), m.group(3)
         date_str = f"{ym4}-{mo}-01" if 1 <= int(mo) <= 12 else ""
         matches.append((m, m.group(1), m.group(4), date_str))
