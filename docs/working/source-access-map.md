@@ -208,6 +208,32 @@ convention exists across cities — leaf discovery is per-city (harvester or bro
 
 ---
 
+## 2026-09-07 — grind complete + administrative-coverage map
+
+**city3 unlocked = 20 cities, ~1,379 docs** (西安254/朝阳282/丹东118/芜湖113/无锡108/塔城76/
+胡杨河66/海南州54/哈密44/湛江37/黑河36/常德29/淮北28/新乡24/宿州22/鸡西21/阿拉尔20/六安13/
+安康6/淮南28). Dialects W–AB. All in nightly `--group city3 --deep`.
+
+**The residual 30 (18 NOARTS + 12 BLOCKED) is a genuine wall, not laziness:**
+- **Static-but-NEWS-only** (平顶山 `/contents/`, 廊坊 `/Item/*.aspx` = 新闻联播/河北新闻,
+  郑州 `/newsN/*.jhtml`): the city's POLICY list is JS; only its news is static. **Deliberately
+  NOT crawled** — municipal TV-news would dilute the policy corpus against the research goal.
+- **JS-datacall policy** (海口/聊城/常州/景德镇 + 郑州's 政府文件 tab): the policy list itself is
+  XHR-rendered. Needs a headless-render or per-CMS API reverse-engineer — a different, heavier
+  tool than the regex-dialect approach; deferred.
+- **Anti-bot BLOCKED** (成都/南通/白银/阜阳 reachable from the droplet via **curl -L** but the
+  Python `urllib` `fetch()` gets an HTTP-error stub — a TLS/HTTP fingerprint gate; browser
+  headers alone don't help). Unlock = a `curl`-subprocess fetch path in `base.py`, or a proxy.
+  The rest (菏泽/茂名/随州/乌海/双鸭山/四平/亳州/甘南) are blackholed from both vantages.
+
+**Administrative-coverage map (`docs/working/china-admin-*.csv`):** measured our 494 crawled
+sites against a full enumeration of China's divisions (34 provincial + 361 prefecture). **Covered:
+Provincial-level 17/34 · Prefecture-level 107/361 (地级市 88/294).** The 13 uncovered PROVINCES
+are province-PORTAL gaps (we hold many of their cities, not the province site); SARs + 天津
+uncrawled. Rebuild: `scripts/rnd/discovery/build_admin_coverage.py`.
+
+---
+
 ## Bottom line
 
 - **Actionable now (no proxy):** 3 provinces + 1 central body — **Qinghai, Yunnan,

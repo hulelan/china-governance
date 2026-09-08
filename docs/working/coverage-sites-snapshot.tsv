@@ -197,6 +197,7 @@ sd_kjt|Shandong S&T Dept (山东科技厅)|provincial|77
 nx_ylbz|Ningxia Healthcare Security Bureau (宁夏医保局)|provincial|76
 cq_tjj|重庆市统计局|provincial|76
 cas|Chinese Academy of Sciences (中国科学院)|central|76
+xjtc|塔城地区|municipal|76
 whd_donghu|Wuhan East Lake High-Tech Zone (武汉东湖高新区)|district|75
 natcm|National Administration of TCM (国家中医药管理局)|central|75
 js_wjw|Jiangsu Health Commission (江苏卫健委)|provincial|75
@@ -222,6 +223,7 @@ bjd_fangshan|Beijing Fangshan District (北京房山区)|district|67
 xjkz|克孜勒苏柯尔克孜自治州|municipal|67
 nx_nxyjglt|Ningxia Emergency Management Dept (宁夏应急管理厅)|provincial|66
 shuozhou_c2|朔州市|municipal|66
+nqs|胡杨河市|municipal|66
 bjd_shijingshan|Beijing Shijingshan District (北京石景山区)|district|65
 yantai|Yantai (烟台市)|municipal|65
 abazhou|阿坝藏族羌族自治州|municipal|65
@@ -263,6 +265,7 @@ nx_mca|Ningxia Civil Affairs Dept (宁夏民政厅)|provincial|54
 nx_sthjt|Ningxia Ecology & Environment Dept (宁夏生态环境厅)|provincial|54
 cq_scjgj|重庆市市场监督管理局|provincial|54
 shb_whlyj|Shanghai Culture & Tourism Bureau (上海市文旅局)|municipal|54
+hainanzhou|海南藏族自治州|municipal|54
 xz_mw|Tibet Ethnic Affairs Commission (西藏民委)|provincial|53
 fj_zrzyt|福建省自然资源厅|provincial|53
 ordos|Ordos (鄂尔多斯市)|municipal|53
@@ -334,6 +337,7 @@ longyan|Longyan (龙岩市)|municipal|37
 cj|昌吉回族自治州|municipal|37
 zibo|淄博市|municipal|37
 zhanjiang|湛江市|municipal|37
+heihe|黑河市|municipal|36
 ln_czt|Liaoning Finance Dept (辽宁财政厅)|provincial|35
 bjb_scjgj|Beijing Market Regulation Bureau (北京市市场监管局)|municipal|35
 taizhou_js|Taizhou (泰州市)|municipal|35
@@ -352,6 +356,7 @@ dingxi|Dingxi (定西市)|municipal|31
 pbc|People's Bank of China (中国人民银行)|central|30
 tc260|National Cybersecurity Standardization TC (网安标委 TC260)|central|30
 huangshi|Huangshi (黄石市)|municipal|30
+changde|常德市|municipal|29
 mct|Ministry of Culture & Tourism (文旅部)|central|28
 cq_jrjgj|重庆市地方金融管理局|provincial|28
 huaibei|淮北市|municipal|28
@@ -393,10 +398,12 @@ hn_czt|Hunan Finance Dept (湖南财政厅)|provincial|21
 ln_swt|Liaoning Commerce Dept (辽宁商务厅)|provincial|21
 ln_jyt|Liaoning Education Dept (辽宁教育厅)|provincial|21
 shb_mzj|Shanghai Civil Affairs Bureau (上海市民政局)|municipal|21
+jixi|鸡西市|municipal|21
 xz_tzcjj|Tibet Investment Promotion Bureau (西藏投资促进局)|provincial|20
 sfa|National Forestry & Grassland Administration (国家林业和草原局)|central|20
 ln_rst|Liaoning HR & Social Security Dept (辽宁人社厅)|provincial|20
 shb_scjgj|Shanghai Market Supervision Administration (上海市市场监管局)|municipal|20
+ale|阿拉尔市|municipal|20
 hunan|Hunan Province (湖南省)|provincial|19
 sd_commerce|Shandong Commerce Dept (山东商务厅)|provincial|19
 shb_jtw|Shanghai Transportation Commission (上海市交通委)|municipal|19
@@ -424,6 +431,7 @@ pingliang|Pingliang (平凉市)|municipal|10
 cq_sjj|重庆市审计局|provincial|9
 weihai|Weihai (威海市)|municipal|9
 cnsa|China National Space Administration (国家航天局)|central|8
+ankang|安康市|municipal|6
 mfa|Ministry of Foreign Affairs (外交部)|central|4
 hegang|Hegang (鹤岗市)|municipal|3
 mem|Ministry of Emergency Management (应急管理部)|central|2
@@ -436,8 +444,6 @@ cnr|China National Radio (央广网)|media|1
 thepaper|The Paper (澎湃新闻)|media|1
 peopleapp|People's Daily App (人民日报客户端)|media|1
 newscn|Xinhua news.cn (新华社)|media|1
-ankang|安康市|municipal|1
-changde|常德市|municipal|1
 fushun|抚顺市|municipal|1
 xuchang|许昌市|municipal|1
 zhaoqing|Zhaoqing|municipal|0
@@ -459,7 +465,6 @@ baoshan|保山市|municipal|0
 nantong|南通市|municipal|0
 shuangyashan|双鸭山市|municipal|0
 siping|四平市|municipal|0
-xjtc|塔城地区|municipal|0
 dxal|大兴安岭地区|municipal|0
 yichang|宜昌市|municipal|0
 xuancheng|宣城市|municipal|0
@@ -470,7 +475,6 @@ lf|廊坊市|municipal|0
 chengdu|成都市|municipal|0
 jdz|景德镇市|municipal|0
 qj|曲靖市|municipal|0
-hainanzhou|海南藏族自治州|municipal|0
 haikou|海口市|municipal|0
 huaian|淮安市|municipal|0
 gnzrmzf|甘南藏族自治州|municipal|0
@@ -487,8 +491,4 @@ tl|铜陵市|municipal|0
 fuyang|阜阳市|municipal|0
 al|阿里地区|municipal|0
 suizhou|随州市|municipal|0
-jixi|鸡西市|municipal|0
-heihe|黑河市|municipal|0
 wuhai|乌海市|municipal|0
-ale|阿拉尔市|municipal|0
-nqs|胡杨河市|municipal|0

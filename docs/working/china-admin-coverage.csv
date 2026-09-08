@@ -14,7 +14,7 @@ name_cn,name_en,level,type,parent_province_cn,is_provincial_capital,is_sub_provi
 湖北省,Hubei,provincial,province,,,,省会 武汉,,0,
 湖南省,Hunan,provincial,province,,,,省会 长沙,Y,458,hn_czt;hn_fgw;hn_gxt;hn_jyt;hn_kjt;hn_rst;hn_sthjt;hn_swt;hn_zrzyt;hunan
 广东省,Guangdong,provincial,province,,,,省会 广州,Y,6216,gd
-海南省,Hainan,provincial,province,,,,省会 海口,,0,hainanzhou
+海南省,Hainan,provincial,province,,,,省会 海口,Y,54,hainanzhou
 四川省,Sichuan,provincial,province,,,,省会 成都,,0,
 贵州省,Guizhou,provincial,province,,,,省会 贵阳,,0,
 云南省,Yunnan,provincial,province,,,,省会 昆明,,0,
@@ -80,7 +80,7 @@ name_cn,name_en,level,type,parent_province_cn,is_provincial_capital,is_sub_provi
 延边朝鲜族自治州,Yanbian,prefecture,autonomous_prefecture,吉林省,,,,Y,25,yanbian
 哈尔滨市,Harbin,prefecture,prefecture_city,黑龙江省,Y,Y,省会,,0,
 齐齐哈尔市,Qiqihar,prefecture,prefecture_city,黑龙江省,,,,,0,
-鸡西市,Jixi,prefecture,prefecture_city,黑龙江省,,,,,0,jixi
+鸡西市,Jixi,prefecture,prefecture_city,黑龙江省,,,,Y,21,jixi
 鹤岗市,Hegang,prefecture,prefecture_city,黑龙江省,,,,Y,3,hegang
 双鸭山市,Shuangyashan,prefecture,prefecture_city,黑龙江省,,,,,0,shuangyashan
 大庆市,Daqing,prefecture,prefecture_city,黑龙江省,,,,,0,
@@ -88,7 +88,7 @@ name_cn,name_en,level,type,parent_province_cn,is_provincial_capital,is_sub_provi
 佳木斯市,Jiamusi,prefecture,prefecture_city,黑龙江省,,,,,0,
 七台河市,Qitaihe,prefecture,prefecture_city,黑龙江省,,,,,0,
 牡丹江市,Mudanjiang,prefecture,prefecture_city,黑龙江省,,,,,0,
-黑河市,Heihe,prefecture,prefecture_city,黑龙江省,,,,,0,heihe
+黑河市,Heihe,prefecture,prefecture_city,黑龙江省,,,,Y,36,heihe
 绥化市,Suihua,prefecture,prefecture_city,黑龙江省,,,,Y,14,suihua
 大兴安岭地区,Daxinganling,prefecture,prefecture,黑龙江省,,,,,0,dxal
 南京市,Nanjing,prefecture,prefecture_city,江苏省,Y,Y,省会,Y,252,njd_gulou;njd_jiangning
@@ -204,7 +204,7 @@ name_cn,name_en,level,type,parent_province_cn,is_provincial_capital,is_sub_provi
 衡阳市,Hengyang,prefecture,prefecture_city,湖南省,,,,,0,
 邵阳市,Shaoyang,prefecture,prefecture_city,湖南省,,,,,0,
 岳阳市,Yueyang,prefecture,prefecture_city,湖南省,,,,Y,12,yueyang
-常德市,Changde,prefecture,prefecture_city,湖南省,,,,Y,1,changde
+常德市,Changde,prefecture,prefecture_city,湖南省,,,,Y,29,changde
 张家界市,Zhangjiajie,prefecture,prefecture_city,湖南省,,,,,0,
 益阳市,Yiyang,prefecture,prefecture_city,湖南省,,,,,0,
 郴州市,Chenzhou,prefecture,prefecture_city,湖南省,,,,,0,
@@ -291,7 +291,7 @@ name_cn,name_en,level,type,parent_province_cn,is_provincial_capital,is_sub_provi
 延安市,Yan'an,prefecture,prefecture_city,陕西省,,,,,0,
 汉中市,Hanzhong,prefecture,prefecture_city,陕西省,,,,Y,71,hanzhong
 榆林市,Yulin,prefecture,prefecture_city,陕西省,,,,,0,
-安康市,Ankang,prefecture,prefecture_city,陕西省,,,,Y,1,ankang
+安康市,Ankang,prefecture,prefecture_city,陕西省,,,,Y,6,ankang
 商洛市,Shangluo,prefecture,prefecture_city,陕西省,,,,,0,
 兰州市,Lanzhou,prefecture,prefecture_city,甘肃省,Y,,省会,,0,
 嘉峪关市,Jiayuguan,prefecture,prefecture_city,甘肃省,,,,,0,
@@ -311,7 +311,7 @@ name_cn,name_en,level,type,parent_province_cn,is_provincial_capital,is_sub_provi
 海东市,Haidong,prefecture,prefecture_city,青海省,,,,,0,
 海北藏族自治州,Haibei,prefecture,autonomous_prefecture,青海省,,,,,0,
 黄南藏族自治州,Huangnan,prefecture,autonomous_prefecture,青海省,,,,,0,
-海南藏族自治州,Hainan Zang,prefecture,autonomous_prefecture,青海省,,,,,0,hainanzhou
+海南藏族自治州,Hainan Zang,prefecture,autonomous_prefecture,青海省,,,,Y,54,hainanzhou
 果洛藏族自治州,Golog,prefecture,autonomous_prefecture,青海省,,,,,0,
 玉树藏族自治州,Yushu,prefecture,autonomous_prefecture,青海省,,,,Y,22,yushu
 海西蒙古族藏族自治州,Haixi,prefecture,autonomous_prefecture,青海省,,,,,0,
@@ -365,11 +365,11 @@ name_cn,name_en,level,type,parent_province_cn,is_provincial_capital,is_sub_provi
 阿克苏地区,Aksu,prefecture,prefecture,新疆维吾尔自治区,,,,,0,
 喀什地区,Kashgar,prefecture,prefecture,新疆维吾尔自治区,,,,Y,48,kashi
 和田地区,Hotan,prefecture,prefecture,新疆维吾尔自治区,,,,Y,18,xjht
-塔城地区,Tacheng,prefecture,prefecture,新疆维吾尔自治区,,,,,0,xjtc
+塔城地区,Tacheng,prefecture,prefecture,新疆维吾尔自治区,,,,Y,76,xjtc
 阿勒泰地区,Altay,prefecture,prefecture,新疆维吾尔自治区,,,,,0,
-阿拉尔市,Alar,prefecture,special_county_unit,新疆维吾尔自治区,,,新疆兵团(XPCC),,0,ale
+阿拉尔市,Alar,prefecture,special_county_unit,新疆维吾尔自治区,,,新疆兵团(XPCC),Y,20,ale
 北屯市,Beitun,prefecture,special_county_unit,新疆维吾尔自治区,,,新疆兵团(XPCC),Y,24,bts
-胡杨河市,Huyanghe,prefecture,special_county_unit,新疆维吾尔自治区,,,新疆兵团(XPCC),,0,nqs
+胡杨河市,Huyanghe,prefecture,special_county_unit,新疆维吾尔自治区,,,新疆兵团(XPCC),Y,66,nqs
 石河子市,Shihezi,prefecture,special_county_unit,新疆维吾尔自治区,,,新疆兵团(XPCC),,0,
 图木舒克市,Tumxuk,prefecture,special_county_unit,新疆维吾尔自治区,,,新疆兵团(XPCC),,0,
 五家渠市,Wujiaqu,prefecture,special_county_unit,新疆维吾尔自治区,,,新疆兵团(XPCC),Y,25,wjq
