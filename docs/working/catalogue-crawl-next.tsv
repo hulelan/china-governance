@@ -1,0 +1,91 @@
+id	dimension	level	name_cn	candidate_url	counterpart
+cae	central	central	中国工程院	https://www.cae.cn	
+cass	central	central	中国社会科学院	https://www.cass.cn	
+cast	central	central	中国科学技术协会	https://www.cast.org.cn	
+cidca	central	central	国家国际发展合作署	http://www.cidca.gov.cn	
+cpc_taiwan_office	central	central	中央台湾工作办公室 / 国务院台湾事务办公室	http://www.gwytb.gov.cn	
+cylc	central	central	中国共产主义青年团中央	https://www.gqt.org.cn	
+ggj	central	central	国家机关事务管理局	http://www.ggj.gov.cn	
+gov_counsellors	central	central	国务院参事室	http://www.counsellor.gov.cn	
+mine_safety	central	central	国家矿山安全监察局	https://www.chinamine-safety.gov.cn	
+nba	central	central	国家原子能机构	http://www.caea.gov.cn	
+ncdc	central	central	国家疾病预防控制局	https://www.ndcpa.gov.cn	
+nra	central	central	国家铁路局	http://www.nra.gov.cn	
+pla_daily	central	central	中国军网 / 解放军报	http://www.81.cn	
+xinfang	central	central	国家信访局	https://www.gjxfj.gov.cn	
+guizhou.kjt	dept	provincial	贵州省科学技术厅	https://kjt.guizhou.gov.cn	most
+guizhou.nyj	dept	provincial	贵州省能源局	https://nyj.guizhou.gov.cn	nea
+hubei.kjt	dept	provincial	湖北省科学技术厅	https://kjt.hubei.gov.cn	most
+hubei.mzw	dept	provincial	湖北省民族宗教事务委员会	https://mzw.hubei.gov.cn	neac
+hubei.sft	dept	provincial	湖北省司法厅	https://sft.hubei.gov.cn	moj
+hubei.swt	dept	provincial	湖北省商务厅	https://swt.hubei.gov.cn	mofcom
+hubei.tjj	dept	provincial	湖北省统计局	https://tjj.hubei.gov.cn	nbs
+hubei.wjw	dept	provincial	湖北省卫生健康委员会	https://wjw.hubei.gov.cn	nhc
+hubei.zjt	dept	provincial	湖北省住房和城乡建设厅	https://zjt.hubei.gov.cn	mohurd
+hubei.zrzyt	dept	provincial	湖北省自然资源厅	https://zrzyt.hubei.gov.cn	mnr
+hubei.zscqj	dept	provincial	湖北省知识产权局	https://zscqj.hubei.gov.cn	cnipa
+innermongolia.czt	dept	provincial	内蒙古自治区财政厅	https://czt.nmg.gov.cn	mof
+innermongolia.nyj	dept	provincial	内蒙古自治区能源局	https://nyj.nmg.gov.cn	nea
+innermongolia.sthjt	dept	provincial	内蒙古自治区生态环境厅	https://sthjt.nmg.gov.cn	mee
+innermongolia.wjw	dept	provincial	内蒙古自治区卫生健康委员会	https://wjw.nmg.gov.cn	nhc
+jiangsu.mzw	dept	provincial	江苏省民族宗教事务委员会	https://mzw.jiangsu.gov.cn	neac
+jilin.gzw	dept	provincial	吉林省国有资产监督管理委员会	https://gzw.jl.gov.cn	sasac
+jilin.jtyst	dept	provincial	吉林省交通运输厅	https://jtyst.jl.gov.cn	mot
+jilin.mzt	dept	provincial	吉林省民政厅	https://mzt.jl.gov.cn	mca
+jilin.nyj	dept	provincial	吉林省能源局	https://nyj.jl.gov.cn	nea
+jilin.sft	dept	provincial	吉林省司法厅	https://sft.jl.gov.cn	moj
+jilin.sjt	dept	provincial	吉林省审计厅	https://sjt.jl.gov.cn	cnao
+jilin.slt	dept	provincial	吉林省水利厅	https://slt.jl.gov.cn	mwr
+jilin.tjj	dept	provincial	吉林省统计局	https://tjj.jl.gov.cn	nbs
+jilin.tyj	dept	provincial	吉林省退役军人事务厅	https://tyj.jl.gov.cn	mva
+jilin.xfj	dept	provincial	吉林省信访局	https://xfj.jl.gov.cn	xinfang
+jilin.ybj	dept	provincial	吉林省医疗保障局	https://ybj.jl.gov.cn	nhsa
+jilin.yjt	dept	provincial	吉林省应急管理厅	https://yjt.jl.gov.cn	mem
+liaoning.gzw	dept	provincial	辽宁省国有资产监督管理委员会	https://gzw.ln.gov.cn	sasac
+liaoning.mzw	dept	provincial	辽宁省民族宗教事务委员会	https://mzw.ln.gov.cn	neac
+liaoning.sft	dept	provincial	辽宁省司法厅	https://sft.ln.gov.cn	moj
+liaoning.sjt	dept	provincial	辽宁省审计厅	https://sjt.ln.gov.cn	cnao
+liaoning.slt	dept	provincial	辽宁省水利厅	https://slt.ln.gov.cn	mwr
+liaoning.tjj	dept	provincial	辽宁省统计局	https://tjj.ln.gov.cn	nbs
+liaoning.tyj	dept	provincial	辽宁省退役军人事务厅	https://tyj.ln.gov.cn	mva
+liaoning.wsb	dept	provincial	辽宁省人民政府外事办公室	https://wsb.ln.gov.cn	mfa
+liaoning.zjt	dept	provincial	辽宁省住房和城乡建设厅	https://zjt.ln.gov.cn	mohurd
+ningxia.slt	dept	provincial	宁夏回族自治区水利厅	https://slt.nx.gov.cn	mwr
+qinghai.jtyst	dept	provincial	青海省交通运输厅	https://jtyst.qinghai.gov.cn	mot
+qinghai.ybj	dept	provincial	青海省医疗保障局	https://ybj.qinghai.gov.cn	nhsa
+shandong.ybj	dept	provincial	山东省医疗保障局	https://ybj.shandong.gov.cn	nhsa
+shanxi.wjw	dept	provincial	山西省卫生健康委员会	https://wjw.shanxi.gov.cn	nhc
+tibet.wsb	dept	provincial	西藏自治区人民政府外事办公室	https://wsb.xizang.gov.cn	mfa
+tibet.zjt	dept	provincial	西藏自治区住房和城乡建设厅	https://zjt.xizang.gov.cn	mohurd
+xinjiang.czt	dept	provincial	新疆维吾尔自治区财政厅	https://czt.xinjiang.gov.cn	mof
+xinjiang.gxt	dept	provincial	新疆维吾尔自治区工业和信息化厅	https://gxt.xinjiang.gov.cn	miit
+xinjiang.gzw	dept	provincial	新疆维吾尔自治区国有资产监督管理委员会	https://gzw.xinjiang.gov.cn	sasac
+xinjiang.jrjgj	dept	provincial	新疆维吾尔自治区地方金融监督管理局	https://jrjgj.xinjiang.gov.cn	nfra
+xinjiang.jtyst	dept	provincial	新疆维吾尔自治区交通运输厅	https://jtyst.xinjiang.gov.cn	mot
+xinjiang.kjt	dept	provincial	新疆维吾尔自治区科学技术厅	https://kjt.xinjiang.gov.cn	most
+xinjiang.mzt	dept	provincial	新疆维吾尔自治区民政厅	https://mzt.xinjiang.gov.cn	mca
+xinjiang.nynct	dept	provincial	新疆维吾尔自治区农业农村厅	https://nynct.xinjiang.gov.cn	mara
+xinjiang.scjgj	dept	provincial	新疆维吾尔自治区市场监督管理局	https://scjgj.xinjiang.gov.cn	samr
+xinjiang.sft	dept	provincial	新疆维吾尔自治区司法厅	https://sft.xinjiang.gov.cn	moj
+xinjiang.sjt	dept	provincial	新疆维吾尔自治区审计厅	https://sjt.xinjiang.gov.cn	cnao
+xinjiang.slt	dept	provincial	新疆维吾尔自治区水利厅	https://slt.xinjiang.gov.cn	mwr
+xinjiang.sthjt	dept	provincial	新疆维吾尔自治区生态环境厅	https://sthjt.xinjiang.gov.cn	mee
+xinjiang.swt	dept	provincial	新疆维吾尔自治区商务厅	https://swt.xinjiang.gov.cn	mofcom
+xinjiang.tjj	dept	provincial	新疆维吾尔自治区统计局	https://tjj.xinjiang.gov.cn	nbs
+xinjiang.tyj	dept	provincial	新疆维吾尔自治区退役军人事务厅	https://tyj.xinjiang.gov.cn	mva
+xinjiang.tyjr	dept	provincial	新疆维吾尔自治区体育局	https://tyjr.xinjiang.gov.cn	gas
+xinjiang.wjw	dept	provincial	新疆维吾尔自治区卫生健康委员会	https://wjw.xinjiang.gov.cn	nhc
+xinjiang.xfj	dept	provincial	新疆维吾尔自治区信访局	https://xfj.xinjiang.gov.cn	xinfang
+xinjiang.zjt	dept	provincial	新疆维吾尔自治区住房和城乡建设厅	https://zjt.xinjiang.gov.cn	mohurd
+xinjiang.zrzyt	dept	provincial	新疆维吾尔自治区自然资源厅	https://zrzyt.xinjiang.gov.cn	mnr
+yunnan.gxt	dept	provincial	云南省工业和信息化厅	https://gxt.yn.gov.cn	miit
+yunnan.gzw	dept	provincial	云南省国有资产监督管理委员会	https://gzw.yn.gov.cn	sasac
+yunnan.jtyst	dept	provincial	云南省交通运输厅	https://jtyst.yn.gov.cn	mot
+yunnan.kjt	dept	provincial	云南省科学技术厅	https://kjt.yn.gov.cn	most
+yunnan.nyj	dept	provincial	云南省能源局	https://nyj.yn.gov.cn	nea
+yunnan.sft	dept	provincial	云南省司法厅	https://sft.yn.gov.cn	moj
+yunnan.swt	dept	provincial	云南省商务厅	https://swt.yn.gov.cn	mofcom
+yunnan.tyj	dept	provincial	云南省退役军人事务厅	https://tyj.yn.gov.cn	mva
+geo.pref.信阳市	geo	prefecture	信阳市人民政府	https://xinyang.gov.cn	
+geo.pref.本溪市	geo	prefecture	本溪市人民政府	https://benxi.gov.cn	
+geo.pref.赤峰市	geo	prefecture	赤峰市人民政府	https://chifeng.gov.cn	

@@ -20,4 +20,7 @@ not the pipeline's reality. curl_cffi (chrome impersonation) used as a second pr
 ## Iterations
 | # | Unit | Predicate moved? | Notes |
 |---|---|---|---|
-| 1 | Build catalogue lever + reconcile (zero-network) | pending | |
+| 1 | Build catalogue lever + reconcile (zero-network) | yes | 1786 entities; central 57 crawled/23 unknown, dept 80/1216, geo 112/283. Committed 876d6d9. |
+| 2 | Byte-verify 1514 candidate URLs (droplet vantage) | in flight | curl `-w %{http_code}` bug: double-appended `000` on failure, and `-L` can concatenate per-hop codes → `${code:0:3}` fix. Also: `pkill` raced two sweeps (contaminated a run); re-ran single & clean. Artifacts (`other_000000`) all mean unreachable → normalized post-hoc, no extra re-run. |
+
+**Side items resolved mid-run:** ccg merge landed (16 docs live). mod configured, crawls next nightly (today's sync pulled pre-commit). curl_cffi installed in droplet .venv.

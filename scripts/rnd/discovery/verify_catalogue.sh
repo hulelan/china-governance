@@ -6,8 +6,10 @@
 UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
 classify() {
   id="$1"; url="$2"
-  read -r code bytes < <(curl -sL --max-time 8 -A "$UA" -o /tmp/cat_$$.body -w '%{http_code} %{size_download}' "$url" 2>/dev/null || echo "000 0")
-  bytes=$(wc -c < /tmp/cat_$$.body 2>/dev/null || echo 0); rm -f /tmp/cat_$$.body
+  tmp=$(mktemp /tmp/cat_XXXXXX.body)          # unique per worker (no $$ race across xargs)
+  code=$(curl -sL --max-time 8 -A "$UA" -o "$tmp" -w '%{http_code}' "$url" 2>/dev/null)  # curl -w prints 000 on failure
+  code="${code:0:3}"; [ -z "$code" ] && code="000"   # -L can emit a per-hop-concatenated code; keep the first
+  bytes=$(wc -c < "$tmp" 2>/dev/null || echo 0); rm -f "$tmp"
   case "$code" in
     000) st=blackhole ;;
     404|410) st=no_portal ;;
