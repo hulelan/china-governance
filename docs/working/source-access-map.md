@@ -262,6 +262,30 @@ under CMC). We crawl **none** of this lane directly. Public web presence, found 
 and it is browser/proxy-gated. `mod.gov.cn` is crawlable but mostly news. This lane is best
 covered via the existing news.cn/gov.cn MIRRORS unless a browser-fingerprint proxy is added.
 
+## 2026-09-09 — curl_cffi (Chrome TLS-impersonation) DEFEATS the ccg fingerprint WAF
+
+Per `docs/research/access-blocking.md`, ccg.gov.cn's 418 is a pure **TLS-fingerprint (JA3/JA4)**
+gate. Confirmed: **`curl_cffi` with `impersonate="chrome"` gets ccg /zcfg/ + /xxgk/ = HTTP 200**
+where urllib/plain-curl get 418. No residential IP needed for the TLS layer — BUT:
+- **From the residential Mac**: ccg sections return 200 → HARVESTABLE. **Harvested 16 docs**
+  (10 政策法规 + 6 信息公开, e.g. 《海洋资源开发利用行政处罚自由裁量基准》,《海警机构办理刑事
+  复议复核案件程序规定》) via `scratchpad/ccg_harvest.py` (monkeypatches `govcms.fetch` → curl_cffi,
+  reuses crawl_site). Body coverage low (4/16 — article pages hit the intermittent 418; titles+
+  dates+URLs solid). Merged into documents.db (site_key=`ccg`). **One-off residential harvest — the
+  droplet can't refresh it nightly** (see next).
+- **From the droplet (NYC IP)**: even with curl_cffi, ccg homepage passes but /zcfg/ /xxgk/ still
+  418 intermittently → an ADDITIONAL IP-layer gate on datacenter IPs. So ccg is NOT nightly-
+  crawlable; re-harvest occasionally from a residential vantage, or via a CN/residential proxy.
+- The **fingerprint-only city bucket** (成都/南通/白银/阜阳) still 403/412 under curl_cffi from BOTH
+  Mac and droplet → those have a real IP-layer block, not just TLS (curl_cffi won't fix them).
+- **国防部 mod.gov.cn** — droplet-reachable, now configured (dialect AC `/gfbw/…/<id>.html`, group
+  city3, 文件 section). Crawls via nightly `--group city3`.
+- **curl_cffi is now installed in the droplet `.venv`** (available for a future `base.py` fetch path
+  — see access-blocking.md rec #2).
+
+See also: `docs/research/gov-3d-model.md` + `gov-entities-schema.yaml` (the 3-D entity model +
+discovery playbook for finding the COMPLETE site set).
+
 ---
 
 ## Bottom line

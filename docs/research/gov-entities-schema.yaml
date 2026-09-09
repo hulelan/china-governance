@@ -1,0 +1,334 @@
+# gov-entities-schema.yaml
+#
+# Unified entity table for the 3-dimensional model of the Chinese party-state.
+# See docs/research/gov-3d-model.md for the narrative model this data serves.
+#
+# GOAL: one canonical entity -> one row -> one official_url -> one coverage_status.
+# This file is a STARTER seed. It is populated with:
+#   - the full Dim C central tree (State Council + party + NPC/CPPCC + judicial +
+#     military + mass orgs), one row per body, and
+#   - the Dim B department taxonomy backbone (the ~40 provincial 厅/委/局 and the
+#     municipal 局 that replicate across every geographic unit), as TEMPLATE rows.
+# It does NOT enumerate the geographic x department cross-product (that is
+# generated, not hand-listed -- see the `generation` block at the bottom and
+# §4 of the model doc for the row-count math).
+#
+# Last authored: 2026-09-09. Coverage flags are a snapshot; refresh them by
+# joining `official_url` / `site_key` against docs/working/coverage-sites-snapshot.tsv
+# and the reachability tiers in docs/working/source-access-map.md.
+
+schema:
+  description: >
+    Row shape for every distinct governing body we want to account for. A row is
+    a canonical ENTITY (a body that could own a website), not a document and not
+    a geographic place on its own. Geographic places become entities only when
+    crossed with a department (Dim B) or when the place's own general government
+    portal is the entity (e.g. 广东省人民政府).
+  fields:
+    id:
+      type: string
+      desc: Stable slug, unique across the table. Convention -> see id_conventions.
+    dimension:
+      type: enum[geo, dept, central]
+      desc: >
+        Which axis the entity primarily lives on. `central` = a node in the Dim C
+        central tree. `dept` = a Dim B department TEMPLATE (the reusable type) OR a
+        concrete department instance once generated. `geo` = a general-government
+        portal of a geographic unit (the Dim A place itself, e.g. a province or
+        city government portal).
+    name_cn:
+      type: string
+      desc: Official Chinese name. For a Dim B template this is the pattern with
+            a {unit} placeholder, e.g. "{unit}发展和改革委员会".
+    name_en:
+      type: string
+    level:
+      type: enum[central, provincial, prefecture, county, township]
+      desc: Administrative rank of the geographic unit the entity sits in.
+    body_type:
+      type: enum[constituent, special_agency, directly_subordinate, public_institution,
+                 national_bureau, party_organ, legislature, consultative, judicial,
+                 procuratorate, supervisory, military, mass_org, gov_portal, department,
+                 sub_unit]
+      desc: The structural category. Drives how we expect it to publish.
+    parent_id:
+      type: string|null
+      desc: id of the body this reports up to (tiao 条 line) OR the geo unit it
+            belongs to (kuai 块 line). For central bureaus this is the parent
+            ministry; for a provincial dept instance this is the province portal.
+    counterpart_central_body:
+      type: string|null
+      desc: >
+        id of the central ministry/commission this body 对口 (mirrors). Null for
+        central bodies and for places. This is the KEY that ties a local 生态环境厅
+        back to 生态环境部 and makes cross-level policy-diffusion queries possible.
+    reorg_note:
+      type: string|null
+      desc: >
+        Reorganization history -- merged / renamed / moved / created. Include the
+        year and the predecessor->successor relationship. See predecessor_ids.
+    predecessor_ids:
+      type: list[string]|null
+      desc: ids (or free-text names if the predecessor predates this table) of the
+            bodies whose functions this entity absorbed.
+    official_url:
+      type: string|null
+      desc: Canonical portal URL. null = unknown / no public portal.
+    site_key:
+      type: string|null
+      desc: documents.db site_key if we already ingest it; null otherwise.
+    coverage_status:
+      type: enum[crawled, reachable_uncrawled, proxy_gated, anti_bot, spa_gated,
+                 no_portal, unknown]
+      desc: >
+        Aligns with source-access-map.md tiers. crawled=Tier A; reachable_uncrawled=Tier B;
+        proxy_gated=Tier C; anti_bot=Tier D; spa_gated=Tier E; no_portal=Tier F.
+  id_conventions:
+    central: "bare slug, e.g. ndrc, mof, cac"
+    central_bureau: "parent-prefixed, e.g. ndrc.nea, samr.cnipa"
+    dept_template: "dept.<slug>, e.g. dept.fgw (a TYPE, not an instance)"
+    dept_instance: "<geo_id>.<dept_slug>, e.g. gd.fgw, gd.shenzhen.fgw (generated)"
+    geo_portal: "<geo_id>, e.g. gd, gd.shenzhen (matches china-admin-divisions ids)"
+
+# =========================================================================
+# DIM C -- THE CENTRAL TREE (concrete rows, one per body)
+# =========================================================================
+# Coverage flags reflect the live crawl set in coverage-sites-snapshot.tsv
+# (2026-09) cross-checked against source-access-map.md, NOT the older
+# government_org_map.json (2026-04, which understates current central coverage).
+
+central_tree:
+
+  # ---- Apex ----
+  - id: state_council
+    dimension: central
+    name_cn: 国务院
+    name_en: State Council
+    level: central
+    body_type: gov_portal
+    parent_id: null
+    counterpart_central_body: null
+    reorg_note: null
+    official_url: https://www.gov.cn
+    site_key: gov
+    coverage_status: crawled
+
+  # ---- State Council 组成部门 (26 constituent departments, post-2023 reform) ----
+  - {id: mfa,     dimension: central, name_cn: 外交部, name_en: Ministry of Foreign Affairs, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.mfa.gov.cn, site_key: mfa, coverage_status: crawled}
+  - {id: mnd,     dimension: central, name_cn: 国防部, name_en: Ministry of National Defense, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "Public window of the CMC; policy content thin (mostly news). See military lane.", official_url: http://www.mod.gov.cn, site_key: mod, coverage_status: crawled}
+  - {id: ndrc,    dimension: central, name_cn: 国家发展和改革委员会, name_en: National Development & Reform Commission, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2023: lost some functions to 国家数据局; earlier lost climate to MEE (2018).", official_url: https://www.ndrc.gov.cn, site_key: ndrc, coverage_status: crawled}
+  - {id: moe,     dimension: central, name_cn: 教育部, name_en: Ministry of Education, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: http://www.moe.gov.cn, site_key: moe, coverage_status: crawled}
+  - {id: most,    dimension: central, name_cn: 科学技术部, name_en: Ministry of Science & Technology, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2023: restructured; project management dispersed; serves as office of 中央科技委员会.", official_url: https://www.most.gov.cn, site_key: most, coverage_status: crawled}
+  - {id: miit,    dimension: central, name_cn: 工业和信息化部, name_en: Ministry of Industry & Information Technology, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2023: absorbed some S&T-industry functions.", official_url: https://www.miit.gov.cn, site_key: miit, coverage_status: crawled}
+  - {id: neac,    dimension: central, name_cn: 国家民族事务委员会, name_en: National Ethnic Affairs Commission, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.neac.gov.cn, site_key: neac, coverage_status: crawled}
+  - {id: mps,     dimension: central, name_cn: 公安部, name_en: Ministry of Public Security, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.mps.gov.cn, site_key: null, coverage_status: anti_bot}
+  - {id: mss,     dimension: central, name_cn: 国家安全部, name_en: Ministry of State Security, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "Publishes via WeChat only; no public policy portal.", official_url: null, site_key: null, coverage_status: no_portal}
+  - {id: mca,     dimension: central, name_cn: 民政部, name_en: Ministry of Civil Affairs, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.mca.gov.cn, site_key: null, coverage_status: proxy_gated}
+  - {id: moj,     dimension: central, name_cn: 司法部, name_en: Ministry of Justice, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: merged 国务院法制办 into MOJ.", official_url: https://www.moj.gov.cn, site_key: moj, coverage_status: crawled}
+  - {id: mof,     dimension: central, name_cn: 财政部, name_en: Ministry of Finance, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.mof.gov.cn, site_key: mof, coverage_status: crawled}
+  - {id: mohrss,  dimension: central, name_cn: 人力资源和社会保障部, name_en: Ministry of Human Resources & Social Security, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.mohrss.gov.cn, site_key: null, coverage_status: anti_bot}
+  - {id: mnr,     dimension: central, name_cn: 自然资源部, name_en: Ministry of Natural Resources, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: created from 国土资源部 + 国家海洋局 + surveying/mapping + parts of NDRC/MOHURD planning.", official_url: https://www.mnr.gov.cn, site_key: null, coverage_status: proxy_gated}
+  - {id: mee,     dimension: central, name_cn: 生态环境部, name_en: Ministry of Ecology & Environment, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: created from 环境保护部 + climate (from NDRC) + water/marine env functions.", official_url: https://www.mee.gov.cn, site_key: mee, coverage_status: crawled}
+  - {id: mohurd,  dimension: central, name_cn: 住房和城乡建设部, name_en: Ministry of Housing & Urban-Rural Development, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.mohurd.gov.cn, site_key: null, coverage_status: proxy_gated}
+  - {id: mot,     dimension: central, name_cn: 交通运输部, name_en: Ministry of Transport, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.mot.gov.cn, site_key: mot, coverage_status: crawled}
+  - {id: mwr,     dimension: central, name_cn: 水利部, name_en: Ministry of Water Resources, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: http://www.mwr.gov.cn, site_key: mwr, coverage_status: crawled}
+  - {id: mara,    dimension: central, name_cn: 农业农村部, name_en: Ministry of Agriculture & Rural Affairs, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: created from 农业部 + rural functions; 国家乡村振兴局 attached.", official_url: https://www.moa.gov.cn, site_key: mara, coverage_status: crawled}
+  - {id: mofcom,  dimension: central, name_cn: 商务部, name_en: Ministry of Commerce, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.mofcom.gov.cn, site_key: mofcom, coverage_status: crawled}
+  - {id: mct,     dimension: central, name_cn: 文化和旅游部, name_en: Ministry of Culture & Tourism, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: merged 文化部 + 国家旅游局.", official_url: https://www.mct.gov.cn, site_key: mct, coverage_status: crawled}
+  - {id: nhc,     dimension: central, name_cn: 国家卫生健康委员会, name_en: National Health Commission, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: created from 国家卫生和计划生育委员会.", official_url: https://www.nhc.gov.cn, site_key: null, coverage_status: proxy_gated}
+  - {id: mva,     dimension: central, name_cn: 退役军人事务部, name_en: Ministry of Veterans Affairs, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: newly created.", official_url: https://www.mva.gov.cn, site_key: mva, coverage_status: crawled}
+  - {id: mem,     dimension: central, name_cn: 应急管理部, name_en: Ministry of Emergency Management, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: newly created; absorbed 安监总局 + firefighting + disaster relief.", official_url: https://www.mem.gov.cn, site_key: mem, coverage_status: crawled}
+  - {id: pbc,     dimension: central, name_cn: 中国人民银行, name_en: People's Bank of China, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: "2023: reforms shifted some prudential-regulation and financial-holding oversight to NFRA.", official_url: http://www.pbc.gov.cn, site_key: pbc, coverage_status: crawled}
+  - {id: cnao,    dimension: central, name_cn: 审计署, name_en: National Audit Office, level: central, body_type: constituent, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.audit.gov.cn, site_key: cnao, coverage_status: crawled}
+
+  # ---- 直属特设机构 (special agency) ----
+  - {id: sasac,   dimension: central, name_cn: 国务院国有资产监督管理委员会, name_en: SASAC, level: central, body_type: special_agency, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.sasac.gov.cn, site_key: sasac, coverage_status: crawled}
+
+  # ---- 直属机构 (directly subordinate agencies) ----
+  - {id: gacc,    dimension: central, name_cn: 海关总署, name_en: General Administration of Customs, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: absorbed entry-exit inspection & quarantine (from AQSIQ).", official_url: http://www.customs.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: chinatax, dimension: central, name_cn: 国家税务总局, name_en: State Taxation Administration, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: merged provincial 国税/地税 into one vertical STA system.", official_url: https://www.chinatax.gov.cn, site_key: chinatax, coverage_status: crawled}
+  - {id: samr,    dimension: central, name_cn: 国家市场监督管理总局, name_en: State Administration for Market Regulation, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: created from 工商总局 + 质检总局 + 食药监总局 + antitrust functions.", official_url: https://www.samr.gov.cn, site_key: samr, coverage_status: crawled}
+  - {id: nfra,    dimension: central, name_cn: 国家金融监督管理总局, name_en: National Financial Regulatory Administration, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: "2023: NEW; replaced 银保监会 (CBIRC) and absorbed some PBOC + CSRC investor-protection functions.", predecessor_ids: [cbirc], official_url: https://www.nfra.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: csrc,    dimension: central, name_cn: 中国证券监督管理委员会, name_en: China Securities Regulatory Commission, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: "2023: elevated from 事业单位 to 国务院直属机构.", official_url: https://www.csrc.gov.cn, site_key: csrc, coverage_status: crawled}
+  - {id: nrta,    dimension: central, name_cn: 国家广播电视总局, name_en: National Radio & Television Administration, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: created from 新闻出版广电总局 broadcast functions.", official_url: https://www.nrta.gov.cn, site_key: nrta, coverage_status: crawled}
+  - {id: gas,     dimension: central, name_cn: 国家体育总局, name_en: General Administration of Sport, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.sport.gov.cn, site_key: saac, coverage_status: crawled}
+  - {id: cidca,   dimension: central, name_cn: 国家国际发展合作署, name_en: China International Development Cooperation Agency, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: newly created.", official_url: http://www.cidca.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: nhsa,    dimension: central, name_cn: 国家医疗保障局, name_en: National Healthcare Security Administration, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: "2018: newly created.", official_url: http://www.nhsa.gov.cn, site_key: nhsa, coverage_status: crawled}
+  - {id: gov_counsellors, dimension: central, name_cn: 国务院参事室, name_en: Counsellors' Office of the State Council, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: http://www.counsellor.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: ggj,     dimension: central, name_cn: 国家机关事务管理局, name_en: National Government Offices Administration, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: http://www.ggj.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: xinfang, dimension: central, name_cn: 国家信访局, name_en: National Public Complaints & Proposals Administration, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: "2023: business guidance shifted toward 中央社会工作部 (party).", official_url: https://www.gjxfj.gov.cn, site_key: null, coverage_status: unknown}
+
+  # ---- 直属事业单位 (public institutions) ----
+  - {id: xinhua,  dimension: central, name_cn: 新华通讯社, name_en: Xinhua News Agency, level: central, body_type: public_institution, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: http://www.news.cn, site_key: xinhua, coverage_status: crawled}
+  - {id: cas,     dimension: central, name_cn: 中国科学院, name_en: Chinese Academy of Sciences, level: central, body_type: public_institution, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.cas.cn, site_key: cas, coverage_status: crawled}
+  - {id: cass,    dimension: central, name_cn: 中国社会科学院, name_en: Chinese Academy of Social Sciences, level: central, body_type: public_institution, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.cass.cn, site_key: null, coverage_status: unknown}
+  - {id: cae,     dimension: central, name_cn: 中国工程院, name_en: Chinese Academy of Engineering, level: central, body_type: public_institution, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.cae.cn, site_key: null, coverage_status: unknown}
+  - {id: drc,     dimension: central, name_cn: 国务院发展研究中心, name_en: Development Research Center of the State Council, level: central, body_type: public_institution, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.drc.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: cma,     dimension: central, name_cn: 中国气象局, name_en: China Meteorological Administration, level: central, body_type: public_institution, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.cma.gov.cn, site_key: cma, coverage_status: crawled}
+  - {id: nsfc,    dimension: central, name_cn: 国家自然科学基金委员会, name_en: National Natural Science Foundation of China, level: central, body_type: public_institution, parent_id: most, counterpart_central_body: null, reorg_note: "2018: management placed under MOST.", official_url: https://www.nsfc.gov.cn, site_key: nsfc, coverage_status: crawled}
+
+  # ---- 部委管理的国家局 (national bureaus under a parent ministry) ----
+  - {id: nea,       dimension: central, name_cn: 国家能源局, name_en: National Energy Administration, level: central, body_type: national_bureau, parent_id: ndrc, counterpart_central_body: null, reorg_note: null, official_url: http://www.nea.gov.cn, site_key: nea, coverage_status: crawled}
+  - {id: nda,       dimension: central, name_cn: 国家数据局, name_en: National Data Administration, level: central, body_type: national_bureau, parent_id: ndrc, counterpart_central_body: null, reorg_note: "2023: NEW; absorbed data functions from CAC + NDRC.", official_url: https://www.nda.gov.cn, site_key: nda, coverage_status: crawled}
+  - {id: grain,     dimension: central, name_cn: 国家粮食和物资储备局, name_en: National Food & Strategic Reserves Administration, level: central, body_type: national_bureau, parent_id: ndrc, counterpart_central_body: null, reorg_note: null, official_url: http://www.lswz.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: sastind,   dimension: central, name_cn: 国家国防科技工业局, name_en: State Administration for Science Technology & Industry for National Defense, level: central, body_type: national_bureau, parent_id: miit, counterpart_central_body: null, reorg_note: null, official_url: http://www.sastind.gov.cn, site_key: sastind, coverage_status: crawled}
+  - {id: tobacco,   dimension: central, name_cn: 国家烟草专卖局, name_en: State Tobacco Monopoly Administration, level: central, body_type: national_bureau, parent_id: miit, counterpart_central_body: null, reorg_note: null, official_url: http://www.tobacco.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: nia,       dimension: central, name_cn: 国家移民管理局, name_en: National Immigration Administration, level: central, body_type: national_bureau, parent_id: mps, counterpart_central_body: null, reorg_note: "2018: newly created under MPS.", official_url: https://www.nia.gov.cn, site_key: nia, coverage_status: crawled}
+  - {id: forestry,  dimension: central, name_cn: 国家林业和草原局, name_en: National Forestry & Grassland Administration, level: central, body_type: national_bureau, parent_id: mnr, counterpart_central_body: null, reorg_note: "2018: created; also 国家公园管理局 signboard.", official_url: http://www.forestry.gov.cn, site_key: sfa, coverage_status: crawled}
+  - {id: nra,       dimension: central, name_cn: 国家铁路局, name_en: National Railway Administration, level: central, body_type: national_bureau, parent_id: mot, counterpart_central_body: null, reorg_note: null, official_url: http://www.nra.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: caac,      dimension: central, name_cn: 中国民用航空局, name_en: Civil Aviation Administration of China, level: central, body_type: national_bureau, parent_id: mot, counterpart_central_body: null, reorg_note: null, official_url: http://www.caac.gov.cn, site_key: caac, coverage_status: crawled}
+  - {id: spb,       dimension: central, name_cn: 国家邮政局, name_en: State Post Bureau, level: central, body_type: national_bureau, parent_id: mot, counterpart_central_body: null, reorg_note: null, official_url: http://www.spb.gov.cn, site_key: spb, coverage_status: crawled}
+  - {id: ncha,      dimension: central, name_cn: 国家文物局, name_en: National Cultural Heritage Administration, level: central, body_type: national_bureau, parent_id: mct, counterpart_central_body: null, reorg_note: null, official_url: http://www.ncha.gov.cn, site_key: ncha, coverage_status: crawled}
+  - {id: natcm,     dimension: central, name_cn: 国家中医药管理局, name_en: National Administration of Traditional Chinese Medicine, level: central, body_type: national_bureau, parent_id: nhc, counterpart_central_body: null, reorg_note: null, official_url: http://www.natcm.gov.cn, site_key: natcm, coverage_status: crawled}
+  - {id: ncdc,      dimension: central, name_cn: 国家疾病预防控制局, name_en: National Disease Control & Prevention Administration, level: central, body_type: national_bureau, parent_id: nhc, counterpart_central_body: null, reorg_note: "2021: newly created; elevated post-COVID.", official_url: https://www.ndcpa.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: nmpa,      dimension: central, name_cn: 国家药品监督管理局, name_en: National Medical Products Administration, level: central, body_type: national_bureau, parent_id: samr, counterpart_central_body: null, reorg_note: null, official_url: https://www.nmpa.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: cnipa,     dimension: central, name_cn: 国家知识产权局, name_en: China National Intellectual Property Administration, level: central, body_type: national_bureau, parent_id: samr, counterpart_central_body: null, reorg_note: null, official_url: https://www.cnipa.gov.cn, site_key: cnipa, coverage_status: crawled}
+  - {id: safe,      dimension: central, name_cn: 国家外汇管理局, name_en: State Administration of Foreign Exchange, level: central, body_type: national_bureau, parent_id: pbc, counterpart_central_body: null, reorg_note: null, official_url: http://www.safe.gov.cn, site_key: safe, coverage_status: crawled}
+  - {id: mine_safety, dimension: central, name_cn: 国家矿山安全监察局, name_en: National Mine Safety Administration, level: central, body_type: national_bureau, parent_id: mem, counterpart_central_body: null, reorg_note: null, official_url: https://www.chinamine-safety.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: nfra_fire, dimension: central, name_cn: 国家消防救援局, name_en: National Fire & Rescue Administration, level: central, body_type: national_bureau, parent_id: mem, counterpart_central_body: null, reorg_note: "2018: firefighting transferred from MPS into 应急部 system.", official_url: https://www.119.gov.cn, site_key: nfsra, coverage_status: crawled}
+  - {id: nba,       dimension: central, name_cn: 国家原子能机构, name_en: China Atomic Energy Authority, level: central, body_type: national_bureau, parent_id: miit, counterpart_central_body: null, reorg_note: "Administered via SASTIND.", official_url: http://www.caea.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: cnsa,      dimension: central, name_cn: 国家航天局, name_en: China National Space Administration, level: central, body_type: national_bureau, parent_id: miit, counterpart_central_body: null, reorg_note: "Administered via SASTIND.", official_url: http://www.cnsa.gov.cn, site_key: cnsa, coverage_status: crawled}
+
+  # ---- Standards / cyber / statistics bodies (policy-relevant, mixed rank) ----
+  - {id: nbs,     dimension: central, name_cn: 国家统计局, name_en: National Bureau of Statistics, level: central, body_type: directly_subordinate, parent_id: state_council, counterpart_central_body: null, reorg_note: null, official_url: https://www.stats.gov.cn, site_key: nbs, coverage_status: crawled}
+  - {id: sic,     dimension: central, name_cn: 国家信息中心, name_en: State Information Center, level: central, body_type: public_institution, parent_id: ndrc, counterpart_central_body: null, reorg_note: null, official_url: http://www.sic.gov.cn, site_key: sic, coverage_status: crawled}
+  - {id: tc260,   dimension: central, name_cn: 全国网络安全标准化技术委员会, name_en: National Cybersecurity Standardization Technical Committee (TC260), level: central, body_type: public_institution, parent_id: cac, counterpart_central_body: null, reorg_note: null, official_url: https://www.tc260.org.cn, site_key: tc260, coverage_status: crawled}
+
+  # ---- PARTY organs (Dim C party lane; most publish sparsely / no portal) ----
+  - {id: cpc_general_office,   dimension: central, name_cn: 中共中央办公厅, name_en: General Office of the CPC Central Committee, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: "Issues 中办发 documents that cascade to all state organs.", official_url: null, site_key: null, coverage_status: no_portal}
+  - {id: cpc_org_dept,         dimension: central, name_cn: 中共中央组织部, name_en: Organization Department, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: "2018: absorbed 国家公务员局 functions.", official_url: https://www.12380.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: cpc_propaganda,       dimension: central, name_cn: 中共中央宣传部, name_en: Publicity (Propaganda) Department, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: "2018: took over 新闻出版署 + 国家电影局 (both carry 挂牌 signboards under it).", official_url: null, site_key: null, coverage_status: no_portal}
+  - {id: cpc_united_front,     dimension: central, name_cn: 中共中央统一战线工作部, name_en: United Front Work Department, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: "2018: absorbed 国家宗教事务局 + 国务院侨办.", official_url: null, site_key: null, coverage_status: no_portal}
+  - {id: cpc_plac,             dimension: central, name_cn: 中共中央政法委员会, name_en: Central Political & Legal Affairs Commission, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: "Oversees courts, procuratorate, public security, state security, justice.", official_url: https://www.chinapeace.gov.cn, site_key: chinapeace, coverage_status: crawled}
+  - {id: cac,                  dimension: central, name_cn: 中央网络安全和信息化委员会办公室 / 国家互联网信息办公室, name_en: Cyberspace Administration of China, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: "Dual signboard: party commission office + State Council office. Primary AI/data/internet regulator.", official_url: https://www.cac.gov.cn, site_key: cac, coverage_status: crawled}
+  - {id: cpc_finance_office,   dimension: central, name_cn: 中央金融委员会办公室, name_en: Office of the Central Financial Commission, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: "2023: NEW; replaced FSDC (国务院金融稳定发展委员会). Paired with 中央金融工作委员会.", predecessor_ids: [fsdc], official_url: null, site_key: null, coverage_status: no_portal}
+  - {id: cpc_st_commission,    dimension: central, name_cn: 中央科技委员会, name_en: Central Science & Technology Commission, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: "2023: NEW; MOST serves as its administrative office.", official_url: null, site_key: null, coverage_status: no_portal}
+  - {id: cpc_social_work,      dimension: central, name_cn: 中央社会工作部, name_en: Central Social Work Department, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: "2023: NEW; took信访 guidance + industry-association/social-org party building.", official_url: null, site_key: null, coverage_status: no_portal}
+  - {id: cpc_ccdi_nsc,         dimension: central, name_cn: 中央纪律检查委员会 / 国家监察委员会, name_en: CCDI / National Supervisory Commission, level: central, body_type: supervisory, parent_id: null, counterpart_central_body: null, reorg_note: "2018: NSC created, merging 监察部 + 预防腐败局 + procuratorate anti-graft into one supervisory organ, co-located with the party CCDI.", official_url: https://www.ccdi.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: cpc_taiwan_office,    dimension: central, name_cn: 中央台湾工作办公室 / 国务院台湾事务办公室, name_en: Taiwan Affairs Office, level: central, body_type: party_organ, parent_id: null, counterpart_central_body: null, reorg_note: null, official_url: http://www.gwytb.gov.cn, site_key: null, coverage_status: unknown}
+  - {id: cpc_ccp_members_net,  dimension: central, name_cn: 共产党员网 (12371), name_en: CPC Members Network, level: central, body_type: party_organ, parent_id: cpc_org_dept, counterpart_central_body: null, reorg_note: "Publishing outlet for party regulations; crawled as a proxy for party-organ output.", official_url: https://www.12371.cn, site_key: dangyuan, coverage_status: crawled}
+
+  # ---- NPC / CPPCC ----
+  - {id: npc,     dimension: central, name_cn: 全国人民代表大会 / 常委会, name_en: National People's Congress & Standing Committee, level: central, body_type: legislature, parent_id: null, counterpart_central_body: null, reorg_note: "国家法律法规数据库 (flk.npc.gov.cn) is the authoritative law corpus.", official_url: http://www.npc.gov.cn, site_key: npc, coverage_status: crawled}
+  - {id: cppcc,   dimension: central, name_cn: 中国人民政治协商会议全国委员会, name_en: CPPCC National Committee, level: central, body_type: consultative, parent_id: null, counterpart_central_body: null, reorg_note: null, official_url: http://www.cppcc.gov.cn, site_key: cppcc, coverage_status: crawled}
+
+  # ---- Judicial / procuratorial ----
+  - {id: spc,       dimension: central, name_cn: 最高人民法院, name_en: Supreme People's Court, level: central, body_type: judicial, parent_id: null, counterpart_central_body: null, reorg_note: null, official_url: https://www.court.gov.cn, site_key: spc, coverage_status: crawled}
+  - {id: spc_ip,    dimension: central, name_cn: 最高人民法院知识产权法庭, name_en: SPC Intellectual Property Tribunal, level: central, body_type: judicial, parent_id: spc, counterpart_central_body: null, reorg_note: "Operational since Jan 2019.", official_url: https://ipc.court.gov.cn, site_key: ipc_court, coverage_status: crawled}
+  - {id: spp,       dimension: central, name_cn: 最高人民检察院, name_en: Supreme People's Procuratorate, level: central, body_type: procuratorate, parent_id: null, counterpart_central_body: null, reorg_note: "2018: anti-graft investigation transferred to NSC.", official_url: https://www.spp.gov.cn, site_key: spp, coverage_status: crawled}
+
+  # ---- Military lane (CMC -> services -> PAP -> Coast Guard). NOT State Council. ----
+  - {id: cmc,        dimension: central, name_cn: 中央军事委员会, name_en: Central Military Commission, level: central, body_type: military, parent_id: null, counterpart_central_body: null, reorg_note: "No standalone public policy portal; public face is 国防部 (mod).", official_url: null, site_key: null, coverage_status: no_portal}
+  - {id: pap,        dimension: central, name_cn: 中国人民武装警察部队, name_en: People's Armed Police, level: central, body_type: military, parent_id: cmc, counterpart_central_body: null, reorg_note: "2018: placed fully under CMC (removed from State Council dual-lead).", official_url: null, site_key: null, coverage_status: no_portal}
+  - {id: ccg,        dimension: central, name_cn: 中国海警局, name_en: China Coast Guard, level: central, body_type: military, parent_id: pap, counterpart_central_body: null, reorg_note: "2018: coast guard moved from 国家海洋局 to PAP under CMC (per 海警法 art.2).", official_url: https://www.ccg.gov.cn, site_key: null, coverage_status: anti_bot}
+  - {id: pla_daily,  dimension: central, name_cn: 中国军网 / 解放军报, name_en: China Military Online / PLA Daily, level: central, body_type: military, parent_id: cmc, counterpart_central_body: null, reorg_note: "CMC-approved military news portal; low policy-doc value.", official_url: http://www.81.cn, site_key: null, coverage_status: unknown}
+
+  # ---- Mass organizations (人民团体) ----
+  - {id: acftu,   dimension: central, name_cn: 中华全国总工会, name_en: All-China Federation of Trade Unions, level: central, body_type: mass_org, parent_id: null, counterpart_central_body: null, reorg_note: null, official_url: https://www.acftu.org, site_key: null, coverage_status: unknown}
+  - {id: cylc,    dimension: central, name_cn: 中国共产主义青年团中央, name_en: Communist Youth League Central Committee, level: central, body_type: mass_org, parent_id: null, counterpart_central_body: null, reorg_note: null, official_url: https://www.gqt.org.cn, site_key: null, coverage_status: unknown}
+  - {id: acwf,    dimension: central, name_cn: 中华全国妇女联合会, name_en: All-China Women's Federation, level: central, body_type: mass_org, parent_id: null, counterpart_central_body: null, reorg_note: null, official_url: https://www.women.org.cn, site_key: null, coverage_status: unknown}
+  - {id: cast,    dimension: central, name_cn: 中国科学技术协会, name_en: China Association for Science & Technology, level: central, body_type: mass_org, parent_id: null, counterpart_central_body: null, reorg_note: "Umbrella for ~200 scientific societies.", official_url: https://www.cast.org.cn, site_key: null, coverage_status: unknown}
+
+# =========================================================================
+# DIM B -- DEPARTMENT TAXONOMY BACKBONE (reusable TEMPLATE rows, not instances)
+# =========================================================================
+# Each row is a TYPE. name_cn_provincial uses 厅/委/局 (province rank); the same
+# body is a 局 at prefecture and county rank. `counterpart_central_body` is the id
+# of the Dim C body it 对口. To instantiate: for each geographic unit U in Dim A,
+# emit a row id "<U>.<dept_slug>" with parent_id=U. See `generation` below.
+#
+# `tier_floor` = lowest geographic level at which this department reliably exists
+# as its own body (some bodies stop at prefecture; some run to township).
+# `vertical` = true where the tiao (条) line dominates (staff/budget controlled
+# from above, e.g. customs/tax/SAFE) rather than the local kuai (块) government.
+
+dept_taxonomy:
+  # --- Core 组成部门-mirroring departments (present at province + prefecture + county) ---
+  - {slug: fgw,     name_cn_provincial: "{unit}发展和改革委员会",       name_en: Development & Reform Commission,           counterpart_central_body: ndrc,   body_type: department, tier_floor: county, vertical: false}
+  - {slug: edu,     name_cn_provincial: "{unit}教育厅",                 name_en: Education Department/Bureau,               counterpart_central_body: moe,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: kjt,     name_cn_provincial: "{unit}科学技术厅",             name_en: Science & Technology Department/Bureau,   counterpart_central_body: most,   body_type: department, tier_floor: county, vertical: false}
+  - {slug: gxt,     name_cn_provincial: "{unit}工业和信息化厅",         name_en: Industry & IT Department/Bureau,          counterpart_central_body: miit,   body_type: department, tier_floor: county, vertical: false}
+  - {slug: mzw,     name_cn_provincial: "{unit}民族宗教事务委员会",     name_en: Ethnic & Religious Affairs Commission,    counterpart_central_body: neac,   body_type: department, tier_floor: prefecture, vertical: false}
+  - {slug: ga,      name_cn_provincial: "{unit}公安厅",                 name_en: Public Security Department/Bureau,        counterpart_central_body: mps,    body_type: department, tier_floor: township, vertical: true}
+  - {slug: at,      name_cn_provincial: "{unit}国家安全厅",             name_en: State Security Department,                counterpart_central_body: mss,    body_type: department, tier_floor: prefecture, vertical: true}
+  - {slug: mzt,     name_cn_provincial: "{unit}民政厅",                 name_en: Civil Affairs Department/Bureau,          counterpart_central_body: mca,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: sft,     name_cn_provincial: "{unit}司法厅",                 name_en: Justice Department/Bureau,                counterpart_central_body: moj,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: czt,     name_cn_provincial: "{unit}财政厅",                 name_en: Finance Department/Bureau,                counterpart_central_body: mof,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: hrss,    name_cn_provincial: "{unit}人力资源和社会保障厅",   name_en: Human Resources & Social Security Dept,   counterpart_central_body: mohrss, body_type: department, tier_floor: county, vertical: false}
+  - {slug: zrzyt,   name_cn_provincial: "{unit}自然资源厅",             name_en: Natural Resources Department/Bureau,      counterpart_central_body: mnr,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: sthjt,   name_cn_provincial: "{unit}生态环境厅",             name_en: Ecology & Environment Department/Bureau,  counterpart_central_body: mee,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: zjt,     name_cn_provincial: "{unit}住房和城乡建设厅",       name_en: Housing & Urban-Rural Development Dept,   counterpart_central_body: mohurd, body_type: department, tier_floor: county, vertical: false}
+  - {slug: jtyst,   name_cn_provincial: "{unit}交通运输厅",             name_en: Transport Department/Bureau,              counterpart_central_body: mot,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: slt,     name_cn_provincial: "{unit}水利厅",                 name_en: Water Resources Department/Bureau,        counterpart_central_body: mwr,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: nynct,   name_cn_provincial: "{unit}农业农村厅",             name_en: Agriculture & Rural Affairs Department,   counterpart_central_body: mara,   body_type: department, tier_floor: county, vertical: false}
+  - {slug: swt,     name_cn_provincial: "{unit}商务厅",                 name_en: Commerce Department/Bureau,               counterpart_central_body: mofcom, body_type: department, tier_floor: county, vertical: false}
+  - {slug: whlyt,   name_cn_provincial: "{unit}文化和旅游厅",           name_en: Culture & Tourism Department/Bureau,      counterpart_central_body: mct,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: wjw,     name_cn_provincial: "{unit}卫生健康委员会",         name_en: Health Commission,                        counterpart_central_body: nhc,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: tyj,     name_cn_provincial: "{unit}退役军人事务厅",         name_en: Veterans Affairs Department/Bureau,       counterpart_central_body: mva,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: yjt,     name_cn_provincial: "{unit}应急管理厅",             name_en: Emergency Management Department/Bureau,   counterpart_central_body: mem,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: sjt,     name_cn_provincial: "{unit}审计厅",                 name_en: Audit Department/Bureau,                  counterpart_central_body: cnao,   body_type: department, tier_floor: county, vertical: false}
+  - {slug: wsb,     name_cn_provincial: "{unit}人民政府外事办公室",     name_en: Foreign Affairs Office,                   counterpart_central_body: mfa,    body_type: department, tier_floor: prefecture, vertical: false}
+
+  # --- 直属/特设机构-mirroring departments (province + prefecture; some to county) ---
+  - {slug: gzw,     name_cn_provincial: "{unit}国有资产监督管理委员会", name_en: State-owned Assets Supervision Commission, counterpart_central_body: sasac,  body_type: department, tier_floor: prefecture, vertical: false}
+  - {slug: scjgj,   name_cn_provincial: "{unit}市场监督管理局",         name_en: Market Regulation Administration,         counterpart_central_body: samr,   body_type: department, tier_floor: county, vertical: false}
+  - {slug: tjj,     name_cn_provincial: "{unit}统计局",                 name_en: Statistics Bureau,                        counterpart_central_body: nbs,    body_type: department, tier_floor: county, vertical: false}
+  - {slug: ybj,     name_cn_provincial: "{unit}医疗保障局",             name_en: Healthcare Security Administration,       counterpart_central_body: nhsa,   body_type: department, tier_floor: prefecture, vertical: false}
+  - {slug: tyjr,    name_cn_provincial: "{unit}体育局",                 name_en: Sports Bureau,                            counterpart_central_body: gas,    body_type: department, tier_floor: prefecture, vertical: false}
+  - {slug: gbdst,   name_cn_provincial: "{unit}广播电视局",             name_en: Radio & Television Bureau,                counterpart_central_body: nrta,   body_type: department, tier_floor: prefecture, vertical: false}
+  - {slug: jrjgj,   name_cn_provincial: "{unit}地方金融监督管理局",     name_en: Local Financial Regulatory Administration, counterpart_central_body: nfra,   body_type: department, tier_floor: prefecture, vertical: false, note: "post-2023 many renamed 金融工作局/委办; tiao-line strengthening toward NFRA"}
+  - {slug: sjaqj,   name_cn_provincial: "{unit}政务服务和数据管理局",   name_en: Government Services & Data Administration, counterpart_central_body: nda,    body_type: department, tier_floor: prefecture, vertical: false, note: "naming varies widely: 大数据局 / 数据局 / 政务服务数据局"}
+  - {slug: ylj,     name_cn_provincial: "{unit}林业和草原局",           name_en: Forestry & Grassland Administration,      counterpart_central_body: forestry, body_type: department, tier_floor: prefecture, vertical: false}
+  - {slug: nyj,     name_cn_provincial: "{unit}能源局",                 name_en: Energy Administration,                    counterpart_central_body: nea,    body_type: department, tier_floor: provincial, vertical: false, note: "not present in every province"}
+  - {slug: yjglj,   name_cn_provincial: "{unit}药品监督管理局",         name_en: Medical Products Administration,          counterpart_central_body: nmpa,   body_type: department, tier_floor: provincial, vertical: false}
+  - {slug: zscqj,   name_cn_provincial: "{unit}知识产权局",             name_en: Intellectual Property Administration,     counterpart_central_body: cnipa,  body_type: department, tier_floor: prefecture, vertical: false}
+  - {slug: xfj,     name_cn_provincial: "{unit}信访局",                 name_en: Public Complaints Administration,         counterpart_central_body: xinfang, body_type: department, tier_floor: county, vertical: false}
+  - {slug: jgswglj, name_cn_provincial: "{unit}机关事务管理局",         name_en: Government Offices Administration,         counterpart_central_body: ggj,    body_type: department, tier_floor: prefecture, vertical: false}
+
+  # --- Vertical (tiao-dominant) systems that appear as local branches, not local depts ---
+  - {slug: tax,     name_cn_provincial: "国家税务总局{unit}税务局",     name_en: STA Provincial/Local Tax Bureau,          counterpart_central_body: chinatax, body_type: department, tier_floor: county, vertical: true, note: "vertically managed by STA since 2018"}
+  - {slug: customs, name_cn_provincial: "{unit}海关",                   name_en: Customs District,                         counterpart_central_body: gacc,   body_type: department, tier_floor: prefecture, vertical: true, note: "customs districts do not map 1:1 to admin units"}
+  - {slug: pboc_br, name_cn_provincial: "中国人民银行{unit}分行",       name_en: PBOC Regional Branch,                     counterpart_central_body: pbc,    body_type: department, tier_floor: prefecture, vertical: true, note: "2023: reverted to province-based branch structure"}
+
+  # --- Party-side local organs (mirror the Dim C party lane at each level) ---
+  - {slug: p_office,    name_cn_provincial: "中共{unit}委员会办公厅",   name_en: Party Committee General Office,           counterpart_central_body: cpc_general_office, body_type: party_organ, tier_floor: county, vertical: false}
+  - {slug: p_org,       name_cn_provincial: "中共{unit}委组织部",       name_en: Party Organization Department,            counterpart_central_body: cpc_org_dept,       body_type: party_organ, tier_floor: county, vertical: false}
+  - {slug: p_prop,      name_cn_provincial: "中共{unit}委宣传部",       name_en: Party Publicity Department,               counterpart_central_body: cpc_propaganda,     body_type: party_organ, tier_floor: county, vertical: false}
+  - {slug: p_ufwd,      name_cn_provincial: "中共{unit}委统战部",       name_en: Party United Front Work Department,       counterpart_central_body: cpc_united_front,   body_type: party_organ, tier_floor: prefecture, vertical: false}
+  - {slug: p_plac,      name_cn_provincial: "中共{unit}委政法委员会",   name_en: Party Political & Legal Affairs Commission, counterpart_central_body: cpc_plac,         body_type: party_organ, tier_floor: county, vertical: false}
+  - {slug: p_cyber,     name_cn_provincial: "{unit}委网信办",           name_en: Cyberspace Administration (local),        counterpart_central_body: cac,                body_type: party_organ, tier_floor: prefecture, vertical: false}
+  - {slug: p_ccdi,      name_cn_provincial: "中共{unit}纪委监委",       name_en: Discipline Inspection & Supervisory Commission, counterpart_central_body: cpc_ccdi_nsc,   body_type: supervisory, tier_floor: county, vertical: false}
+
+# =========================================================================
+# GENERATION -- how Dim A x Dim B produces concrete instances (not hand-listed)
+# =========================================================================
+generation:
+  method: >
+    For each geographic unit U in docs/working/china-admin-divisions.csv, and each
+    template T in dept_taxonomy whose tier_floor <= U.level, emit an instance row:
+      id = "<U.id>.<T.slug>"
+      dimension = dept
+      name_cn = T.name_cn_provincial with {unit} -> U.name_cn (swap 厅->局 below province rank)
+      level = U.level
+      parent_id = U.id                       # kuai (块) line: the local government
+      counterpart_central_body = T.counterpart_central_body   # tiao (条) line
+      official_url = null                     # to be discovered (see model doc §5)
+      coverage_status = unknown
+    A geo portal row (dimension=geo, id=U.id) is emitted once per U as well.
+  naming_rule: >
+    厅 (province) -> 局 (prefecture/county) for most 组成部门 mirrors; 委员会 stays
+    委员会; vertically-managed systems keep their central-prefixed name (税务局, 海关).
+  rough_counts:
+    central_tree_rows: "~90 in this file (constituent 26 + subordinate ~12 + bureaus ~20 + party ~12 + NPC/CPPCC 2 + judicial 3 + military 4 + mass orgs 4 + standards/stats 3). The full long tail of 直属单位/研究院 under each ministry would add several hundred more."
+    dept_templates: "~44 (23 core + ~14 直属机构-mirror + 3 vertical + 7 party-side)"
+    provincial_instances: "34 units x ~40 depts ~= 1,360"
+    prefecture_instances: "~333 units x ~33 depts ~= ~11,000"
+    county_instances: "~2,844 units x ~28 depts ~= ~80,000"
+    township_instances: "~38,000 units x a few offices ~= 100,000+ (rarely own a portal; publish on the parent county site)"
+    note: >
+      These are ENTITY counts, not website counts. Below prefecture, most departments
+      do NOT run an independent portal -- they publish under the county government's
+      单位 sections. The count of distinct crawlable WEBSITES is far smaller: roughly
+      3,200 general-government portals (central+province+prefecture+county) plus a few
+      thousand department subdomains that exist mainly at province and big-city level.
+      So the crawl target set is ~5,000-8,000 live sites, not ~90,000 entities.
