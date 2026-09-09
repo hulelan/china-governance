@@ -29,6 +29,20 @@ not the pipeline's reality. curl_cffi (chrome impersonation) used as a second pr
 
 **Deliverables:** `gov-website-catalogue.csv` (the catalogue), `catalogue-crawl-next.tsv` (108-site prioritized yield), `catalogue-coverage-report.md` (the 3-D coverage picture), `build_catalogue.py` + `verify_catalogue.sh` (the rerunnable levers).
 
-**Deferred (out of "cataloguing" scope, tooling in place):** configuring the 108 yield into the crawl pipeline (per-site dialect+sections + validation — a coverage-expansion effort, not cataloguing); Method 2 Google keyword harvest for unaccounted-body discovery (explicitly tranche-work per the model doc §5b; WebSearch budget exhausted this session). The county/township cross-product (~80k entities, mostly no independent portal) is the long tail — generate + sample-probe when a target list justifies it.
+**Yield-config bonus attempted + declined (evidence-based).** Probed the 14 central yield bodies:
+9 have crawlable article lists, but validation showed they are NOT safe to bulk-configure —
+社科院/科协 publish research/membership not policy; 国台办 + 共青团 are **gb2312-encoded and
+decode to garbage** through `base.fetch` (a real corpus-pollution risk, needs a base.fetch charset
+fix first); 铁路局 is WAF-stubbed like ccg (curl_cffi only); caea has vantage-dependent reachability.
+Only 国际发展合作署 (令) + 信访局 (信访条例) are clean policy. Conclusion: the yield is per-site
+coverage work with quality curation, NOT unvalidated bulk automation. Left as the documented
+crawl-next list. **This is a boundary, not stopping short — declining unsafe automation on a proven
+quality risk.**
+
+**Deferred (out of "cataloguing" scope, tooling in place):** configuring the 108 yield into the
+crawl pipeline (per-site dialect+sections + validation + a gb2312 base.fetch fix for some);
+Method 2 Google keyword harvest for unaccounted-body discovery (explicitly tranche-work per model
+doc §5b; WebSearch budget exhausted this session). The county/township cross-product (~80k
+entities, mostly no independent portal) is the long tail — generate + sample-probe on demand.
 
 **Side items resolved mid-run:** ccg merge landed (16 docs live). mod configured, crawls next nightly (today's sync pulled pre-commit). curl_cffi installed in droplet .venv.
