@@ -405,7 +405,10 @@ SITES = {
     "hegang": {"name": "Hegang (鹤岗市)", "base_url": "https://www.hegang.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/hegang/szfgfxwj/zwgk_zc.shtml", "/hegang/tzgg/list.shtml", "/hegang/zcjd/zcjd_sec.shtml"]},
     # ═══ ReConnect reachable-uncrawled batch 2 (2026-09-05): homepage-seed crawl
     #     (sections=['/'] → _list_articles auto-detects the dialect). group='city2'.
-    "mod": {"name": "国防部", "base_url": "http://www.mod.gov.cn", "admin_level": "central", "group": "city2", "sections": ["/"]},
+    # 国防部 (MND) — the CMC/PAP public window. mgfbw dialect (AC). Point at 文件 (real
+    # 中共中央/国务院/军委 印发 policy), NOT jswj (military news). See source-access-map 2026-09-08.
+    "mod": {"name": "国防部", "base_url": "http://www.mod.gov.cn", "admin_level": "central", "group": "city3",
+        "sections": ["/gfbw/fgwx/wj_213958/index.html"]},
     "sm": {"name": "三明市", "base_url": "https://www.sm.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "smx": {"name": "三门峡市", "base_url": "https://www.smx.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "linyi": {"name": "临沂市", "base_url": "https://www.linyi.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -1108,6 +1111,11 @@ _ART_PCON_RE = re.compile(
 #      and (I) hexmon (32-hex file). Date = YYYYMM (→ -01); row date wins when present.
 _ART_CNC_RE = re.compile(
     r'<a\s+[^>]*href="([^"]*?/c\d+/(\d{4})(\d{2})/c\d+_\d+\.s?html?)"[^>]*>(.*?)</a>', re.S)
+#  (AC) mgfbw: /gfbw/<section…>/<6–9-digit id>.html  (国防部 mod.gov.cn — the CMC/PAP public
+#      window). Whole site lives under /gfbw/; id is a 7–8-digit non-date. Anchored on /gfbw/
+#      so it's mod-only → collision-safe. Dateless → row _DATE_NEAR then _PUB_DATE body fallback.
+_ART_MGFBW_RE = re.compile(
+    r'<a\s+[^>]*href="([^"]*?/gfbw/[a-z0-9_/]+?/\d{6,9}\.s?html?)"[^>]*>(.*?)</a>', re.S)
 _ART_TITLE_ATTR = re.compile(r'title="([^"]+)"')
 _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
@@ -1265,6 +1273,8 @@ def _list_articles(page_html: str, page_url: str) -> list:
         ym4, mo = m.group(2), m.group(3)
         date_str = f"{ym4}-{mo}-01" if 1 <= int(mo) <= 12 else ""
         matches.append((m, m.group(1), m.group(4), date_str))
+    for m in _ART_MGFBW_RE.finditer(page_html):        # (AC) mgfbw (国防部): dateless → row/body date
+        matches.append((m, m.group(1), m.group(2), ""))
     for m in _ART_SNOW_RE.finditer(page_html):         # (W) snow: no date in URL → body _PUB_DATE fallback
         matches.append((m, m.group(1), m.group(2), ""))
     # Authoritative-URL-date dialects: the FULL date lives in the path, so it must NOT be
