@@ -10,11 +10,11 @@ is tracked separately in `source-access-map.md`.
 | Dimension | Entities | Crawled | Reachable-uncrawled (yield) | Blocked from droplet | No subdomain / no portal | Unknown |
 |---|---|---|---|---|---|---|
 | **Central** (Dim C) | 95 | 57 | 14 | 12 | 12 | 0 |
-| **Geo portals** (Dim A) | 395 | 112 | 3 | 8 | 264 | 8 |
-| **Departments** (Dim A×B) | 1296 | 80 | 73 | 79 | 1046 | 18 |
+| **Geo portals** (Dim A) | 397 | 115 | 3 | 8 | 265 | 4 |
+| **Departments** (Dim A×B) | 1486 | 88 | 91 | 81 | 1228 | 0 |
 
-- **Crawled 249** entities across the volume (57 central + 112 geo + 80 dept).
-- **Yield = 90 reachable-uncrawled sites** we could add to the pipeline today
+- **Crawled 260** entities across the volume (57 central + 115 geo + 88 dept).
+- **Yield = 108 reachable-uncrawled sites** we could add to the pipeline today
   ([`catalogue-crawl-next.tsv`](catalogue-crawl-next.tsv)): 14 central bodies + 73 provincial
   department subdomains + 3 geo portals.
 - **Blocked from the droplet = ~99** (proxy_gated / stub / anti_bot / server_error). Many geo

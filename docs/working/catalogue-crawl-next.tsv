@@ -13,8 +13,26 @@ ncdc	central	central	国家疾病预防控制局	https://www.ndcpa.gov.cn
 nra	central	central	国家铁路局	http://www.nra.gov.cn	
 pla_daily	central	central	中国军网 / 解放军报	http://www.81.cn	
 xinfang	central	central	国家信访局	https://www.gjxfj.gov.cn	
+beijing.gzw	dept	provincial	北京市国有资产监督管理委员会	https://gzw.beijing.gov.cn	sasac
+beijing.tyj	dept	provincial	北京市退役军人事务厅	https://tyj.beijing.gov.cn	mva
+beijing.yjglj	dept	provincial	北京市药品监督管理局	https://yjglj.beijing.gov.cn	nmpa
+beijing.zscqj	dept	provincial	北京市知识产权局	https://zscqj.beijing.gov.cn	cnipa
+guangdong.gzw	dept	provincial	广东省国有资产监督管理委员会	https://gzw.gd.gov.cn	sasac
+guangdong.tyj	dept	provincial	广东省退役军人事务厅	https://tyj.gd.gov.cn	mva
 guizhou.kjt	dept	provincial	贵州省科学技术厅	https://kjt.guizhou.gov.cn	most
 guizhou.nyj	dept	provincial	贵州省能源局	https://nyj.guizhou.gov.cn	nea
+heilongjiang.gxt	dept	provincial	黑龙江省工业和信息化厅	https://gxt.hlj.gov.cn	miit
+heilongjiang.hrss	dept	provincial	黑龙江省人力资源和社会保障厅	https://hrss.hlj.gov.cn	mohrss
+heilongjiang.kjt	dept	provincial	黑龙江省科学技术厅	https://kjt.hlj.gov.cn	most
+heilongjiang.nynct	dept	provincial	黑龙江省农业农村厅	https://nynct.hlj.gov.cn	mara
+heilongjiang.sft	dept	provincial	黑龙江省司法厅	https://sft.hlj.gov.cn	moj
+heilongjiang.sjt	dept	provincial	黑龙江省审计厅	https://sjt.hlj.gov.cn	cnao
+heilongjiang.slt	dept	provincial	黑龙江省水利厅	https://slt.hlj.gov.cn	mwr
+heilongjiang.tjj	dept	provincial	黑龙江省统计局	https://tjj.hlj.gov.cn	nbs
+heilongjiang.tyj	dept	provincial	黑龙江省退役军人事务厅	https://tyj.hlj.gov.cn	mva
+heilongjiang.xfj	dept	provincial	黑龙江省信访局	https://xfj.hlj.gov.cn	xinfang
+heilongjiang.ybj	dept	provincial	黑龙江省医疗保障局	https://ybj.hlj.gov.cn	nhsa
+heilongjiang.zrzyt	dept	provincial	黑龙江省自然资源厅	https://zrzyt.hlj.gov.cn	mnr
 hubei.kjt	dept	provincial	湖北省科学技术厅	https://kjt.hubei.gov.cn	most
 hubei.mzw	dept	provincial	湖北省民族宗教事务委员会	https://mzw.hubei.gov.cn	neac
 hubei.sft	dept	provincial	湖北省司法厅	https://sft.hubei.gov.cn	moj

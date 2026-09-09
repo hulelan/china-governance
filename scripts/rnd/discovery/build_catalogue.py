@@ -56,6 +56,11 @@ def main():
     for r in csv.DictReader(open(f"{W}/reconnect-424-urls.csv", encoding="utf-8")):
         if r["level"] == "provincial" and r["official_url"]:
             prov_host[r["institution_cn"].strip()] = host(r["official_url"])
+    # reconnect-424 lists only 27 provinces; supplement the 4 mainland ones it omits
+    # (all crawled by us) so the reconcile marks them + generates their dept cross-product.
+    for name, dom in {"黑龙江省": "hlj.gov.cn", "广东省": "gd.gov.cn",
+                      "四川省": "sc.gov.cn", "北京市": "beijing.gov.cn"}.items():
+        prov_host.setdefault(name, dom)
     # prefecture city_cn -> candidate_domain, from source-map-cities
     city_host = {}
     for line in open(f"{W}/source-map-cities.csv", encoding="utf-8"):
