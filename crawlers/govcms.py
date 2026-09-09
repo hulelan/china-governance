@@ -1305,7 +1305,6 @@ def _list_articles(page_html: str, page_url: str) -> list:
         url = urljoin(page_url, H.unescape(href))
         if url in seen:
             continue
-        seen.add(url)
         # Quality guards: keep only this site's own articles. Cross-host links are
         # nav (e.g. SASAC's "国务院部门网站" → gov.cn); a residual /../ means urljoin
         # couldn't normalize a protocol-relative ../.. href (→ 400s, e.g. CAS).
@@ -1315,6 +1314,11 @@ def _list_articles(page_html: str, page_url: str) -> list:
         title = _clean(ta.group(1) if ta else inner)
         if not title:
             continue
+        # Reserve the URL only AFTER a non-empty title is confirmed: many templates
+        # (e.g. 海警局) emit TWO anchors per row — an empty img-wrap link then the title
+        # link, both to the same URL. Adding to `seen` earlier let the empty one poison
+        # the row so the good title anchor was dropped as a dup → 0 articles.
+        seen.add(url)
         if mode == "auth" and url_date:                # path date is canonical → don't let a stray row date win
             date = url_date
         elif mode == "fwd":                            # row date follows the link → look forward first
