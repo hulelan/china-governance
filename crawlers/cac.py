@@ -77,6 +77,16 @@ SECTIONS = {
         "channel_code": "A093706",
         "listing_path": "/wxzw/bgfb/A093706index_1.htm",
     },
+    "gdgz": {                       # 高端观察 — observation/theory essays (署名文章 open-web subset)
+        "name": "高端观察",
+        "channel_code": "A093709",
+        "listing_path": "/wxzw/gdgz/A093709index_1.htm",
+    },
+    "dfwx": {                       # 地方网信 — regional, news-heavier
+        "name": "地方网信",
+        "channel_code": "A093710",
+        "listing_path": "/wxzw/dfwx/A093710index_1.htm",
+    },
 }
 
 
