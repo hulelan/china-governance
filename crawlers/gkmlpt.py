@@ -668,6 +668,8 @@ def fetch_document_body(url: str, headers: dict = None) -> tuple[str, str]:
     candidates = [url]
     if url.startswith("https://"):
         candidates.append(url.replace("https://", "http://", 1))
+    elif url.startswith("http://"):
+        candidates.append(url.replace("http://", "https://", 1))   # some subdomains only serve https
     last_err = None
     for u in candidates:
         try:
