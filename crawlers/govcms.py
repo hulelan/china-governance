@@ -84,14 +84,11 @@ SITES = {
         "base_url": "http://www.cppcc.gov.cn", "admin_level": "central",
         "sections": ["/llyj/", "/wylz/wyjy/", "/zxgk/"],   # +政协公开 (section-coverage sweep: 111 arts, 7% held)
     },
-    # State Council 要闻 (top-news) — bespoke gov.py covers /zhengce/ only, so major
-    # announcements that debut in 要闻 (e.g. 人工智能全球治理行动计划) were missed. content_N
-    # dialect (pcon) matches /yaowen/liebiao/YYYYMM/content_<id>.htm. Separate site_key.
-    "gov_yaowen": {
-        "name": "State Council 要闻 (国务院要闻)",
-        "base_url": "https://www.gov.cn", "admin_level": "central",
-        "sections": ["/yaowen/liebiao/", "/lianbo/"],
-    },
+    # NOTE: gov.cn /yaowen/liebiao/ renders its article list via JS — a static govcms
+    # crawl only matches the page's footer/nav chrome, not the news items. So there is NO
+    # gov_yaowen section config. Individual 要闻 primary docs (e.g. 人工智能全球治理行动计划,
+    # gov.cn/yaowen/liebiao/202507/content_7033929.htm) are captured by targeted fetch into
+    # site_key=gov. A proper 要闻 crawler would need headless render or the underlying API.
     # --- provincial / municipal portals (t-date dialect) ---
     "jilin": {
         "name": "Jilin Province (吉林省)",
