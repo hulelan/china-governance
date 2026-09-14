@@ -82,7 +82,7 @@ SITES = {
     "cppcc": {
         "name": "CPPCC National Committee (全国政协)",
         "base_url": "http://www.cppcc.gov.cn", "admin_level": "central",
-        "sections": ["/llyj/", "/wylz/wyjy/"],
+        "sections": ["/llyj/", "/wylz/wyjy/", "/zxgk/"],   # +政协公开 (section-coverage sweep: 111 arts, 7% held)
     },
     # --- provincial / municipal portals (t-date dialect) ---
     "jilin": {
