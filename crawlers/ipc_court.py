@@ -73,24 +73,31 @@ def _extract_article(html: str) -> dict:
     if m:
         meta["title"] = m.group(1).strip()
 
-    # Date — look in article body area
-    m = re.search(r'class="article"', html)
-    if m:
-        start = html.find(">", m.start()) + 1
-        # Look for date near top of article
-        date_m = re.search(r'(\d{4}-\d{2}-\d{2})', html[start:start + 500])
-        if date_m:
-            meta["date_published"] = date_m.group(1)
+    # Date — the news template puts it in <div class="message"> as 发布时间：; the
+    # older /class="article"/ path is kept as a fallback.
+    dm = re.search(r'发布时间[：:]\s*(\d{4}-\d{2}-\d{2})', html)
+    if dm:
+        meta["date_published"] = dm.group(1)
+    else:
+        m = re.search(r'class="article"', html)
+        if m:
+            start = html.find(">", m.start()) + 1
+            date_m = re.search(r'(\d{4}-\d{2}-\d{2})', html[start:start + 500])
+            if date_m:
+                meta["date_published"] = date_m.group(1)
 
     # Source/author
     m = re.search(r'来源[：:]\s*([^\s<]+)', html)
     if m:
         meta["source"] = m.group(1).strip()
 
-    # Body text from <article> or class="article"
+    # Body text: the news template puts it in <div class="txt"> inside <div class="detail">;
+    # <article>/class="article" are older fallbacks.
     body = ""
-    for pattern in [r'<article[^>]*>(.*?)</article>',
-                    r'class="article"[^>]*>(.*?)(?:</div>\s*</div>|<div class="share)']:
+    for pattern in [r'<div class="txt">(.*?)</div>\s*</div>',
+                    r'<article[^>]*>(.*?)</article>',
+                    r'class="article"[^>]*>(.*?)(?:</div>\s*</div>|<div class="share)',
+                    r'<div class="detail">(.*?)</div>\s*</div>\s*</div>']:
         m = re.search(pattern, html, re.DOTALL)
         if m:
             content = m.group(1)
