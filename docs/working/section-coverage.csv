@@ -1,0 +1,220 @@
+site_key,section,nav_links,arts_found,held_pct,raw_status,bucket,sample_url,decision
+gov,/yaowen/,25,8,12,missing_have_scraper,crawl_now,https://www.gov.cn/home/2023-03/29/content_5748953.htm,crawl_now
+gov,/lianbo/,15,8,12,missing_have_scraper,crawl_now,https://www.gov.cn/home/2023-03/29/content_5748953.htm,crawl_now
+gov,/guowuyuan/,2,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+szdp,/xxgk/,64,25,0,missing_have_scraper,crawl_now,https://www.dpxq.gov.cn/xxgk/xxgk/tzgg/content/post_12972267.html,crawl_now
+gd,/zwgk/,39,31,0,missing_have_scraper,crawl_now,https://www.gd.gov.cn/zwgk/gdszfld/content/post_4783322.html,crawl_now
+zhongshan,/zwgk/,49,61,0,missing_have_scraper,crawl_now,http://www.zs.gov.cn/xx/content/post_280789.html,crawl_now
+ga,/ZWGK/,19,21,0,missing_have_scraper,crawl_now,https://ga.sz.gov.cn/ZWGK/QT/GZDT_1/content/post_12973754.html,crawl_now
+huizhou,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,[Errno 104] Connection reset by peer,sweep_unreliable
+jiangmen,/newzwgk/,46,44,0,missing_have_scraper,crawl_now,http://www.jiangmen.gov.cn/newzwgk/szfld/content/post_2235351.html,crawl_now
+szlhq,/xxgk/,42,58,0,missing_have_scraper,crawl_now,https://www.szlhq.gov.cn/xxgk/xwzx/tzgg/content/post_12980800.html,crawl_now
+szlhq,/bmxxgk/,33,0,0,needs_new_scraper,build_scraper,,build_scraper
+szlhq,/jdbxxgkml/,6,0,0,needs_new_scraper,build_scraper,,build_scraper
+szlg,/xxgk/,58,20,0,missing_have_scraper,crawl_now,https://www.lg.gov.cn/xxgk/zwgk/tzgg/content/post_12980900.html,crawl_now
+szlg,/tzcy/,2,25,0,missing_have_scraper,crawl_now,https://www.lg.gov.cn/tzcy/tzdt/content/post_12321412.html,crawl_now
+gz,/zwgk/,16,24,0,missing_have_scraper,crawl_now,https://www.gz.gov.cn/zwgk/fggw/zfgz/content/post_10918547.html,crawl_now
+jieyang,/zwgk/,4,45,0,missing_have_scraper,crawl_now,http://www.jieyang.gov.cn/zwgk/jdhy/zcjd/ytdd/content/post_1046521.html,crawl_now
+jieyang,/jyjczwgk/,2,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+jieyang,/swj/,2,56,0,missing_have_scraper,crawl_now,http://www.jieyang.gov.cn/swj/gzdt/content/post_1046954.html,crawl_now
+jieyang,/jywjj/,2,46,0,missing_have_scraper,crawl_now,http://www.jieyang.gov.cn/jywjj/gzdt/content/post_1046899.html,crawl_now
+jieyang,/zgb/,2,57,0,missing_have_scraper,crawl_now,http://www.jieyang.gov.cn/zgb/xxjl/xxdt/content/post_1047211.html,crawl_now
+jieyang,/jgswj/,2,13,0,missing_have_scraper,crawl_now,http://www.jieyang.gov.cn/xwdt/zdgz/content/post_1046826.html,crawl_now
+sh,/zhengce/,5,0,0,needs_new_scraper,build_scraper,,build_scraper
+hrss,/tzgg/,11,21,0,missing_have_scraper,crawl_now,https://hrss.sz.gov.cn/xxgk/xxgknb/content/post_12602676.html,crawl_now
+hrss,/xxgk/,5,39,0,missing_have_scraper,crawl_now,https://hrss.sz.gov.cn/xxgk/xxgknb/content/post_12602676.html,crawl_now
+qbitai,/wp-content/,3,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+sz_invest,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error all TLS contexts failed for https://www.sz.gov.cn>,sweep_unreliable
+swj,/xxgk/,52,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+zjj,/gkyjzj/,3,8,0,missing_have_scraper,crawl_now,http://zjj.sz.gov.cn/fzlm/mobile/content/post_3743101.html,crawl_now
+zjj,/zcjzts/,3,6,0,missing_have_scraper,crawl_now,http://zjj.sz.gov.cn/fzlm/mobile/content/post_3743101.html,crawl_now
+zhuhai,/zwgk/,4,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+sf,/xxgk/,28,26,0,missing_have_scraper,crawl_now,https://sf.sz.gov.cn/hdjl/zwwx/content/post_8261745.html,crawl_now
+people,/GB/,35,27,0,missing_have_scraper,crawl_now,http://opinion.people.com.cn/GB/8213/49160/index.html,crawl_now
+stic,/xxgk/,46,24,0,missing_have_scraper,crawl_now,https://stic.sz.gov.cn/xxgk/tzgg/content/post_12671800.html,crawl_now
+stic,/2022gb/,3,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+szpsq,/zwgk/,56,45,0,missing_have_scraper,crawl_now,https://www.szpsq.gov.cn/wzasm/content/post_12928913.html,crawl_now
+yangjiang,/zwgk/,2,0,0,needs_new_scraper,build_scraper,,build_scraper
+cac,/yaowen/,5,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+chinalawtranslate,/wp-content/,5,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+wjw,/xxgk/,9,18,0,missing_have_scraper,crawl_now,https://wjw.sz.gov.cn/xxgk/zcfggfxwj/mybh_5/content/post_12747657.html,crawl_now
+wjw,/wjtz/,6,23,0,missing_have_scraper,crawl_now,https://wjw.sz.gov.cn/wjtz/content/post_12211402.html,crawl_now
+wjw,/2021gb/,4,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+wjw,/'+ content.url +'/,3,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+sz,/szsrmzfxxgk/,2,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+szlh,/zwgk/,49,29,0,missing_have_scraper,crawl_now,https://www.szlh.gov.cn/tzgg/content/post_12970929.html,crawl_now
+szlh,/tzgg/,8,23,0,missing_have_scraper,crawl_now,https://www.szlh.gov.cn/tzgg/content/post_12970929.html,crawl_now
+mee,/xxgk2018/,66,20,0,missing_have_scraper,crawl_now,https://www.mee.gov.cn/xxgk2018/xxgk/xxgk01/202512/t20251230_1139345.html,crawl_now
+mee,/xxgk/,7,0,0,needs_new_scraper,build_scraper,,build_scraper
+yunfu,/zwgk/,33,39,0,missing_have_scraper,crawl_now,https://www.yunfu.gov.cn/zwgk/tzgg/content/post_2039848.html,crawl_now
+gdstats,/tjgb/,10,20,0,missing_have_scraper,crawl_now,http://stats.gd.gov.cn/tjgb/content/post_4919997.html,crawl_now
+gdhsa,/zwgk/,10,23,0,missing_have_scraper,crawl_now,http://hsa.gd.gov.cn/zwgk/content/post_4955416.html,crawl_now
+qingdao,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error _ssl.c:983: The handshake operation timed out>,sweep_unreliable
+gdedu,/zwgknew/,32,49,0,missing_have_scraper,crawl_now,https://edu.gd.gov.cn/zwgknew/jyzcfg/zc/content/post_4921618.html,defer_body_fix
+gdwjw,/zwgk/,3,42,0,missing_have_scraper,crawl_now,https://wsjkw.gd.gov.cn/phone/content/post_2164609.html,crawl_now
+cq,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+moe,/jyb_xxgk/,18,4,0,missing_have_scraper,crawl_now,https://www.moe.gov.cn/jyb_sy/sy_wb/201301/t20130129_147290.html,crawl_now
+gdjt,/zcwj_n/,30,22,0,missing_have_scraper,crawl_now,http://td.gd.gov.cn/contact/content/post_2635651.html,defer_body_fix
+gdjt,/zwgk_n/,18,60,0,missing_have_scraper,crawl_now,http://td.gd.gov.cn/contact/content/post_2635651.html,defer_body_fix
+gddrc,/gfxwj5633/,7,25,0,missing_have_scraper,crawl_now,https://drc.gd.gov.cn/gfxwj5633/content/post_4921838.html,crawl_now
+gddrc,/zcjd5635/,7,25,0,missing_have_scraper,crawl_now,https://drc.gd.gov.cn/zcjd5635/content/post_4947200.html,crawl_now
+gddrc,/zwgk5590/,2,97,0,missing_have_scraper,crawl_now,https://drc.gd.gov.cn/gzyw5618/content/post_4945635.html,crawl_now
+qinghai,/xxgk/,8,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_lsj,/jggk/,6,9,0,missing_have_scraper,crawl_now,http://lsj.fujian.gov.cn/jggk/cszz/bgs/201801/t20180102_23756.htm,crawl_now
+gdcom,/zwgk/,50,30,0,missing_have_scraper,crawl_now,http://com.gd.gov.cn/wzgn/gfwx/content/post_2200116.html,defer_body_fix
+fujian,/zck/,2,0,0,needs_new_scraper,build_scraper,,build_scraper
+zj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error _ssl.c:983: The handshake operation timed out>,sweep_unreliable
+gdnr,/zwgknew/,95,36,0,missing_have_scraper,crawl_now,https://nr.gd.gov.cn/zwgknew/tzgg/tz/content/post_4843841.html,defer_body_fix
+gdmz,/zwgk/,49,46,0,missing_have_scraper,crawl_now,https://smzt.gd.gov.cn/zwgk/tzgg/content/post_4844225.html,defer_body_fix
+gdmz,/jggk/,47,21,0,missing_have_scraper,crawl_now,https://smzt.gd.gov.cn/jggk/jgsz/tjg/content/post_4901138.html,defer_body_fix
+gdzjst,/xxgk/,24,28,0,missing_have_scraper,crawl_now,http://zfcxjst.gd.gov.cn/xxgk/wjtz/content/post_4955255.html,defer_body_fix
+gdzjst,/zcjd/,9,23,0,missing_have_scraper,crawl_now,http://zfcxjst.gd.gov.cn/zcjd/dmt/content/post_4934739.html,defer_body_fix
+fj_gdj,/zfzwgk/,8,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_gdj,/gk/,6,0,0,needs_new_scraper,build_scraper,,build_scraper
+gdee,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,The read operation timed out,sweep_unreliable
+fj_jtyst,/fzgkj/,2,70,0,missing_have_scraper,crawl_now,https://jtyst.fujian.gov.cn/fzgkj/xxgk/yaowen/bgyw/202602/t20260214_7099133.html,crawl_now
+fj_jtyst,/mzwgk/,2,5,0,missing_have_scraper,crawl_now,https://jtyst.fujian.gov.cn/mzwgk/gzdt/gwdt/bgxw/202609/t20260914_7213303.htm,crawl_now
+fj_sjt,/zfxxgkzl/,7,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_sjt,/sjgk/,6,30,0,missing_have_scraper,crawl_now,http://sjt.fujian.gov.cn/sjgk/jgsz/201912/t20191230_5171232.htm,crawl_now
+gdczt,/tzgg/,15,29,0,missing_have_scraper,crawl_now,https://czt.gd.gov.cn/ysywlj/ydmh/content/post_189155.html,defer_body_fix
+gdczt,/zdlyxxgk/,13,38,0,missing_have_scraper,crawl_now,https://czt.gd.gov.cn/ysywlj/ydmh/content/post_189155.html,defer_body_fix
+gdczt,/zwgk/,5,68,0,missing_have_scraper,crawl_now,https://czt.gd.gov.cn/ysywlj/ydmh/content/post_189155.html,defer_body_fix
+gdczt,/zcjd/,2,29,0,missing_have_scraper,crawl_now,https://czt.gd.gov.cn/ysywlj/ydmh/content/post_189155.html,defer_body_fix
+gdct,/open_newzcjd/,7,22,0,missing_have_scraper,crawl_now,https://whly.gd.gov.cn/open_newzcjd/content/post_4918141.html,defer_body_fix
+gdct,/open_newqtwj/,6,22,0,missing_have_scraper,crawl_now,https://whly.gd.gov.cn/open_newqtwj/content/post_4934081.html,defer_body_fix
+gdct,/open_newzwgk/,2,52,0,missing_have_scraper,crawl_now,https://whly.gd.gov.cn/open_newldfg/content/post_4894262.html,defer_body_fix
+gdct,/open_newzwwgk/,2,22,0,missing_have_scraper,crawl_now,https://whly.gd.gov.cn/open_newjggk/content/post_4945550.html,defer_body_fix
+gdct,/open_newzdlyxxgkzl/,2,20,0,missing_have_scraper,crawl_now,https://whly.gd.gov.cn/open_newxzcf/content/post_4925861.html,defer_body_fix
+chaoyang,/zfgb/,2,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+gdny,/zwgk/,39,30,0,missing_have_scraper,crawl_now,https://dara.gd.gov.cn/wzdt2253/content/post_3227807.html,defer_body_fix
+gdii,/zwgk/,10,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+gdii,/zcjd3267/,7,19,0,missing_have_scraper,crawl_now,https://gdii.gd.gov.cn/zcjd3267/content/post_4949766.html,defer_body_fix
+gdii,/zcgh3227/,6,19,0,missing_have_scraper,crawl_now,https://gdii.gd.gov.cn/zcgh3227/content/post_4773025.html,defer_body_fix
+fj_sthjt,/gkxx/,3,39,0,missing_have_scraper,crawl_now,https://sthjt.fujian.gov.cn/gkxx/jgzn/jgsz/201209/t20120904_122299.htm,crawl_now
+gdstc,/zwgk_n/,51,78,0,missing_have_scraper,crawl_now,http://gdstc.gd.gov.cn/zwgk_n/jggk/ldzc/content/post_3023614.html,defer_body_fix
+gdstc,/xxgk_n/,3,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_gdb,/gkxx/,6,17,0,missing_have_scraper,crawl_now,https://gdb.fujian.gov.cn/gkxx/csxx/202303/t20230303_6124753.htm,crawl_now
+shenyang,/dwgk/,7,38,0,missing_have_scraper,crawl_now,http://www.shenyang.gov.cn/dwgk/swld/sj/202505/t20250522_4854650.html,crawl_now
+szft,/xxgk/,56,11,0,missing_have_scraper,crawl_now,http://www.szft.gov.cn/zf/wzljq/wzasm/content/post_10245383.html,defer_body_fix
+cppcc,/zxgk/,6,111,7,missing_have_scraper,crawl_now,http://www.cppcc.gov.cn/zxgk/202405/t20240524_122367.html,crawl_now
+cppcc,/jgzc/,5,0,0,needs_new_scraper,build_scraper,,build_scraper
+fj_czt,/jggk/,7,48,0,missing_have_scraper,crawl_now,https://czt.fujian.gov.cn/jggk/ldhd/202608/t20260831_7206765.htm,crawl_now
+fj_fgw,/jggk/,6,0,0,needs_new_scraper,build_scraper,,build_scraper
+fj_mzzjt,/zfxxgkzl/,7,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_yjt,/zwgk_gb/,3,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_scjgj,/zfxxgkzl/,10,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_scjgj,/zcjd/,3,20,0,missing_have_scraper,crawl_now,https://scjgj.fujian.gov.cn/zcjd/hygq/202606/t20260601_7154629.htm,crawl_now
+fj_lyj,/gkxx/,6,3,0,missing_have_scraper,crawl_now,http://lyj.fujian.gov.cn/gkxx/ldzc/wzz/jl_wzz/202110/t20211027_5750351.htm,crawl_now
+fj_lyj,/zfxxgk/,4,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_gzw,/gzgk/,32,0,0,needs_new_scraper,build_scraper,,build_scraper
+fj_gzw,/zcjd/,20,37,0,missing_have_scraper,crawl_now,https://gzw.fujian.gov.cn/zcjd/wjgzcfgjd/202403/t20240304_6408998.htm,crawl_now
+fj_tjj,/xxgkzl/,4,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_ybj,/zfxxgkzl/,6,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_ybj,/jggk/,5,11,0,missing_have_scraper,crawl_now,https://ybj.fujian.gov.cn/jggk/jgzn/202404/t20240417_6431508.htm,crawl_now
+fj_wb,/jggk/,3,1,0,missing_have_scraper,crawl_now,http://wb.fujian.gov.cn/zwgk/zfxxgkzl/gkml/jgzn/fjsyx/202308/t20230810_6223843.htm,crawl_now
+fj_wjw,/jggk/,12,46,0,missing_have_scraper,crawl_now,https://wjw.fujian.gov.cn/jggk/jgzn/jgsz/202410/t20241025_6553932.htm,crawl_now
+bjd_huairou,/zfxxgkzl/,8,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_jyt,/gkxx/,7,2,0,missing_have_scraper,crawl_now,https://jyt.fujian.gov.cn/gkxx/fzjj/202509/t20250923_7013681.htm,crawl_now
+fj_wlt,/jggk/,6,39,0,missing_have_scraper,crawl_now,https://wlt.fujian.gov.cn/jggk/zyzz/201911/t20191112_5090065.htm,crawl_now
+bjd_dongcheng,/zfxxgkzl/,6,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+fj_jgswglj,/jggk/,6,2,0,missing_have_scraper,crawl_now,http://jgswglj.fujian.gov.cn/jggk/dwgk/201909/t20190917_5024649.htm,crawl_now
+xjtc,/content/,9,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+liuzhou,/tyjrswj/,2,24,0,missing_have_scraper,crawl_now,http://www.liuzhou.gov.cn/tyjrswj/xwzx/gzyw/202609/t20260907_3791937.shtml,crawl_now
+liuzhou,/lzcyyq/,2,16,0,missing_have_scraper,crawl_now,http://www.liuzhou.gov.cn/lzcyyq/xwzx/bmdt/202609/t20260914_3794391.shtml,crawl_now
+shuozhou_c2,/xxgk/,26,15,80,already_crawled,have,http://www.shuozhou.gov.cn/xxgk/jcjd/202603/t20260331_767791.shtml,have
+shijiazhuang,/zfxxgk/,6,30,0,missing_have_scraper,crawl_now,https://www.sjz.gov.cn/zfxxgk/columns/5bd78e78-cfaa-448d-9a92-19964726520b/202608/21/b41edba9-be6d-46fd-bc0d-2fe015531fa1.html,defer_body_fix
+fj_bb,/xxgk/,6,8,0,missing_have_scraper,crawl_now,https://bb.fujian.gov.cn/xxgk/jgdj/202605/t20260506_7144621.htm,crawl_now
+wuhu,/content/,3,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+cq_tyj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+wuxi,/zfxxgk/,25,36,53,already_crawled,have,https://www.wuxi.gov.cn/doc/2025/07/17/4702653.shtml,have
+fj_gat,/zfxxgk/,17,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+cq_gxq,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+cq_sww,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+spc,/fabu.html/,2,0,0,needs_new_scraper,build_scraper,,build_scraper
+shb_yjj,/ypylqxcpzczxxgg/,2,20,0,missing_have_scraper,crawl_now,https://yjj.sh.gov.cn/ypylqxcpzczxxgg/20260908/d1fa6b6dbf114d27b0b75129960000c8.html,crawl_now
+shb_yjj,/zcztc/,2,14,0,missing_have_scraper,crawl_now,https://yjj.sh.gov.cn/zx-ylqx/20260908/0e43e6ebccdb49ea8e1ddbc301f1a013.html,crawl_now
+shb_yjj,/zcjd/,2,20,0,missing_have_scraper,crawl_now,https://yjj.sh.gov.cn/zcjd/20260903/a1563031cf324e04b1b0533fd163fd59.html,crawl_now
+gdyjt,/gk/,50,43,0,missing_have_scraper,crawl_now,https://yjgl.gd.gov.cn/gk/zfxxgk/content/post_2472412.html,crawl_now
+fj_tyj,/gkxx/,43,4,25,missing_have_scraper,crawl_now,https://tyj.fujian.gov.cn/gkxx/ldxx/yds/grjl_yds/202111/t20211103_5764303.htm,crawl_now
+nx_jst,/ggbf/,2,0,0,needs_new_scraper,build_scraper,,build_scraper
+shizuishan,/szsgk/,10,48,0,missing_have_scraper,crawl_now,https://www.shizuishan.gov.cn/szsgk/szsly/yzszs/202508/t20250827_5001093.html,crawl_now
+nx_jtt,/zfxxgk/,33,25,0,missing_have_scraper,crawl_now,https://jtt.nx.gov.cn/zfxxgk/zfxxgkml/zdlygk/jtjsxmztb/zbgg/202609/t20260910_5342400.html,crawl_now
+nx_jtt,/ggbf/,10,0,0,needs_new_scraper,build_scraper,,build_scraper
+nx_whhlyt,/ggbf/,3,0,0,needs_new_scraper,build_scraper,,build_scraper
+linzhi,/zfxxgkpt/,13,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+nx_dofcom,/zcfb/,29,19,5,missing_have_scraper,crawl_now,https://dofcom.nx.gov.cn/zcfb/swzc_42666/202609/t20260911_5342625.html,crawl_now
+nx_czt,/ggbf/,6,0,0,needs_new_scraper,build_scraper,,build_scraper
+changde,/zwgk/,24,0,0,needs_new_scraper,build_scraper,,build_scraper
+changde,/content/,13,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+changde,/cdzcfw/,3,0,0,needs_new_scraper,build_scraper,,build_scraper
+tonghua,/ldzc/,5,22,9,missing_have_scraper,crawl_now,https://www.tonghua.gov.cn/ldzc/zfld/msz/202601/t20260104_760270.html,crawl_now
+xz_swt,/xxgk/,81,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+nx_fzggw,/zwgk/,10,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+nx_fzggw,/tzgg/,8,20,0,missing_have_scraper,crawl_now,https://fzggw.nx.gov.cn/tzgg/202609/t20260909_5339098.html,crawl_now
+nx_fzggw,/ggbf/,3,0,0,needs_new_scraper,build_scraper,,build_scraper
+xz_nynct,/zwgk/,13,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+xz_nynct,/ggbf/,7,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+xz_nynct,/jggk/,5,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+cq_ws,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+nx_zrzyt,/ggbf/,2,1,0,missing_have_scraper,crawl_now,https://zrzyt.nx.gov.cn/ggbf/202108/t20210816_2975839.html,crawl_now
+cqd_yuzhong,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+bjb_wjw,/wjwh/,28,16,0,missing_have_scraper,crawl_now,https://wjw.beijing.gov.cn/wjwh/szzl/202601/t20260127_4469663.html,crawl_now
+sm,/zcjd/,7,21,5,missing_have_scraper,crawl_now,https://www.sm.gov.cn/zw/gsgg/qt_5599/202607/t20260727_2263309.htm,crawl_now
+laiwu,/gongkai/,8,0,0,needs_new_scraper,build_scraper,,build_scraper
+natcm,/xinxifabu/,34,18,0,missing_have_scraper,crawl_now,http://www.natcm.gov.cn/xinxifabu/shizhengyaowen/2026-09-14/38750.html,crawl_now
+natcm,/zhengcewenjian/,2,18,33,missing_have_scraper,crawl_now,http://www.natcm.gov.cn/yizhengsi/zhengcewenjian/2026-05-15/38069.html,crawl_now
+whd_qiaokou,/qkgk/,10,22,14,missing_have_scraper,crawl_now,https://www.qiaokou.gov.cn/qkgk/qkjj/201810/t20181018_146886.shtml,crawl_now
+whd_qiaokou,/sjgk/,5,3,100,already_crawled,have,https://www.qiaokou.gov.cn/qkgk/qkjj/201405/t20140530_146885.shtml,have
+bjd_fangshan,/zfxxgk/,2,2,100,already_crawled,have,https://www.bjfsh.gov.cn/gywm/202002/t20200227_39992472.shtml,have
+gdga,/xxgk/,10,53,0,missing_have_scraper,crawl_now,https://gdga.gd.gov.cn/xxgk/czyjs/content/post_4947349.html,defer_body_fix
+bjb_swj,/zfxxgkpt/,2,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+nqs,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+nx_nxyjglt,/ggbf/,5,0,0,needs_new_scraper,build_scraper,,build_scraper
+cq_tjj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+taizhou_js,/zfxxgk/,8,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+xz_hrss,/zwgk/,7,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+changzhi,/zwgk/,5,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+cq_jtysw,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+fj_zrzyt,/jggk/,5,35,0,missing_have_scraper,crawl_now,https://zrzyt.fujian.gov.cn/jggk/btgk/201811/t20181109_4602009.htm,crawl_now
+fj_qb,/qwjy/,7,15,0,missing_have_scraper,crawl_now,https://qb.fujian.gov.cn/qwjy/202608/t20260828_7206338.htm,crawl_now
+jl_jldrc,/xxgk/,4,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+nbs,/xxgk/,6,1,0,missing_have_scraper,crawl_now,http://www.stats.gov.cn/xxgk/gkzn/202006/t20200624_1770336.html,crawl_now
+nbs,/gk/,2,27,11,missing_have_scraper,crawl_now,http://www.stats.gov.cn/gk/tjfg/xzfg/202603/t20260326_1962857.html,crawl_now
+cq_czj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+mwr,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error [Errno 111] Connection refused>,sweep_unreliable
+hainanzhou,/content/,11,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+cq_jjxxw,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+cq_sthjj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+nx_gxt,/ggbf/,3,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+cq_gaj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+nx_sft,/ggbf/,3,0,0,needs_new_scraper,build_scraper,,build_scraper
+zibo,/gongkai/,5,0,0,needs_new_scraper,build_scraper,,build_scraper
+xz_drc,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,The read operation timed out,sweep_unreliable
+shb_ybj,/zxzc/,3,15,0,missing_have_scraper,crawl_now,https://ybj.sh.gov.cn/zxzc/20251216/1aedc6a19e8c4195b604f87905befb91.html,crawl_now
+shb_ybj,/zxgkzfxx/,2,15,0,missing_have_scraper,crawl_now,https://ybj.sh.gov.cn/qtwj/20250806/093932227be84c448d72ecb0f3e9d6a3.html,crawl_now
+nx_mca,/ggbf/,3,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+xz_wlt,/ggbf/,5,0,0,needs_new_scraper,build_scraper,,build_scraper
+shb_whlyj,/gbds/,4,20,0,missing_have_scraper,crawl_now,https://whlyj.sh.gov.cn/gbds/20260901/c7f2f9b35ed6407f833de551378ac4bc.html,crawl_now
+shb_whlyj,/jqxxgk/,3,15,0,missing_have_scraper,crawl_now,https://whlyj.sh.gov.cn/jqxxgk/20260904/2299ea8760d2490f96641cb492c2a966.html,crawl_now
+shb_whlyj,/zw-zcwj/,2,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+cq_cgj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+cq_nyncw,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+nx_sthjt,/gkxx/,16,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+nx_sthjt,/ggbf/,5,0,0,needs_new_scraper,build_scraper,,build_scraper
+bjb_ybj,/zwgk/,24,14,14,missing_have_scraper,crawl_now,https://ybj.beijing.gov.cn/zwgk/2024zcwj/202608/t20260824_4834004.html,crawl_now
+bjb_ybj,/zczxs/,2,20,10,missing_have_scraper,crawl_now,https://ybj.beijing.gov.cn/zczxs/2020_zhgga/202608/t20260817_4825695.html,crawl_now
+cq_yjj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+xz_sft,/jggk/,3,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+cq_scjgj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+xz_jtt,/ggbf/,4,0,0,empty_or_blocked,sweep_unreliable,,sweep_unreliable
+cq_wsjkw,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+cq_ylbzj,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+cq_jkq,-,0,0,0,HOMEPAGE_UNREACHABLE,sweep_unreliable,<urlopen error timed out>,sweep_unreliable
+shb_edu,/xxgk2_zhzw_rsxx_01/,5,0,0,needs_new_scraper,build_scraper,,build_scraper
+shb_edu,/xxgk_zcjd/,3,1,0,missing_have_scraper,crawl_now,https://edu.sh.gov.cn/xxgk_zcjd/20251107/11aaf630fb1b4c3fa64caa1cc96a4b7d.html,crawl_now
+shb_edu,/xxgk2_zdgz_jyfz_04/,2,15,0,missing_have_scraper,crawl_now,https://edu.sh.gov.cn/xxgk2_zdgz_jyfz_04/20260911/e38c303b07af438b8c7bb9df7109183a.html,crawl_now
+shb_edu,/xxgk2_zdgz_xxhqbw_02/,2,10,0,missing_have_scraper,crawl_now,https://edu.sh.gov.cn/xxgk2_zdgz_xxhqbw_02/20260831/6b9a3236c9774c5facc3e1781d6bf519.html,crawl_now
+shb_edu,/xxgk2_zdgz/,2,0,0,needs_new_scraper,build_scraper,,build_scraper
+shb_edu,/xxgk_flfg/,2,3,0,missing_have_scraper,crawl_now,https://edu.sh.gov.cn/xxgk_ztlm_gbgbwj/20210219/390946b474a149fda42aaf930dbdeac0.html,crawl_now
+shb_edu,/xxgk_xxgknb/,2,0,0,needs_new_scraper,build_scraper,,build_scraper
+shb_edu,/xxgk2_zhzw_zfxxgk_08/,2,0,0,needs_new_scraper,build_scraper,,build_scraper
