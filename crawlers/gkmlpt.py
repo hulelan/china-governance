@@ -662,14 +662,21 @@ def fetch_document_body(url: str, headers: dict = None) -> tuple[str, str]:
 
     Returns (body_text, raw_html).
     """
-    try:
-        url = url.replace("https://", "http://")
-        html = fetch(url, timeout=15, headers=headers)
-        body = extract_body_text(html)
-        return body, html
-    except Exception as e:
-        log.warning(f"  Failed to fetch {url}: {e}")
-        return "", ""
+    # Try the URL AS STORED first (many subdomains, e.g. the *.gd.gov.cn dept sites,
+    # reset http:// connections and only serve https). Fall back to forced-http only
+    # if the stored scheme fails — that http rewrite was for older gkmlpt hosts.
+    candidates = [url]
+    if url.startswith("https://"):
+        candidates.append(url.replace("https://", "http://", 1))
+    last_err = None
+    for u in candidates:
+        try:
+            html = fetch(u, timeout=15, headers=headers)
+            return extract_body_text(html), html
+        except Exception as e:
+            last_err = e
+    log.warning(f"  Failed to fetch {url}: {last_err}")
+    return "", ""
 
 
 # --- Storage ---
