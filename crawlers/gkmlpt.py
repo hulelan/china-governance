@@ -641,6 +641,19 @@ def extract_body_text(html: str) -> str:
         if len(text) > 20:
             return text
 
+    # Fallback: Guangdong provincial-dept subdomains (gdee/gdedu/gdstc/gdii/… *.gd.gov.cn).
+    # Server-rendered template — body in <div class="article-content">, no _CONFIG JSON blob.
+    m = re.search(
+        r'<div\s+class="article-content"[^>]*>(.*?)</div>\s*'
+        r'<div\s+class="(?:tab__slot|footer-warp|jiucuo)', html, re.DOTALL)
+    if not m:
+        m = re.search(r'<div\s+class="article-content"[^>]*>(.*?)</div>\s*</div>', html, re.DOTALL)
+    if m:
+        text = re.sub(r"<[^>]+>", " ", m.group(1))
+        text = re.sub(r"\s+", " ", text).strip()
+        if len(text) > 20:
+            return text
+
     return ""
 
 
