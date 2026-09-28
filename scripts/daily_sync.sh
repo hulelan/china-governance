@@ -301,6 +301,12 @@ timeout 900 python3 scripts/compute_topics.py >> "$LOG" 2>&1 || log "  compute_t
 log "Phase 2c: Refreshing BM25 segmented search index (doc_search_seg)..."
 timeout 3600 nice -n 19 python3 scripts/build_search_index_seg.py >> "$LOG" 2>&1 || log "  build_search_index_seg had errors"
 
+# Precompute per-site counts so get_sites (the /browse nav) is O(sites) not a 74s
+# scan of body_text_cn overflow. Same clean write-window rationale as the BM25 build.
+# Also ensures idx_documents_classify_main. See docs/working/perf-diagnosis.md.
+log "Phase 2c: Rebuilding site_stats (per-site doc/body/docnum counts)..."
+timeout 600 python3 scripts/build_site_stats.py >> "$LOG" 2>&1 || log "  build_site_stats had errors"
+
 # --- Phase 3: Publish the DB to the live web app ---
 # Two modes:
 #   (a) Production droplet (marker file present): the web app reads THIS very

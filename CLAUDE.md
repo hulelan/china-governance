@@ -496,6 +496,21 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   cache is COLD, so the first hit to heavy endpoints (/network, /officials, the sites
   aggregate) is slow and — under bot load — can block a worker until warm; this looks
   like a hang but self-resolves. If it recurs hard, consider `--workers 3`.
+- **(2026-09-28 — MEASURED root cause of "loads forever", supersedes the bot framing
+  above for the current site.)** Two independent profiles (`docs/working/perf-diagnosis.md`,
+  `perf-endpoint-baseline.md`, `perf-query-profile.md`) found the "loads forever" is NOT
+  bot load (Basic Auth now bounces bots: ~2,500 × 401/day, ~0 reach the app). It is
+  `get_sites` (`web/services/documents.py:366`): `sites LEFT JOIN documents GROUP BY
+  site_key` with `SUM(CASE WHEN body_text_cn != '')` makes SQLite build an AUTOMATIC
+  COVERING INDEX pulling `body_text_cn` for all 313k rows (~4GB overflow through the 32MB
+  cache), so `/` is **~72s cold / ~30ms warm** and does NOT warm up. The 1h cache is
+  **per-worker on 2 workers**, so it recomputes per worker per hour and starves the site to
+  one worker while it runs. FIX = precompute a `site_stats` table nightly (an index can't
+  help; the aggregate must read the body column). Also: `classify_main_name` has NO index
+  (`idx_documents_category` is on `category_id`, a look-alike trap), so the categories facet
+  + category browse filter full-scan (1.3-5.7s); `CREATE INDEX idx_documents_classify_main
+  ON documents(classify_main_name)` fixes both. Everything else (<250ms) is healthy. See
+  the fix plan in `perf-diagnosis.md`.
 - **(2026-08-11) The public site is PRIVATE — behind HTTP Basic Auth.** nginx
   server-level `auth_basic` on the chinagovernance :443 block; creds in
   `/etc/nginx/.htpasswd` (user `admin`, apr1 hash — NOT in the repo). This supersedes

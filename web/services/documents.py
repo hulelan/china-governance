@@ -357,22 +357,44 @@ def annotate_body_with_citations(body, cites):
 
 _sites_cache = {"data": None, "ts": 0}
 
+# Fast path: read the precomputed per-site summary (scripts/build_site_stats.py,
+# refreshed nightly in daily_sync.sh Phase 2c). O(sites), sub-ms.
+_SITES_FAST_SQL = """
+    SELECT s.site_key, s.name, s.base_url, s.admin_level, s.sid,
+           COALESCE(st.doc_count, 0)    as doc_count,
+           COALESCE(st.body_count, 0)   as body_count,
+           COALESCE(st.docnum_count, 0) as docnum_count
+    FROM sites s
+    LEFT JOIN site_stats st ON st.site_key = s.site_key
+    ORDER BY doc_count DESC
+"""
+
+# Fallback: the old live aggregate. ~74s cold because the body_text_cn SUM forces
+# SQLite to build a per-site covering index over ~4GB of overflow pages (see
+# docs/working/perf-diagnosis.md). Only hit if site_stats is missing (fresh DB or a
+# backup restored without it) — slow but correct until the builder runs.
+_SITES_SLOW_SQL = """
+    SELECT s.site_key, s.name, s.base_url, s.admin_level, s.sid,
+           COUNT(d.id) as doc_count,
+           SUM(CASE WHEN d.body_text_cn != '' THEN 1 ELSE 0 END) as body_count,
+           SUM(CASE WHEN d.document_number != '' THEN 1 ELSE 0 END) as docnum_count
+    FROM sites s
+    LEFT JOIN documents d ON d.site_key = s.site_key
+    GROUP BY s.site_key, s.name, s.base_url, s.admin_level, s.sid
+    ORDER BY doc_count DESC
+"""
+
+
 async def get_sites(db):
     """All sites with aggregate doc counts, body-text coverage, and doc-number counts."""
     import time
     now = time.time()
     if _sites_cache["data"] and now - _sites_cache["ts"] < 3600:
         return _sites_cache["data"]
-    result = await db.fetch("""
-        SELECT s.site_key, s.name, s.base_url, s.admin_level, s.sid,
-               COUNT(d.id) as doc_count,
-               SUM(CASE WHEN d.body_text_cn != '' THEN 1 ELSE 0 END) as body_count,
-               SUM(CASE WHEN d.document_number != '' THEN 1 ELSE 0 END) as docnum_count
-        FROM sites s
-        LEFT JOIN documents d ON d.site_key = s.site_key
-        GROUP BY s.site_key, s.name, s.base_url, s.admin_level, s.sid
-        ORDER BY doc_count DESC
-    """)
+    try:
+        result = await db.fetch(_SITES_FAST_SQL)
+    except Exception:
+        result = await db.fetch(_SITES_SLOW_SQL)
     _sites_cache["data"] = result
     _sites_cache["ts"] = now
     return result
