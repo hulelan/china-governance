@@ -47,10 +47,12 @@ def build(db_path: Path) -> tuple:
         # answers from each record's length header, so no overflow page is read and
         # the body never crosses into Python — this stays on the ~seconds get_stats
         # path, not the 74s automatic-index path.
+        # COALESCE so a NULL body/docnum counts as empty (0), matching the old
+        # get_sites CASE semantics — `NULL != ''` is NULL, not 0, in SQL.
         agg: dict[str, list] = {}
         for site_key, has_body, has_docnum in conn.execute(
-                "SELECT site_key, body_text_cn != '', document_number != '' "
-                "FROM documents"):
+                "SELECT site_key, COALESCE(body_text_cn,'') != '', "
+                "COALESCE(document_number,'') != '' FROM documents"):
             row = agg.get(site_key)
             if row is None:
                 row = agg[site_key] = [0, 0, 0]
