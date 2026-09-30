@@ -39,6 +39,16 @@ import http.cookiejar
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Optional: curl_cffi gives a real Chrome TLS/JA3 fingerprint, which defeats the
+# fingerprint-based WAFs (Knownsec/创宇盾) that 418-block urllib's ClientHello
+# (e.g. ccg.gov.cn, and the "curl works / urllib fails" sites: 成都/南通/白银/阜阳).
+# It's a FALLBACK only (see fetch()); absent (e.g. on the Mac) the code degrades to
+# the urllib path unchanged.
+try:
+    from curl_cffi import requests as _cffi_requests
+except ImportError:
+    _cffi_requests = None
+
 # Force IPv4 — many .gov.cn sites are unreachable over IPv6 from overseas servers.
 # Exception: some sites (e.g., *.zj.gov.cn) are IPv6-only from the US and need
 # the original getaddrinfo.  Crawlers that need IPv6 can call allow_ipv6().
@@ -296,7 +306,58 @@ def _decode(resp, raw):
     return raw.decode("utf-8", errors="replace")
 
 
+def _fetch_impersonate(url: str, timeout: int, headers: dict = None) -> str | None:
+    """Fallback fetch with a real Chrome TLS fingerprint (curl_cffi).
+
+    Defeats fingerprint WAFs that block urllib's ClientHello. Returns the body on a
+    200, else None (so the caller re-raises the original urllib error). Honors
+    CRAWL_PROXY too, so this doubles as the fingerprint+proxy path for a HK/CN vantage.
+    Returns None (not an error) when curl_cffi isn't installed.
+    """
+    if _cffi_requests is None:
+        return None
+    hdrs = {"User-Agent": USER_AGENT}
+    if headers:
+        hdrs.update(headers)
+    kwargs = {"headers": hdrs, "timeout": timeout, "impersonate": "chrome124",
+              "verify": False}
+    proxy = os.environ.get("CRAWL_PROXY")
+    if proxy:
+        kwargs["proxies"] = {"http": proxy, "https": proxy}
+    try:
+        resp = _cffi_requests.get(url, **kwargs)
+        if resp.status_code == 200 and resp.text:
+            log.info(f"  curl_cffi fallback OK ({len(resp.text)}B) for {url}")
+            return resp.text
+    except Exception as e:
+        log.warning(f"  curl_cffi fallback failed for {url}: {str(e)[:80]}")
+    return None
+
+
 def fetch(url: str, timeout: int = 20, retries: int = 3, headers: dict = None) -> str:
+    """Fetch a URL and return the response body as a string.
+
+    urllib first (unchanged path below). On a non-dead failure — a 418/blocked
+    ClientHello, a connection error, or all-TLS-contexts-failed — retry ONCE with a
+    Chrome-impersonated fetch (_fetch_impersonate) before giving up. Genuinely dead
+    URLs (404/410/550) are NOT retried that way. This keeps the fast urllib path the
+    default and only pays the curl_cffi cost when a site actually blocks us.
+    """
+    try:
+        return _fetch_urllib(url, timeout, retries, headers)
+    except urllib.error.HTTPError as e:
+        if e.code in (404, 410, 550):
+            raise  # genuinely dead — impersonation won't help
+        last_err = e
+    except (urllib.error.URLError, OSError) as e:
+        last_err = e
+    impersonated = _fetch_impersonate(url, timeout, headers)
+    if impersonated is not None:
+        return impersonated
+    raise last_err
+
+
+def _fetch_urllib(url: str, timeout: int = 20, retries: int = 3, headers: dict = None) -> str:
     """Fetch a URL and return the response body as a string.
 
     Tries a STANDARD TLS context first — it's fast and works for many modern gov sites

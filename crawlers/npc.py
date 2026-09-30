@@ -75,7 +75,14 @@ CATEGORIES = {
     210: "行政法规",
     215: "修改、废止的决定（行政法规）",
     220: "监察法规",
+    # 地方法规 (local regulations) — the LIVE codes are 230/270/290 (verified against
+    # the enumData API 2026-09-30). Code 222 exists in the enum but returns ZERO rows;
+    # a `flfgCodeId=222` filter crawls nothing. The crawl itself uses an empty filter
+    # (all categories), so labels fall back to `flxz` and stay correct regardless.
     222: "地方法规",
+    230: "地方法规",
+    270: "地方法规",
+    290: "地方法规",
     305: "法规性决定",
     310: "修改、废止的决定（地方法规）",
     320: "高法司法解释",
