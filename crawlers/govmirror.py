@@ -137,7 +137,6 @@ def crawl_ministry(conn, site_key: str, since_year: int = 2023, n: int = 50,
 
     stored = 0
     bodies = 0
-    consecutive_all_seen = 0
     for p in range(1, total_pages + 1):
         page = first if p == 1 else _search_page(bmfl, p, n)
         items = (page or {}).get("searchVO", {}).get("listVO") or []
@@ -145,14 +144,17 @@ def crawl_ministry(conn, site_key: str, since_year: int = 2023, n: int = 50,
             break
 
         new_on_page = 0
-        hit_old = False
+        old_on_page = 0
+        dated_on_page = 0
         for it in items:
             url = it.get("url", "")
             if not url:
                 continue
             yr = _year_of(it.get("pubtime"))
+            if yr:
+                dated_on_page += 1
             if not deep and yr and yr < since_year:
-                hit_old = True
+                old_on_page += 1
                 continue  # newest-first, but keep scanning the page for stragglers
 
             existing = conn.execute(
@@ -216,17 +218,12 @@ def crawl_ministry(conn, site_key: str, since_year: int = 2023, n: int = 50,
             conn.commit()
             log.info(f"  [{site_key}] page {p}/{total_pages}: {stored} stored, {bodies} bodies")
 
-        # early exits
-        if not deep and hit_old and new_on_page == 0:
-            log.info(f"  [{site_key}] reached pre-{since_year} docs — stopping")
+        # Stop once an entire page predates since_year (newest-first ⇒ nothing
+        # newer remains). Held docs are skipped, not a stop condition, so a first
+        # backfill still walks past runs of already-held docs to reach new ones.
+        if not deep and dated_on_page and old_on_page == dated_on_page:
+            log.info(f"  [{site_key}] full page pre-{since_year} — stopping")
             break
-        if new_on_page == 0:
-            consecutive_all_seen += 1
-            if consecutive_all_seen >= 2:
-                log.info(f"  [{site_key}] 2 consecutive all-held pages — stopping (incremental)")
-                break
-        else:
-            consecutive_all_seen = 0
         time.sleep(REQUEST_DELAY)
 
     conn.commit()
