@@ -29,6 +29,7 @@ from web.services.structure import get_structure
 from web.services.annotations import list_annotations, get_overview, get_item
 from web.services.collections import get_collection
 from web.services.lens import get_topic_lens, get_doc_lens
+from web.services.tracker import get_tracker
 from web.services import ontology
 
 router = APIRouter()
@@ -198,6 +199,25 @@ async def lens_page(request: Request, q: str = "", doc: int = 0):
         # A few suggested entry-point topics for the empty state.
         "suggestions": ["人工智能", "算力", "数据要素", "低空经济",
                         "碳中和", "住房", "医保", "养老"],
+    })
+
+
+@router.get("/tracker", response_class=HTMLResponse)
+async def tracker_page(request: Request, topic: str = "all", weeks: int = 8):
+    """Policy Tracker — the live weekly feed + auto-matched cascades.
+
+    ``?topic=<area>&weeks=<n>`` renders the last n ISO weeks × admin level
+    (new docs + cascade events) for one implementation area, the central
+    instruments with the newest confirmed implementing activity, and a
+    corpus-wide leaderboard of the most-cascaded instruments. Reads only the
+    nightly-precomputed ``tracker_weekly`` / ``diffusion_events`` tables; cached
+    in-process for an hour (see services.tracker).
+    """
+    db = request.app.state.db
+    stats = await get_stats(db)
+    t = await get_tracker(db, topic, weeks)
+    return templates.TemplateResponse("tracker.html", {
+        "request": request, "stats": stats, "active_nav": "tracker", "t": t,
     })
 
 

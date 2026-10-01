@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}{% if t %}{{ 'All areas' if t.topic == 'all' else t.topic }} · Policy Tracker{% else %}Policy Tracker{% endif %} — Governance Archive{% endblock %}
+{% block meta_description %}Policy Tracker — what is new this week at every level of the Chinese government for a chosen implementation area, with sub-national documents auto-matched to the central instruments they implement and the cascades tracked as they unfold.{% endblock %}
+
+{% block head %}
+<style>
+    .wk-current td { background: #e9e4d6; }
+    .wk-current td:first-child { border-left: 3px solid var(--accent); }
+    .cell-new { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+    .cell-cas { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--teal); }
+    .cell-low { color: #9a948a; }
+    .cell-zero { color: #b5afa1; }
+    .anchor-row td { vertical-align: top; }
+    .arrivals { list-style: none; margin: 0; padding: 0; }
+    .arrivals li { padding: 3px 0; border-top: 1px dotted var(--rule); }
+    .arrivals li:first-child { border-top: 0; padding-top: 0; }
+    .floor { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+    .tag { display: inline-block; font-size: 10px; letter-spacing: .04em; padding: 0 5px;
+           border: 1px solid var(--rule); color: var(--muted); border-radius: 2px; margin-right: 3px; }
+    .topic-tabs a { display: inline-block; padding: 3px 8px; margin: 0 4px 4px 0; font-size: 12px;
+           border: 1px solid var(--rule); background: #fdfcf9; color: var(--ink); }
+    .topic-tabs a.on { background: var(--teal); color: #fff; border-color: var(--teal); }
+    .topic-tabs a:hover { text-decoration: none; border-color: var(--teal); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+
+    <!-- Masthead / picker -->
+    <div class="border border-rule bg-panel mb-6">
+        <div class="bg-teal text-[#e8f0ed] px-4 py-1.5 flex justify-between text-[11px] tracking-[0.16em] uppercase">
+            <span>Policy Tracker · 政策追踪</span>
+            {% if t %}<span class="mono">{{ t.this_week }} · last {{ t.weeks }} weeks · updated nightly</span>{% endif %}
+        </div>
+        <div class="px-6 py-4">
+            {% if t %}
+            <div class="flex flex-col sm:flex-row sm:items-start gap-3">
+                <div class="flex-1">
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted mb-1.5">Implementation area</div>
+                    <div class="topic-tabs">
+                        {% for tp in t.topics %}
+                        <a href="/tracker?topic={{ tp|urlencode }}&weeks={{ t.weeks }}" class="{{ 'on' if tp == t.topic }}">{{ 'All areas' if tp == 'all' else tp }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <form method="get" action="/tracker" class="sm:w-40 flex-shrink-0">
+                    <input type="hidden" name="topic" value="{{ t.topic }}">
+                    <label class="text-[10px] tracking-[0.14em] uppercase text-muted block mb-1.5">Window</label>
+                    <select name="weeks" class="w-full" onchange="this.form.submit()">
+                        {% for n in [4, 8, 12, 26, 52] %}
+                        <option value="{{ n }}" {{ 'selected' if n == t.weeks }}>last {{ n }} weeks</option>
+                        {% endfor %}
+                    </select>
+                    <noscript><button type="submit" class="bg-teal text-white px-4 py-1.5 text-sm mt-1">Go</button></noscript>
+                </form>
+            </div>
+            {% endif %}
+            <p class="floor mt-3 max-w-4xl">
+                <strong class="text-ink font-medium">Floors, not facts.</strong>
+                Counts are coverage-bound — proxy-blocked provinces are invisible, so “who moved” is a floor, never
+                “province X did not act”. Citation resolution is ~52%, so the matcher misses some real implementations.
+                Topic tags cover ~64% of documents. Publication date is not adoption date; lags are between publication dates.
+            </p>
+        </div>
+    </div>
+
+    {% if not t %}
+    <div class="text-muted italic text-center py-16 border border-dashed border-rule">
+        The tracker tables (<span class="mono not-italic">diffusion_events</span>, <span class="mono not-italic">tracker_weekly</span>)
+        have not been built on this database yet — they are produced by the nightly pipeline (Phase 2c).
+    </div>
+    {% else %}
+    {% set W = t.weekly %}
+    {% set C = t.cascades %}
+
+    <!-- 1. Recent weeks by level -->
+    <div class="mb-8">
+        <span class="lab">New this week, by level · {{ 'all areas' if t.topic == 'all' else t.topic }}</span>
+        <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
+            Each cell: <span class="cell-new text-ink">new documents</span> published that ISO week at that level, and beneath it
+            <span class="cell-cas">confirmed cascade events</span> (a sub-national document citing or re-issuing a central instrument)
+            with <span class="cell-low">probable-but-unconfirmed</span> matches in grey. The current week is partial — crawls land with a lag.
+        </p>
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr>
+                <th class="w-24">Week</th>
+                <th class="w-24 hidden sm:table-cell">From</th>
+                {% for l in W.levels %}<th class="text-right level-{{ l }}">{{ l }}</th>{% endfor %}
+                <th class="text-right">Total</th>
+            </tr></thead>
+            <tbody>
+            {% for r in W.weeks %}
+                <tr class="{{ 'wk-current' if r.is_current }}">
+                    <td class="mono">{{ r.iso_week }}{% if r.is_current %} <span class="text-[10px] text-brand uppercase tracking-wider">now</span>{% endif %}</td>
+                    <td class="mono text-muted text-xs hidden sm:table-cell">{{ r.week_start }}</td>
+                    {% for l in W.levels %}{% set c = r.cells[l] %}
+                    <td class="text-right">
+                        <div class="cell-new {{ 'cell-zero' if not c.new }}">{{ "{:,}".format(c.new) }}</div>
+                        <div class="cell-cas">{% if c.cas %}{{ c.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if c.low %} <span class="cell-low">({{ c.low }})</span>{% endif %}</div>
+                    </td>
+                    {% endfor %}
+                    <td class="text-right">
+                        <div class="cell-new font-medium">{{ "{:,}".format(r.new) }}</div>
+                        <div class="cell-cas">{% if r.cas %}{{ r.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if r.low %} <span class="cell-low">({{ r.low }})</span>{% endif %}</div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="border-t-2 border-ink">
+                    <td class="mono text-xs text-muted" colspan="{{ 2 }}">{{ t.weeks }}-week total</td>
+                    {% for l in W.levels %}{% set lt = W.level_totals[l] %}
+                    <td class="text-right"><div class="cell-new">{{ "{:,}".format(lt.new) }}</div><div class="cell-cas">{{ lt.cas if lt.cas else '' }}{% if lt.low %} <span class="cell-low">({{ lt.low }})</span>{% endif %}</div></td>
+                    {% endfor %}
+                    <td class="text-right"><div class="cell-new font-medium">{{ "{:,}".format(W.totals.new) }}</div><div class="cell-cas">{{ W.totals.cas }}{% if W.totals.low %} <span class="cell-low">({{ W.totals.low }})</span>{% endif %}</div></td>
+                </tr>
+            </tfoot>
+        </table>
+        </div>
+    </div>
+
+    <!-- 2. Active cascades -->
+    <div class="mb-8">
+        <span class="lab">Active cascades · central instruments with implementing activity since {{ C.window_start }}</span>
+        <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
+            {{ C.n_active }} instrument{{ '' if C.n_active == 1 else 's' }} drew a confirmed sub-national response in the window
+            ({{ C.n_lowconf_only }} more only by probable topic-and-genre match, not shown).
+            Ordered by newest arrival. Source counts and median lag run over the whole cascade, not just the window —
+            the live form of the cascade tables in <em>consumption-diffusion</em>.
+        </p>
+        {% if C.anchors %}
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr>
+                <th>Central instrument · anchor</th>
+                <th class="w-20 text-right">Sources</th>
+                <th class="w-20 text-right">Median lag</th>
+                <th class="w-[42%]">Newest implementing documents</th>
+            </tr></thead>
+            <tbody>
+            {% for a in C.anchors %}
+                <tr class="anchor-row">
+                    <td>
+                        <a href="/document/{{ a.id }}" class="font-zh text-[13px]">{{ a.title[:80] }}</a>
+                        {% if a.title_en %}<div class="text-xs text-muted truncate max-w-md">{{ a.title_en }}</div>{% endif %}
+                        <div class="text-[11px] text-muted mt-1">
+                            <span class="mono">{{ a.date }}</span>{% if a.issuer %} · {{ a.issuer }}{% endif %}
+                            {% for tp in a.topics[:3] %} <a class="tag" href="/tracker?topic={{ tp|urlencode }}&weeks={{ t.weeks }}">{{ tp }}</a>{% endfor %}
+                        </div>
+                        <div class="text-[11px] text-muted mt-0.5">
+                            {% for lv, n in a.levels %}<span class="level-{{ lv }}">{{ n }} {{ lv }}</span>{{ ' · ' if not loop.last }}{% endfor %}
+                            · first {{ a.first_date }} → newest <span class="text-ink">{{ a.newest_date }}</span>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <div class="mono">{{ a.n_sources }}</div>
+                        <div class="text-[11px] text-teal">+{{ a.n_in_window }} in window</div>
+                        {% if a.n_lowconf %}<div class="text-[11px] cell-low">{{ a.n_lowconf }} probable</div>{% endif %}
+                    </td>
+                    <td class="text-right mono">{% if a.median_lag is not none %}{{ a.median_lag }}<span class="text-muted text-xs">d</span>{% else %}—{% endif %}</td>
+                    <td>
+                        <ul class="arrivals">
+                        {% for d in a.newest %}
+                            <li>
+                                <span class="badge badge-{{ d.level }}">{{ d.level[:3] }}</span>
+                                <a href="/document/{{ d.id }}" class="font-zh text-[12.5px] {{ '' if d.in_window else 'text-muted' }}">{{ d.title[:60] }}</a>
+                                <span class="block text-[11px] text-muted pl-1">
+                                    <span class="mono">{{ d.date }}</span>
+                                    {% if d.lag is not none %} · lag <span class="mono">{{ d.lag }}d</span>{% endif %}
+                                    {% if d.issuer %} · {{ d.issuer }}{% endif %}
+                                    {% if d.match == 'title_reissue' %} · <span class="tag">re-issue</span>{% endif %}
+                                </span>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+        <div class="text-muted italic text-sm py-6 border border-dashed border-rule text-center">
+            No confirmed cascade activity in this area in the last {{ t.weeks }} weeks. Widen the window, or try another area.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 3. Most-cascaded instruments (all topics) -->
+    <div class="mb-8">
+        <span class="lab">Most-cascaded instruments · all areas, whole corpus</span>
+        <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
+            Central instruments ranked by the number of distinct implementing sources (issuing sites) that cite or re-issue them —
+            confirmed signals only. A floor on breadth: uncrawled provinces cannot appear here.
+        </p>
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr>
+                <th class="w-8 text-right">#</th>
+                <th>Instrument</th>
+                <th class="w-24 hidden sm:table-cell">Issued</th>
+                <th class="w-20 text-right">Sources</th>
+                <th class="w-16 text-right">Docs</th>
+                <th class="w-20 text-right">Median lag</th>
+                <th class="w-24 hidden sm:table-cell">Newest</th>
+            </tr></thead>
+            <tbody>
+            {% for b in t.leaderboard %}
+                <tr>
+                    <td class="text-right mono text-muted">{{ loop.index }}</td>
+                    <td>
+                        <a href="/document/{{ b.id }}" class="font-zh text-[13px]">{{ b.title[:80] }}</a>
+                        <div class="text-[11px] mt-0.5">{% for tp in b.topics[:3] %}<a class="tag" href="/tracker?topic={{ tp|urlencode }}&weeks={{ t.weeks }}">{{ tp }}</a>{% endfor %}</div>
+                    </td>
+                    <td class="mono text-muted text-xs hidden sm:table-cell">{{ b.date }}</td>
+                    <td class="text-right mono text-teal font-medium">{{ b.localities }}</td>
+                    <td class="text-right mono">{{ b.docs }}</td>
+                    <td class="text-right mono">{% if b.median_lag is not none %}{{ b.median_lag }}<span class="text-muted text-xs">d</span>{% else %}—{% endif %}</td>
+                    <td class="mono text-muted text-xs hidden sm:table-cell">{{ b.newest }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <p class="floor max-w-4xl">
+        Method: a sub-national document is matched to a central instrument by a resolved citation or an exact
+        <span class="font-zh">《》</span> reference (<em>citation</em>), by carrying the instrument's distinctive title stem
+        (<em>re-issue</em>), or — low confidence, shown only as grey counts — by sharing its topic and an implementing genre within
+        a window after it. Rebuilt nightly from the corpus; see <span class="mono">docs/research/daily-tracker-concept.md</span>.
+    </p>
+    {% endif %}
+</div>
+{% endblock %}
