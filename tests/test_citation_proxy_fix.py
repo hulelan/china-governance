@@ -66,6 +66,12 @@ def test_mirror_tiebreak_is_deterministic_lowest_id_within_level():
     assert m.resolve_ref("城乡规划法", 8) == min(LAW_NPC, LAW_MEE)
 
 
+def test_accepts_one_tuple_values_like_build_diffusion_events():
+    """build_diffusion_events passes {stem: (id,)} with no site_levels — must not break."""
+    m = TitleMatcher({"中华人民共和国城乡规划法": (LAW_NPC,), "广东省城乡规划条例": (GD,)})
+    assert m.resolve_ref("城乡规划法", 8) == LAW_NPC
+
+
 def test_norm_title_folds_prc_prefix_and_brackets():
     assert _norm_title("《中华人民共和国城乡规划法》") == "城乡规划法"
 

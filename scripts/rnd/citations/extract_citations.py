@@ -221,7 +221,12 @@ class TitleMatcher:
             nt = _norm_title(t)
             if not nt:
                 continue
-            key = (_LEVEL_PREF.get(site_levels.get(v[1], ""), 9), v[0])
+            # values may be (id, site_key), (id,) (build_diffusion_events) or a bare id
+            if isinstance(v, (tuple, list)):
+                did, sk = v[0], (v[1] if len(v) > 1 else "")
+            else:
+                did, sk = v, ""
+            key = (_LEVEL_PREF.get(site_levels.get(sk, ""), 9), did)
             cur = best.get(nt)
             if cur is None or key < cur:
                 best[nt] = key
