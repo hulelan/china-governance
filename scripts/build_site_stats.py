@@ -7,6 +7,13 @@ warm-up; see docs/working/perf-diagnosis.md). An index can't help — the aggreg
 read the body column. So we precompute a tiny per-site summary table nightly and have
 `get_sites` read that instead (O(sites), sub-ms).
 
+The same pass ALSO writes `corpus_stats` — the corpus-wide totals `get_stats` needs on
+EVERY page (total / with_body / with_docnum / site_count + the by-year rollup). That
+live scan cost ~1.5–3s cold per worker after each nightly restart (perf-diagnosis.md
+item 3: the first-click-of-the-morning case). `corpus_stats` is a key/value table:
+scalar keys plus one `year:<YYYY>` row per publication year (the year is computed with
+the same `strftime('%Y', date_written, 'unixepoch')` the live query uses).
+
 This script is idempotent: run it once now to populate, and it's wired into
 `daily_sync.sh` Phase 2c (after all writers, before the WAL checkpoint) to stay fresh.
 It also ensures `idx_documents_classify_main` (the categories facet + category browse
@@ -29,6 +36,10 @@ CREATE TABLE IF NOT EXISTS site_stats (
     body_count   INTEGER NOT NULL DEFAULT 0,
     docnum_count INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS corpus_stats (
+    key   TEXT PRIMARY KEY,   -- total | with_body | with_docnum | site_count | year:<YYYY>
+    value INTEGER NOT NULL DEFAULT 0
+);
 """
 
 
@@ -49,22 +60,40 @@ def build(db_path: Path) -> tuple:
         # path, not the 74s automatic-index path.
         # COALESCE so a NULL body/docnum counts as empty (0), matching the old
         # get_sites CASE semantics — `NULL != ''` is NULL, not 0, in SQL.
+        # The year expression mirrors web/database.py's translation of the live
+        # get_stats query (EXTRACT(YEAR FROM to_timestamp(date_written))), so the
+        # precomputed by-year rollup is identical to what the slow path returns.
         agg: dict[str, list] = {}
-        for site_key, has_body, has_docnum in conn.execute(
+        by_year: dict[int, int] = {}
+        for site_key, has_body, has_docnum, yr in conn.execute(
                 "SELECT site_key, COALESCE(body_text_cn,'') != '', "
-                "COALESCE(document_number,'') != '' FROM documents"):
+                "COALESCE(document_number,'') != '', "
+                "CASE WHEN date_written > 0 THEN "
+                "CAST(strftime('%Y', date_written, 'unixepoch') AS INTEGER) END "
+                "FROM documents"):
             row = agg.get(site_key)
             if row is None:
                 row = agg[site_key] = [0, 0, 0]
             row[0] += 1
             row[1] += has_body
             row[2] += has_docnum
+            if yr is not None:
+                by_year[yr] = by_year.get(yr, 0) + 1
+
+        site_count = conn.execute("SELECT COUNT(*) FROM sites").fetchone()[0]
+        totals = [sum(v[i] for v in agg.values()) for i in range(3)]
 
         conn.execute("DELETE FROM site_stats")
         conn.executemany(
             "INSERT INTO site_stats(site_key, doc_count, body_count, docnum_count) "
             "VALUES (?,?,?,?)",
             [(k, v[0], v[1], v[2]) for k, v in agg.items()])
+        conn.execute("DELETE FROM corpus_stats")
+        conn.executemany(
+            "INSERT INTO corpus_stats(key, value) VALUES (?,?)",
+            [("total", totals[0]), ("with_body", totals[1]),
+             ("with_docnum", totals[2]), ("site_count", site_count)]
+            + [(f"year:{y}", n) for y, n in sorted(by_year.items())])
         conn.commit()
         conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         return conn.execute(
@@ -88,6 +117,9 @@ def main():
         for r in conn.execute("SELECT site_key, doc_count, body_count, docnum_count "
                               "FROM site_stats ORDER BY doc_count DESC LIMIT 20"):
             print(f"  {r[0]:<16}{r[1]:>8}{r[2]:>8}{r[3]:>8}")
+        print("corpus_stats:")
+        for r in conn.execute("SELECT key, value FROM corpus_stats ORDER BY key"):
+            print(f"  {r[0]:<16}{r[1]:>10,}")
         conn.close()
         return
 

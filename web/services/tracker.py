@@ -41,7 +41,7 @@ MAX_WEEKS = 52
 # Canonical column order for the weekly matrix (sub-national first after central).
 LEVEL_ORDER = ["central", "provincial", "municipal", "district", "department",
                "media", "research"]
-ACTIVE_LIMIT = 12       # anchors shown in "active cascades"
+ACTIVE_LIMIT = 12       # anchors shown in "active cascades" — PER anchor_level
 NEWEST_PER_ANCHOR = 4   # newest implementing docs listed per anchor
 LEADERBOARD_LIMIT = 15
 
@@ -234,11 +234,22 @@ async def get_active_cascades(db, topic: str, weeks: int):
         if r["source_date"] > newest.get(a, ""):
             newest[a] = r["source_date"]
     ranked = sorted(in_win, key=lambda a: (newest[a], len(in_win[a])), reverse=True)
-    top = ranked[:ACTIVE_LIMIT]
+    # Anchor-level aware: central instruments arrive far more often, so a single
+    # newest-first cut filled all ACTIVE_LIMIT slots and provincial cascades never
+    # surfaced here (only in the leaderboard / weekly cells). Take the top
+    # ACTIVE_LIMIT per anchor_level, then keep the merged list in newest-arrival
+    # order so the two levels interleave under their tags.
+    per_level = defaultdict(list)
+    for a in ranked:
+        lvl = alevel.get(a, "central")
+        if len(per_level[lvl]) < ACTIVE_LIMIT:
+            per_level[lvl].append(a)
+    chosen = {a for lst in per_level.values() for a in lst}
+    top = [a for a in ranked if a in chosen]
     n_lowconf_only = len([a for a in low_win if a not in in_win])
     if not top:
         return {"anchors": [], "n_active": 0, "n_lowconf_only": n_lowconf_only,
-                "window_start": start}
+                "window_start": start, "per_level_limit": ACTIVE_LIMIT}
 
     ev = await db.fetch(
         """SELECT anchor_id, source_id, match_type, lag_days, source_level,
@@ -301,7 +312,8 @@ async def get_active_cascades(db, topic: str, weeks: int):
             m = iss.get(d["id"], {})
             d["issuer"] = m.get("site_name") or m.get("site_key") or ""
     return {"anchors": anchors, "n_active": len(ranked),
-            "n_lowconf_only": n_lowconf_only, "window_start": start}
+            "n_lowconf_only": n_lowconf_only, "window_start": start,
+            "per_level_limit": ACTIVE_LIMIT}
 
 
 async def get_leaderboard(db, anchor_level: str = "central"):

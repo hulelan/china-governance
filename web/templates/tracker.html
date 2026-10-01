@@ -131,7 +131,7 @@
         <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
             {{ C.n_active }} instrument{{ '' if C.n_active == 1 else 's' }} drew a confirmed sub-national response in the window
             ({{ C.n_lowconf_only }} more only by probable topic-and-genre match, not shown).
-            Ordered by newest arrival. Source counts and median lag run over the whole cascade, not just the window —
+            Showing the {{ C.per_level_limit }} most recently active per anchor level (central and provincial), ordered by newest arrival. Source counts and median lag run over the whole cascade, not just the window —
             the live form of the cascade tables in <em>consumption-diffusion</em>. A <span class="tag lvl-provincial">provincial</span> anchor
             is matched only against cities, districts and bureaus of its own province (<em>fidelity-provincial</em>: the hop that carries the text).
         </p>

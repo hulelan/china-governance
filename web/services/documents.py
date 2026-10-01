@@ -422,6 +422,34 @@ async def get_categories(db):
 
 _stats_cache = {"data": None, "ts": 0}
 
+# Fast path: the precomputed corpus totals (scripts/build_site_stats.py, refreshed
+# nightly in daily_sync.sh Phase 2c alongside site_stats). A handful of rows, sub-ms.
+# Mirrors the _SITES_FAST_SQL/_SITES_SLOW_SQL pattern above: get_stats runs on EVERY
+# page, so its ~1.5–3s cold live scan was the whole first-request-after-restart cost
+# (perf-diagnosis.md item 3).
+_STATS_FAST_SQL = "SELECT key, value FROM corpus_stats"
+
+
+async def _stats_fast(db):
+    kv = {r["key"]: r["value"] for r in await db.fetch(_STATS_FAST_SQL)}
+    if "total" not in kv:
+        raise LookupError("corpus_stats not populated")
+    by_year = []
+    for k, v in kv.items():
+        if k.startswith("year:"):
+            yr = int(k[5:])
+            if 2015 <= yr <= 2030:
+                by_year.append({"year": yr, "count": v})
+    by_year.sort(key=lambda d: d["year"])
+    return {
+        "total": kv["total"],
+        "with_body": kv.get("with_body", 0),
+        "with_docnum": kv.get("with_docnum", 0),
+        "site_count": kv.get("site_count", 0),
+        "by_year": by_year,
+    }
+
+
 async def get_stats(db):
     """Corpus-wide statistics: total documents, body-text and doc-number coverage, and year breakdown."""
     import time
@@ -429,6 +457,18 @@ async def get_stats(db):
     if _stats_cache["data"] and now - _stats_cache["ts"] < 3600:
         return _stats_cache["data"]
 
+    try:
+        result = await _stats_fast(db)
+    except Exception:
+        # Fallback: the live scan. Only hit if corpus_stats is missing (fresh DB or
+        # a backup restored without it) — slow but correct until the builder runs.
+        result = await _stats_slow(db)
+    _stats_cache["data"] = result
+    _stats_cache["ts"] = now
+    return result
+
+
+async def _stats_slow(db):
     # Single scan for all counts instead of 4 separate queries
     row = await db.fetchrow("""
         SELECT COUNT(*) as total,
@@ -451,16 +491,13 @@ async def get_stats(db):
         ORDER BY yr
     """)
 
-    result = {
+    return {
         "total": row["total"] or row[0],
         "with_body": row["with_body"] or row[1],
         "with_docnum": row["with_docnum"] or row[2],
         "site_count": site_count,
         "by_year": [dict(r) for r in year_rows],
     }
-    _stats_cache["data"] = result
-    _stats_cache["ts"] = now
-    return result
 
 
 def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
