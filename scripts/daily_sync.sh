@@ -307,6 +307,22 @@ timeout 3600 nice -n 19 python3 scripts/build_search_index_seg.py >> "$LOG" 2>&1
 log "Phase 2c: Rebuilding site_stats (per-site doc/body/docnum counts)..."
 timeout 600 python3 scripts/build_site_stats.py >> "$LOG" 2>&1 || log "  build_site_stats had errors"
 
+# Daily policy tracker data layer (docs/research/daily-tracker-concept.md). Two
+# precomputed tables, rebuilt from scratch each night (both idempotent DELETE+INSERT):
+#   1. diffusion_events — the auto-matcher: each sub-national doc → the central
+#      instrument it implements (citation / title_reissue / topic_genre) + lag. MUST
+#      run after Phase 2b: it reads the fresh `citations` table and `topics_algo`.
+#      Full rebuild measured 30s wall / 350MB RSS on the droplet (2026-10-01,
+#      ~320k docs, 28,880 events) — timeout is ~30x headroom.
+#   2. tracker_weekly — per (topic, ISO week, admin_level) new-doc + cascade counts
+#      the tracker view reads instantly (same precompute pattern as site_stats).
+#      Reads diffusion_events, so it runs second. Measured 4s / 34MB (44.5k rows).
+log "Phase 2c: Rebuilding diffusion_events (tracker auto-matcher)..."
+timeout 900 nice -n 19 python3 scripts/rnd/analysis/build_diffusion_events.py --write >> "$LOG" 2>&1 || log "  build_diffusion_events had errors"
+
+log "Phase 2c: Rebuilding tracker_weekly (per-topic weekly rollup)..."
+timeout 300 nice -n 19 python3 scripts/build_tracker_rollup.py >> "$LOG" 2>&1 || log "  build_tracker_rollup had errors"
+
 # --- Phase 3: Publish the DB to the live web app ---
 # Two modes:
 #   (a) Production droplet (marker file present): the web app reads THIS very
