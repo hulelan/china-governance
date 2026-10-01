@@ -30,6 +30,11 @@ lookalikes) above the canonical central text. We POOL promulgations by their EXA
 normalized 《》-core so mirrors share one anchor identity, pick the central member as
 the representative (dodging the media/provincial lookalike), and attribute core-named
 citation refs to the anchor even when the resolver mis-sent target_id elsewhere.
+
+Anchor hygiene (2026-10, diffusion-atlas.md §1/§7/§9): `npc` local 人大 rows are not
+central (`_is_true_central`), explainers can't represent/qualify a pool
+(`_is_explainer`), and bare 五年规划 period mentions are never attributed
+(`GENERIC_FYP_RE`).
 """
 import argparse
 import re
@@ -85,6 +90,42 @@ NONISSUE_RE = re.compile(r"(解读|读懂|答记者问|新闻发布|发布会|�
 CUE_QUOTE_RE = re.compile(r"[“‘「『《]([^”’」』》]{2,20}\+[^”’」』》]{0,20})[”’」』》]")
 TOPIC_WINDOW = 365  # days: topic_genre recency gate
 TOPIC_ANCHOR_CR = 10.0  # only major campaigns propose topic_genre implementations
+
+# --- Anchor hygiene (diffusion-atlas.md §1/§7/§9) ---------------------------
+# The `npc` site (国家法律法规数据库, crawlers/npc.py) is tagged admin_level=central
+# as a whole, but ~28k of its rows are provincial/municipal 人大 instruments
+# (地方法规 + their amendment/repeal decisions + 法规性决定, which are ALL local
+# 人大常委会 decisions — none starts with 全国人民代表大会). The atlas found 819
+# such anchors (~17% of events) polluting the central tracker. Only these
+# categories (classify_main_name) are genuinely national-level instruments.
+NPC_NATIONAL_CATEGORIES = {
+    "宪法", "法律", "修正案", "法律解释", "行政法规", "监察法规",
+    "有关法律问题和重大问题的决定",
+    "修改、废止的决定（法律）", "修改、废止的决定（行政法规）",
+    "高法司法解释", "高检司法解释", "联合发布司法解释", "修改、废止的决定（司法解释）",
+}
+# Bare five-year-plan mentions ("十五五"规划, 十四五规划纲要) name a planning period,
+# not an instrument; the resolver nonetheless pins them to whichever sectoral
+# 十X五 plan it finds first (atlas §7: a 十五五 电子信息 plan 解读 with 303 such
+# edges was the one pure resolver-noise anchor). Never attribute these by target_id.
+GENERIC_FYP_RE = re.compile(r"^十[一二三四五六]五(规划|规划纲要|计划)?$")
+
+
+def _is_true_central(d):
+    """Central-level issuer, correcting the npc site's blanket admin_level tag."""
+    if d["level"] != "central":
+        return False
+    if d["site"] == "npc":
+        return d["cat"] in NPC_NATIONAL_CATEGORIES
+    return True
+
+
+def _is_explainer(d):
+    """解读 / 一图读懂 / 答记者问 etc. — ABOUT an instrument, not one. May stay a
+    pool member (so citations mis-resolved onto it still reach the pool) but may
+    not represent or qualify a pool (atlas §7: ~9% of anchors were labelled by a
+    pool member naming another instrument, several of them explainers)."""
+    return d["genre"] == "explainer" or bool(NONISSUE_RE.search(d["title"]))
 
 
 def _d10(s):
@@ -149,13 +190,14 @@ def load(conn):
     docs = {}
     for row in conn.execute(
             f"""SELECT id, site_key, title, date_published, algo_doc_type,
-                       citation_rank, topics_algo
+                       citation_rank, topics_algo, classify_main_name
                 FROM documents
                 WHERE date_published BETWEEN '{DATE_LO}' AND '{DATE_HI}'"""):
-        did, sk, title, dp, genre, cr, topics = row
+        did, sk, title, dp, genre, cr, topics, cat = row
         docs[did] = {
             "id": did, "site": sk, "title": title or "",
             "date": _d10(dp), "genre": genre or "", "cr": cr or 0.0,
+            "cat": cat or "",
             "topics": [t for t in (topics or "").split(",") if t],
             "level": site_level.get(sk, "unknown"),
             "indeg": indeg.get(did, 0),
@@ -176,10 +218,17 @@ def build_anchors(docs):
     member_to_anchor = {}   # any member doc id -> anchor_id
     core_exact = {}         # normalized 《》-core -> anchor_id (for ref attribution)
 
+    n_explainer_only = 0
     for key, members in pools.items():
+        # True-central (npc local 人大 rows excluded), framework, and NOT an explainer:
+        # a pool whose only central members are 解读/一图读懂 of an instrument the
+        # corpus lacks is not anchored on the instrument itself.
         central_fw = [m for m in members
-                      if m["level"] == "central" and is_framework(m["genre"], m["title"])]
+                      if _is_true_central(m) and is_framework(m["genre"], m["title"])
+                      and not _is_explainer(m)]
         if not central_fw:
+            if any(_is_true_central(m) and is_framework(m["genre"], m["title"]) for m in members):
+                n_explainer_only += 1
             continue
         named = key[0] == "core"
         has_auth = any(m["cr"] >= CR_T or m["indeg"] >= DEG_T for m in members)
@@ -205,6 +254,8 @@ def build_anchors(docs):
             member_to_anchor.setdefault(m["id"], aid)
         if named:
             core_exact.setdefault(key[1], aid)
+    if n_explainer_only:
+        print(f"  (skipped {n_explainer_only} pools whose only central members are explainers)")
     return anchors, member_to_anchor, core_exact
 
 
@@ -227,10 +278,13 @@ def match_citation(conn, docs, anchors, member_to_anchor, core_exact):
         if not s or s["level"] not in SUBNATIONAL:
             continue
         aid = None
+        rc = ref_core(ref) if ref else ""
+        if GENERIC_FYP_RE.match(rc):
+            continue  # bare 五年规划 period mention — resolver noise, not an instrument
         if tid is not None and tid in member_to_anchor:
             aid = member_to_anchor[tid]
-        if aid is None and ref:
-            aid = core_exact.get(ref_core(ref))
+        if aid is None and rc:
+            aid = core_exact.get(rc)
         if aid is None:
             continue
         if src == aid or src in anchors[aid]["members"]:
