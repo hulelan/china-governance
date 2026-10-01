@@ -61,6 +61,15 @@ each flagship as an **anchor set** (all near-duplicate promulgations of the same
 than a single row, so citations to the Xinhua copy, the `gov` copy, and the ministry copies
 are pooled. This is the first threat to validity and it is structural, not incidental.
 
+*(Update 2026-10-01: the anchor identity above is no longer the live state. After the resolver
+exact-title fix (`cd42903`/`c979a82`) the string 提振消费专项行动方案 (113 edges) resolves to
+900105357, a Beijing provincial news page titled with the bare instrument name, and both central
+copies (gov 12650974, Xinhua 12704698) hold 0 inbound; the Xinhua cr=200 / gov 0 split in the
+table is pre-fix. This is a regression of exactly the proxy pattern the fix targeted and is being
+corrected; until then the four-id boost-consumption pool returns 18 / 14 / 5 / 3 = 40 distinct
+citers rather than the 72 in Table 2a. The trade-in anchors are unaffected. The anchor-set
+method stands. See `consistency-review.md` H1.)*
+
 The trade-in "family" also spawned a **sequence** of central follow-ons that themselves became
 anchors: the 2024-07 加力支持…若干措施 (发改环资〔2024〕1104号, cr=70), the 2025 加力扩围
 (cr=79), and the 2026 提质增效 (chinatax, cr=100). The campaign is not one document but a
@@ -95,6 +104,13 @@ administrative level (`citations` join `documents`, `COUNT(DISTINCT source_id)`)
 | trade-in, 2024 core (900039931 / 900047223 / 900047235) | 35 | 11 | 6 | 0 | 1 | **53** |
 | trade-in, 2025 expansion (900046374 / …1104号 / 加力支持) | 33 | 12 | 7 | 1 | 0 | **53** |
 | boost-consumption (12704698 / 12650974) | 37 | 3 | 7 | 3 | 22 | **72** |
+
+*(Note 2026-10-01: this table groups citers by the stale `citations.source_level` column; later
+memos join `sites.admin_level`. Re-pulled that way on 2026-10-01 the trade-in 2024 core is 35
+central / 13 provincial / 8 municipal / 1 department / 1 media = 58 (vs 35 / 11 / 6 / 0 / 1 = 53
+here); direction unchanged. The boost-consumption row is not reproducible from the listed ids
+after the resolver fix (see §1 update): the pool now returns 40 citers. `consistency-review.md`
+H1 and L5.)*
 
 Reading it:
 
@@ -277,7 +293,8 @@ Stated candidly, because a China-politics reader will (rightly) probe every one.
 
 3. **51% citation resolution.** `citations` resolves target ids on **226,464 / 445,599 = 50.8%**
    of edges (rest are unresolved 《》/文号 strings pointing outside the corpus or to un-matched
-   titles). All §2 counts are therefore **floors** — true inbound citation is roughly ~2× the
+   titles). *(2026-10-01: 287,607 / 533,358 = 53.9% live; ~52-54% depending on date. Still a
+   floor.)* All §2 counts are therefore **floors** — true inbound citation is roughly ~2× the
    observed. The resolver also over-counts near-duplicate promulgations (the Xinhua vs. gov copies
    of one text) as distinct sources; I mitigated by pooling anchor sets and using
    `COUNT(DISTINCT source_id)`, but cross-site mirror duplication still inflates raw edge counts
@@ -287,6 +304,13 @@ Stated candidly, because a China-politics reader will (rightly) probe every one.
    evidence that trade-in subsidies were actually disbursed or that consumption rose. This corpus
    measures the **documentary diffusion of the campaign**, full stop. Fiscal execution, subsidy
    uptake, and consumption outcomes are outside it.
+
+5. **Scope boundary.** The findings are mechanism-level claims about a document record. No
+   regime-type labels. *(Added 2026-10-01 per `consistency-review.md` §2. Also: the ~49-day
+   median lag here is first title-matched re-issuance per unit for the 2024 wave; the atlas
+   reports 76 / 79 days on adoption-grade / confirmed events and the synthesis 38 days for the
+   Guangdong 实施方案 to 26 cities provincial hop. Different definitions, all correct, review
+   L1.)*
 
 ---
 

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Research Memos — Governance Archive{% endblock %}
+{% block meta_description %}Research memos built on the Governance Archive corpus: the citation-network backbone, the central-to-local diffusion atlas, fidelity, recentralization and experimentation tests, joint issuance, AI governance, industrial policy, and the synthesis that ties them together.{% endblock %}
+
+{% block head %}
+<style>
+    .memo-list { list-style: none; margin: 0; padding: 0; }
+    .memo-list li { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+    .memo-list li:last-child { border-bottom: 0; }
+    .memo-title { font-family: 'Noto Serif SC', Georgia, serif; font-size: 16px; line-height: 1.35; color: var(--ink); }
+    .memo-title:hover { color: var(--accent); }
+    .memo-blurb { font-size: 13px; color: var(--muted); line-height: 1.55; margin-top: 4px; max-width: 72ch; }
+    .memo-meta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 5px; letter-spacing: .03em; }
+    .memo-meta a { color: var(--accent); }
+    .sec-start .memo-title { font-size: 20px; }
+    .sec-num { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 12px; margin-right: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+
+    <div class="border border-rule bg-panel mb-6">
+        <div class="bg-teal text-[#e8f0ed] px-4 py-1.5 flex justify-between text-[11px] tracking-[0.16em] uppercase">
+            <span>Research Memos · 研究备忘</span>
+            <span class="mono">{{ sections|map(attribute='memos')|map('length')|sum }} memos</span>
+        </div>
+        <div class="px-6 py-4">
+            <p class="text-[13px] text-muted leading-relaxed max-w-4xl">
+                Worked analyses on the corpus, written as the chapters of a volume on China as a bureaucracy.
+                Each memo states its universe and date, reports shares and rates rather than raw counts, and carries
+                its SQL in an appendix so every figure is reproducible against <span class="mono">documents.db</span>.
+                Read the synthesis first; the parts follow the volume's spine.
+            </p>
+        </div>
+    </div>
+
+    {% for sec in sections %}
+    <section class="mb-8 {{ 'sec-start' if loop.first }}">
+        <span class="lab">{{ sec.label }}</span>
+        <ul class="memo-list">
+            {% for m in sec.memos %}
+            <li>
+                <a href="/research/{{ m.slug }}" class="memo-title block">{{ m.title }}</a>
+                {% if m.blurb %}<p class="memo-blurb">{{ m.blurb }}</p>{% endif %}
+                <div class="memo-meta">
+                    {{ m.slug }}.md · {{ "{:,}".format(m.words) }} words · updated {{ m.updated }}
+                    · <a href="/research/{{ m.slug }}">Read →</a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endfor %}
+
+</div>
+{% endblock %}

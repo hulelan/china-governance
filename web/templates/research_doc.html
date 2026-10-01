@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ memo.title }} — Research — Governance Archive{% endblock %}
+{% block meta_description %}{{ memo.blurb or memo.title }}{% endblock %}
+
+{% block head %}
+<style>
+    .memo-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 32px; align-items: start; }
+    @media (max-width: 900px) { .memo-layout { grid-template-columns: minmax(0, 1fr); } .memo-rail { position: static !important; } }
+    .memo-rail { position: sticky; top: 16px; }
+    .rail-list { list-style: none; margin: 0; padding: 0; }
+    .rail-list li { padding: 6px 0; border-bottom: 1px dotted var(--rule); font-size: 12.5px; line-height: 1.4; }
+    .rail-list li:last-child { border-bottom: 0; }
+    .rail-list li.on { border-left: 3px solid var(--accent); padding-left: 8px; }
+    .rail-list li.on a { color: var(--ink); font-weight: 500; }
+    .rail-list a { color: var(--accent); }
+
+    /* ---- Memo body (rendered markdown) ---- */
+    .memo { max-width: 72ch; font-size: 15px; line-height: 1.68; color: var(--ink); }
+    .memo > h1 { font-family: 'Noto Serif SC', Georgia, serif; font-size: 27px; line-height: 1.25; font-weight: 600;
+        margin: 0 0 14px; padding-bottom: 12px; border-bottom: 2px solid var(--ink); }
+    .memo h2 { font-family: 'Noto Serif SC', Georgia, serif; font-size: 20px; font-weight: 600; line-height: 1.3;
+        margin: 2.2em 0 .7em; padding-bottom: 5px; border-bottom: 1px solid var(--rule); }
+    .memo h3 { font-size: 15px; font-weight: 600; margin: 1.8em 0 .5em; letter-spacing: .01em; }
+    .memo h4 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 1.6em 0 .4em; }
+    .memo h2:target, .memo h3:target { background: #e8e0c8; }
+    .memo p { margin: 0 0 1em; }
+    .memo > p:first-of-type em, .memo > h1 + p em, .memo > h1 + p { color: var(--muted); font-size: 14px; }
+    .memo ul, .memo ol { margin: 0 0 1em 1.4em; padding: 0; }
+    .memo ul { list-style: disc; } .memo ol { list-style: decimal; }
+    .memo li { margin: .25em 0; } .memo li > p { margin: 0 0 .4em; }
+    .memo a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(109,43,43,.35); text-underline-offset: 2px; }
+    .memo a:hover { text-decoration-color: var(--accent); }
+    .memo hr { border: 0; border-top: 1px solid var(--rule); margin: 2em 0; }
+    .memo blockquote { margin: 1.2em 0; padding: 8px 16px; border-left: 3px solid var(--teal); background: var(--panel);
+        color: #3f3a32; font-size: 14px; }
+    .memo blockquote p:last-child { margin-bottom: 0; }
+    .memo code { font-family: 'IBM Plex Mono', monospace; font-size: .86em; background: #e6e1d3; padding: 1px 4px; border-radius: 2px; }
+    .memo pre { font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.5; background: #f8f6ef;
+        border: 1px solid var(--rule); padding: 12px 14px; margin: 0 0 1.2em; overflow-x: auto; }
+    .memo pre code { background: none; padding: 0; font-size: inherit; }
+    .memo strong { font-weight: 600; }
+    .memo img { max-width: 100%; }
+
+    /* Tables — ruled catalog style, wrapped so a wide table never widens the page. */
+    .memo .table-scroll { margin: 0 0 1.4em; }
+    .memo table { width: 100%; min-width: 480px; font-size: 13px; border-collapse: collapse; line-height: 1.45; }
+    .memo th { text-align: left; padding: 6px 10px; font-size: 11px; font-weight: 500; color: var(--muted);
+        text-transform: uppercase; letter-spacing: .08em; border-bottom: 2px solid var(--ink); vertical-align: bottom; }
+    .memo td { padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+    .memo tr:hover td { background: var(--panel); }
+    .memo td code, .memo th code { background: none; padding: 0; }
+    @media (max-width: 640px) { .memo { font-size: 14.5px; } .memo > h1 { font-size: 22px; } .memo h2 { font-size: 18px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+
+    <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4 text-[12px]">
+        <a href="/research" class="tracking-[0.1em] uppercase">← Research memos</a>
+        <span class="mono text-muted">{{ memo.section }} · {{ memo.slug }}.md · {{ "{:,}".format(memo.words) }} words · updated {{ memo.updated }}</span>
+    </div>
+
+    <div class="memo-layout">
+        <article class="memo">{{ memo.html|safe }}</article>
+
+        <aside class="memo-rail">
+            <span class="lab">{{ memo.section }}</span>
+            <ul class="rail-list">
+                {% for m in memo.siblings %}
+                <li class="{{ 'on' if m.slug == memo.slug }}">
+                    {% if m.slug == memo.slug %}<a>{{ m.title }}</a>{% else %}<a href="/research/{{ m.slug }}">{{ m.title }}</a>{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="mt-5 text-[12px]"><a href="/research">All memos →</a></div>
+        </aside>
+    </div>
+
+</div>
+{% endblock %}

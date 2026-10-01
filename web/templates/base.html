@@ -154,7 +154,7 @@
             .subnav a { padding: 10px 13px; letter-spacing: .06em; font-size: 11px;
                 white-space: nowrap; flex: 0 0 auto; }
             /* The Research dropdown can't hover on touch — show it as a plain link
-               (it navigates to /collections, which lists both sub-pages). */
+               (it navigates to /research, the memo index). */
             .navdrop > a::after { display: none; }
             .navmenu { display: none !important; }
             .data-table th, .data-table td { padding-left: 8px; padding-right: 8px; }
@@ -180,8 +180,9 @@
                 <a href="/lens" class="{{ 'active' if nav=='lens' }}">Lens</a>
                 <a href="/tracker" class="{{ 'active' if nav=='tracker' }}">Tracker</a>
                 <div class="navdrop">
-                    <a href="/collections" class="{{ 'active' if nav in ['annotations','collections','research'] }}">Research</a>
+                    <a href="/research" class="{{ 'active' if nav in ['annotations','collections','research'] }}">Research</a>
                     <div class="navmenu">
+                        <a href="/research"><strong>Memos</strong><span class="desc">Research findings — the replications, the atlas, the synthesis</span></a>
                         <a href="/collections"><strong>Collections</strong><span class="desc">Topical dossiers — every document on a theme, filterable</span></a>
                         <a href="/annotations"><strong>Annotations</strong><span class="desc">Close readings — a landmark policy, clause by clause</span></a>
                     </div>

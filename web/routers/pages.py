@@ -30,6 +30,7 @@ from web.services.annotations import list_annotations, get_overview, get_item
 from web.services.collections import get_collection
 from web.services.lens import get_topic_lens, get_doc_lens
 from web.services.tracker import get_tracker
+from web.services.research import list_sections as research_sections, get_memo as research_memo
 from web.services import ontology
 
 router = APIRouter()
@@ -218,6 +219,31 @@ async def tracker_page(request: Request, topic: str = "all", weeks: int = 8):
     t = await get_tracker(db, topic, weeks)
     return templates.TemplateResponse("tracker.html", {
         "request": request, "stats": stats, "active_nav": "tracker", "t": t,
+    })
+
+
+@router.get("/research", response_class=HTMLResponse)
+async def research_index(request: Request):
+    """Research memos — the ``docs/research/*.md`` analysis layer, grouped in
+    the volume's reading order (see services.research.CURATED)."""
+    db = request.app.state.db
+    return templates.TemplateResponse("research.html", {
+        "request": request, "stats": await get_stats(db), "active_nav": "research",
+        "sections": research_sections(),
+    })
+
+
+@router.get("/research/{slug}", response_class=HTMLResponse)
+async def research_doc(request: Request, slug: str):
+    """One rendered memo. The slug is validated (``^[a-z0-9-]+$``) and must
+    resolve to a file inside docs/research/ — anything else is a 404."""
+    memo = research_memo(slug)
+    if memo is None:
+        return HTMLResponse("<h1>Not found</h1>", status_code=404)
+    db = request.app.state.db
+    return templates.TemplateResponse("research_doc.html", {
+        "request": request, "stats": await get_stats(db), "active_nav": "research",
+        "memo": memo,
     })
 
 
