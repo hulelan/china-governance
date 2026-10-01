@@ -35,6 +35,19 @@ Anchor hygiene (2026-10, diffusion-atlas.md §1/§7/§9): `npc` local 人大 row
 central (`_is_true_central`), explainers can't represent/qualify a pool
 (`_is_explainer`), and bare 五年规划 period mentions are never attributed
 (`GENERIC_FYP_RE`).
+
+Second anchor class — PROVINCIAL framework instruments (2026-10, fidelity-provincial.md):
+in 92.8% of full center→province→city chains the city's text descends from the
+PROVINCE (cities relay their province 10.8% vs provinces relaying the center 3.3%),
+so the province→city hop is the one that carries policy text. `anchor_level`
+('central' | 'provincial') marks which class a row belongs to. Provincial anchors
+are province-tier framework docs (sites.admin_level='provincial' plus the
+province-tier units tagged municipal: `cq`, `bjb_*`, `shb_*`), pooled by the same
+normalized title key, skipping pools already anchored centrally (a provincial
+mirror of a central text is the central cascade, not a provincial one). They match
+ONLY sub-provincial implementers (municipal/district/department) in the SAME
+province (`province_of`); the memo's cross-province edges were resolver noise.
+Same three match types and lag rules. Central-anchor behaviour is untouched.
 """
 import argparse
 import re
@@ -109,6 +122,101 @@ NPC_NATIONAL_CATEGORIES = {
 # 十X五 plan it finds first (atlas §7: a 十五五 电子信息 plan 解读 with 303 such
 # edges was the one pure resolver-noise anchor). Never attribute these by target_id.
 GENERIC_FYP_RE = re.compile(r"^十[一二三四五六]五(规划|规划纲要|计划)?$")
+
+
+# --- Provincial anchors: province map + helpers ------------------------------
+# site_key -> province code, for every site that has a province-tier unit in the
+# corpus (a sub-provincial site whose province is uncrawled can never match a
+# provincial anchor, so it needs no entry). Exact keys first, then prefixes.
+_PROV_EXACT = {
+    # Guangdong: portal + depts, Guangzhou, Shenzhen portals/bureaus/districts, gkmlpt cities
+    "gz": "gd", "sz": "gd", "sz_invest": "gd",
+    "heyuan": "gd", "huizhou": "gd", "jiangmen": "gd", "jieyang": "gd", "maoming": "gd",
+    "shantou": "gd", "shanwei": "gd", "shaoguan": "gd", "yangjiang": "gd", "yunfu": "gd",
+    "zhanjiang": "gd", "zhaoqing": "gd", "zhongshan": "gd", "zhuhai": "gd",
+    "audit": "gd", "fgw": "gd", "ga": "gd", "hrss": "gd", "jtys": "gd", "mzj": "gd",
+    "sf": "gd", "stic": "gd", "swj": "gd", "szeb": "gd", "wjw": "gd", "yjgl": "gd", "zjj": "gd",
+    # Jiangsu
+    "suzhou": "js", "changzhou": "js", "huaian": "js", "lyg": "js", "nantong": "js",
+    "taizhou_js": "js", "wuxi": "js", "yancheng": "js",
+    # Beijing / Shanghai / Chongqing (province-tier municipalities)
+    "bj": "bj", "sh": "sh", "cq": "cq",
+    # Fujian
+    "fujian": "fj", "fuzhou_fj": "fj", "longyan": "fj", "quanzhou": "fj", "sm": "fj",
+    # Hunan
+    "hunan": "hn", "changde": "hn", "huaihua": "hn", "yueyang": "hn",
+    # Jilin
+    "jilin": "jl", "changchun": "jl", "liaoyuan": "jl", "siping": "jl", "tonghua": "jl",
+    "yanbian": "jl",
+    # Liaoning
+    "liaoning": "ln", "chaoyang": "ln", "dandong": "ln", "fushun": "ln", "fuxin": "ln",
+    "panjin": "ln", "shenyang": "ln", "yingkou": "ln",
+    # Ningxia
+    "ningxia": "nx", "shizuishan": "nx", "wuzhong": "nx", "yinchuan": "nx",
+    # Shandong
+    "shandong": "sd", "heze": "sd", "jinan": "sd", "jining": "sd", "laiwu": "sd",
+    "liaocheng": "sd", "linyi": "sd", "qingdao": "sd", "taian": "sd", "weihai": "sd",
+    "yantai": "sd", "zibo": "sd",
+    # Tibet
+    "xizang": "xz", "al": "xz", "changdu": "xz", "lasa": "xz", "linzhi": "xz",
+    "naqu": "xz", "shannan": "xz",
+    # Zhejiang / Heilongjiang / Qinghai / Xinjiang
+    "zj": "zj", "hangzhou": "zj",
+    "hlj": "hlj", "dxal": "hlj", "hegang": "hlj", "heihe": "hlj", "jixi": "hlj",
+    "shuangyashan": "hlj", "suihua": "hlj", "yc": "hlj",
+    "qinghai": "qh", "hainanzhou": "qh", "yushu": "qh",
+    "xinjiang": "xj", "ale": "xj", "bts": "xj", "cj": "xj", "hami": "xj", "kashi": "xj",
+    "klmy": "xj", "nqs": "xj", "tlf": "xj", "wjq": "xj", "wlmq": "xj", "xjboz": "xj",
+    "xjbz": "xj", "xjht": "xj", "xjkz": "xj", "xjtc": "xj", "xjyl": "xj",
+}
+_PROV_PREFIX = [
+    ("gd", "gd"), ("sz", "gd"),            # gd*, sz* (districts)
+    ("js_", "js"), ("js", "js"), ("njd_", "js"),
+    ("bjb_", "bj"), ("bjd_", "bj"), ("shb_", "sh"),
+    ("cq_", "cq"), ("cqd_", "cq"), ("fj_", "fj"), ("hn_", "hn"), ("jl_", "jl"),
+    ("ln_", "ln"), ("nx_", "nx"), ("sd_", "sd"), ("xz_", "xz"),
+]
+# Province-tier units the sites table tags 'municipal' (fidelity memo §1).
+_PROV_TIER_SITES = {"cq"}
+_PROV_TIER_PREFIX = ("bjb_", "shb_")
+SUBPROVINCIAL = {"municipal", "district", "department"}
+# Leading place name stripped off a provincial core before stemming, so the stem
+# is the topic (推动消费品以旧换新) that a city re-issuance (惠州市推动消费品以旧换新行动方案)
+# carries. 8-char floor (memo §1).
+PLACE_RE = re.compile(r"^[一-鿿]{2,4}(省|市|自治区|回族自治区|维吾尔自治区|壮族自治区)")
+# "…关于印发X的通知" without 《》 (many provincial portals omit the brackets).
+ISSUE_CORE_RE = re.compile(r"印发(.{8,}?)的通知")
+PROV_STEM_MIN = 8
+
+
+def province_of(site):
+    p = _PROV_EXACT.get(site)
+    if p:
+        return p
+    for pref, code in _PROV_PREFIX:
+        if site.startswith(pref):
+            return code
+    return None
+
+
+def _is_prov_tier(d):
+    """Province-tier issuer: admin_level provincial, or a province-tier
+    municipality unit tagged municipal (Chongqing portal, Beijing/Shanghai bureaus)."""
+    return (d["level"] == "provincial" or d["site"] in _PROV_TIER_SITES
+            or d["site"].startswith(_PROV_TIER_PREFIX))
+
+
+def _is_subprovincial(d):
+    return d["level"] in SUBPROVINCIAL and not _is_prov_tier(d)
+
+
+def prov_core(title):
+    """Instrument core of a provincial title: the 《》 inner, else the 印发X的通知 X."""
+    c = inner_core(title)
+    if c:
+        return c
+    m = ISSUE_CORE_RE.search(title or "")
+    return m.group(1) if m else None
 
 
 def _is_true_central(d):
@@ -259,6 +367,61 @@ def build_anchors(docs):
     return anchors, member_to_anchor, core_exact
 
 
+def build_prov_anchors(docs, central_members):
+    """Provincial framework instruments, pooled like the central anchors but one
+    anchor per (pool, province). Pools with a central anchor are skipped (their
+    provincial members are mirrors of the central text and already attributed).
+    Returns (anchors, member_to_anchor, core_exact) where core_exact is keyed by
+    (province, normalized core)."""
+    pools = defaultdict(list)
+    for d in docs.values():
+        if _is_prov_tier(d) and province_of(d["site"]):
+            pools[pool_key(d["title"])].append(d)
+
+    anchors, member_to_anchor, core_exact = {}, {}, {}
+    n_central_pool = 0
+    for key, members in pools.items():
+        if any(m["id"] in central_members for m in members):
+            n_central_pool += 1
+            continue
+        by_prov = defaultdict(list)
+        for m in members:
+            by_prov[province_of(m["site"])].append(m)
+        for prov, pm in by_prov.items():
+            fw = [m for m in pm if is_framework(m["genre"], m["title"]) and not _is_explainer(m)]
+            if not fw:
+                continue
+            named = key[0] == "core"
+            has_auth = any(m["cr"] >= CR_T or m["indeg"] >= DEG_T for m in pm)
+            if not (named or has_auth):
+                continue
+            rep = sorted(fw, key=lambda m: (-m["cr"], m["date"], m["id"]))[0]
+            if not rep["date"]:
+                continue
+            aid = rep["id"]
+            core = prov_core(rep["title"])
+            stem = None
+            if core:
+                stem = genre_stem(_norm_title(PLACE_RE.sub("", core)))
+                if len(stem) < PROV_STEM_MIN:
+                    stem = None
+            cues = [_norm_title(c) for c in CUE_QUOTE_RE.findall(rep["title"])]
+            anchors[aid] = {
+                "id": aid, "date": rep["date"], "title": rep["title"],
+                "ntitle": rep["ntitle"], "genre": rep["genre"], "cr": rep["cr"],
+                "topics": rep["topics"], "stem": stem,
+                "cues": [c for c in cues if "+" in c],
+                "members": [m["id"] for m in pm], "prov": prov,
+            }
+            for m in pm:
+                member_to_anchor.setdefault(m["id"], aid)
+            if named:
+                core_exact.setdefault((prov, key[1]), aid)
+    if n_central_pool:
+        print(f"  (skipped {n_central_pool} provincial pools already anchored centrally)")
+    return anchors, member_to_anchor, core_exact
+
+
 # --------------------------------------------------------------------------- #
 # Match                                                                        #
 # --------------------------------------------------------------------------- #
@@ -363,7 +526,116 @@ def match_title_and_topic(docs, anchors, cited_pairs):
     return title_pairs, topic_pairs
 
 
-def assemble(docs, anchors, cited, title_r, topic_g):
+def match_citation_prov(conn, docs, anchors, member_to_anchor, core_exact):
+    """Provincial-anchor citation pairs: sub-provincial source → anchor member (or
+    exact 《》-core) in the SAME province only."""
+    pairs = {}
+    for src, tid, ref in conn.execute(
+            "SELECT source_id, target_id, target_ref FROM citations"):
+        s = docs.get(src)
+        if not s or not _is_subprovincial(s):
+            continue
+        prov = province_of(s["site"])
+        if not prov:
+            continue
+        aid = None
+        rc = ref_core(ref) if ref else ""
+        if GENERIC_FYP_RE.match(rc):
+            continue
+        if tid is not None and tid in member_to_anchor:
+            aid = member_to_anchor[tid]
+        if aid is None and rc:
+            aid = core_exact.get((prov, rc))
+        if aid is None or anchors[aid]["prov"] != prov:
+            continue
+        if src == aid or src in anchors[aid]["members"]:
+            continue
+        pairs[(src, aid)] = None
+    return pairs
+
+
+def match_title_and_topic_prov(docs, anchors, cited_pairs):
+    """title_reissue / topic_genre against provincial anchors, per province.
+    Stem matching requires the anchor's stem INSIDE the candidate title (memo §1)
+    and, when a province issued several instruments with one stem, takes the
+    latest one dated before the candidate."""
+    stem_anchors = defaultdict(lambda: defaultdict(list))  # prov -> stem -> [anchors]
+    cue_anchors = defaultdict(list)                          # prov -> [(cue, aid)]
+    topic_anchors = defaultdict(lambda: defaultdict(list))  # prov -> topic -> [anchors]
+    for a in anchors.values():
+        p = a["prov"]
+        if a["stem"]:
+            stem_anchors[p][a["stem"]].append(a)
+        for c in a["cues"]:
+            cue_anchors[p].append((c, a["id"]))
+        if a["genre"] in CAMPAIGN_GENRES and a["cr"] >= TOPIC_ANCHOR_CR:
+            for t in a["topics"]:
+                topic_anchors[p][t].append(a)
+    matchers, id_to_stem = {}, {}
+    for p, stems in stem_anchors.items():
+        index = {}
+        for stem, alist in stems.items():
+            alist.sort(key=lambda a: a["date"])
+            index[stem] = (alist[0]["id"],)
+            id_to_stem[alist[0]["id"]] = stem
+        matchers[p] = TitleMatcher(index)
+
+    title_pairs, topic_pairs = {}, {}
+    for s in docs.values():
+        if not _is_subprovincial(s):
+            continue
+        prov = province_of(s["site"])
+        if not prov or (prov not in stem_anchors and prov not in cue_anchors
+                        and prov not in topic_anchors):
+            continue
+        title = s["title"]
+        if not ISSUANCE_RE.search(title) or NONISSUE_RE.search(title):
+            continue
+        nt = s["ntitle"]
+
+        matched = None
+        m = matchers.get(prov)
+        if m is not None:
+            hit = m.resolve(nt, PROV_STEM_MIN)
+            if hit is not None:
+                stem = id_to_stem.get(hit)
+                if stem and stem in nt:
+                    cands = [a for a in stem_anchors[prov][stem] if a["date"] < s["date"]]
+                    if cands:
+                        matched = cands[-1]["id"]
+        if matched is None:
+            for cue, aid in cue_anchors.get(prov, []):
+                if cue and cue in nt and anchors[aid]["date"] < s["date"]:
+                    matched = aid
+                    break
+        if matched is not None:
+            a = anchors[matched]
+            if not (a["ntitle"] and a["ntitle"] in nt) and (s["id"], matched) not in cited_pairs:
+                title_pairs[(s["id"], matched)] = None
+
+        if s["genre"] in CAMPAIGN_GENRES or re.search(
+                r"(实施方案|行动方案|工作方案|实施意见|行动计划)", title):
+            best, seen = None, set()
+            for t in s["topics"]:
+                for a in topic_anchors[prov].get(t, []):
+                    if a["id"] in seen:
+                        continue
+                    seen.add(a["id"])
+                    if not a["date"] or s["date"] <= a["date"]:
+                        continue
+                    lag = _lag(s["date"], a["date"])
+                    if lag is None or lag > TOPIC_WINDOW:
+                        continue
+                    if best is None or a["cr"] > best["cr"]:
+                        best = a
+            if best is not None:
+                pair = (s["id"], best["id"])
+                if pair not in cited_pairs and pair not in title_pairs:
+                    topic_pairs[pair] = None
+    return title_pairs, topic_pairs
+
+
+def assemble(docs, anchors, cited, title_r, topic_g, anchor_level="central"):
     """One row per (source, anchor), strongest match_type wins."""
     rows, best = [], {}
     for mtype, pairs in (("citation", cited), ("title_reissue", title_r), ("topic_genre", topic_g)):
@@ -380,6 +652,7 @@ def assemble(docs, anchors, cited, title_r, topic_g):
                 (a["topics"][0] if a["topics"] else ""),
                 s["level"], a["date"], s["date"],
                 a["title"][:200], s["title"][:200],
+                anchor_level,
             ))
     return rows
 
@@ -400,12 +673,18 @@ CREATE TABLE IF NOT EXISTS diffusion_events (
     source_date TEXT,
     anchor_title TEXT,
     source_title TEXT,
+    anchor_level TEXT NOT NULL DEFAULT 'central',
     UNIQUE(source_id, anchor_id)
 );
 CREATE INDEX IF NOT EXISTS idx_diffusion_anchor ON diffusion_events(anchor_id);
 CREATE INDEX IF NOT EXISTS idx_diffusion_source ON diffusion_events(source_id);
 CREATE INDEX IF NOT EXISTS idx_diffusion_type ON diffusion_events(match_type);
 """
+# Pre-anchor_level tables need the column added (CREATE IF NOT EXISTS won't).
+MIGRATE = """
+ALTER TABLE diffusion_events ADD COLUMN anchor_level TEXT NOT NULL DEFAULT 'central';
+"""
+IDX_LEVEL = "CREATE INDEX IF NOT EXISTS idx_diffusion_anchor_level ON diffusion_events(anchor_level);"
 
 
 def write_table(dbpath, rows):
@@ -414,12 +693,16 @@ def write_table(dbpath, rows):
     for attempt in range(6):
         try:
             conn.executescript(DDL)
+            cols = {r[1] for r in conn.execute("PRAGMA table_info(diffusion_events)")}
+            if "anchor_level" not in cols:
+                conn.executescript(MIGRATE)
+            conn.executescript(IDX_LEVEL)
             conn.execute("DELETE FROM diffusion_events")
             conn.executemany(
                 """INSERT OR REPLACE INTO diffusion_events
                    (source_id, anchor_id, match_type, lag_days, topic, source_level,
-                    anchor_date, source_date, anchor_title, source_title)
-                   VALUES (?,?,?,?,?,?,?,?,?,?)""", rows)
+                    anchor_date, source_date, anchor_title, source_title, anchor_level)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?)""", rows)
             conn.commit()
             break
         except sqlite3.OperationalError as e:
@@ -437,9 +720,10 @@ def write_table(dbpath, rows):
 # --------------------------------------------------------------------------- #
 # Report + validate                                                            #
 # --------------------------------------------------------------------------- #
-def report(rows, anchors, docs):
+def report(rows, anchors, docs, label="central"):
     by_type = Counter(r[2] for r in rows)
-    print(f"\nTotal diffusion events: {len(rows)}")
+    print(f"\nTotal {label}-anchor diffusion events: {len(rows)} "
+          f"(distinct anchors: {len({r[1] for r in rows})})")
     for t in ("citation", "title_reissue", "topic_genre"):
         print(f"  {t:<14}{by_type.get(t, 0)}")
     # Headline ranks by CONFIRMED signals only (citation + title_reissue); topic_genre
@@ -451,16 +735,16 @@ def report(rows, anchors, docs):
             continue
         per_anchor[r[1]] += 1
         localities[r[1]].add(docs[r[0]]["site"])
-    print("\nTop 5 most-cascaded anchors (distinct implementing localities, "
+    print(f"\nTop 5 most-cascaded {label} anchors (distinct implementing localities, "
           "citation+title_reissue):")
-    top = sorted(localities.items(), key=lambda kv: -len(kv[1]))[:5]
+    top = sorted(localities.items(), key=lambda kv: (-len(kv[1]), -per_anchor[kv[0]]))[:5]
     for aid, sites in top:
         a = anchors[aid]
         print(f"  {len(sites):>3} localities | {per_anchor[aid]:>3} events | "
-              f"{a['date']} | {a['title'][:52]}")
+              f"{a['date']} | {a.get('prov', '')} | {a['title'][:52]}")
 
 
-def validate(rows, anchors):
+def validate(rows, anchors, prov_rows=None, prov_anchors=None):
     by_anchor = defaultdict(list)
     for r in rows:
         by_anchor[r[1]].append(r)
@@ -489,6 +773,16 @@ def validate(rows, anchors):
     cascade("CONSUMPTION 提振消费 boost (2025-03-16)", [12650974])
     cascade("AI+ 人工智能+ (2025-08-26)", [900039770])
 
+    if prov_rows is not None:
+        by_anchor.clear()
+        for r in prov_rows:
+            by_anchor[r[1]].append(r)
+        anchors = prov_anchors
+        # Guangdong's 2024 trade-in instruments (fidelity-provincial.md §5): the
+        # 省政府 实施方案, the two 办公厅 行动方案, the 超长期特别国债 实施方案.
+        # (4518476 is the pool representative of the 超长期特别国债 实施方案; 4485000 is its member)
+        cascade("PROVINCIAL 广东 以旧换新 (2024-04-13)", [4406243, 4406240, 4406241, 4518476, 4485000])
+
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
@@ -511,17 +805,29 @@ def main():
 
     cited = match_citation(conn, docs, anchors, member_to_anchor, core_exact)
     title_r, topic_g = match_title_and_topic(docs, anchors, cited)
-    conn.close()
     print(f"Raw pairs: citation={len(cited)} title_reissue={len(title_r)} topic_genre={len(topic_g)}")
-
     rows = assemble(docs, anchors, cited, title_r, topic_g)
     report(rows, anchors, docs)
+
+    # Second anchor class: provincial framework instruments → same-province implementers.
+    p_anchors, p_members, p_core = build_prov_anchors(docs, member_to_anchor)
+    print(f"\nProvincial anchors: {len(p_anchors)} pooled instruments "
+          f"({len(p_members)} member docs, {len(p_core)} named cores, "
+          f"{len({a['prov'] for a in p_anchors.values()})} provinces)")
+    p_cited = match_citation_prov(conn, docs, p_anchors, p_members, p_core)
+    p_title, p_topic = match_title_and_topic_prov(docs, p_anchors, p_cited)
+    conn.close()
+    print(f"Raw provincial pairs: citation={len(p_cited)} title_reissue={len(p_title)} "
+          f"topic_genre={len(p_topic)}")
+    p_rows = assemble(docs, p_anchors, p_cited, p_title, p_topic, anchor_level="provincial")
+    report(p_rows, p_anchors, docs, label="provincial")
+
     if args.validate:
-        validate(rows, anchors)
+        validate(rows, anchors, p_rows, p_anchors)
     print(f"\nElapsed {time.time()-t0:.1f}s")
 
     if args.write:
-        write_table(str(dbpath), rows)
+        write_table(str(dbpath), rows + p_rows)
     else:
         print("\n[dry run — nothing written; pass --write to build the table]")
 

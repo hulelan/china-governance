@@ -17,6 +17,10 @@ One row per (topic, iso_week, admin_level):
                            (the campaign defines the topic; `diffusion_events.topic`
                            only stores the anchor's first tag) — and under 'all'.
   cascade_events_lowconf   the same for match_type topic_genre (probable, unconfirmed).
+  cascade_events_prov      confirmed events whose anchor is a PROVINCIAL instrument
+                           (anchor_level='provincial', the province→city hop of
+                           fidelity-provincial.md). cascade_events / _lowconf stay
+                           central-anchor only, so their meaning is unchanged.
 
 Bounded to date_published 2018-01-01..2026-12-31 — the tracker is about recent
 weeks, and this keeps the table small and the rebuild a few seconds.
@@ -48,10 +52,12 @@ CREATE TABLE IF NOT EXISTS tracker_weekly (
     new_docs               INTEGER NOT NULL DEFAULT 0,
     cascade_events         INTEGER NOT NULL DEFAULT 0,
     cascade_events_lowconf INTEGER NOT NULL DEFAULT 0,
+    cascade_events_prov    INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (topic, iso_week, admin_level)
 );
 CREATE INDEX IF NOT EXISTS idx_tracker_weekly_topic_week ON tracker_weekly(topic, iso_week);
 """
+MIGRATE = "ALTER TABLE tracker_weekly ADD COLUMN cascade_events_prov INTEGER NOT NULL DEFAULT 0;"
 
 
 def iso_week(d10: str):
@@ -75,6 +81,12 @@ def build(db_path: Path) -> tuple:
     try:
         conn.execute("PRAGMA busy_timeout=30000")
         conn.executescript(DDL)
+        if "cascade_events_prov" not in {
+                r[1] for r in conn.execute("PRAGMA table_info(tracker_weekly)")}:
+            conn.executescript(MIGRATE)
+        ev_cols = {r[1] for r in conn.execute("PRAGMA table_info(diffusion_events)")}
+        level_expr = ("COALESCE(e.anchor_level,'central')" if "anchor_level" in ev_cols
+                      else "'central'")
 
         site_level = dict(conn.execute(
             "SELECT site_key, COALESCE(admin_level,'unknown') FROM sites"))
@@ -85,8 +97,8 @@ def build(db_path: Path) -> tuple:
                 week_cache[d10] = iso_week(d10)
             return week_cache[d10]
 
-        # (topic, iso_week, level) -> [new_docs, cascade, cascade_lowconf]
-        agg: dict[tuple, list] = defaultdict(lambda: [0, 0, 0])
+        # (topic, iso_week, level) -> [new_docs, cascade, cascade_lowconf, cascade_prov]
+        agg: dict[tuple, list] = defaultdict(lambda: [0, 0, 0, 0])
         weeks: dict[str, str] = {}  # iso_week -> week_start
 
         # --- new_docs: single sequential scan, small columns only (no body) ---
@@ -109,13 +121,17 @@ def build(db_path: Path) -> tuple:
 
         # --- cascade events: anchor's full topic set (fallback: stored topic) ---
         n_ev = 0
-        for mtype, d10, level, ev_topic, anchor_topics in conn.execute(
+        for mtype, d10, level, ev_topic, anchor_topics, alevel in conn.execute(
                 "SELECT e.match_type, substr(e.source_date,1,10), "
-                "       COALESCE(e.source_level,'unknown'), e.topic, d.topics_algo "
+                f"       COALESCE(e.source_level,'unknown'), e.topic, d.topics_algo, {level_expr} "
                 "FROM diffusion_events e LEFT JOIN documents d ON d.id = e.anchor_id "
                 "WHERE substr(e.source_date,1,10) BETWEEN ? AND ?",
                 (DATE_LO, DATE_HI)):
-            if mtype in CONFIRMED:
+            if alevel == "provincial":
+                if mtype not in CONFIRMED:
+                    continue  # provincial topic_genre is not rolled up (keep it minimal)
+                col = 3
+            elif mtype in CONFIRMED:
                 col = 1
             elif mtype in LOWCONF:
                 col = 2
@@ -135,8 +151,9 @@ def build(db_path: Path) -> tuple:
         conn.execute("DELETE FROM tracker_weekly")
         conn.executemany(
             "INSERT INTO tracker_weekly(topic, iso_week, admin_level, week_start, "
-            "new_docs, cascade_events, cascade_events_lowconf) VALUES (?,?,?,?,?,?,?)",
-            [(t, iw, lvl, weeks[iw], v[0], v[1], v[2])
+            "new_docs, cascade_events, cascade_events_lowconf, cascade_events_prov) "
+            "VALUES (?,?,?,?,?,?,?,?)",
+            [(t, iw, lvl, weeks[iw], v[0], v[1], v[2], v[3])
              for (t, iw, lvl), v in agg.items()])
         conn.commit()
         conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
@@ -159,12 +176,12 @@ def main():
 
     if args.stats:
         conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
-        print(f"  {'week':<9}{'level':<12}{'docs':>7}{'casc':>6}{'low':>6}")
+        print(f"  {'week':<9}{'level':<12}{'docs':>7}{'casc':>6}{'low':>6}{'prov':>6}")
         for r in conn.execute(
                 "SELECT iso_week, admin_level, new_docs, cascade_events, "
-                "cascade_events_lowconf FROM tracker_weekly WHERE topic='all' "
-                "ORDER BY iso_week DESC, admin_level LIMIT 30"):
-            print(f"  {r[0]:<9}{r[1]:<12}{r[2]:>7}{r[3]:>6}{r[4]:>6}")
+                "cascade_events_lowconf, cascade_events_prov FROM tracker_weekly "
+                "WHERE topic='all' ORDER BY iso_week DESC, admin_level LIMIT 30"):
+            print(f"  {r[0]:<9}{r[1]:<12}{r[2]:>7}{r[3]:>6}{r[4]:>6}{r[5]:>6}")
         conn.close()
         return
 

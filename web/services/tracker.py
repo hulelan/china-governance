@@ -8,8 +8,10 @@ two tables the nightly pipeline precomputes (daily_sync.sh Phase 2c):
                          (topic, iso_week); a page reads N weeks × ~7 levels.
 * ``diffusion_events`` — one row per (source doc, anchor instrument) match with
                          match_type ∈ {citation, title_reissue, topic_genre},
-                         lag_days, the anchor's FIRST topic tag, and denormalized
-                         titles/dates. ~29k rows, indexed on anchor_id/source_id.
+                         anchor_level ∈ {central, provincial} (the province→city
+                         hop, fidelity-provincial.md), lag_days, the anchor's
+                         FIRST topic tag, and denormalized titles/dates. ~33k
+                         rows, indexed on anchor_id/source_id/anchor_level.
 
 Plus ``documents``/``sites`` for issuer names and the anchor's full topic list —
 always by primary key on a few dozen ids, never a cold aggregate scan. Each
@@ -152,32 +154,34 @@ async def get_weekly(db, topic: str, weeks: int):
     lo, hi = wk[-1][0], wk[0][0]
     rows = await db.fetch(
         """SELECT iso_week, admin_level, week_start, new_docs,
-                  cascade_events, cascade_events_lowconf
+                  cascade_events, cascade_events_lowconf, cascade_events_prov
            FROM tracker_weekly
            WHERE topic = $1 AND iso_week BETWEEN $2 AND $3""", topic, lo, hi)
     cells = defaultdict(dict)
     seen_levels = set()
+    KEYS = ("new", "cas", "low", "prov")
     for r in rows:
-        if r["new_docs"] or r["cascade_events"] or r["cascade_events_lowconf"]:
+        if (r["new_docs"] or r["cascade_events"] or r["cascade_events_lowconf"]
+                or r["cascade_events_prov"]):
             seen_levels.add(r["admin_level"])
         cells[r["iso_week"]][r["admin_level"]] = {
             "new": r["new_docs"], "cas": r["cascade_events"],
-            "low": r["cascade_events_lowconf"]}
+            "low": r["cascade_events_lowconf"], "prov": r["cascade_events_prov"]}
     levels = [l for l in LEVEL_ORDER if l in seen_levels]
     levels += sorted(l for l in seen_levels if l not in LEVEL_ORDER)
 
-    out_rows, totals = [], {"new": 0, "cas": 0, "low": 0}
-    level_totals = {l: {"new": 0, "cas": 0, "low": 0} for l in levels}
+    out_rows, totals = [], dict.fromkeys(KEYS, 0)
+    level_totals = {l: dict.fromkeys(KEYS, 0) for l in levels}
     for i, (iw, monday) in enumerate(wk):
         c = cells.get(iw, {})
         row = {"iso_week": iw, "week_start": monday, "is_current": i == 0,
-               "cells": {l: c.get(l, {"new": 0, "cas": 0, "low": 0}) for l in levels},
-               "new": 0, "cas": 0, "low": 0}
+               "cells": {l: c.get(l, dict.fromkeys(KEYS, 0)) for l in levels}}
+        row.update(dict.fromkeys(KEYS, 0))
         for l in levels:
-            for k in ("new", "cas", "low"):
+            for k in KEYS:
                 row[k] += row["cells"][l][k]
                 level_totals[l][k] += row["cells"][l][k]
-        for k in ("new", "cas", "low"):
+        for k in KEYS:
             totals[k] += row[k]
         out_rows.append(row)
     return {"weeks": out_rows, "levels": levels, "totals": totals,
@@ -213,14 +217,16 @@ async def get_active_cascades(db, topic: str, weeks: int):
     amap = await _anchor_topics(db)
 
     win = await db.fetch(
-        """SELECT anchor_id, source_id, match_type, topic, source_date
+        """SELECT anchor_id, source_id, match_type, topic, source_date, anchor_level
            FROM diffusion_events
            WHERE source_date BETWEEN $1 AND $2""", start, today)
     newest, in_win, low_win = {}, defaultdict(set), defaultdict(set)
+    alevel = {}
     for r in win:
         if not _anchor_in_topic(r["anchor_id"], r["topic"], topic, amap):
             continue
         a = r["anchor_id"]
+        alevel[a] = r["anchor_level"] or "central"
         if r["match_type"] == LOWCONF:
             low_win[a].add(r["source_id"])
             continue
@@ -274,6 +280,7 @@ async def get_active_cascades(db, topic: str, weeks: int):
         newest_ids += [d["id"] for d in newest_docs]
         anchors.append({
             "id": a, "title": _clean(conf[0]["anchor_title"]),
+            "anchor_level": alevel.get(a, "central"),
             "date": conf[0]["anchor_date"] or "",
             "topics": sorted(amap.get(a) or []),
             "n_sources": len(srcs), "n_in_window": len(in_win[a]),
@@ -297,11 +304,13 @@ async def get_active_cascades(db, topic: str, weeks: int):
             "n_lowconf_only": n_lowconf_only, "window_start": start}
 
 
-async def get_leaderboard(db):
-    """Most-cascaded instruments across ALL topics: anchors ranked by distinct
-    implementing sources (sites) over confirmed signals. One grouped PK join of
-    the ~22k confirmed events with documents (for site_key); cached an hour."""
-    hit = _cached("leaderboard")
+async def get_leaderboard(db, anchor_level: str = "central"):
+    """Most-cascaded instruments across ALL topics: anchors of ``anchor_level``
+    ('central' | 'provincial') ranked by distinct implementing sources (sites)
+    over confirmed signals. One grouped PK join of the confirmed events with
+    documents (for site_key); cached an hour per level."""
+    key = ("leaderboard", anchor_level)
+    hit = _cached(key)
     if hit is not None:
         return hit
     amap = await _anchor_topics(db)
@@ -312,9 +321,10 @@ async def get_leaderboard(db):
                   MAX(e.source_date) AS newest
            FROM diffusion_events e JOIN documents d ON d.id = e.source_id
            WHERE e.match_type IN ('citation', 'title_reissue')
+             AND e.anchor_level = $2
            GROUP BY e.anchor_id
            ORDER BY localities DESC, docs DESC
-           LIMIT $1""", LEADERBOARD_LIMIT)
+           LIMIT $1""", LEADERBOARD_LIMIT, anchor_level)
     ids = [r["anchor_id"] for r in rows]
     lag_rows = await db.fetch(
         """SELECT anchor_id, lag_days FROM diffusion_events
@@ -333,7 +343,13 @@ async def get_leaderboard(db):
             "median_lag": int(median(lags[a])) if lags[a] else None,
             "topics": sorted(amap.get(a) or []),
         })
-    return _store("leaderboard", board)
+    ids_board = [b["id"] for b in board]
+    if anchor_level == "provincial" and ids_board:
+        # Label each provincial instrument by its issuing site (the province).
+        iss = await _issuers(db, ids_board)
+        for b in board:
+            b["issuer"] = (iss.get(b["id"]) or {}).get("site_name") or ""
+    return _store(key, board)
 
 
 async def get_tracker(db, topic: str = ALL, weeks=DEFAULT_WEEKS):
@@ -352,7 +368,8 @@ async def get_tracker(db, topic: str = ALL, weeks=DEFAULT_WEEKS):
         "topic": topic, "weeks": n, "topics": topics,
         "weekly": await get_weekly(db, topic, n),
         "cascades": await get_active_cascades(db, topic, n),
-        "leaderboard": await get_leaderboard(db),
+        "leaderboard": await get_leaderboard(db, "central"),
+        "leaderboard_prov": await get_leaderboard(db, "provincial"),
         "today": date.today().isoformat(),
         "this_week": iso_week_str(date.today()),
     }

@@ -9,6 +9,9 @@
     .cell-new { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
     .cell-cas { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--teal); }
     .cell-low { color: #9a948a; }
+    .cell-prov { color: var(--brand, #7a2e2e); }
+    .lvl-provincial { background: #f3ebe4; border-color: #c9a98f; color: #7a2e2e; }
+    .lvl-central { background: #e6eeec; border-color: #9fb8b0; color: #1f4f45; }
     .cell-zero { color: #b5afa1; }
     .anchor-row td { vertical-align: top; }
     .arrivals { list-style: none; margin: 0; padding: 0; }
@@ -80,7 +83,8 @@
         <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
             Each cell: <span class="cell-new text-ink">new documents</span> published that ISO week at that level, and beneath it
             <span class="cell-cas">confirmed cascade events</span> (a sub-national document citing or re-issuing a central instrument)
-            with <span class="cell-low">probable-but-unconfirmed</span> matches in grey. The current week is partial — crawls land with a lag.
+            with <span class="cell-low">probable-but-unconfirmed</span> matches in grey and <span class="cell-prov">+N<sub>p</sub></span> confirmed
+            implementations of a <em>provincial</em> instrument by its own cities (the province→city hop). The current week is partial — crawls land with a lag.
         </p>
         <div class="card table-scroll">
         <table class="data-table">
@@ -98,12 +102,12 @@
                     {% for l in W.levels %}{% set c = r.cells[l] %}
                     <td class="text-right">
                         <div class="cell-new {{ 'cell-zero' if not c.new }}">{{ "{:,}".format(c.new) }}</div>
-                        <div class="cell-cas">{% if c.cas %}{{ c.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if c.low %} <span class="cell-low">({{ c.low }})</span>{% endif %}</div>
+                        <div class="cell-cas">{% if c.cas %}{{ c.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if c.low %} <span class="cell-low">({{ c.low }})</span>{% endif %}{% if c.prov %} <span class="cell-prov">+{{ c.prov }}<sub>p</sub></span>{% endif %}</div>
                     </td>
                     {% endfor %}
                     <td class="text-right">
                         <div class="cell-new font-medium">{{ "{:,}".format(r.new) }}</div>
-                        <div class="cell-cas">{% if r.cas %}{{ r.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if r.low %} <span class="cell-low">({{ r.low }})</span>{% endif %}</div>
+                        <div class="cell-cas">{% if r.cas %}{{ r.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if r.low %} <span class="cell-low">({{ r.low }})</span>{% endif %}{% if r.prov %} <span class="cell-prov">+{{ r.prov }}<sub>p</sub></span>{% endif %}</div>
                     </td>
                 </tr>
             {% endfor %}
@@ -112,9 +116,9 @@
                 <tr class="border-t-2 border-ink">
                     <td class="mono text-xs text-muted" colspan="{{ 2 }}">{{ t.weeks }}-week total</td>
                     {% for l in W.levels %}{% set lt = W.level_totals[l] %}
-                    <td class="text-right"><div class="cell-new">{{ "{:,}".format(lt.new) }}</div><div class="cell-cas">{{ lt.cas if lt.cas else '' }}{% if lt.low %} <span class="cell-low">({{ lt.low }})</span>{% endif %}</div></td>
+                    <td class="text-right"><div class="cell-new">{{ "{:,}".format(lt.new) }}</div><div class="cell-cas">{{ lt.cas if lt.cas else '' }}{% if lt.low %} <span class="cell-low">({{ lt.low }})</span>{% endif %}{% if lt.prov %} <span class="cell-prov">+{{ lt.prov }}<sub>p</sub></span>{% endif %}</div></td>
                     {% endfor %}
-                    <td class="text-right"><div class="cell-new font-medium">{{ "{:,}".format(W.totals.new) }}</div><div class="cell-cas">{{ W.totals.cas }}{% if W.totals.low %} <span class="cell-low">({{ W.totals.low }})</span>{% endif %}</div></td>
+                    <td class="text-right"><div class="cell-new font-medium">{{ "{:,}".format(W.totals.new) }}</div><div class="cell-cas">{{ W.totals.cas }}{% if W.totals.low %} <span class="cell-low">({{ W.totals.low }})</span>{% endif %}{% if W.totals.prov %} <span class="cell-prov">+{{ W.totals.prov }}<sub>p</sub></span>{% endif %}</div></td>
                 </tr>
             </tfoot>
         </table>
@@ -123,18 +127,19 @@
 
     <!-- 2. Active cascades -->
     <div class="mb-8">
-        <span class="lab">Active cascades · central instruments with implementing activity since {{ C.window_start }}</span>
+        <span class="lab">Active cascades · central and provincial instruments with implementing activity since {{ C.window_start }}</span>
         <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
             {{ C.n_active }} instrument{{ '' if C.n_active == 1 else 's' }} drew a confirmed sub-national response in the window
             ({{ C.n_lowconf_only }} more only by probable topic-and-genre match, not shown).
             Ordered by newest arrival. Source counts and median lag run over the whole cascade, not just the window —
-            the live form of the cascade tables in <em>consumption-diffusion</em>.
+            the live form of the cascade tables in <em>consumption-diffusion</em>. A <span class="tag lvl-provincial">provincial</span> anchor
+            is matched only against cities, districts and bureaus of its own province (<em>fidelity-provincial</em>: the hop that carries the text).
         </p>
         {% if C.anchors %}
         <div class="card table-scroll">
         <table class="data-table">
             <thead><tr>
-                <th>Central instrument · anchor</th>
+                <th>Instrument · anchor</th>
                 <th class="w-20 text-right">Sources</th>
                 <th class="w-20 text-right">Median lag</th>
                 <th class="w-[42%]">Newest implementing documents</th>
@@ -143,6 +148,7 @@
             {% for a in C.anchors %}
                 <tr class="anchor-row">
                     <td>
+                        <span class="tag lvl-{{ a.anchor_level }}">{{ a.anchor_level }}</span>
                         <a href="/document/{{ a.id }}" class="font-zh text-[13px]">{{ a.title[:80] }}</a>
                         {% if a.title_en %}<div class="text-xs text-muted truncate max-w-md">{{ a.title_en }}</div>{% endif %}
                         <div class="text-[11px] text-muted mt-1">
@@ -226,8 +232,50 @@
         </div>
     </div>
 
+    <!-- 3b. Most-cascaded provincial instruments (all topics) -->
+    <div class="mb-8">
+        <span class="lab">Most-cascaded provincial instruments · all areas, whole corpus</span>
+        <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
+            Provincial framework instruments ranked by the number of distinct same-province implementing sources (cities,
+            districts, bureaus) that cite or re-issue them — confirmed signals only. Cities copy their province far more than
+            provinces copy the center (relay 10.8% vs 3.3%), so this is where policy text actually propagates. Guangdong dominates
+            because it is the only province with portal + cities + districts + bureaus all crawled.
+        </p>
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr>
+                <th class="w-8 text-right">#</th>
+                <th>Instrument</th>
+                <th class="w-24 hidden sm:table-cell">Issued</th>
+                <th class="w-20 text-right">Sources</th>
+                <th class="w-16 text-right">Docs</th>
+                <th class="w-20 text-right">Median lag</th>
+                <th class="w-24 hidden sm:table-cell">Newest</th>
+            </tr></thead>
+            <tbody>
+            {% for b in t.leaderboard_prov %}
+                <tr>
+                    <td class="text-right mono text-muted">{{ loop.index }}</td>
+                    <td>
+                        <a href="/document/{{ b.id }}" class="font-zh text-[13px]">{{ b.title[:80] }}</a>
+                        <div class="text-[11px] mt-0.5 text-muted">{% if b.issuer %}{{ b.issuer }} {% endif %}{% for tp in b.topics[:3] %}<a class="tag" href="/tracker?topic={{ tp|urlencode }}&weeks={{ t.weeks }}">{{ tp }}</a>{% endfor %}</div>
+                    </td>
+                    <td class="mono text-muted text-xs hidden sm:table-cell">{{ b.date }}</td>
+                    <td class="text-right mono text-teal font-medium">{{ b.localities }}</td>
+                    <td class="text-right mono">{{ b.docs }}</td>
+                    <td class="text-right mono">{% if b.median_lag is not none %}{{ b.median_lag }}<span class="text-muted text-xs">d</span>{% else %}—{% endif %}</td>
+                    <td class="mono text-muted text-xs hidden sm:table-cell">{{ b.newest }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="text-muted italic text-center py-4">No provincial-anchor events yet (nightly matcher not rebuilt with anchor levels).</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
     <p class="floor max-w-4xl">
-        Method: a sub-national document is matched to a central instrument by a resolved citation or an exact
+        Method: a sub-national document is matched to a central instrument — or a sub-provincial one to a provincial instrument of its own province — by a resolved citation or an exact
         <span class="font-zh">《》</span> reference (<em>citation</em>), by carrying the instrument's distinctive title stem
         (<em>re-issue</em>), or — low confidence, shown only as grey counts — by sharing its topic and an implementing genre within
         a window after it. Rebuilt nightly from the corpus; see <span class="mono">docs/research/daily-tracker-concept.md</span>.
