@@ -195,6 +195,101 @@ _EXACT_MIN_LEN = 3  # floor for the exact-title tier (min_len still gates contai
 _LEVEL_PREF = {"central": 0, "provincial": 1, "municipal": 2, "department": 2,
                "district": 3}
 
+# --- Proxy-target fix, round 2 (2026-10; consistency-review H1) ---------------
+# The exact tier above only keyed BARE titles, so an instrument whose canonical
+# copy is titled with a promulgation wrapper (中共中央办公厅 国务院办公厅印发《提振消费
+# 专项行动方案》) had NO exact candidate and the ref fell through to containment,
+# which returned an arbitrary (set-ordered) containing title — a Beijing news page
+# took 113 edges while both central copies held 0. Two changes:
+#   (1) TITLE CORES: a title is also indexed under its instrument core — the 《X》
+#       inside a promulgation wrapper (印发/发布/公布《X》的通知), the X of a bare
+#       "关于印发X的通知", and the 关于… body after an issuer masthead — so wrapper
+#       and bare copies collide on one key. Non-promulgation wrappers (贯彻落实/
+#       实施/转发《X》…) are NOT cores: they are documents ABOUT X, not X.
+#   (2) PRIORITY among exact-core candidates: promulgation genre (algo_doc_type)
+#       over neutral over news/explainer/解答, then higher admin level, then a bare
+#       title over a wrapper, then lowest id. A news page never beats a promulgation
+#       of the same instrument.
+#   (3) CONTAINMENT is gated: with no exact-core candidate, a containing title only
+#       resolves if it is a promulgation-genre document (机动车驾驶证申领和使用规定 no
+#       longer lands on a provincial 热点问题解答 page; 百千万工程 not on a news item).
+#       Otherwise the ref stays UNRESOLVED (a virtual target) — more honest than a
+#       wrong target. Candidates with no genre info (callers that pass none, or docs
+#       not yet scored) are not gated, so build_diffusion_events' stem matching and
+#       day-0 docs keep the old recall.
+_GENRE_PROMUL = frozenset({
+    "regulation", "law", "decree", "policy_issuance", "notice", "circular",
+    "action_plan", "work_plan", "plan", "strategy", "opinion", "decision",
+    "subsidy", "standard", "administrative", "measures", "rule",
+})
+_GENRE_NEWS = frozenset({
+    "explainer", "publicity", "commentary", "interview", "review", "report",
+})
+# title markers of an explainer / Q&A / news item (独立 of algo_doc_type, which is
+# 'other' for most of them)
+_NEWS_TITLE_RE = re.compile(
+    r"解读|解答|问答|答问|答记者问|一图|图解|图读|发布会|新闻|动态|速递|要闻|快讯|播报|"
+    r"访谈|专访|评论|述评|解析|热点|划重点|微视频|视频|海报|漫画|聚焦|观察|综述|盘点|"
+    r"亮点|看点|干货|有啥关系|怎么看|怎么办|看懂|读懂|权威解|专家|负责人就|记者")
+
+
+def _genre_rank(genre, title=""):
+    """0 = promulgation, 1 = neutral/unknown, 2 = news/explainer. `genre` None/''
+    means 'no information' (rank 1, and NOT gated in containment)."""
+    if genre in _GENRE_NEWS or _NEWS_TITLE_RE.search(title or ""):
+        return 2
+    if genre in _GENRE_PROMUL:
+        return 0
+    return 1
+
+
+_STATUS_TAG = re.compile(r'^[（(【\[〔](?:已废止|已失效|失效|废止|有效|现行有效|已修订|部分失效)[)）】\]〕]\s*')
+_NEWS_LEAD = re.compile(r'^(?:受权发布|授权发布|权威发布|全文)\s*[丨|｜:：]\s*')
+# trailing own-文号 group: （珠府办〔2025〕6号） / （公安部令第162号） / （第12号）
+_DOCNUM_TAIL = re.compile(
+    r'[（(【\[]\s*[^（()）]*?(?:(?:19|20)\d{2}[^（()）]*?\d+|(?:令|第)\s*\d+)\s*号\s*[)）】\]]\s*$')
+_INST_SUFFIX = (r'(?:中共中央|国务院|中央军委|办公厅|办公室|人民政府|委员会|管理局|总局|分局|'
+                r'部|局|署|厅|院|委|会|省|市|区|县|党委|党组|集团)')
+# promulgation wrapper around 《X》: optional issuer masthead + 关于? + verb + 《X》 + tail
+_WRAP_QUOTED = re.compile(
+    r'^(?P<pre>[一-鿿\s丨·、]*?)(?:关于)?(?P<verb>印发|发布|公布|颁布)?\s*'
+    r'《(?P<core>[^《》]{4,})》(?:的通知|的决定|的公告|的函|的通告|的命令|的令)?$')
+_WRAP_PLAIN = re.compile(
+    r'^(?P<pre>[一-鿿\s丨·、]*?)关于(?:印发|发布|公布|颁布)(?P<core>[^《》]{6,}?)的通知$')
+_MASTHEAD_PRE = re.compile(r'^[一-鿿\s丨·、]{2,40}' + _INST_SUFFIX + r'[\s丨·、]*$')
+_WRAP_CORE_MIN = 6  # normalized floor for a wrapper-derived core
+
+
+def _title_cores_of_title(title):
+    """Instrument cores a STORED title should also be keyed under, as
+    (core, wrapper_flag) pairs — wrapper_flag 1 = institutional promulgation
+    wrapper, 2 = non-institutional lead (e.g. a news masthead '北京发布《X》').
+    Returns [] for a title that is not a promulgation of its 《X》 (贯彻落实《X》…,
+    河南省实施《X》办法)."""
+    t = _STATUS_TAG.sub('', title or '').strip()
+    t = _NEWS_LEAD.sub('', t)
+    t = _DOCNUM_TAIL.sub('', t).strip()
+    out = []
+    if t != (title or '').strip() and len(_norm_title(t)) >= _WRAP_CORE_MIN:
+        out.append((t, 1))  # the title minus its status tag / news lead / 文号 tail
+    m = _WRAP_QUOTED.match(t)
+    if m:
+        pre = m.group('pre').strip()
+        core = m.group('core')
+        # a bare 《X》 title, or a promulgation VERB right before 《X》 (so a lazy
+        # `pre` can't swallow 贯彻落实/实施/转发 — those are documents ABOUT X)
+        verb_ok = (pre == '' and m.group('verb') is None) or m.group('verb') is not None
+        if verb_ok and len(_norm_title(core)) >= _WRAP_CORE_MIN:
+            inst = pre == '' or _MASTHEAD_PRE.match(pre) is not None
+            out.append((core, 1 if inst else 2))
+    m = _WRAP_PLAIN.match(t)
+    if m and len(_norm_title(m.group('core'))) >= _WRAP_CORE_MIN:
+        out.append((m.group('core'), 1))
+    i = t.find('关于')
+    if i > 0 and _MASTHEAD_PRE.match(t[:i]) and len(t) - i >= 8:
+        out.append((t[i:], 1))
+    return out
+
 
 class TitleMatcher:
     """Indexed fuzzy title resolver — replaces an O(docs x titles) per-ref scan.
@@ -212,31 +307,63 @@ class TitleMatcher:
 
     def __init__(self, title_to_doc, site_levels=None):
         # Index on NORMALIZED titles (punctuation/prefix folded). When two titles
-        # normalize identically (mirror copies), keep the highest-level host, then
-        # the lowest id (deterministic).
+        # normalize identically (mirror copies), keep the promulgation-genre copy,
+        # then the highest-level host, then the lowest id (deterministic).
+        # A second index keys each title under its instrument CORE(S) as well
+        # (see the round-2 note above), ranked (genre, level, bare-before-wrapper, id).
         site_levels = site_levels or {}
         self.exact = {}  # norm-title -> id
-        best = {}        # norm-title -> (level_rank, id)
+        self.core = {}   # norm-core  -> id   (bare titles + promulgation-wrapper cores)
+        self.meta = {}   # id -> (genre_rank or None, level_rank, norm-title length)
+        best = {}        # norm-title -> (genre_rank, level_rank, id)
+        best_core = {}   # norm-core  -> (genre_rank, level_rank, wrapper_flag, id)
         for t, v in title_to_doc.items():
             nt = _norm_title(t)
             if not nt:
                 continue
-            # values may be (id, site_key), (id,) (build_diffusion_events) or a bare id
+            # values may be (id, site_key, algo_doc_type), (id, site_key), (id,)
+            # (build_diffusion_events) or a bare id
             if isinstance(v, (tuple, list)):
-                did, sk = v[0], (v[1] if len(v) > 1 else "")
+                did = v[0]
+                sk = v[1] if len(v) > 1 else ""
+                genre = v[2] if len(v) > 2 else None
             else:
-                did, sk = v, ""
-            key = (_LEVEL_PREF.get(site_levels.get(sk, ""), 9), did)
+                did, sk, genre = v, "", None
+            genre = genre or None  # '' (unscored) == no information
+            lvl = _LEVEL_PREF.get(site_levels.get(sk, ""), 9)
+            grank = _genre_rank(genre, t) if genre is not None else 1
+            self.meta[did] = (grank if genre is not None else None, lvl, len(nt))
+            key = (grank, lvl, did)
             cur = best.get(nt)
             if cur is None or key < cur:
                 best[nt] = key
-        for nt, (_, did) in best.items():
+            cands = [(nt, 0)] + [(_norm_title(c), f) for c, f in _title_cores_of_title(t)]
+            for nc, flag in cands:
+                if not nc:
+                    continue
+                ck = (grank, lvl, flag, did)
+                cur = best_core.get(nc)
+                if cur is None or ck < cur:
+                    best_core[nc] = ck
+        for nt, (_, _, did) in best.items():
             self.exact[nt] = did
+        for nc, (_, _, _, did) in best_core.items():
+            self.core[nc] = did
         self.titles = list(self.exact.keys())
         self.index = {}  # gram -> set of title indices
         for idx, t in enumerate(self.titles):
             for g in self._grams(t):
                 self.index.setdefault(g, set()).add(idx)
+
+    def _containment_ok(self, did):
+        """Containment gate: a doc with KNOWN genre must be promulgation-genre
+        (never a news/explainer/解答 page, nor a permit notice); no-info docs pass."""
+        m = self.meta.get(did)
+        return m is None or m[0] is None or m[0] == 0
+
+    def _rank(self, did):
+        m = self.meta.get(did) or (1, 9, 0)
+        return (1 if m[0] is None else m[0], m[1], m[2], did)
 
     @staticmethod
     def _grams(s):
@@ -261,11 +388,11 @@ class TitleMatcher:
         (the cited instrument itself), regardless of the containment min_len."""
         name = _norm_title(name)
         if len(name) >= _EXACT_MIN_LEN:
-            return self.exact.get(name)
+            return self.core.get(name)
         return None
 
     def resolve(self, name, min_len):
-        did = self.resolve_exact(name)  # exact title beats every containment tier
+        did = self.resolve_exact(name)  # exact title/core beats every containment tier
         if did is not None:
             return did
         name = _norm_title(name)  # match on the normalized form (both sides folded)
@@ -277,11 +404,20 @@ class TitleMatcher:
                     did = self.exact.get(name[i:i + length])
                     if did is not None:
                         return did
-        # (b) the cited name is a substring of a longer stored title (floor is on title)
+        # (b) the cited name is a substring of a longer stored title (floor is on title).
+        # Gated to promulgation-genre candidates; best = (genre, level, shortest, id)
+        # rather than set-iteration order. No candidate -> unresolved (virtual target).
+        best = None
         for t in self._containing(name):
-            if len(t) >= min_len:
-                return self.exact[t]
-        return None
+            if len(t) < min_len:
+                continue
+            did = self.exact[t]
+            if not self._containment_ok(did):
+                continue
+            r = self._rank(did)
+            if best is None or r < best[0]:
+                best = (r, did)
+        return best[1] if best else None
 
     def resolve_ref(self, raw_ref, min_len=8):
         """resolve() on the whole ref, then (only on a miss) on its title cores —
@@ -371,10 +507,12 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
     title_to_doc = {}
     _title_dn_strong = {}  # own-number-position 文号 in a title
     _title_dn_weak = {}    # mid-title mention of a 文号 (fallback only)
+    # (algo_doc_type feeds the resolver's genre priority + containment gate; a doc
+    #  not yet scored has NULL/'' and is treated as "no information" — ungated)
     for row in conn.execute(
-        "SELECT id, title, site_key FROM documents WHERE LENGTH(title) >= 8"
+        "SELECT id, title, site_key, algo_doc_type FROM documents WHERE LENGTH(title) >= 8"
     ).fetchall():
-        title_to_doc[row[1]] = (row[0], row[2])
+        title_to_doc[row[1]] = (row[0], row[2], row[3])
         for zk, is_own in _title_docnums(row[1]):
             (_title_dn_strong if is_own else _title_dn_weak).setdefault(zk, row[0])
     # own-number positions win over mere in-title mentions of another doc's number
