@@ -47,10 +47,9 @@ USAGE (on the droplet, repo root):
 WRITE DISCIPLINE: one transaction, busy_timeout=30s, only touches `doc_issuers`.
 Check the nightly lock (/tmp/china-governance-daily-sync.lock.d) before a full write.
 
-TODO (not wired yet): add to `scripts/daily_sync.sh` Phase 2b, after
-extract_citations.py and before compute_scores, as
-    python3 scripts/rnd/classification/issuer_parser.py --since-days 3
-so new docs get issuers nightly. A full re-run is ~2 min on the 2-vCPU droplet.
+NIGHTLY: wired into `scripts/daily_sync.sh` Phase 2b (after compute_topics) as a FULL
+rebuild (no --since-days, so parser fixes propagate to old rows). ~4 min on the
+2-vCPU droplet; one transaction. Tests: `python3 tests/test_issuer_parser.py`.
 """
 import argparse
 import json
@@ -236,7 +235,10 @@ DOCNUM_CENTRAL = {
 }
 DOCNUM_SUBNATIONAL = {
     # provinces / provincial-level municipalities
-    "粤府办": "广东省人民政府办公厅", "粤府": "广东省人民政府", "粤办": "中共广东省委办公厅", "粤发": "中共广东省委",
+    # 粤办函 is the GOVERNMENT office's letter series (997/1,010 corpus docs carry publisher
+    # 广东省人民政府办公厅 and sign the body as such); only 粤办发 is the 两办 party+gov series.
+    "粤府办": "广东省人民政府办公厅", "粤府": "广东省人民政府", "粤办函": "广东省人民政府办公厅",
+    "粤办": "中共广东省委办公厅", "粤发": "中共广东省委",
     "沪府办": "上海市人民政府办公厅", "沪府": "上海市人民政府", "沪委办": "中共上海市委办公厅",
     "京政办": "北京市人民政府办公厅", "京政": "北京市人民政府",
     "苏政办": "江苏省人民政府办公厅", "苏政": "江苏省人民政府",
@@ -299,6 +301,7 @@ _SITE_DISAMBIG = {
 }
 _CENTRAL_PREFIXES = sorted(DOCNUM_CENTRAL, key=len, reverse=True)
 _SUBNAT_PREFIXES = sorted(DOCNUM_SUBNATIONAL, key=len, reverse=True)
+_SUBNAT_CANON = set(DOCNUM_SUBNATIONAL.values()) | set(_SITE_DISAMBIG.values())
 
 
 def parse_docnum(docnum, admin_level, site_key=""):
@@ -692,11 +695,20 @@ def parse_doc(title, docnum, publisher, body_head, admin_level, site_key=""):
         if lead_dn in issuers:
             issuers.remove(lead_dn)
             issuers.insert(0, lead_dn)
-        elif source in ("none", "publisher"):
+        elif source == "none":
+            issuers.insert(0, lead_dn)
+        elif source == "publisher":
             # `publisher` is a portal field, so the 文号 agency outranks it; a parsed
             # MASTHEAD (title/header) outranks the 文号 — some sites store a CITED
             # number (中发〔2019〕17号) in document_number.
-            issuers.insert(0, lead_dn)
+            if lead_dn in _SUBNAT_CANON and len(issuers) == 1 and n_etc == 0 and not joint_dn:
+                # A sub-national 文号 vs ONE different portal name: the 文号 REPLACES it.
+                # Unioning them manufactured phantom pairs (粤办函 + publisher
+                # 广东省人民政府办公厅 -> 省委办公厅+省政府办公厅; joint-issuance.md §6a).
+                # A docnum code never adds a signatory the body does not carry.
+                issuers = [lead_dn]
+            else:
+                issuers.insert(0, lead_dn)
         if source == "none":
             source = "docnum"
     issuers = _fold_offices(list(dict.fromkeys(issuers)))

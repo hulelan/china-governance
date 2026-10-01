@@ -291,6 +291,12 @@ timeout 1800 python3 scripts/compute_scores.py >> "$LOG" 2>&1 || log "  compute_
 log "Phase 2b: Topic tagging (topics_algo, 29 policy categories)..."
 timeout 900 python3 scripts/compute_topics.py >> "$LOG" 2>&1 || log "  compute_topics had errors"
 
+# Issuer parsing (doc_issuers: 文号/masthead -> signing agencies, Q7 joint issuance).
+# FULL rebuild every night (not --since-days) so parser fixes propagate to old rows;
+# measured ~4 min for ~268k docs, one transaction. Pure CPU, no API cost.
+log "Phase 2b: Rebuilding doc_issuers (issuer_parser)..."
+timeout 900 nice -n 19 python3 scripts/rnd/classification/issuer_parser.py >> "$LOG" 2>&1 || log "  issuer_parser had errors"
+
 # --- Phase 2c: Refresh the BM25 (word-segmented) search index -----------------
 # doc_search (trigram) is trigger-maintained, but doc_search_seg (jieba words, the
 # BM25 relevance path) segments in Python so it CAN'T be a SQL trigger — it needs a
