@@ -9,9 +9,19 @@ two tables the nightly pipeline precomputes (daily_sync.sh Phase 2c):
 * ``diffusion_events`` — one row per (source doc, anchor instrument) match with
                          match_type ∈ {citation, title_reissue, topic_genre},
                          anchor_level ∈ {central, provincial} (the province→city
-                         hop, fidelity-provincial.md), lag_days, the anchor's
-                         FIRST topic tag, and denormalized titles/dates. ~33k
-                         rows, indexed on anchor_id/source_id/anchor_level.
+                         hop, fidelity-provincial.md), source_implementing 0/1
+                         (the source is a policy instrument vs. a readout /
+                         explainer / news item that merely MENTIONS the anchor),
+                         lag_days, the anchor's FIRST topic tag, and denormalized
+                         titles/dates. ~33k rows, indexed on anchor_id/source_id/
+                         anchor_level/source_implementing.
+
+A "confirmed" cascade event everywhere on the page = citation|title_reissue AND
+source_implementing=1. Mentions (confirmed match, source_implementing=0) are
+shown only as a muted secondary "+N mentions" count — a locality's news page
+citing an instrument is a reference, not an implementation (diffusion-fidelity.md
+"implementing-instrument subset"). Requires the 2026-10 matcher build (the column
+must exist; the nightly rebuilds it).
 
 Plus ``documents``/``sites`` for issuer names and the anchor's full topic list —
 always by primary key on a few dozen ids, never a cold aggregate scan. Each
@@ -146,27 +156,30 @@ async def get_weekly(db, topic: str, weeks: int):
     """The last ``weeks`` ISO weeks × admin_level matrix for ``topic``.
 
     Returns {"weeks": [row...], "levels": [level...], "totals": {...}} where each
-    row is {iso_week, week_start, is_current, cells: {level: {new, cas, low}},
-    new, cas, low}. Levels with no activity in the window are dropped so the
-    table stays compact; order follows LEVEL_ORDER.
+    row is {iso_week, week_start, is_current, cells: {level: {new, cas, low, prov, men}},
+    new, cas, low, prov, men}. Levels with no activity in the window are dropped so
+    the table stays compact; order follows LEVEL_ORDER. ``cas`` is implementing-only;
+    ``men`` is the confirmed-but-mention count.
     """
     wk = recent_weeks(weeks)
     lo, hi = wk[-1][0], wk[0][0]
     rows = await db.fetch(
         """SELECT iso_week, admin_level, week_start, new_docs,
-                  cascade_events, cascade_events_lowconf, cascade_events_prov
+                  cascade_events, cascade_events_lowconf, cascade_events_prov,
+                  cascade_events_mentions
            FROM tracker_weekly
            WHERE topic = $1 AND iso_week BETWEEN $2 AND $3""", topic, lo, hi)
     cells = defaultdict(dict)
     seen_levels = set()
-    KEYS = ("new", "cas", "low", "prov")
+    KEYS = ("new", "cas", "low", "prov", "men")
     for r in rows:
         if (r["new_docs"] or r["cascade_events"] or r["cascade_events_lowconf"]
-                or r["cascade_events_prov"]):
+                or r["cascade_events_prov"] or r["cascade_events_mentions"]):
             seen_levels.add(r["admin_level"])
         cells[r["iso_week"]][r["admin_level"]] = {
             "new": r["new_docs"], "cas": r["cascade_events"],
-            "low": r["cascade_events_lowconf"], "prov": r["cascade_events_prov"]}
+            "low": r["cascade_events_lowconf"], "prov": r["cascade_events_prov"],
+            "men": r["cascade_events_mentions"]}
     levels = [l for l in LEVEL_ORDER if l in seen_levels]
     levels += sorted(l for l in seen_levels if l not in LEVEL_ORDER)
 
@@ -217,10 +230,12 @@ async def get_active_cascades(db, topic: str, weeks: int):
     amap = await _anchor_topics(db)
 
     win = await db.fetch(
-        """SELECT anchor_id, source_id, match_type, topic, source_date, anchor_level
+        """SELECT anchor_id, source_id, match_type, topic, source_date, anchor_level,
+                  source_implementing
            FROM diffusion_events
            WHERE source_date BETWEEN $1 AND $2""", start, today)
     newest, in_win, low_win = {}, defaultdict(set), defaultdict(set)
+    men_win = defaultdict(set)
     alevel = {}
     for r in win:
         if not _anchor_in_topic(r["anchor_id"], r["topic"], topic, amap):
@@ -229,6 +244,9 @@ async def get_active_cascades(db, topic: str, weeks: int):
         alevel[a] = r["anchor_level"] or "central"
         if r["match_type"] == LOWCONF:
             low_win[a].add(r["source_id"])
+            continue
+        if not r["source_implementing"]:
+            men_win[a].add(r["source_id"])  # confirmed match, but a mention — not a cascade
             continue
         in_win[a].add(r["source_id"])
         if r["source_date"] > newest.get(a, ""):
@@ -247,13 +265,16 @@ async def get_active_cascades(db, topic: str, weeks: int):
     chosen = {a for lst in per_level.values() for a in lst}
     top = [a for a in ranked if a in chosen]
     n_lowconf_only = len([a for a in low_win if a not in in_win])
+    n_mentions_only = len([a for a in men_win if a not in in_win])
     if not top:
         return {"anchors": [], "n_active": 0, "n_lowconf_only": n_lowconf_only,
+                "n_mentions_only": n_mentions_only,
                 "window_start": start, "per_level_limit": ACTIVE_LIMIT}
 
     ev = await db.fetch(
         """SELECT anchor_id, source_id, match_type, lag_days, source_level,
-                  anchor_date, anchor_title, source_date, source_title
+                  anchor_date, anchor_title, source_date, source_title,
+                  source_implementing
            FROM diffusion_events
            WHERE anchor_id = ANY($1::int[])
            ORDER BY source_date DESC""", top)
@@ -265,7 +286,8 @@ async def get_active_cascades(db, topic: str, weeks: int):
     anchors = []
     for a in top:
         rows = by_anchor.get(a, [])
-        conf = [r for r in rows if r["match_type"] in CONFIRMED]
+        conf = [r for r in rows if r["match_type"] in CONFIRMED and r["source_implementing"]]
+        men = [r for r in rows if r["match_type"] in CONFIRMED and not r["source_implementing"]]
         low = [r for r in rows if r["match_type"] == LOWCONF]
         if not conf:
             continue
@@ -295,6 +317,7 @@ async def get_active_cascades(db, topic: str, weeks: int):
             "date": conf[0]["anchor_date"] or "",
             "topics": sorted(amap.get(a) or []),
             "n_sources": len(srcs), "n_in_window": len(in_win[a]),
+            "n_mentions": len({r["source_id"] for r in men}),
             "n_lowconf": len({r["source_id"] for r in low}),
             "median_lag": int(median(lags)) if lags else None,
             "first_date": min(r["source_date"] for r in conf),
@@ -312,15 +335,16 @@ async def get_active_cascades(db, topic: str, weeks: int):
             m = iss.get(d["id"], {})
             d["issuer"] = m.get("site_name") or m.get("site_key") or ""
     return {"anchors": anchors, "n_active": len(ranked),
-            "n_lowconf_only": n_lowconf_only, "window_start": start,
-            "per_level_limit": ACTIVE_LIMIT}
+            "n_lowconf_only": n_lowconf_only, "n_mentions_only": n_mentions_only,
+            "window_start": start, "per_level_limit": ACTIVE_LIMIT}
 
 
 async def get_leaderboard(db, anchor_level: str = "central"):
     """Most-cascaded instruments across ALL topics: anchors of ``anchor_level``
     ('central' | 'provincial') ranked by distinct implementing sources (sites)
-    over confirmed signals. One grouped PK join of the confirmed events with
-    documents (for site_key); cached an hour per level."""
+    over confirmed IMPLEMENTING signals (source_implementing=1); the confirmed
+    mentions are carried as a secondary ``mentions`` count. One grouped PK join
+    of the confirmed events with documents (for site_key); cached an hour per level."""
     key = ("leaderboard", anchor_level)
     hit = _cached(key)
     if hit is not None:
@@ -328,13 +352,15 @@ async def get_leaderboard(db, anchor_level: str = "central"):
     amap = await _anchor_topics(db)
     rows = await db.fetch(
         """SELECT e.anchor_id, MIN(e.anchor_title) AS title, MIN(e.anchor_date) AS adate,
-                  COUNT(DISTINCT d.site_key) AS localities,
-                  COUNT(DISTINCT e.source_id) AS docs,
-                  MAX(e.source_date) AS newest
+                  COUNT(DISTINCT CASE WHEN e.source_implementing THEN d.site_key END) AS localities,
+                  COUNT(DISTINCT CASE WHEN e.source_implementing THEN e.source_id END) AS docs,
+                  COUNT(DISTINCT CASE WHEN NOT e.source_implementing THEN e.source_id END) AS mentions,
+                  MAX(CASE WHEN e.source_implementing THEN e.source_date END) AS newest
            FROM diffusion_events e JOIN documents d ON d.id = e.source_id
            WHERE e.match_type IN ('citation', 'title_reissue')
              AND e.anchor_level = $2
            GROUP BY e.anchor_id
+           HAVING localities > 0
            ORDER BY localities DESC, docs DESC
            LIMIT $1""", LEADERBOARD_LIMIT, anchor_level)
     ids = [r["anchor_id"] for r in rows]
@@ -342,6 +368,7 @@ async def get_leaderboard(db, anchor_level: str = "central"):
         """SELECT anchor_id, lag_days FROM diffusion_events
            WHERE anchor_id = ANY($1::int[])
              AND match_type IN ('citation', 'title_reissue')
+             AND source_implementing = 1
              AND lag_days IS NOT NULL AND lag_days >= 0""", ids) if ids else []
     lags = defaultdict(list)
     for r in lag_rows:
@@ -352,6 +379,7 @@ async def get_leaderboard(db, anchor_level: str = "central"):
         board.append({
             "id": a, "title": _clean(r["title"]), "date": r["adate"] or "",
             "localities": r["localities"], "docs": r["docs"], "newest": r["newest"],
+            "mentions": r["mentions"],
             "median_lag": int(median(lags[a])) if lags[a] else None,
             "topics": sorted(amap.get(a) or []),
         })

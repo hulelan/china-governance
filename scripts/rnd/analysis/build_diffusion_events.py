@@ -48,6 +48,19 @@ mirror of a central text is the central cascade, not a provincial one). They mat
 ONLY sub-provincial implementers (municipal/district/department) in the SAME
 province (`province_of`); the memo's cross-province edges were resolver noise.
 Same three match types and lag rules. Central-anchor behaviour is untouched.
+
+`source_implementing` (2026-10, diffusion-fidelity.md "implementing-instrument subset"):
+a resolved citation admits ANY citing document — Politburo-meeting reposts, 党组会议
+readouts, 解读, a mayor meeting a company — as a "diffusion event", and these are
+references, not implementations (the AI+ anchor's citation events went 33→103 after
+the resolver's wrapper-core fix, mostly readouts). Each row now carries a 0/1 flag:
+1 when the SOURCE doc's genre is a policy instrument (IMPLEMENTING_GENRES, derived
+from the memo's subset + the live algo_doc_type labels; `other`-typed docs qualify
+only when the title itself reads as an issuance), 0 for explainers / news / reports /
+readouts / announcements and media or research sources. `title_reissue` rows are
+implementing by construction. Every event stays in the table — the mention signal
+is still informative — the rollup and /tracker just count implementing-only by
+default and show mentions as a secondary number.
 """
 import argparse
 import re
@@ -101,6 +114,27 @@ NONISSUE_RE = re.compile(r"(解读|读懂|答记者问|新闻发布|发布会|�
                          r"党组会议|常委会|访谈|专家|引发|热议|侧记|综述)")
 # Quoted "X+" cue inside “”/‘’/「」/《》 (highly distinctive, e.g. 人工智能+, 互联网+).
 CUE_QUOTE_RE = re.compile(r"[“‘「『《]([^”’」』》]{2,20}\+[^”’」』》]{0,20})[”’」』》]")
+# --- source_implementing ----------------------------------------------------
+# Source genres (algo_doc_type) that make a citing doc an IMPLEMENTING instrument:
+# diffusion-fidelity.md's implementing-instrument subset (action_plan, work_plan,
+# policy_issuance, opinion, notice, regulation, decision, strategy, subsidy) plus
+# the framework labels the typer also emits (law, decree, plan=方案). NOT in the
+# set: explainer, announcement, report, publicity, commentary, interview, reply,
+# circular (通报), administrative (纪要), budget, procurement, personnel,
+# consultation, application_guide, standard, review, request — and `other`, the
+# ~37%-of-corpus residual where the readouts live (党组会议, 调研, speech reposts).
+IMPLEMENTING_GENRES = {
+    "action_plan", "work_plan", "policy_issuance", "opinion", "notice",
+    "regulation", "decision", "strategy", "subsidy", "law", "decree", "plan",
+}
+# An `other`/untyped source still counts as implementing when its TITLE is an
+# issuance (印发…的通知, 关于…的意见/办法/方案) and carries no readout cue
+# (NONISSUE_RE below). Deliberately tighter than ISSUANCE_RE, which admits bare
+# 发布 ("…典型案例正式发布" is news, not an instrument).
+IMPL_TITLE_RE = re.compile(
+    r"(印发|关于.{2,60}的(通知|意见|决定|办法|规定|细则|方案|计划)|"
+    r"实施方案|行动方案|行动计划|工作方案|若干措施|实施意见)")
+NON_IMPLEMENTING_LEVELS = {"media", "research"}
 TOPIC_WINDOW = 365  # days: topic_genre recency gate
 TOPIC_ANCHOR_CR = 10.0  # only major campaigns propose topic_genre implementations
 
@@ -284,6 +318,25 @@ def pool_key(title):
 
 def is_framework(genre, title):
     return genre in FW_GENRES or bool(FW_TITLE_RE.search(title or ""))
+
+
+def is_implementing(source, match_type):
+    """0/1: is this (source doc, match_type) an implementing event rather than a
+    mention? `source` is a docs-dict entry (keys: genre, title, level).
+    title_reissue is implementing by construction (the title IS a re-issuance)."""
+    if match_type == "title_reissue":
+        return 1
+    if source["level"] in NON_IMPLEMENTING_LEVELS:
+        return 0
+    title = source["title"] or ""
+    if NONISSUE_RE.search(title):
+        return 0  # 解读 / 党组会议 / 调研 / 讲话 … always a mention, whatever the genre
+    genre = source["genre"]
+    if genre in IMPLEMENTING_GENRES:
+        return 1
+    if genre in ("other", "") and IMPL_TITLE_RE.search(title):
+        return 1
+    return 0
 
 
 # --------------------------------------------------------------------------- #
@@ -652,7 +705,7 @@ def assemble(docs, anchors, cited, title_r, topic_g, anchor_level="central"):
                 (a["topics"][0] if a["topics"] else ""),
                 s["level"], a["date"], s["date"],
                 a["title"][:200], s["title"][:200],
-                anchor_level,
+                anchor_level, is_implementing(s, mtype),
             ))
     return rows
 
@@ -674,17 +727,24 @@ CREATE TABLE IF NOT EXISTS diffusion_events (
     anchor_title TEXT,
     source_title TEXT,
     anchor_level TEXT NOT NULL DEFAULT 'central',
+    source_implementing INTEGER NOT NULL DEFAULT 1,
     UNIQUE(source_id, anchor_id)
 );
 CREATE INDEX IF NOT EXISTS idx_diffusion_anchor ON diffusion_events(anchor_id);
 CREATE INDEX IF NOT EXISTS idx_diffusion_source ON diffusion_events(source_id);
 CREATE INDEX IF NOT EXISTS idx_diffusion_type ON diffusion_events(match_type);
 """
-# Pre-anchor_level tables need the column added (CREATE IF NOT EXISTS won't).
-MIGRATE = """
-ALTER TABLE diffusion_events ADD COLUMN anchor_level TEXT NOT NULL DEFAULT 'central';
+# Older tables need the columns added (CREATE IF NOT EXISTS won't).
+MIGRATE = {
+    "anchor_level":
+        "ALTER TABLE diffusion_events ADD COLUMN anchor_level TEXT NOT NULL DEFAULT 'central';",
+    "source_implementing":
+        "ALTER TABLE diffusion_events ADD COLUMN source_implementing INTEGER NOT NULL DEFAULT 1;",
+}
+IDX_EXTRA = """
+CREATE INDEX IF NOT EXISTS idx_diffusion_anchor_level ON diffusion_events(anchor_level);
+CREATE INDEX IF NOT EXISTS idx_diffusion_implementing ON diffusion_events(source_implementing);
 """
-IDX_LEVEL = "CREATE INDEX IF NOT EXISTS idx_diffusion_anchor_level ON diffusion_events(anchor_level);"
 
 
 def write_table(dbpath, rows):
@@ -694,15 +754,17 @@ def write_table(dbpath, rows):
         try:
             conn.executescript(DDL)
             cols = {r[1] for r in conn.execute("PRAGMA table_info(diffusion_events)")}
-            if "anchor_level" not in cols:
-                conn.executescript(MIGRATE)
-            conn.executescript(IDX_LEVEL)
+            for col, ddl in MIGRATE.items():
+                if col not in cols:
+                    conn.executescript(ddl)
+            conn.executescript(IDX_EXTRA)
             conn.execute("DELETE FROM diffusion_events")
             conn.executemany(
                 """INSERT OR REPLACE INTO diffusion_events
                    (source_id, anchor_id, match_type, lag_days, topic, source_level,
-                    anchor_date, source_date, anchor_title, source_title, anchor_level)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?)""", rows)
+                    anchor_date, source_date, anchor_title, source_title, anchor_level,
+                    source_implementing)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""", rows)
             conn.commit()
             break
         except sqlite3.OperationalError as e:
@@ -712,9 +774,10 @@ def write_table(dbpath, rows):
     else:
         conn.close()
         sys.exit("ERROR: could not acquire write lock")
-    n = conn.execute("SELECT COUNT(*) FROM diffusion_events").fetchone()[0]
+    n, n_impl = conn.execute(
+        "SELECT COUNT(*), SUM(source_implementing) FROM diffusion_events").fetchone()
     conn.close()
-    print(f"\nWrote {n} rows to diffusion_events")
+    print(f"\nWrote {n} rows to diffusion_events ({n_impl} implementing, {n - n_impl} mentions)")
 
 
 # --------------------------------------------------------------------------- #
@@ -722,21 +785,25 @@ def write_table(dbpath, rows):
 # --------------------------------------------------------------------------- #
 def report(rows, anchors, docs, label="central"):
     by_type = Counter(r[2] for r in rows)
+    impl_by_type = Counter(r[2] for r in rows if r[11])
     print(f"\nTotal {label}-anchor diffusion events: {len(rows)} "
-          f"(distinct anchors: {len({r[1] for r in rows})})")
+          f"(distinct anchors: {len({r[1] for r in rows})}; "
+          f"implementing {sum(impl_by_type.values())}, "
+          f"mentions {len(rows) - sum(impl_by_type.values())})")
     for t in ("citation", "title_reissue", "topic_genre"):
-        print(f"  {t:<14}{by_type.get(t, 0)}")
-    # Headline ranks by CONFIRMED signals only (citation + title_reissue); topic_genre
-    # is a lower-confidence residual and would turn high-cr anchors into magnets.
+        print(f"  {t:<14}{by_type.get(t, 0):>6}  (implementing {impl_by_type.get(t, 0)})")
+    # Headline ranks by CONFIRMED + IMPLEMENTING signals only (citation + title_reissue,
+    # source_implementing=1); topic_genre is a lower-confidence residual and would
+    # turn high-cr anchors into magnets, and mentions are references, not cascades.
     per_anchor = Counter()
     localities = defaultdict(set)
     for r in rows:
-        if r[2] == "topic_genre":
+        if r[2] == "topic_genre" or not r[11]:
             continue
         per_anchor[r[1]] += 1
         localities[r[1]].add(docs[r[0]]["site"])
     print(f"\nTop 5 most-cascaded {label} anchors (distinct implementing localities, "
-          "citation+title_reissue):")
+          "citation+title_reissue, implementing-only):")
     top = sorted(localities.items(), key=lambda kv: (-len(kv[1]), -per_anchor[kv[0]]))[:5]
     for aid, sites in top:
         a = anchors[aid]
@@ -756,16 +823,20 @@ def validate(rows, anchors, prov_rows=None, prov_anchors=None):
         if not evs:
             print("  (no events)")
             return
-        lags = sorted(r[3] for r in evs if r[3] is not None)
+        impl = [r for r in evs if r[11]]
+        lags = sorted(r[3] for r in impl if r[3] is not None)
         n = len(lags)
         med = lags[n // 2] if n else None
-        print(f"  events={len(evs)}  distinct sites={len({r[5] + r[9] for r in evs})}  "
-              f"median lag={med}d  min={lags[0] if lags else '-'}  max={lags[-1] if lags else '-'}")
+        print(f"  events={len(evs)} (implementing {len(impl)}, mentions {len(evs) - len(impl)})  "
+              f"distinct sites={len({r[5] + r[9] for r in evs})}  "
+              f"implementing median lag={med}d  min={lags[0] if lags else '-'}  "
+              f"max={lags[-1] if lags else '-'}")
         by_type = Counter(r[2] for r in evs)
-        print(f"  by type: {dict(by_type)}")
+        print(f"  by type: {dict(by_type)}  implementing by type: {dict(Counter(r[2] for r in impl))}")
         for r in sorted(evs, key=lambda r: r[7])[:10]:
-            # r = (src, aid, mtype, lag, topic, level, adate, sdate, atitle, stitle)
-            print(f"    {r[7]} {r[5]:<11} lag={r[3]:>4} {r[2]:<13} {r[9][:40]}")
+            # r = (src, aid, mtype, lag, topic, level, adate, sdate, atitle, stitle, alevel, impl)
+            print(f"    {r[7]} {r[5]:<11} lag={r[3]:>4} {r[2]:<13} "
+                  f"{'impl' if r[11] else 'MENT'} {r[9][:40]}")
 
     print("\n" + "=" * 78 + "\nVALIDATION\n" + "=" * 78)
     # Specific canonical anchor ids (the trade-in central family; boost; AI+).

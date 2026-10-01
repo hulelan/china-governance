@@ -82,9 +82,10 @@
         <span class="lab">New this week, by level · {{ 'all areas' if t.topic == 'all' else t.topic }}</span>
         <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
             Each cell: <span class="cell-new text-ink">new documents</span> published that ISO week at that level, and beneath it
-            <span class="cell-cas">confirmed cascade events</span> (a sub-national document citing or re-issuing a central instrument)
+            <span class="cell-cas">confirmed cascade events</span> (a sub-national <em>instrument</em> — notice, plan, opinion, measures — citing or re-issuing a central instrument)
             with <span class="cell-low">probable-but-unconfirmed</span> matches in grey and <span class="cell-prov">+N<sub>p</sub></span> confirmed
-            implementations of a <em>provincial</em> instrument by its own cities (the province→city hop). The current week is partial — crawls land with a lag.
+            implementations of a <em>provincial</em> instrument by its own cities (the province→city hop). Readouts, explainers and news items that merely
+            <em>mention</em> an instrument are not cascades; they are totalled separately as <span class="cell-low">+N<sub>m</sub></span>. The current week is partial — crawls land with a lag.
         </p>
         <div class="card table-scroll">
         <table class="data-table">
@@ -116,9 +117,9 @@
                 <tr class="border-t-2 border-ink">
                     <td class="mono text-xs text-muted" colspan="{{ 2 }}">{{ t.weeks }}-week total</td>
                     {% for l in W.levels %}{% set lt = W.level_totals[l] %}
-                    <td class="text-right"><div class="cell-new">{{ "{:,}".format(lt.new) }}</div><div class="cell-cas">{{ lt.cas if lt.cas else '' }}{% if lt.low %} <span class="cell-low">({{ lt.low }})</span>{% endif %}{% if lt.prov %} <span class="cell-prov">+{{ lt.prov }}<sub>p</sub></span>{% endif %}</div></td>
+                    <td class="text-right"><div class="cell-new">{{ "{:,}".format(lt.new) }}</div><div class="cell-cas">{{ lt.cas if lt.cas else '' }}{% if lt.low %} <span class="cell-low">({{ lt.low }})</span>{% endif %}{% if lt.prov %} <span class="cell-prov">+{{ lt.prov }}<sub>p</sub></span>{% endif %}{% if lt.men %} <span class="cell-low">+{{ lt.men }}<sub>m</sub></span>{% endif %}</div></td>
                     {% endfor %}
-                    <td class="text-right"><div class="cell-new font-medium">{{ "{:,}".format(W.totals.new) }}</div><div class="cell-cas">{{ W.totals.cas }}{% if W.totals.low %} <span class="cell-low">({{ W.totals.low }})</span>{% endif %}{% if W.totals.prov %} <span class="cell-prov">+{{ W.totals.prov }}<sub>p</sub></span>{% endif %}</div></td>
+                    <td class="text-right"><div class="cell-new font-medium">{{ "{:,}".format(W.totals.new) }}</div><div class="cell-cas">{{ W.totals.cas }}{% if W.totals.low %} <span class="cell-low">({{ W.totals.low }})</span>{% endif %}{% if W.totals.prov %} <span class="cell-prov">+{{ W.totals.prov }}<sub>p</sub></span>{% endif %}{% if W.totals.men %} <span class="cell-low">+{{ W.totals.men }}<sub>m</sub></span>{% endif %}</div></td>
                 </tr>
             </tfoot>
         </table>
@@ -129,8 +130,8 @@
     <div class="mb-8">
         <span class="lab">Active cascades · central and provincial instruments with implementing activity since {{ C.window_start }}</span>
         <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
-            {{ C.n_active }} instrument{{ '' if C.n_active == 1 else 's' }} drew a confirmed sub-national response in the window
-            ({{ C.n_lowconf_only }} more only by probable topic-and-genre match, not shown).
+            {{ C.n_active }} instrument{{ '' if C.n_active == 1 else 's' }} drew a confirmed sub-national <em>implementing</em> response in the window
+            ({{ C.n_mentions_only }} more were only mentioned — in readouts, explainers or news — and {{ C.n_lowconf_only }} more matched only by probable topic-and-genre; neither is shown).
             Showing the {{ C.per_level_limit }} most recently active per anchor level (central and provincial), ordered by newest arrival. Source counts and median lag run over the whole cascade, not just the window —
             the live form of the cascade tables in <em>consumption-diffusion</em>. A <span class="tag lvl-provincial">provincial</span> anchor
             is matched only against cities, districts and bureaus of its own province (<em>fidelity-provincial</em>: the hop that carries the text).
@@ -163,6 +164,7 @@
                     <td class="text-right">
                         <div class="mono">{{ a.n_sources }}</div>
                         <div class="text-[11px] text-teal">+{{ a.n_in_window }} in window</div>
+                        {% if a.n_mentions %}<div class="text-[11px] cell-low">+{{ a.n_mentions }} mention{{ '' if a.n_mentions == 1 else 's' }}</div>{% endif %}
                         {% if a.n_lowconf %}<div class="text-[11px] cell-low">{{ a.n_lowconf }} probable</div>{% endif %}
                     </td>
                     <td class="text-right mono">{% if a.median_lag is not none %}{{ a.median_lag }}<span class="text-muted text-xs">d</span>{% else %}—{% endif %}</td>
@@ -198,8 +200,9 @@
     <div class="mb-8">
         <span class="lab">Most-cascaded instruments · all areas, whole corpus</span>
         <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
-            Central instruments ranked by the number of distinct implementing sources (issuing sites) that cite or re-issue them —
-            confirmed signals only. A floor on breadth: uncrawled provinces cannot appear here.
+            Central instruments ranked by the number of distinct implementing sources (issuing sites) whose own instruments cite or re-issue them —
+            confirmed implementing signals only; readouts, explainers and news that merely mention an instrument are the muted <span class="cell-low">+N mentions</span>.
+            A floor on breadth: uncrawled provinces cannot appear here.
         </p>
         <div class="card table-scroll">
         <table class="data-table">
@@ -222,7 +225,7 @@
                     </td>
                     <td class="mono text-muted text-xs hidden sm:table-cell">{{ b.date }}</td>
                     <td class="text-right mono text-teal font-medium">{{ b.localities }}</td>
-                    <td class="text-right mono">{{ b.docs }}</td>
+                    <td class="text-right mono">{{ b.docs }}{% if b.mentions %}<div class="text-[11px] cell-low whitespace-nowrap">+{{ b.mentions }} mention{{ '' if b.mentions == 1 else 's' }}</div>{% endif %}</td>
                     <td class="text-right mono">{% if b.median_lag is not none %}{{ b.median_lag }}<span class="text-muted text-xs">d</span>{% else %}—{% endif %}</td>
                     <td class="mono text-muted text-xs hidden sm:table-cell">{{ b.newest }}</td>
                 </tr>
@@ -237,7 +240,7 @@
         <span class="lab">Most-cascaded provincial instruments · all areas, whole corpus</span>
         <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
             Provincial framework instruments ranked by the number of distinct same-province implementing sources (cities,
-            districts, bureaus) that cite or re-issue them — confirmed signals only. Cities copy their province far more than
+            districts, bureaus) whose instruments cite or re-issue them — confirmed implementing signals only, mentions muted. Cities copy their province far more than
             provinces copy the center (relay 10.8% vs 3.3%), so this is where policy text actually propagates. Guangdong dominates
             because it is the only province with portal + cities + districts + bureaus all crawled.
         </p>
@@ -262,7 +265,7 @@
                     </td>
                     <td class="mono text-muted text-xs hidden sm:table-cell">{{ b.date }}</td>
                     <td class="text-right mono text-teal font-medium">{{ b.localities }}</td>
-                    <td class="text-right mono">{{ b.docs }}</td>
+                    <td class="text-right mono">{{ b.docs }}{% if b.mentions %}<div class="text-[11px] cell-low whitespace-nowrap">+{{ b.mentions }} mention{{ '' if b.mentions == 1 else 's' }}</div>{% endif %}</td>
                     <td class="text-right mono">{% if b.median_lag is not none %}{{ b.median_lag }}<span class="text-muted text-xs">d</span>{% else %}—{% endif %}</td>
                     <td class="mono text-muted text-xs hidden sm:table-cell">{{ b.newest }}</td>
                 </tr>
@@ -278,7 +281,9 @@
         Method: a sub-national document is matched to a central instrument — or a sub-provincial one to a provincial instrument of its own province — by a resolved citation or an exact
         <span class="font-zh">《》</span> reference (<em>citation</em>), by carrying the instrument's distinctive title stem
         (<em>re-issue</em>), or — low confidence, shown only as grey counts — by sharing its topic and an implementing genre within
-        a window after it. Rebuilt nightly from the corpus; see <span class="mono">docs/research/daily-tracker-concept.md</span>.
+        a window after it. A matched source counts as a cascade only when it is itself a policy instrument (notice, plan, opinion, measures,
+        regulation…); readouts, explainers and news that mention the instrument are kept as <em>mentions</em>
+        (<em>diffusion-fidelity</em>, the implementing-instrument subset). Rebuilt nightly from the corpus; see <span class="mono">docs/research/daily-tracker-concept.md</span>.
     </p>
     {% endif %}
 </div>
