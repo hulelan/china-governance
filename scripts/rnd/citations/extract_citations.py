@@ -175,6 +175,27 @@ def _title_cores(raw_ref):
     return out
 
 
+# --- Proxy-target fix (2026-10) ---------------------------------------------
+# docs/research/citation-network-structure.md §1.3 measured that 27% of resolved
+# edges (68,880) landed on PROXY targets: a doc whose title merely CONTAINS the cited
+# instrument's name. Root cause: resolve() gated its exact/substring tier (a) on
+# len(normalized ref) >= min_len (8), but national laws normalize SHORT
+# (中华人民共和国城乡规划法 -> 城乡规划法, 5 chars), so tier (a) — the only path that
+# can hit the law's own title — was skipped and tier (b) (containment, floor on the
+# TITLE) returned the first title containing the name: 河南省实施《…城乡规划法》办法
+# took 2,139 inbound while the law itself took 0. PRIORITY RULE: a candidate whose
+# normalized title EXACTLY equals the normalized reference (or one of its title
+# cores) wins over any containment match; containment is only a fallback. Every
+# existing recall path is kept — this re-keys edges, it does not drop them.
+_EXACT_MIN_LEN = 3  # floor for the exact-title tier (min_len still gates containment)
+
+# Among mirror copies that normalize to the same title, prefer the highest-level
+# host (the law on npc/gov over a bureau's re-post); build_diffusion_events pools
+# mirrors downstream anyway, so this only picks the representative id.
+_LEVEL_PREF = {"central": 0, "provincial": 1, "municipal": 2, "department": 2,
+               "district": 3}
+
+
 class TitleMatcher:
     """Indexed fuzzy title resolver — replaces an O(docs x titles) per-ref scan.
 
@@ -184,16 +205,28 @@ class TitleMatcher:
     but O(len(name)^2) via substring generation + an n-gram inverted index
     instead of scanning every title. Drops the full rebuild from ~2h to minutes.
     Tie-break differs (prefers the longest 't in name' match — strictly better).
+    An EXACT normalized-title match (>= _EXACT_MIN_LEN) is tried FIRST, before
+    any containment tier, so a cited law resolves to the law, not to a measure
+    whose title contains the law's name (see the proxy-target note above).
     """
 
-    def __init__(self, title_to_doc):
-        # Index on NORMALIZED titles (punctuation/prefix folded). setdefault keeps the
-        # first id when two titles normalize identically (near-duplicate docs).
+    def __init__(self, title_to_doc, site_levels=None):
+        # Index on NORMALIZED titles (punctuation/prefix folded). When two titles
+        # normalize identically (mirror copies), keep the highest-level host, then
+        # the lowest id (deterministic).
+        site_levels = site_levels or {}
         self.exact = {}  # norm-title -> id
+        best = {}        # norm-title -> (level_rank, id)
         for t, v in title_to_doc.items():
             nt = _norm_title(t)
-            if nt:
-                self.exact.setdefault(nt, v[0])
+            if not nt:
+                continue
+            key = (_LEVEL_PREF.get(site_levels.get(v[1], ""), 9), v[0])
+            cur = best.get(nt)
+            if cur is None or key < cur:
+                best[nt] = key
+        for nt, (_, did) in best.items():
+            self.exact[nt] = did
         self.titles = list(self.exact.keys())
         self.index = {}  # gram -> set of title indices
         for idx, t in enumerate(self.titles):
@@ -218,7 +251,18 @@ class TitleMatcher:
                 return ()
         return (self.titles[i] for i in posting if name in self.titles[i])
 
+    def resolve_exact(self, name):
+        """PRIORITY tier: the doc whose normalized title equals the normalized ref
+        (the cited instrument itself), regardless of the containment min_len."""
+        name = _norm_title(name)
+        if len(name) >= _EXACT_MIN_LEN:
+            return self.exact.get(name)
+        return None
+
     def resolve(self, name, min_len):
+        did = self.resolve_exact(name)  # exact title beats every containment tier
+        if did is not None:
+            return did
         name = _norm_title(name)  # match on the normalized form (both sides folded)
         L = len(name)
         # (a) a stored title is a substring of the cited name (longest-first; L==exact)
@@ -238,12 +282,19 @@ class TitleMatcher:
         """resolve() on the whole ref, then (only on a miss) on its title cores —
         the bare 《》 inner title / an end-anchored-qualifier-stripped form — so a
         "《Core》（文号）" ref still links to a stored "<agency>印发《Core》的通知"
-        (reordered; the core is a clean substring of the stored title)."""
+        (reordered; the core is a clean substring of the stored title).
+        PRIORITY: an exact normalized-title hit on the whole ref OR any title core
+        wins before any containment tier is consulted."""
+        base = _norm_title(raw_ref)
+        cores = _title_cores(raw_ref)
+        for cand in [raw_ref] + cores:
+            did = self.resolve_exact(cand)
+            if did is not None:
+                return did
         did = self.resolve(raw_ref, min_len)
         if did is not None:
             return did
-        base = _norm_title(raw_ref)
-        for core in _title_cores(raw_ref):
+        for core in cores:
             nc = _norm_title(core)
             if len(nc) >= _CORE_MIN_LEN and nc != base:
                 did = self.resolve(core, max(min_len, _CORE_MIN_LEN))
@@ -330,7 +381,7 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
     for row in conn.execute("SELECT site_key, admin_level FROM sites").fetchall():
         site_levels[row[0]] = row[1] or "unknown"
 
-    matcher = TitleMatcher(title_to_doc)  # indexed fuzzy title resolver (fast)
+    matcher = TitleMatcher(title_to_doc, site_levels)  # indexed fuzzy title resolver (fast)
     print(f"Lookup tables: {len(docnum_to_id)} doc numbers, {len(title_to_doc)} titles, {len(site_levels)} sites")
 
     # --- Fetch all documents with body text OR references_json ---
