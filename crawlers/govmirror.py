@@ -69,7 +69,7 @@ MINISTRIES = {
     "mohurd": {"name": "住房和城乡建设部 (MOHURD)", "bmfl": "住房和城乡建设部"},
     "mca":    {"name": "民政部 (MCA)",              "bmfl": "民政部"},
     "mnr":    {"name": "自然资源部 (MNR)",          "bmfl": "自然资源部"},
-    "nhc":    {"name": "国家卫生健康委 (NHC)",       "bmfl": "国家卫生健康委"},
+    "nhc":    {"name": "国家卫生健康委 (NHC)",       "bmfl": "国家卫生健康委员会"},
 }
 
 BASE_URL = "https://www.gov.cn"
