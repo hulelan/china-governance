@@ -50,8 +50,8 @@ CURATED: list[tuple[str, list[str]]] = [
     ]),
     ("Foundations", ["consumption-diffusion", "research-agenda", "related-literature"]),
     ("Method & QA", [
-        "consistency-review", "corpus-lessons", "access-vantage-brief", "residential-proxy-options",
-        "us-china-2026-readout-iran",
+        "consistency-review", "corpus-lessons", "pair-channels", "access-vantage-brief",
+        "residential-proxy-options", "us-china-2026-readout-iran",
     ]),
 ]
 OTHER_LABEL = "Other"
