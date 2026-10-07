@@ -19,8 +19,12 @@ Usage:
     --model MODEL               Override model name
     --site SITE_KEY             Only classify docs from this site
     --limit N                   Max docs to process
-    --dry-run                   Print results without saving
+    --dry-run                   Print results without saving (writes NOTHING, not
+                                even schema — opens the DB read-only)
     --concurrency N             Parallel DeepSeek requests (default: 2 — see warning)
+    --retry-failed              Also re-send docs that have already failed >= 3
+                                times (terminal content_risk docs stay excluded)
+    --init-schema               Create the classify_failures table and exit
 
 ⚠️  DeepSeek concurrency: 2 is the HARD MAX. Above ~2 the API does NOT return
     429s — it silently returns EMPTY responses, so docs look "processed" but get
@@ -28,18 +32,54 @@ Usage:
     the nightly daily_sync.sh Phase 2 runs at concurrency 2 for this reason. Do
     not raise the default. (Previously this defaulted to 5, and the docstring
     even claimed 15 — both wrong; fixed June 2026.)
+
+⚠️  max_tokens and reasoning tokens (docs/working/qa-classification-failures.md,
+    2026-10-07). `deepseek-v4-flash` is a REASONING model and bills reasoning
+    tokens against max_tokens. At max_tokens=2000 roughly a third of nightly calls
+    came back finish_reason="length" with reasoning_tokens == completion_tokens ==
+    2000 and EMPTY content; the measured tail needs ~7,133 reasoning + ~700 content
+    tokens. Hence MAX_TOKENS=12000 plus a single retry at MAX_TOKENS_RETRY when the
+    model still hits the ceiling. Every failure now carries a REASON (logged at
+    WARNING, tallied in the progress line, and persisted to classify_failures) so
+    the nightly log says why, and so a doc that can never succeed is not re-sent
+    every night forever.
 """
 import argparse
 import json
+import logging
 import os
 import sqlite3
 import sys
 import threading
 import time
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 DB_PATH = Path(__file__).parent.parent / "documents.db"
+
+# Output budget. See the docstring note: reasoning tokens are billed against this.
+MAX_TOKENS = 12_000
+MAX_TOKENS_RETRY = 24_000
+
+# Failure reasons returned alongside a None result.
+REASON_OK = "ok"
+REASON_EMPTY_LENGTH = "empty_content_length"   # finish_reason=length, no content
+REASON_EMPTY_OTHER = "empty_content_other"     # empty content, finish_reason!=length
+REASON_CONTENT_RISK = "content_risk"           # deterministic 400 from the filter
+REASON_JSON = "json_unsalvageable"             # content present, not valid JSON
+REASON_HTTP = "http_error"                     # any other API/transport exception
+REASON_TIMEOUT = "timeout"
+REASON_RATE_LIMIT = "rate_limit_exhausted"     # 3 rate-limit retries used up
+
+# Reasons that can NEVER succeed on a later night — not retried, even with
+# --retry-failed. "Content Exists Risk" is a hard, deterministic rejection.
+TERMINAL_REASONS = (REASON_CONTENT_RISK,)
+
+# A doc that has failed this many times is skipped unless --retry-failed.
+MAX_ATTEMPTS = 3
+
+log = logging.getLogger("classify")
 
 PROMPT = """You are classifying Chinese government and policy documents for a Western analyst research database.
 Given the document below, output a JSON object with these fields:
@@ -135,10 +175,30 @@ def _get_deepseek_client():
     return _deepseek_client
 
 
-def classify_deepseek(doc: dict, model: str) -> dict | None:
-    """Classify a single document via DeepSeek API."""
+def classify_deepseek(doc: dict, model: str, max_tokens: int = MAX_TOKENS,
+                      _is_length_retry: bool = False) -> tuple[dict | None, str]:
+    """Classify a single document via DeepSeek API.
+
+    Returns (result, reason). `reason` is REASON_OK on success and one of the
+    REASON_* failure strings otherwise — never None, so the caller can tally and
+    persist WHY a document failed instead of just counting it.
+
+    When the model exhausts its output budget on reasoning (finish_reason ==
+    "length"), the call is retried ONCE at MAX_TOKENS_RETRY. No other failure
+    class gets that retry — rate limits have their own backoff loop and
+    content_risk / unparseable JSON would just burn spend again.
+    """
     client = _get_deepseek_client()
     prompt = _build_prompt(doc)
+
+    def _retry_longer(why: str) -> tuple[dict | None, str] | None:
+        """Single doubled-budget retry for ceiling hits. None if not applicable."""
+        if _is_length_retry or max_tokens >= MAX_TOKENS_RETRY:
+            return None
+        log.warning("doc %s: %s at max_tokens=%d — retrying once at %d",
+                    doc["id"], why, max_tokens, MAX_TOKENS_RETRY)
+        return classify_deepseek(doc, model, max_tokens=MAX_TOKENS_RETRY,
+                                 _is_length_retry=True)
 
     for attempt in range(3):
         try:
@@ -146,37 +206,67 @@ def classify_deepseek(doc: dict, model: str) -> dict | None:
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
-                max_tokens=2000,   # v4 is a reasoning model — reasoning tokens
-                                   # consumed the old 500 budget, leaving empty
-                                   # content (the nightly "classification errors")
+                max_tokens=max_tokens,
             )
-            raw = (resp.choices[0].message.content or "").strip()
+            choice = resp.choices[0]
+            finish = getattr(choice, "finish_reason", None)
+            raw = (choice.message.content or "").strip()
+
             if not raw:
-                # Empty response — likely content filter. Skip silently.
-                return None
-            return _parse_response(raw)
+                if finish == "length":
+                    retried = _retry_longer("empty content with finish_reason=length")
+                    if retried is not None:
+                        return retried
+                    log.warning("doc %s: empty content, finish_reason=length, "
+                                "budget %d exhausted by reasoning",
+                                doc["id"], max_tokens)
+                    return None, REASON_EMPTY_LENGTH
+                log.warning("doc %s: empty content, finish_reason=%s", doc["id"], finish)
+                return None, REASON_EMPTY_OTHER
+
+            result = _parse_response(raw)
+            if result is None:
+                if finish == "length":
+                    retried = _retry_longer("truncated unparseable JSON (finish_reason=length)")
+                    if retried is not None:
+                        return retried
+                log.warning("doc %s: response is not salvageable JSON (finish_reason=%s, "
+                            "%d chars): %s", doc["id"], finish, len(raw), raw[:120])
+                return None, REASON_JSON
+
+            return result, REASON_OK
+
         except Exception as e:
             err_str = str(e)
+            if "Content Exists Risk" in err_str:
+                # Deterministic content-filter rejection — terminal, never retried.
+                log.warning("doc %s: content filter rejection (terminal): %s",
+                            doc["id"], err_str[:200])
+                return None, REASON_CONTENT_RISK
             if "429" in err_str or "rate" in err_str.lower():
                 wait = (attempt + 1) * 5
                 with _rate_limit_lock:
-                    print(f"  [rate-limit] doc {doc['id']}, waiting {wait}s (attempt {attempt+1}/3)", flush=True)
+                    log.warning("doc %s: rate-limited, waiting %ds (attempt %d/3)",
+                                doc["id"], wait, attempt + 1)
                 time.sleep(wait)
                 continue
-            if "Content Exists Risk" in err_str:
-                return None  # Content filter — skip
-            print(f"  [warn] DeepSeek error for doc {doc['id']}: {e}", flush=True)
-            return None
-    print(f"  [fail] doc {doc['id']}: exhausted retries", flush=True)
-    return None
+            if "timeout" in err_str.lower() or "timed out" in err_str.lower():
+                log.warning("doc %s: request timeout: %s", doc["id"], err_str[:200])
+                return None, REASON_TIMEOUT
+            log.warning("doc %s: DeepSeek error (%s): %s",
+                        doc["id"], type(e).__name__, err_str[:200])
+            return None, REASON_HTTP
+
+    log.warning("doc %s: exhausted rate-limit retries", doc["id"])
+    return None, REASON_RATE_LIMIT
 
 
 # ---------------------------------------------------------------------------
 # Ollama backend (local)
 # ---------------------------------------------------------------------------
 
-def classify_ollama(doc: dict, model: str) -> dict | None:
-    """Classify a single document via local Ollama."""
+def classify_ollama(doc: dict, model: str) -> tuple[dict | None, str]:
+    """Classify a single document via local Ollama. Returns (result, reason)."""
     import requests
 
     prompt = _build_prompt(doc)
@@ -190,10 +280,20 @@ def classify_ollama(doc: dict, model: str) -> dict | None:
         }, timeout=120)
         resp.raise_for_status()
         raw = resp.json().get("response", "").strip()
-        return _parse_response(raw)
+        if not raw:
+            log.warning("doc %s: empty Ollama response", doc["id"])
+            return None, REASON_EMPTY_OTHER
+        result = _parse_response(raw)
+        if result is None:
+            log.warning("doc %s: Ollama response is not salvageable JSON: %s",
+                        doc["id"], raw[:120])
+            return None, REASON_JSON
+        return result, REASON_OK
     except Exception as e:
-        print(f"  [warn] Ollama error for doc {doc['id']}: {e}")
-        return None
+        err = str(e)
+        reason = REASON_TIMEOUT if "timeout" in err.lower() or "timed out" in err.lower() else REASON_HTTP
+        log.warning("doc %s: Ollama error (%s): %s", doc["id"], type(e).__name__, err[:200])
+        return None, reason
 
 
 # ---------------------------------------------------------------------------
@@ -286,6 +386,56 @@ def ensure_columns(conn):
     conn.commit()
 
 
+def ensure_failure_table(conn):
+    """Create the classify_failures side table if absent (idempotent).
+
+    A side table, NOT a column on `documents`: `documents` rows are wide and an
+    UPDATE rewrites the body_text_cn overflow pages (see CLAUDE.md's
+    compute_scores.py lesson — touching every row once rewrote ~5GB of WAL).
+    """
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS classify_failures (
+            doc_id     INTEGER PRIMARY KEY,
+            reason     TEXT,
+            attempts   INTEGER NOT NULL DEFAULT 0,
+            first_seen TEXT,
+            last_seen  TEXT
+        )
+    """)
+    conn.commit()
+
+
+def _has_failure_table(conn) -> bool:
+    row = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='classify_failures'"
+    ).fetchone()
+    return row is not None
+
+
+def record_failure(conn, doc_id: int, reason: str):
+    """Upsert a failure, incrementing the attempt counter."""
+    conn.execute(
+        """INSERT INTO classify_failures (doc_id, reason, attempts, first_seen, last_seen)
+           VALUES (?, ?, 1, datetime('now'), datetime('now'))
+           ON CONFLICT(doc_id) DO UPDATE SET
+               reason    = excluded.reason,
+               attempts  = classify_failures.attempts + 1,
+               last_seen = excluded.last_seen""",
+        (doc_id, reason),
+    )
+
+
+def clear_failure(conn, doc_id: int):
+    """A doc that finally classified should not keep a failure record."""
+    conn.execute("DELETE FROM classify_failures WHERE doc_id = ?", (doc_id,))
+
+
+def _format_reasons(tally: Counter) -> str:
+    if not tally:
+        return "none"
+    return " ".join(f"{r}={n:,}" for r, n in tally.most_common())
+
+
 def save_result(conn, doc_id: int, result: dict, model: str):
     """Write classification result to the documents table."""
     conn.execute(
@@ -318,6 +468,45 @@ def save_result(conn, doc_id: int, result: dict, model: str):
     )
 
 
+def select_docs(conn, site: str | None = None, limit: int | None = None,
+                retry_failed: bool = False) -> list[dict]:
+    """Unclassified docs, excluding ones not worth re-sending.
+
+    Skipped: docs with >= MAX_ATTEMPTS recorded failures (unless retry_failed) and
+    docs whose last failure was TERMINAL (always — they can never succeed).
+    """
+    where = ["(d.classified_at IS NULL OR d.classified_at = '')"]
+    params: list = []
+    if site:
+        where.append("d.site_key = ?")
+        params.append(site)
+
+    join = ""
+    if _has_failure_table(conn):
+        join = "LEFT JOIN classify_failures f ON f.doc_id = d.id"
+        terminal = ",".join("?" * len(TERMINAL_REASONS))
+        guards = [f"f.reason NOT IN ({terminal})"]
+        gparams: list = list(TERMINAL_REASONS)
+        if not retry_failed:
+            guards.append("f.attempts < ?")
+            gparams.append(MAX_ATTEMPTS)
+        where.append("(f.doc_id IS NULL OR (" + " AND ".join(guards) + "))")
+        params.extend(gparams)
+
+    query = f"""
+        SELECT d.id, d.title, d.document_number, d.publisher,
+               d.body_text_cn, d.classify_main_name
+        FROM documents d {join}
+        WHERE {' AND '.join(where)}
+        ORDER BY d.date_written DESC
+    """
+    if limit:
+        query += f" LIMIT {int(limit)}"
+
+    cols = ["id", "title", "document_number", "publisher", "body_text_cn", "classify_main_name"]
+    return [dict(zip(cols, row)) for row in conn.execute(query, params).fetchall()]
+
+
 def main():
     parser = argparse.ArgumentParser(description="Classify documents with LLM")
     parser.add_argument("--backend", choices=["deepseek", "ollama"], default="deepseek")
@@ -329,7 +518,24 @@ def main():
                         help="Parallel DeepSeek requests. 2 is the HARD MAX — "
                              "higher silently returns empty responses (not 429s). "
                              "Do not raise.")
+    parser.add_argument("--retry-failed", action="store_true",
+                        help=f"Also re-send docs with >= {MAX_ATTEMPTS} recorded "
+                             "failures (terminal content_risk docs stay excluded)")
+    parser.add_argument("--init-schema", action="store_true",
+                        help="Create the classify_failures table and exit")
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO, format="  [%(levelname)s] %(message)s",
+                        stream=sys.stdout)
+
+    if args.init_schema:
+        conn = sqlite3.connect(str(DB_PATH), timeout=30)
+        conn.execute("PRAGMA busy_timeout=30000")
+        ensure_columns(conn)
+        ensure_failure_table(conn)
+        conn.close()
+        print("Schema ready: documents classification columns + classify_failures")
+        return
 
     # Default models per backend
     if args.model is None:
@@ -351,29 +557,18 @@ def main():
             sys.exit(1)
         classify_fn = classify_ollama
 
-    conn = sqlite3.connect(str(DB_PATH), timeout=30)
-    conn.execute("PRAGMA busy_timeout=30000")
-    ensure_columns(conn)
+    if args.dry_run:
+        # --dry-run writes NOTHING — not even schema. Read-only handle.
+        conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True, timeout=30)
+        conn.execute("PRAGMA busy_timeout=30000")
+    else:
+        conn = sqlite3.connect(str(DB_PATH), timeout=30)
+        conn.execute("PRAGMA busy_timeout=30000")
+        ensure_columns(conn)
+        ensure_failure_table(conn)
 
-    # Find unclassified documents (classified_at is empty or NULL)
-    where = "WHERE (d.classified_at IS NULL OR d.classified_at = '')"
-    params = []
-    if args.site:
-        where += " AND d.site_key = ?"
-        params.append(args.site)
-
-    query = f"""
-        SELECT d.id, d.title, d.document_number, d.publisher,
-               d.body_text_cn, d.classify_main_name
-        FROM documents d {where}
-        ORDER BY d.date_written DESC
-    """
-    if args.limit:
-        query += f" LIMIT {args.limit}"
-
-    rows = conn.execute(query, params).fetchall()
-    cols = ["id", "title", "document_number", "publisher", "body_text_cn", "classify_main_name"]
-    docs = [dict(zip(cols, row)) for row in rows]
+    docs = select_docs(conn, site=args.site, limit=args.limit,
+                       retry_failed=args.retry_failed)
     total = len(docs)
 
     print(f"Found {total:,} unclassified documents")
@@ -395,6 +590,7 @@ def main():
     success = 0
     errors = 0
     processed = 0
+    reasons: Counter = Counter()
 
     if args.backend == "deepseek" and not args.dry_run:
         # Process in batches to avoid overwhelming the API
@@ -409,12 +605,15 @@ def main():
                 for future in as_completed(futures):
                     doc = futures[future]
                     processed += 1
-                    result = future.result()
+                    result, reason = future.result()
 
                     if result:
                         save_result(conn, doc["id"], result, args.model)
+                        clear_failure(conn, doc["id"])
                         success += 1
                     else:
+                        record_failure(conn, doc["id"], reason)
+                        reasons[reason] += 1
                         errors += 1
 
                 # Commit after each batch
@@ -423,11 +622,12 @@ def main():
                 rate = processed / elapsed if elapsed > 0 else 0
                 remaining = (total - processed) / rate if rate > 0 else 0
                 print(f"  Progress: {processed:,}/{total:,} ({success:,} ok, {errors:,} err) | "
-                      f"{rate:.1f} docs/s | ETA: {remaining/60:.0f}m", flush=True)
+                      f"{rate:.1f} docs/s | ETA: {remaining/60:.0f}m | "
+                      f"reasons: {_format_reasons(reasons)}", flush=True)
     else:
         # Sequential execution (Ollama or dry-run)
         for doc in docs:
-            result = classify_fn(doc, args.model)
+            result, reason = classify_fn(doc, args.model)
             processed += 1
 
             if result:
@@ -442,18 +642,23 @@ def main():
                     print(f"    references:         {result.get('references', [])}")
                 else:
                     save_result(conn, doc["id"], result, args.model)
+                    clear_failure(conn, doc["id"])
                     if processed % 10 == 0:
                         conn.commit()
                 success += 1
             else:
+                reasons[reason] += 1
                 errors += 1
+                if not args.dry_run:
+                    record_failure(conn, doc["id"], reason)
 
             if processed % 20 == 0 and not args.dry_run:
                 elapsed = time.time() - start_time
                 rate = processed / elapsed
                 remaining = (total - processed) / rate if rate > 0 else 0
                 print(f"  Progress: {processed:,}/{total:,} ({success:,} ok, {errors:,} err) | "
-                      f"{rate:.1f} docs/s | ETA: {remaining/60:.0f}m")
+                      f"{rate:.1f} docs/s | ETA: {remaining/60:.0f}m | "
+                      f"reasons: {_format_reasons(reasons)}")
 
         if not args.dry_run:
             conn.commit()
@@ -461,9 +666,20 @@ def main():
     conn.close()
     elapsed = time.time() - start_time
     print(f"\nDone: {success:,}/{total:,} classified, {errors:,} errors in {elapsed:.0f}s")
+    if errors:
+        print("Failure reasons:")
+        for reason, n in reasons.most_common():
+            note = " (terminal — never retried)" if reason in TERMINAL_REASONS else ""
+            print(f"  {reason:24s} {n:,}{note}")
+        if not args.dry_run:
+            print(f"  (recorded in classify_failures; docs at >= {MAX_ATTEMPTS} "
+                  "attempts are skipped next run unless --retry-failed)")
     if success > 0 and not args.dry_run:
-        est_input = success * 800
-        est_output = success * 100
+        # v4-flash is a reasoning model: output = reasoning + content. Measured
+        # (qa-classification-failures.md §4): ~1,150-7,133 reasoning + ~200-700
+        # content tokens; ~1,600 prompt tokens. Use midpoints.
+        est_input = success * 1600
+        est_output = success * 2500
         cost = (est_input * 0.28 + est_output * 1.10) / 1_000_000
         print(f"Estimated cost: ~${cost:.2f}")
 

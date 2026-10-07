@@ -21,7 +21,7 @@ scratch (`check_*.py`) has been deleted — it's in git history if ever needed.
 | `daily_sync.sh` | Nightly crawl → backfill → score → classify → publish. The pipeline. | droplet cron (06:00 UTC) |
 | `backfill_from_html.py` | Re-extract body text from saved raw HTML. | daily_sync Phase 1b · CLAUDE.md |
 | `compute_scores.py` | citation_rank, algo_doc_type, ai_relevance (no LLM). | daily_sync Phase 1b · CLAUDE.md |
-| `classify_documents.py` | DeepSeek classification (title/summary/type/refs). ⚠ concurrency 2 max. | daily_sync Phase 2 · CLAUDE.md |
+| `classify_documents.py` | DeepSeek classification (title/summary/type/refs). ⚠ concurrency 2 max. `max_tokens=12000` + one doubled-budget retry on `finish_reason="length"` (v4-flash bills reasoning against the budget — `docs/working/qa-classification-failures.md`); every failure gets a reason, tallied in the progress line and persisted to `classify_failures(doc_id, reason, attempts, …)`. `content_risk` is terminal; `attempts >= 3` is skipped unless `--retry-failed`. `--init-schema` creates the table; `--dry-run` opens the DB read-only and writes nothing. | daily_sync Phase 2 · CLAUDE.md |
 | `build_instrument_succession.py` | `instrument_succession` side table (A2b): instrument -> successor edges (superseded_by_stated from body 废止 sentences, revised_edition, renamed, pilot_to_national via the successor detector). Reads `doc_identity`; `--self-test`, `--dry-run` (read-only), `--write --force` for the nightly. ~70s. | daily_sync Phase 2b, right after build_doc_identity |
 | `extract_pdf_text.py` | Extract text from PDF/DOC attachments. | CLAUDE.md |
 | `merge_db.py` | Merge a separate SQLite DB into documents.db. | CLAUDE.md (separate-DB workflow) |
