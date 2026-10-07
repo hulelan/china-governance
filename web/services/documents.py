@@ -233,24 +233,41 @@ async def get_documents(db, site_key=None, category=None, year=None,
     # Raw inbound count rides along on every row (0 when the table is absent).
     join_inbound, inbound_expr = await inbound_join(db)
 
+    select_cols = f"""d.id, d.title, d.document_number, d.publisher,
+                   d.date_written, d.date_published, d.site_key,
+                   d.classify_main_name, (COALESCE(d.body_text_cn, '') != '') as has_body,
+                   d.title_en, d.importance, d.category, d.summary_en,
+                   d.citation_rank, d.algo_doc_type, d.ai_relevance,
+                   {inbound_expr} AS inbound"""
+
     # Sort order
     order_clause = "d.date_written DESC"
     if sort_by == "inbound" and join_inbound:
-        # Raw (unweighted) inbound. Walks the LEFT JOIN (~0.2s warm over the full
-        # corpus; sub-ms once a site/category filter narrows it). Rank tiebreak.
-        order_clause = f"{inbound_expr} DESC, d.citation_rank DESC"
+        # Raw (unweighted) inbound. Fast path: drive from doc_inbound (INNER join,
+        # ~33k cited docs) ordered by its (inbound, rowid) index — no sort of the
+        # wide document rows (the LEFT-JOIN sort over 321k rows measured ~0.6s).
+        # Uncited docs (inbound 0) sort after every cited one, so a FULL page from
+        # the inner join IS the correct page. Only the boundary/beyond pages (a
+        # short inner result) fall through to the exact LEFT-JOIN query below.
+        # `total` above is unchanged: all docs, same as the other sorts.
+        rows = await db.fetch(
+            f"""SELECT {select_cols}
+                FROM doc_inbound di JOIN documents d ON d.id = di.doc_id {join_sites}
+                WHERE {where_sql}
+                ORDER BY di.inbound DESC, d.id DESC
+                LIMIT ${limit_idx} OFFSET ${offset_idx}""",
+            *params, per_page, offset
+        )
+        if len(rows) == per_page:
+            return rows, total
+        order_clause = f"{inbound_expr} DESC, d.id DESC"
     elif sort_by in ("citation_rank", "inbound"):
         order_clause = "d.citation_rank DESC NULLS LAST"
     elif sort_by == "ai_relevance":
         order_clause = "d.ai_relevance DESC NULLS LAST"
 
     rows = await db.fetch(
-        f"""SELECT d.id, d.title, d.document_number, d.publisher,
-                   d.date_written, d.date_published, d.site_key,
-                   d.classify_main_name, (COALESCE(d.body_text_cn, '') != '') as has_body,
-                   d.title_en, d.importance, d.category, d.summary_en,
-                   d.citation_rank, d.algo_doc_type, d.ai_relevance,
-                   {inbound_expr} AS inbound
+        f"""SELECT {select_cols}
             FROM documents d {join_sites} {join_inbound}
             WHERE {where_sql}
             ORDER BY {order_clause}
