@@ -78,7 +78,9 @@ A2  instrument_id — mirrors of one text share one id.
             的通知), the X of a bare 关于印发X的通知, the 关于… body after an issuer
             masthead, else the whole title minus status tags / news leads / 文号
             tails. Non-institutional wrappers ('北京发布《X》', flag 2) are news ABOUT
-            X and do not key to X. Keys shorter than 6 normalized chars never pool.
+            X and do not key to X. Cores shorter than 6 chars never pool — the floor is
+            measured BEFORE the 中华人民共和国 fold (2026-10-07), so a national law whose
+            name folds short (城乡规划法, 5) still keys and still pools (`_key_len`).
     who   = promulgation + the untyped `other` residual pool together; implementing
             instruments (转发 / 实施方案 at a lower level — distinct acts) pool only
             with their own copies; explainer / readout / news are ABOUT an
@@ -280,7 +282,7 @@ sys.path.insert(0, str(ROOT / "scripts" / "rnd" / "analysis"))
 
 from extract_citations import (  # noqa: E402
     _norm_title, _title_cores_of_title, _WRAP_QUOTED, _WRAP_PLAIN, _MASTHEAD_PRE,
-    _INST_SUFFIX, _STATUS_TAG, _NEWS_LEAD)
+    _INST_SUFFIX, _STATUS_TAG, _NEWS_LEAD, _TITLE_STRIP, _clean_ref)
 from issuer_parser import REGISTRY, DOCNUM_SUBNATIONAL, DOCNUM_CENTRAL  # noqa: E402
 from build_diffusion_events import (  # noqa: E402
     NONISSUE_RE, load_site_names, province_of, FW_GENRES, FW_TITLE_RE, ABOUT_GENRES,
@@ -727,6 +729,43 @@ EDITION_GAP_DAYS = 400
 POOL_CLASS = {"promulgation": "p", "other": "p", "implementing": "i"}
 
 
+# Only an instrument NAME may use the unfolded-length exemption below. Measured on the
+# 2026-10-07 corpus the exemption admits 191 distinct folded keys, 186 of which are
+# national statute names (行政复议法, 民法典, 抗旱条例, 刑法修正案 …); the residue is
+# 中华人民共和国国务院令 (19 docs on 3 sites), 中华人民共和国财政部令 and 中华人民共和国
+# 外交部声明 — a 令 / 声明 is the VEHICLE, not the text's name, so dozens of unrelated
+# State Council orders share that one title and must NOT pool. A suffix gate keeps the
+# exemption to names: the folded core must look like a statute.
+_SHORT_KEY_RE = re.compile(r"(?:法|法典|条例|修正案)$")
+
+
+def _key_len(core):
+    """Length that the KEY_MIN floor is measured on: the normalized core BEFORE the
+    中华人民共和国 fold.
+
+    WHY (2026-10-07, the 城乡规划法 pooling defect): `_norm_title` strips the PRC
+    prefix, so a national law normalizes SHORT — 中华人民共和国城乡规划法 -> 城乡规划法,
+    5 chars — and the floor (which exists to stop generic micro-titles like '全文' /
+    '停水通知' pooling across sites) silently rejected the key entirely. Every copy of
+    such a law therefore got NO instrument key and stayed `instrument_role='unique'`:
+    the mee and npc copies of 城乡规划法, both titled identically and both dated
+    2019-04-23, never pooled. This is the same class of bug the resolver fixed in the
+    2026-10 proxy-target work (`_EXACT_MIN_LEN`), for the same reason.
+
+    Measuring the floor on the UNFOLDED length keeps its purpose (a title has to carry
+    >= KEY_MIN real characters to be poolable) while letting the fold do its job (the
+    key itself stays the folded form, so 《中华人民共和国海关法》 / 中华人民共和国海关法 /
+    海关法 still key together). Only titles that are long enough BEFORE the fold gain a
+    key, so nothing generic is admitted."""
+    return len(_TITLE_STRIP.sub("", _clean_ref(core) or ""))
+
+
+def _core_ok(nc, core):
+    """Does this core clear the KEY_MIN floor? Either on the folded length, or — for a
+    statute name only — on the unfolded length (`_key_len` / `_SHORT_KEY_RE`)."""
+    return len(nc) >= KEY_MIN or (bool(_SHORT_KEY_RE.search(nc)) and _key_len(core) >= KEY_MIN)
+
+
 def _best_core(title):
     """-> (raw core, normalized core) of a stored title (the matcher's exact-core
     tier), or (None, None) when nothing reaches KEY_MIN."""
@@ -737,7 +776,7 @@ def _best_core(title):
         if flag != 1:
             continue  # non-institutional lead ('北京发布《X》') is news ABOUT X
         nc = _norm_title(core)
-        if len(nc) < KEY_MIN:
+        if not _core_ok(nc, core):
             continue
         # prefer the innermost (shortest) institutional core: the 《X》 over the wrapper
         if best is None or len(nc) < len(best):
@@ -745,7 +784,7 @@ def _best_core(title):
     if best is None:
         raw = clean_title(title)
         nt = _norm_title(raw)
-        if len(nt) >= KEY_MIN:
+        if _core_ok(nt, raw):
             best = nt
         else:
             raw = None
@@ -1041,23 +1080,31 @@ def assign_instruments(docs):
             continue
         dated = sorted((m for m in members if m["date"]), key=lambda m: m["date"])
         undated = [m for m in members if not m["date"]]
-        editions, cur = [], None
+        # The edition gap is measured from the edition's ANCHOR — its latest copy hosted
+        # at or above the edition's own level — not from its latest copy of any kind.
+        # (2026-10-07) Measuring from the latest copy let a LOW-level late repost BRIDGE a
+        # revision: 中华人民共和国监察法 2018 + a 北京市统计局 repost of 2024-05-27 put the
+        # npc 2024-12-25 revision only 212 days after the running tail, so the amended text
+        # was pooled into the 2018 instrument (同 统计法 2009/2024, 对外贸易法 2022/2025).
+        # A bureau's repost cannot open an edition (below), so it must not extend one either.
+        editions, cur, anchor = [], None, None
         for m in dated:
             if cur is None:
-                cur = [m]
+                cur, anchor = [m], m["date"]
                 editions.append(cur)
                 continue
-            gap = (m["date"] - cur[-1]["date"]).days
-            if gap > EDITION_GAP_DAYS:
-                # a repost carries the TEXT's level (title cue 中华人民共和国… -> central),
-                # so test the hosting SITE: only a site at or above the edition's level
-                # can open a new edition; a bureau's late copy is a repost.
-                canon_rank = min(LEVEL_RANK.get(x["level"], 5) for x in cur)
-                if LEVEL_RANK.get(m["site_level"], 5) <= canon_rank:
-                    cur = [m]
-                    editions.append(cur)
-                    continue
+            # a repost carries the TEXT's level (title cue 中华人民共和国… -> central),
+            # so test the hosting SITE: only a site at or above the edition's level
+            # can open a new edition; a bureau's late copy is a repost.
+            canon_rank = min(LEVEL_RANK.get(x["level"], 5) for x in cur)
+            authoritative = LEVEL_RANK.get(m["site_level"], 5) <= canon_rank
+            if (m["date"] - anchor).days > EDITION_GAP_DAYS and authoritative:
+                cur, anchor = [m], m["date"]
+                editions.append(cur)
+                continue
             cur.append(m)
+            if authoritative:
+                anchor = m["date"]  # an at-or-above-level copy re-anchors the edition
         if len(editions) == 1 and undated:
             editions[0].extend(undated)
         for ed in editions:
@@ -1663,6 +1710,28 @@ _KEY_TESTS = [
      "北京发布《深化改革提振消费专项行动方案》", False),
     ("广东省人民政府关于印发广东省推动消费品以旧换新行动方案的通知",
      "广东省推动消费品以旧换新行动方案", True),
+    # (2026-10-07) a national law folds SHORT (城乡规划法, 5 chars) — it must still key,
+    # and the bare / bracketed / 全文 forms must key together
+    ("中华人民共和国城乡规划法", "《中华人民共和国城乡规划法》", True),
+    ("中华人民共和国城乡规划法", "中华人民共和国城市规划法", False),
+    # a BARE 5-char title clears no floor on either measure and still gets no key: the
+    # exemption is about the 中华人民共和国 fold, not about shortening the floor itself
+    ("中华人民共和国城乡规划法", "城乡规划法", False),
+]
+# instrument_key on short-folding titles: the unfolded-length exemption admits statute
+# NAMES only, so a 令 / 声明 vehicle title (shared by dozens of unrelated texts) still
+# gets no key and can never pool.
+_SHORT_KEY_TESTS = [
+    ("中华人民共和国城乡规划法", "城乡规划法"),
+    ("中华人民共和国民法典", "民法典"),
+    ("中华人民共和国宪法", "宪法"),
+    ("中华人民共和国刑法修正案", "刑法修正案"),
+    ("中华人民共和国电信条例", "电信条例"),
+    ("中华人民共和国国务院令", None),   # the vehicle, not a name: 20 unrelated texts
+    ("中华人民共和国财政部令", None),
+    ("中华人民共和国外交部声明", None),
+    ("停水通知", None),                 # the floor's original purpose
+    ("全文", None),
 ]
 # localize(title, site) -> (stem, locality): the stem a central text and its local
 # re-issuance share, and the sub-national name the title carries (None = bare copy).
@@ -1814,11 +1883,69 @@ _POOL_TESTS = [
            date=_D(2021, 3, 3), title="广东省人民政府关于印发广东省城镇排水与污水处理条例的通知")],
      {100: (100, "unique", "promulgation"), 101: (101, "unique", "promulgation"),
       102: (102, "unique", "promulgation"), 103: (103, "unique", "promulgation")}),
+    # --- (2026-10-07) national laws fold SHORT and must still pool (the live defect) ---
+    # the real 城乡规划法 trio: the two 2019-04-23 copies are one promulgation; the 2015
+    # text is a different edition and stays apart.
+    ([dict(id=12685270, site="mee", site_level="central", level="central", genre="promulgation",
+           date=_D(2019, 4, 23), title="中华人民共和国城乡规划法"),
+      dict(id=12742122, site="npc", site_level="central", level="central", genre="promulgation",
+           date=_D(2019, 4, 23), title="中华人民共和国城乡规划法"),
+      dict(id=12747143, site="npc", site_level="central", level="central", genre="promulgation",
+           date=_D(2015, 4, 24), title="中华人民共和国城乡规划法"),
+      # the proxy-target doc (citation-network-structure.md §1.3) merely NAMES the law:
+      # a province's own 实施办法 is never a copy of it
+      dict(id=12747144, site="npc", site_level="central", level="provincial", genre="promulgation",
+           date=_D(2010, 1, 1), title="河南省实施《中华人民共和国城乡规划法》办法")],
+     {12685270: (12685270, "canonical", "promulgation"),
+      12742122: (12685270, "mirror", "promulgation"),
+      12747143: (12747143, "unique", "promulgation"),
+      12747144: (12747144, "unique", "promulgation")}),
+    # the documented 政府信息公开条例 split survives: 2008 text + a 2017 bureau repost of it,
+    # then the 2019 revision as its own instrument
+    ([dict(id=200, site="gov", site_level="central", level="central", genre="promulgation",
+           date=_D(2008, 3, 28), title="中华人民共和国政府信息公开条例"),
+      dict(id=201, site="mzj", site_level="department", level="central", genre="promulgation",
+           date=_D(2017, 8, 24), title="《中华人民共和国政府信息公开条例》全文"),
+      dict(id=202, site="npc", site_level="central", level="central", genre="promulgation",
+           date=_D(2019, 4, 3), title="中华人民共和国政府信息公开条例")],
+     {200: (200, "canonical", "promulgation"), 201: (200, "mirror", "promulgation"),
+      202: (202, "unique", "promulgation")}),
+    # a LOW-level late repost must not BRIDGE a revision: the real 监察法 shape — 2018 text,
+    # a 北京市统计局 repost in 2024-05, then the 2024-12-25 amended text. The gap is measured
+    # from the edition's ANCHOR (its latest at-or-above-level copy), so the amendment opens
+    # its own instrument instead of being pooled 212 days after the bureau's repost.
+    ([dict(id=210, site="npc", site_level="central", level="central", genre="promulgation",
+           date=_D(2018, 3, 20), title="中华人民共和国监察法"),
+      dict(id=211, site="spp", site_level="central", level="central", genre="promulgation",
+           date=_D(2018, 3, 22), title="中华人民共和国监察法"),
+      dict(id=212, site="bjb_tjj", site_level="municipal", level="central", genre="promulgation",
+           date=_D(2024, 5, 27), title="中华人民共和国监察法"),
+      dict(id=213, site="npc", site_level="central", level="central", genre="promulgation",
+           date=_D(2024, 12, 25), title="中华人民共和国监察法"),
+      dict(id=214, site="nbs", site_level="central", level="central", genre="promulgation",
+           date=_D(2025, 6, 9), title="中华人民共和国监察法")],
+     {210: (210, "canonical", "promulgation"), 211: (210, "mirror", "promulgation"),
+      212: (210, "mirror", "promulgation"), 213: (213, "canonical", "promulgation"),
+      214: (213, "mirror", "promulgation")}),
+    # a localized re-issuance of a short-folding text still isolates (and still flips to
+    # `implementing`): 深圳市's own 消防条例 does not pool with the national 消防法's stem,
+    # and 深圳市 + 广东省 copies of one locality-free plan stay out of the central pool
+    ([dict(id=220, site="npc", site_level="central", level="central", genre="promulgation",
+           date=_D(2021, 4, 29), title="中华人民共和国安全生产法"),
+      dict(id=221, site="gdyjt", site_level="provincial", level="central", genre="promulgation",
+           date=_D(2021, 6, 17), title="中华人民共和国安全生产法"),
+      dict(id=222, site="sz", site_level="municipal", level="municipal", genre="promulgation",
+           date=_D(2022, 1, 10), title="深圳市人民政府关于印发深圳市安全生产条例的通知"),
+      dict(id=223, site="gd", site_level="provincial", level="provincial", genre="promulgation",
+           date=_D(2021, 9, 1), title="广东省安全生产条例")],
+     {220: (220, "canonical", "promulgation"), 221: (220, "mirror", "promulgation"),
+      222: (222, "unique", "implementing"), 223: (223, "unique", "promulgation")}),
 ]
 # localized_of expectations, one dict per _POOL_TESTS entry (id -> trigger id; unlisted = NULL).
 # In test 3 the bare GD copy (id 3) is also a provincial-level localization of the SC text.
 _LOCALIZED_OF = [{11271152: 900039931}, {}, {2: 1, 3: 1}, {}, {}, {}, {31: 30}, {41: 40}, {51: 50},
-                 {}, {71: 70, 72: 71}, {82: 81}, {91: 90}, {}]
+                 {}, {71: 70, 72: 71}, {82: 81}, {91: 90}, {},
+                 {}, {}, {}, {222: 223}]
 # A6 province: (doc fields, level, lead_issuer) -> 2-letter code. Central docs are tested
 # through derive_province's caller (build() passes only SUBNATIONAL levels) — here a
 # central NAME must resolve to None.
@@ -1958,9 +2085,15 @@ def self_test():
             print(f"XX derive_instrument_kind({title[:40]!r}, {algo}) = {got!r}, expected {exp!r}")
     for a, b, same in _KEY_TESTS:
         ka, kb = instrument_key(a), instrument_key(b)
-        if (ka == kb) != same:
+        # two unkeyed titles are NOT "the same instrument" — a None key never pools
+        if (ka == kb) != same or (same and ka is None):
             fails += 1
             print(f"XX instrument_key: {ka!r} vs {kb!r} (expected same={same})")
+    for title, exp in _SHORT_KEY_TESTS:
+        got = instrument_key(title)
+        if got != exp:
+            fails += 1
+            print(f"XX instrument_key({title!r}) = {got!r}, expected {exp!r}")
     for title, site, exp_stem, exp_loc in _LOCALIZE_TESTS:
         stem, loc, _ = localize(title, site)
         if (stem, loc) != (exp_stem, exp_loc):
@@ -1998,8 +2131,8 @@ def self_test():
             fails += 1
             print(f"XX crawl_stamped_sites[{label}] = {got!r}, expected {exp!r}")
     total = (len(_LEVEL_TESTS) + len(_TITLE_LEVEL_TESTS) + len(_GENRE_TESTS) + len(_KIND_TESTS) + len(_KEY_TESTS)
-             + len(_LOCALIZE_TESTS) + len(_POOL_TESTS) + len(_CHAIN_TESTS) + len(_GENERIC_STEM_TESTS)
-             + len(_STAMP_TESTS) + len(_PROVINCE_TESTS))
+             + len(_SHORT_KEY_TESTS) + len(_LOCALIZE_TESTS) + len(_POOL_TESTS) + len(_CHAIN_TESTS)
+             + len(_GENERIC_STEM_TESTS) + len(_STAMP_TESTS) + len(_PROVINCE_TESTS))
     print(f"self-test: {total - fails}/{total} passed")
     return fails == 0
 
