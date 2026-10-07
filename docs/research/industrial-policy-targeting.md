@@ -63,6 +63,13 @@ largest. These sites are removed from every table in this memo, not just the tim
 because their level and genre composition would otherwise enter the cross-sections with a
 single-year date. Final universe: **224,291 documents**. `[measured]`
 
+*(Correction 2026-10-07, `corpus-lessons.md` A4. These 74 sites do NOT carry crawl dates. Their
+stored dates match the pages' own `PubDate` metadata; they are sites whose crawled ARCHIVE is
+shallow, so most documents genuinely date from 2026 (MIIT's crawler reaches only `/art/2026/`).
+The exclusion is kept because a one-year archive cannot inform a trend, but the mechanism is
+coverage depth, not date stamping. Re-running the cross-sections with these sites included is
+queued as a robustness check.)*
+
 **Sector lexicon.** 18 sectors, tagged by regular expression on `documents.title` only.
 Multi-label. 9,049 documents (4.0%) carry at least one tag; 321 carry two; 11 carry three.
 
@@ -656,3 +663,238 @@ SELECT substr(date_published,1,4) y,
 FROM documents d JOIN sites s ON s.site_key = d.site_key
 WHERE <universe filter> GROUP BY 1;
 ```
+
+---
+
+## Robustness: the 74-site exclusion (2026-10-07)
+
+*Read-only re-run on the droplet (`?mode=ro`, 2026-10-07). Section 1 excluded 74 sites on the
+belief that they carried crawl dates. `corpus-lessons.md` A4 refuted that on 2026-10-07: the
+dates are real, the archives are shallow. A shallow archive cannot carry a trend, so the
+exclusion stands for the time series. It is not obviously right for the cross-sections. This
+section re-runs every cross-sectional table under three universes and reports what moves.*
+
+**Universes.** (a) the memo universe, the shallow sites removed. (b) all dated government
+documents, the shallow sites included. (c) the shallow sites alone. The A1 rule re-run on
+2026-10-07 selects **77 sites, 28,940 documents** (the 74 plus three that crossed the 70% line
+as the nightly crawl added 2026 pages; `fj_xxzx`, `fj_lsj`, `liaoyuan`, `shizuishan` and
+`qingdao` all sit at 70.9-72.5%). (a) is now 226,388 documents against the published 224,291.
+(a) reproduces every published table to within 0.1 point (any-sector instrument mix
+5.8 / 18.5 / 23.3 / 22.0 / 27.2 against the published 5.8 / 18.6 / 23.2 / 22.0 / 27.2), so the
+drift is immaterial and the published figures stand as the (a) column below. `[measured]`
+
+```sql
+-- universe switch: (a) NOT IN, (b) no clause, (c) IN
+SELECT d.id, d.title, s.admin_level, d.algo_doc_type, substr(d.date_published,1,4) y,
+       di.admin_level_doc, di.genre
+FROM documents d JOIN sites s ON s.site_key = d.site_key
+LEFT JOIN doc_identity di ON di.doc_id = d.id
+WHERE d.date_published >= '2008' AND d.date_published < '2027'
+  AND s.admin_level IN ('central','provincial','municipal','district','department')
+  AND d.site_key NOT IN (<77 shallow sites>);            -- (a) 226,388  (b) 255,328  (c) 28,940
+```
+
+**What the 77 sites are.** 27,552 of their 28,940 documents (95.2%) are dated 2026. 794 are
+2025. No earlier year has more than 206. MIIT is 7,787 of them (27%), all 2026. By site level
+they are municipal 10,852, central 9,683, provincial 6,985, district 1,420, department 0. They
+are instrument-poor: 16% of their documents carry an instrument genre (4,635) against 44% in
+(a). In `doc_identity.genre` terms they are 8.2% promulgation, 28.3% readout, 56.8% other,
+against 40.3 / 12.8 / 34.2 in (a). Their sector-tagged share is 5.6% (1,612 docs), above the
+4.0% in (a), and MIIT alone supplies 838 of the 1,612 (telecom 223, AI 205, NEV 93, carbon 82,
+future industries 62). `[measured]`
+
+### R1. Time series: the 2026 bar with and without the shallow sites
+
+| year | (a) docs | (a) tagged % | (a) HHI | (b) docs | (b) tagged % | (b) HHI | (c) docs | (c) tagged % |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 2018 | 10,233 | 4.3 | 1,030 | 10,256 | 4.3 | 1,027 | 23 | 4.3 |
+| 2020 | 12,971 | 3.4 | 909 | 13,038 | 3.4 | 907 | 67 | 3.0 |
+| 2022 | 19,844 | 3.0 | 870 | 19,898 | 3.0 | 869 | 54 | 1.9 |
+| 2024 | 27,663 | 4.1 | 775 | 27,869 | 4.1 | 779 | 206 | 3.4 |
+| 2025 | 30,888 | 5.4 | 867 | 31,682 | 5.4 | 867 | 794 | 6.3 |
+| 2026* | 27,214 | 6.2 | 960 | **54,766** | 5.9 | 804 | **27,552** | 5.6 |
+
+**Evidence.** Through 2024 the two series are identical to the decimal. In 2025 they differ by
+794 documents and no share moves. In 2026 the shallow sites double the bar (27,214 to 54,766).
+The tagged share moves 6.2 to 5.9 and the HHI 960 to 804. `[measured]`
+
+**Reading.** This is the shallow-archive effect made visible. A site first crawled in 2026 adds
+a 2026 column and nothing else, so including it doubles one bar and leaves the trend untouched
+but mis-weighted. The exclusion is correct for the time series. The 2026 tagged share and HHI
+are robust to it (under 2 points, same direction). `[inferred]`
+
+### R2. Rise and fall (section 2.3) under (b)
+
+Mean share 2012-16 against mean share 2022-26. The early period is unchanged under (b) because
+the shallow sites hold 26 documents from 2012-16.
+
+| sector | (a) late % | (a) ratio | (b) late % | (b) ratio | verdict |
+|---|---:|---:|---:|---:|---|
+| ai | 0.532 | new | 0.523 | new | holds |
+| future_industry | 0.137 | 20.4 | 0.149 | 22.2 | holds |
+| low_altitude | 0.205 | 7.8 | 0.189 | 7.2 | holds |
+| digital_data | 0.573 | 3.9 | 0.557 | 3.8 | holds |
+| biopharma | 0.273 | 3.3 | 0.258 | 3.1 | holds |
+| agri_seed | 0.222 | 0.5 | 0.216 | 0.5 | holds |
+| heavy_tradit | 0.260 | 0.5 | 0.255 | 0.5 | holds |
+| aero_ship | 0.154 | 0.7 | 0.165 | 0.7 | holds |
+| telecom_iot | 0.059 | 0.2 | 0.137 | 0.5 | **fall weakens** |
+| real_estate | 0.636 | 1.6 | 0.541 | 1.4 | artefact diluted |
+
+**Evidence.** All five confirmed rises and all three confirmed falls hold under (b) with the
+same ratio to one decimal. Telecom is the exception: its late share more than doubles (0.059 to
+0.137) because MIIT's 5G and 移动通信 pages enter, and the ratio moves from 0.2 to 0.5. The
+2026 telecom share is 0.06% in (a) and 0.45% in (b). `[measured]` The "telecom fall" in
+section 2.3 was partly an exclusion artefact: the ministry that writes telecom policy had no
+pre-2026 archive in the corpus, so its 2026 output could only lower or raise one year. The fall
+survives but at half its stated strength. `[inferred]`
+
+### R3. Instrument mix (section 3) under (a), (b), (c)
+
+Shares of instrument documents, money / rules / plan / framework / explainer (%).
+
+| set | n | money | rules | plan | framework | explainer |
+|---|---:|---:|---:|---:|---:|---:|
+| (a) any sector | 4,437 | 5.8 | 18.5 | 23.3 | 22.0 | 27.2 |
+| (b) any sector | 4,782 | 5.6 | 17.7 | 22.8 | 21.2 | 29.0 |
+| (c) any sector | 345 | 3.2 | 7.0 | 16.2 | 11.0 | **52.5** |
+| (a) all docs | 100,506 | 4.0 | 32.5 | 13.9 | 21.2 | 17.8 |
+| (b) all docs | 105,141 | 4.1 | 31.4 | 13.7 | 20.8 | 19.2 |
+| (c) all docs | 4,635 | 6.1 | 7.9 | 9.0 | 11.3 | **48.5** |
+
+Per-sector money share, (a) to (b): semiconductor 14.4 to 14.1, software 17.6 to 16.7, new
+energy 13.1 to 13.4, NEV 10.0 to 8.4, biopharma 10.0 to 9.8, future industries 16.7 to 15.8.
+Per-sector rule share: ships and aerospace 44.8 to 44.6, agriculture 42.0 to 40.3, heavy
+industry 31.9 to 30.4, real estate 26.8 to 25.6. Money share 2021-26: semiconductor 22.0 to
+21.3, software 21.1 to 19.5. `[measured]`
+
+Per-sector moves above 2 points, all toward explainer: NEV plan 30.3 to 26.5 and explainer
+20.3 to 27.6 (explainer becomes the modal genre by one point); carbon plan 42.4 to 37.7 and
+explainer 16.5 to 23.4 (still plan-led); telecom explainer 22.0 to 25.6 and framework 25.2 to
+22.2; platforms explainer 22.6 to 26.6. `[measured]`
+
+**Reading.** Headline 2 survives untouched. The shallow sites are half explainer (52.5% of
+their sector instruments) because MIIT's archive is its 政策解读 and 一图读懂 feed, but they
+hold only 345 sector instruments, 7% of (b), so they shift the pooled mix by under 2 points.
+Who gets money, who gets rules, and the chip and software subsidy turn in 2021-26 are
+unaffected. The one visible effect is a 4-7 point explainer lift in MIIT's own sectors (NEV,
+carbon, telecom). `[inferred]`
+
+`doc_identity.genre` is a different taxonomy (promulgation / implementing / explainer / readout
+/ news / other) and cannot replace `algo_doc_type` for the money-rules-plan split. It confirms
+the direction of the explainer finding: sector-tagged documents are 9.7% explainer against 5.3%
+for all documents in (a), and 9.3% against 5.0% in (b); they are also more promulgation (43.2
+against 40.3) and more implementing (8.4 against 6.2) and less readout (9.7 against 12.8).
+`[measured]`
+
+### R4. Level (section 4): the one place the exclusion mattered
+
+Central share of each sector's documents by site level, (a) and (b), and the tilt in brackets.
+Universe central share: (a) 31.8%, (b) 32.0%. The universe level mix moves under 2 points at
+every tier (provincial 19.1 to 19.6, municipal 23.5 to 25.1, district 10.7 to 10.0, department
+15.0 to 13.3).
+
+| sector | (a) central | (b) central | move | (c) central | (c) n |
+|---|---:|---:|---:|---:|---:|
+| telecom_iot | 56.1 (1.77) | 75.5 (2.36) | **+19.4** | 97.0 | 230 |
+| future_industry | 13.4 (0.42) | 29.4 (0.92) | **+16.0** | 59.3 | 108 |
+| ai | 33.7 (1.06) | 43.6 (1.36) | **+9.9** | 71.1 | 291 |
+| software | 42.2 (1.33) | 49.0 (1.53) | **+6.8** | 87.0 | 23 |
+| green_lowcarbon | 41.4 (1.30) | 47.0 (1.47) | **+5.6** | 74.5 | 110 |
+| equipment_robot | 23.0 (0.72) | 28.6 (0.90) | **+5.6** | 50.5 | 93 |
+| nev | 48.7 (1.53) | 54.1 (1.69) | **+5.4** | 76.2 | 122 |
+| new_materials | 39.4 (1.24) | 43.7 (1.37) | **+4.3** | 61.3 | 31 |
+| aero_ship | 57.9 (1.82) | 52.0 (1.63) | **-5.9** | 17.6 | 74 |
+| agri_seed | 49.5 (1.56) | 44.3 (1.39) | **-5.2** | 3.4 | 89 |
+| biopharma | 31.7 (1.00) | 28.4 (0.89) | **-3.3** | 0.0 | 60 |
+| platform_ecom | 50.0 (1.57) | 47.6 (1.49) | -2.4 | 28.2 | 78 |
+| digital_data | 53.3 (1.68) | 51.1 (1.60) | -2.2 | 34.5 | 142 |
+| semiconductor | 42.9 (1.35) | 44.8 (1.40) | +1.9 | 68.4 | 19 |
+| heavy_tradit | 55.3 (1.74) | 53.5 (1.67) | -1.8 | 33.3 | 69 |
+| new_energy | 34.8 (1.09) | 34.6 (1.08) | -0.2 | 33.3 | 72 |
+| low_altitude | 18.4 (0.58) | 18.9 (0.59) | +0.5 | 26.1 | 23 |
+| real_estate | 17.6 (0.55) | 17.3 (0.54) | -0.3 | 11.5 | 52 |
+
+**Evidence.** Eleven of 18 sectors move more than 2 points. The eight that rise are MIIT's
+remit (telecom, future industries, AI, software, carbon, equipment, NEV, new materials); in (c)
+they are 50-97% central and that is MIIT. The three that fall (ships, agriculture, biopharma)
+fall by dilution: the shallow provincial and municipal sites write about them and MIIT does
+not. The two lists in section 4 change membership. Centrally targeted (tilt above 1.5) gains
+software (1.53) and loses agriculture (1.39) and platforms (1.49). Locally initiated (tilt
+below 0.75) loses future industries (0.42 to 0.92) and equipment and robotics (0.72 to 0.90);
+only real estate and low-altitude remain. The provincial tilt of future industries falls from
+1.85 to 1.37. The district tilt of low-altitude (2.59 to 2.60) and the department tilt of
+housing (3.39 to 3.67) are unchanged. `[measured]`
+
+Section 4.1, central share 2021-26, (a) to (b): software 29 to 40, AI 32 to 43, telecom 71 to
+88, NEV 44 to 53, carbon 40 to 47, equipment 20 to 27, new materials 26 to 35, **future
+industries 12 to 29**, ships 45 to 39, agriculture 39 to 32, semiconductors 34 to 38,
+platforms 48 to 45. Universe central share 26 to 27. Earlier periods are unchanged (the
+shallow sites hold 169 documents before 2021). `[measured]`
+
+**Reading.** The pile-on headline survives: semiconductors still fall from 59% central to 38%,
+new energy from 66% to 26%, low-altitude from 60% to 15%, and the raw central share still falls
+for 15 of 16 sectors across the last two periods (telecom is the one rise). Two sentences in section 4 do not survive.
+"Future industries are local from the start" (12% central, tilt 0.44) was an exclusion
+artefact: the ministry that leads 未来产业 policy had no pre-2026 archive, so its 62 quantum,
+humanoid-robot and 6G documents were removed with it. With MIIT in, future industries are 29%
+central in 2021-26 and near parity at every tier. "Equipment and robotics are municipal
+(1.49), local throughout" weakens to 1.30 and 0.90 central. The telecom "recentralizes"
+reading strengthens (70% to 88%). `[inferred]`
+
+### R5. Where `doc_identity` changes a number
+
+Section 4 used `sites.admin_level`. `doc_identity.admin_level_doc` re-levels each document
+(the npc 地方法规 become provincial or municipal, department sites fold into their tier). Under
+(a), the universe becomes central 22.3%, provincial 23.8%, municipal 42.7%, district 11.2%,
+department 0 (site level: 31.8 / 19.1 / 23.5 / 10.7 / 15.0). Sector central shares that move
+more than 2 points, site level to document level: agriculture 49.5 to 26.6, ships and
+aerospace 57.9 to 47.7, real estate 17.6 to 7.8, heavy industry 55.3 to 47.1, data 53.3 to
+49.2, carbon 41.4 to 37.2, NEV 48.7 to 45.5. The other eleven hold within 2. In 2021-26
+agriculture goes 39 to 19, real estate 10 to 4, ships 45 to 34, the universe 26 to 19.
+`[measured]`
+
+```sql
+-- A6 with per-document level (replace s.admin_level in both CTEs)
+SELECT di.admin_level_doc lvl, count(*) n
+FROM documents d JOIN doc_identity di ON di.doc_id = d.id JOIN sites s ON s.site_key = d.site_key
+WHERE <universe filter> AND (title LIKE '%种业%' OR title LIKE '%种子%' OR title LIKE '%农机%')
+GROUP BY 1;
+```
+
+**Reading.** Two corrections follow. Agriculture is not centrally targeted. Its "central"
+documents were npc-published local 种子 and 农机 regulations, mis-leveled by the site; at
+document level its central tilt is 1.19 and its provincial tilt 2.05. The same correction
+trims ships, heavy industry and housing by 8-10 points. Second, the tilt threshold of 1.5 must
+be re-based under document level: with the universe only 22% central, twelve sectors exceed
+1.5 and the line stops discriminating. Rank order is what survives (telecom 2.45, platforms
+2.25, data 2.21, ships 2.14, heavy 2.11 at the top; real estate 0.35, future industries 0.54,
+low-altitude 0.74 at the bottom). The "department phenomenon" for housing (tilt 3.35) becomes
+"municipal, 70.2%, tilt 1.64": the same Shenzhen bureau, labelled by its tier rather than its
+site type. Any future version of section 4 should join `doc_identity`. `[inferred]`
+
+### R6. Cascades (section 5)
+
+`diffusion_events` never carried the exclusion (A7 has no universe filter). 1,505 of 35,475
+events (4.2%) have a source document in the 77 sites and 110 have an anchor there. Section 5
+is unaffected by this check. `[measured]`
+
+### R7. Verdict
+
+Moved by more than 2 points, (a) to (b): the level composition of MIIT's remit sectors
+(telecom +19, future industries +16, AI +10, software +7, carbon +6, equipment +6, NEV +5, new
+materials +4 points central) and the dilution of ships (-6), agriculture (-5) and biopharma
+(-3); the 2021-26 central share of the same sectors (future industries 12 to 29); the
+explainer share of NEV (+7), carbon (+7), platforms (+4) and telecom (+4); the telecom
+rise-fall ratio (0.2 to 0.5). Held within 2 points: the tagged share and HHI in every year; all
+eight confirmed rises and falls other than telecom; the pooled instrument mix for sector and
+corpus; every per-sector money and rule share; the universe level mix; the low-altitude
+district and housing department tilts; the cascade table. `[measured]`
+
+Headlines 1 and 2 survive the exclusion. Headline 3 survives in its pile-on form and fails in
+one sentence: future industries are not "local from the start", they are MIIT's sector, and
+the memo removed MIIT. The exclusion remains right for the time series and wrong for the level
+cross-section, which should be read from (b) or, better, from `doc_identity` on (b). The
+general lesson is in `corpus-lessons.md` A4: a site that is missing from the corpus is also
+missing from every share computed over it, and when the missing site is the lead ministry for
+a sector the level composition of that sector is not measured, it is assumed. `[inferred]`

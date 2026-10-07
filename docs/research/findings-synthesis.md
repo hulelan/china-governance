@@ -216,7 +216,10 @@ path and flags the 171 affected `diffusion_events` lags.)*
   Industrial Policies", NBER w33814). Targeting broadened not concentrated (sector HHI fell by
   more than half); money is a narrow instrument concentrated in chips, new energy, NEV and
   biopharma while legacy sectors get rules; place-based sectors see real sub-national pile-on,
-  network-rule sectors (data, telecom, platforms) stay central.
+  network-rule sectors (data, telecom, platforms) stay central. A 2026-10-07 robustness check
+  that restores the 74 shallow-archive sites (incl. MIIT) leaves the HHI, rise-fall and
+  instrument-mix findings within 2 points but moves the level composition of MIIT's own sectors
+  by 5-19 points central, so "future industries are local from the start" is withdrawn.
 - **Attention and campaigns** (`attention-campaigns.md`; Baumgartner-Jones punctuated
   equilibrium, Q1+Q4). Attention is punctuated at the topic level (Party 2020-21, Health 2020,
   Credit 2018) but not classically fat-tailed when pooled. The campaign label moved UP the
