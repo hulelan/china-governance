@@ -57,7 +57,14 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     after citations/scores/topics. Anchor set excludes `npc` 地方法规 (they're
     local 人大 regs mis-leveled as central) and explainer representatives. Known
     gap: `diffusion_events.topic` stores only the anchor's FIRST topic tag; the
-    tracker service compensates with a cached anchor→topics map.
+    tracker service compensates with a cached anchor→topics map. **A consequence measured
+    2026-10-07:** since a cascade is labelled by its ANCHOR's `topics_algo`, and the
+    mirror-determinism fix changed which copy of a text is the anchor for ~18.8k titles, every
+    topic-labelled aggregate shifted by RELABELLING rather than by any denominator effect. It
+    flipped which policy area is slowest in `policy-tempo.md`: Culture's cascade count FELL
+    48 → 26 while its denominator rose 743 → 765, so Culture replaced Tourism as slowest. Treat
+    any topic-level series as sensitive to anchor selection, and re-base it after an identity
+    change instead of assuming only the counts moved.
   - **Per-document identity layer (2026-10-06)** — `doc_identity` side table
     (`scripts/build_doc_identity.py`, nightly Phase 2b LAST step, `--force` because the
     nightly holds the lock; ~37s, one transaction): `admin_level_doc` + `level_source`
