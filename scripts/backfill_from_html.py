@@ -2,28 +2,43 @@
 Re-extract body text from saved raw HTML for documents with missing bodies.
 
 This is a quick win for sites where body extraction failed on first crawl
-(e.g., MOST changed their CMS template). No network requests needed — reads
-from raw_html/ directory.
+(e.g., MOST changed their CMS template, or a container selector was added to
+an extractor later — "the GD-dept container fix" pattern). No network requests
+needed — reads from raw_html/ directory.
+
+Routing (2026-10-07, corpus-lessons A7): each site is sent to the SAME
+extractor its crawler uses — single-site modules via SITE_KEY, multi-site
+dicts (govcms.SITES, gkmlpt.SITES) by key — then falls through to
+crawlers.govcms._extract_body (the richest shared container list) and finally
+the local generic. Before this, every govcms-tier site hit only the local
+generic, which knew none of their containers.
+
+Guard: a body is only written when the stored one is NULL/empty or SHORTER
+than the new text — never replaces a longer body (the UPDATE carries the
+predicate, so it holds even if the candidate query is widened).
 
 Usage:
-    python3 scripts/backfill_from_html.py              # All sites
-    python3 scripts/backfill_from_html.py --site most  # One site
-    python3 scripts/backfill_from_html.py --dry-run    # Preview
+    python3 scripts/backfill_from_html.py                   # All sites
+    python3 scripts/backfill_from_html.py --site most       # One site
+    python3 scripts/backfill_from_html.py --sites spc,jl_jyt
+    python3 scripts/backfill_from_html.py --dry-run         # Preview (counts only)
 """
 
 import argparse
 import importlib
-import os
 import re
 import sqlite3
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent / "documents.db"
-RAW_HTML_DIR = Path(__file__).parent.parent / "raw_html"
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
+DB_PATH = ROOT / "documents.db"
+RAW_HTML_DIR = ROOT / "raw_html"
 
-# Map site_key -> module with _extract_body function
+# Single-site crawler modules exposing _extract_body(html). site_key -> module.
 EXTRACTORS = {
     "most": "crawlers.most",
     "ndrc": "crawlers.ndrc",
@@ -33,9 +48,23 @@ EXTRACTORS = {
     "mofcom": "crawlers.mofcom",
     "cac": "crawlers.cac",
     "sic": "crawlers.sic",
+    "miit": "crawlers.miit",
+    "mof": "crawlers.mof",
+    "moe": "crawlers.moe",
+    "gov": "crawlers.gov",
+    "spp": "crawlers.spp",
+    "beijing": "crawlers.beijing",
+    "shanghai": "crawlers.shanghai",
+    "jiangsu": "crawlers.jiangsu",
+    "chongqing": "crawlers.chongqing",
+    "wuhan": "crawlers.wuhan",
+    "suzhou": "crawlers.suzhou",
+    "hangzhou": "crawlers.hangzhou",
+    "xinhua": "crawlers.xinhua",
+    "people": "crawlers.people",
 }
 
-# Generic extractor for gkmlpt-based sites
+# Generic extractor for gkmlpt-based sites (Guangdong). Unioned with gkmlpt.SITES at runtime.
 GKMLPT_SITES = {
     "heyuan", "zhongshan", "zhuhai", "gd", "szdp", "gz", "shanwei",
     "jiangmen", "yunfu", "huizhou", "szlg", "szlhq", "szgm", "szlh",
@@ -44,9 +73,40 @@ GKMLPT_SITES = {
     "yangjiang", "shaoguan", "shantou",
 }
 
+_MOD_CACHE = {}
+
+
+def _mod(name: str):
+    if name not in _MOD_CACHE:
+        try:
+            _MOD_CACHE[name] = importlib.import_module(name)
+        except Exception as e:  # noqa: BLE001 — a broken crawler import must not stop the pass
+            print(f"  ! cannot import {name}: {e}")
+            _MOD_CACHE[name] = None
+    return _MOD_CACHE[name]
+
+
+def _site_router() -> dict:
+    """site_key -> callable(html)->str for the multi-site crawlers."""
+    router = {}
+    govcms = _mod("crawlers.govcms")
+    if govcms:
+        for key in govcms.SITES:
+            router[key] = govcms._extract_body
+    gkmlpt = _mod("crawlers.gkmlpt")
+    gk_keys = set(GKMLPT_SITES) | (set(gkmlpt.SITES) if gkmlpt else set())
+    for key in gk_keys:
+        router[key] = _gkmlpt_extract_body
+    for key, modname in EXTRACTORS.items():
+        m = _mod(modname)
+        if m and hasattr(m, "_extract_body"):
+            router[key] = m._extract_body
+    return router
+
 
 def _generic_extract_body(html: str) -> str:
     """Generic body extractor — tries multiple common CMS patterns."""
+    html = re.sub(r"<(script|style)\b.*?</\1\s*>", "", html, flags=re.S | re.I)
     for class_name in [
         "trs_editor_view", "TRS_Editor", "TRS_UEDITOR",
         "article", "articleDetailsText", "text wide",
@@ -78,12 +138,12 @@ def _generic_extract_body(html: str) -> str:
         text = re.sub(r"\n\s*\n", "\n", text)
         text = (
             text.replace("&nbsp;", " ")
-            .replace("\u3000", " ")
+            .replace("　", " ")
             .replace("&lt;", "<")
             .replace("&gt;", ">")
             .replace("&amp;", "&")
-            .replace("&ldquo;", "\u201c")
-            .replace("&rdquo;", "\u201d")
+            .replace("&ldquo;", "“")
+            .replace("&rdquo;", "”")
             .strip()
         )
         if len(text) > 50:
@@ -93,8 +153,15 @@ def _generic_extract_body(html: str) -> str:
 
 def _gkmlpt_extract_body(html: str) -> str:
     """Extract body from gkmlpt-style pages (JSON content field or HTML)."""
+    gk = _mod("crawlers.gkmlpt")
+    if gk:
+        try:
+            t = gk.extract_body_text(html)
+            if t and len(t) > 50:
+                return t
+        except Exception:  # noqa: BLE001
+            pass
     import json
-    # gkmlpt stores content in JSON — look for "content" field
     m = re.search(r'"content"\s*:\s*"((?:[^"\\]|\\.)*)"', html)
     if m:
         try:
@@ -109,81 +176,136 @@ def _gkmlpt_extract_body(html: str) -> str:
     return _generic_extract_body(html)
 
 
-def backfill(site_filter: str = None, dry_run: bool = False):
-    conn = sqlite3.connect(str(DB_PATH))
+def extract_for_site(site_key: str, html: str, router: dict) -> str:
+    """Site extractor → govcms shared containers → local generic (first ≥50 chars wins)."""
+    chain = []
+    if site_key in router:
+        chain.append(router[site_key])
+    govcms = _mod("crawlers.govcms")
+    if govcms and (site_key not in router or router[site_key] is not govcms._extract_body):
+        chain.append(govcms._extract_body)
+    chain.append(_generic_extract_body)
+    for fn in chain:
+        try:
+            body = fn(html)
+        except Exception:  # noqa: BLE001 — one extractor crashing must not lose the doc
+            body = ""
+        if body and len(body) > 50:
+            return body
+    return ""
 
-    # Find docs with raw HTML but no body text
+
+def _why_failed(html: str) -> str:
+    """Best-effort reason a page yielded no body (for the report, not for logic)."""
+    if len(html) < 3000:
+        return "stub(<3k, anti-bot/redirect shell)"
+    core = re.sub(r"<(script|style)\b.*?</\1\s*>", "", html, flags=re.S | re.I)
+    if re.search(r'\.(pdf|docx?|xlsx?|rar|zip)["\')]', core, re.I):
+        return "attachment-only (pdf/doc/xls/rar)"
+    if re.search(r"<video|\.mp4|ckplayer", core, re.I):
+        return "video page"
+    if "<img" in core:
+        return "image-only (一图读懂/scan)"
+    return "no recognisable body (JS-rendered or unknown container)"
+
+
+def _site_pct(conn, site_key: str):
+    n, b = conn.execute(
+        """SELECT COUNT(*), SUM(CASE WHEN body_text_cn IS NOT NULL AND LENGTH(body_text_cn)>20
+                  THEN 1 ELSE 0 END) FROM documents WHERE site_key=?""", (site_key,)).fetchone()
+    return n or 0, b or 0
+
+
+def backfill(sites=None, dry_run: bool = False, limit: int = 0):
+    conn = sqlite3.connect(str(DB_PATH), timeout=30)
+    conn.execute("PRAGMA busy_timeout=30000")
+    conn.execute("PRAGMA journal_mode=WAL")
+
     query = """
-        SELECT id, site_key, raw_html_path, title
+        SELECT id, site_key, raw_html_path
         FROM documents
         WHERE (body_text_cn IS NULL OR LENGTH(body_text_cn) <= 20)
           AND raw_html_path IS NOT NULL AND raw_html_path != ''
     """
     params = []
-    if site_filter:
-        query += " AND site_key = ?"
-        params.append(site_filter)
+    if sites:
+        query += f" AND site_key IN ({','.join('?' * len(sites))})"
+        params.extend(sites)
     query += " ORDER BY site_key, id"
+    if limit:
+        query += f" LIMIT {int(limit)}"
 
     rows = conn.execute(query, params).fetchall()
     print(f"Found {len(rows)} documents with raw HTML but no body text")
 
     if dry_run:
-        from collections import Counter
-        site_counts = Counter(r[1] for r in rows)
-        for site, count in site_counts.most_common():
+        for site, count in Counter(r[1] for r in rows).most_common():
             print(f"  {site}: {count}")
         conn.close()
         return
 
+    router = _site_router()
+    before = {s: _site_pct(conn, s) for s in sorted({r[1] for r in rows})}
+
     updated = 0
     failed = 0
-    by_site = {}
+    by_site = Counter()
+    reasons = Counter()
+    t0 = time.time()
 
-    for doc_id, site_key, raw_path, title in rows:
-        html_file = Path(__file__).parent.parent / raw_path
+    for i, (doc_id, site_key, raw_path) in enumerate(rows, 1):
+        html_file = ROOT / raw_path
         if not html_file.exists():
             failed += 1
+            reasons[f"{site_key}|file missing"] += 1
             continue
-
         html = html_file.read_text(errors="replace")
-
-        # Choose extractor
-        if site_key in EXTRACTORS:
-            try:
-                mod = importlib.import_module(EXTRACTORS[site_key])
-                body = mod._extract_body(html)
-            except Exception:
-                body = _generic_extract_body(html)
-        elif site_key in GKMLPT_SITES:
-            body = _gkmlpt_extract_body(html)
-        else:
-            body = _generic_extract_body(html)
-
-        if body and len(body) > 50:
-            conn.execute(
-                "UPDATE documents SET body_text_cn = ? WHERE id = ?",
-                (body, doc_id)
-            )
-            updated += 1
-            by_site[site_key] = by_site.get(site_key, 0) + 1
-            if updated % 50 == 0:
+        body = extract_for_site(site_key, html, router)
+        if body:
+            # Never overwrite a non-empty body with a shorter one.
+            cur = conn.execute(
+                """UPDATE documents SET body_text_cn = ?
+                   WHERE id = ? AND (body_text_cn IS NULL OR LENGTH(body_text_cn) < LENGTH(?))""",
+                (body, doc_id, body))
+            if cur.rowcount:
+                updated += 1
+                by_site[site_key] += 1
+            if updated % 200 == 0:
                 conn.commit()
-                print(f"  Updated {updated}...")
         else:
             failed += 1
+            reasons[f"{site_key}|{_why_failed(html)}"] += 1
+        if i % 2000 == 0:
+            conn.commit()
+            conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
+            print(f"  …{i}/{len(rows)} scanned, {updated} updated ({time.time() - t0:.0f}s)")
 
     conn.commit()
-    conn.close()
+    conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
 
-    print(f"\nDone: {updated} bodies extracted, {failed} failed")
-    for site, count in sorted(by_site.items(), key=lambda x: -x[1]):
-        print(f"  {site}: +{count}")
+    print(f"\nDone: {updated} bodies extracted, {failed} failed ({time.time() - t0:.0f}s)")
+    print(f"\n{'site':12s} {'docs':>6s} {'body% before':>12s} {'body% after':>11s} {'+bodies':>8s}")
+    for s in before:
+        n, b0 = before[s]
+        _, b1 = _site_pct(conn, s)
+        print(f"{s:12s} {n:6d} {100.0 * b0 / n if n else 0:11.1f}% {100.0 * b1 / n if n else 0:10.1f}% {by_site.get(s, 0):8d}")
+    if reasons:
+        print("\nStill bodiless (site|reason → count):")
+        for k, c in reasons.most_common():
+            print(f"  {k}: {c}")
+    conn.close()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Re-extract body text from saved raw HTML")
     parser.add_argument("--site", help="Only process this site")
+    parser.add_argument("--sites", help="Comma-separated site_keys")
+    parser.add_argument("--limit", type=int, default=0, help="Stop after N candidate rows")
     parser.add_argument("--dry-run", action="store_true", help="Preview without updating")
     args = parser.parse_args()
-    backfill(site_filter=args.site, dry_run=args.dry_run)
+    site_list = []
+    if args.site:
+        site_list.append(args.site)
+    if args.sites:
+        site_list.extend(s.strip() for s in args.sites.split(",") if s.strip())
+    backfill(sites=site_list or None, dry_run=args.dry_run, limit=args.limit)

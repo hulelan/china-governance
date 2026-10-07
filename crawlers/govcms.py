@@ -1363,9 +1363,23 @@ _BODY_CONTAINERS = [
     r'class="[^"]*Article_content',          # 上海市 depts
     r'class="[^"]*main[-_]txt',              # 江苏省 depts (dialect B, main-txt)
     r'class="[^"]*article[-_]detail\b',      # 苏州吴江区 (hexmon Hanweb; short docs have no <p> → div-scoring missed them)
+    # --- A7 body-coverage pass (corpus-lessons A7, 2026-10-07) ---
+    r'class="[^"]*\btxt_txt\b',              # 最高法 court.gov.cn /fabu/: body is div.txt_txt; the only "article_content" on the page is the search box id
+    r'class="[^"]*\bwip_art_con\b',          # 山东省 shandong.gov.cn Hanweb skin: short notices (<200 chars of <p>) fell under the div-scoring floor
+    r'class="[^"]*\bpages_content\b',        # 国家档案局 saac.gov.cn: "pages_content" isn't content-(box|main|body|text)
+    r'class="[^"]*\bzoom\b',                 # Hanweb class="zoom" / "bt-content zoom" (江苏 depts); only id="zoom" was listed
+    r'class="[^"]*\bdetail-article\b',       # 重庆公安局 gaj.cq.gov.cn: body div (usually only an attachment list, but take text when present)
 ]
+# Hanweb/TRS CMSs delimit the editor body explicitly. Tried AFTER the known
+# containers (so existing sites keep their output) but BEFORE div-scoring, whose
+# ">200 chars of <p>" floor silently dropped short notices/公示 on these skins.
+_MARKER_BODY = re.compile(
+    r'<meta\s+name="ContentStart"\s*/?>(.*?)<meta\s+name="ContentEnd"', re.S | re.I)
 _FOOT_CUT = re.compile(r'(相关(?:附件|链接|文件|报道)|扫一扫|打印本页|class="[^"]*(?:foot|share|xglj|fujian|print))')
 _DATA_IMG = re.compile(r'<img\b[^>]*?\bsrc="data:[^"]*"[^>]*>', re.I)
+# Inline <script>/<style> blocks inside/near the body div were counted as "text"
+# (jl_swt: the div-scoring fallback returned 900 chars of `var file_appendix=…`).
+_SCRIPT_STYLE = re.compile(r"<(script|style)\b.*?</\1\s*>", re.S | re.I)
 
 
 def _clean(t: str) -> str:
@@ -1399,7 +1413,7 @@ def _extract_body(html: str) -> str:
     we skip wrapper divs that also contain the sidebar/nav)."""
     # Inline base64 images (amr.org.cn pastes 100KB+ data: URIs) blow the 120K region
     # cap mid-tag, leaving the truncated `<img src="data:…` as 100K of "body text".
-    html = _DATA_IMG.sub("", html)
+    html = _SCRIPT_STYLE.sub("", _DATA_IMG.sub("", html))
     for pat in _BODY_CONTAINERS:
         m = re.search(pat, html)
         if m:
@@ -1409,6 +1423,12 @@ def _extract_body(html: str) -> str:
             t = _region_text(html[start:start + 120_000])
             if len(t) > 80:
                 return t
+    # explicit CMS body delimiters (Hanweb ContentStart/ContentEnd)
+    m = _MARKER_BODY.search(html)
+    if m:
+        t = _region_text(m.group(1))
+        if len(t) > 80:
+            return t
     # fallback: score every div by the <p>-text immediately inside it
     cands = []
     for m in re.finditer(r"<div\b[^>]*>", html):
