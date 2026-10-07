@@ -79,6 +79,16 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     per-site. `build_diffusion_events.py` now reads level, pooling and the implementing
     flag FROM this table (its own derivations were deleted). Prefer joining `doc_identity`
     over `sites.admin_level` / `algo_doc_type` in any new analysis.
+  - **Instrument succession (2026-10-06)** — `instrument_succession(instrument_id,
+    successor_id, relation, confidence, evidence, lag_days)` (`scripts/build_instrument_succession.py
+    --write --force`, Phase 2b right after doc_identity, ~70s). Relations: superseded_by_stated
+    (body 废止 sentences naming the predecessor, 0.95), revised_edition (same title-core minus
+    edition markers, 0.85/0.70), renamed (same lead issuer, 0.65), pilot_to_national (the
+    successor detector, 0.70-0.93). Strict date ordering → a DAG; one successor per predecessor
+    per relation. 12,820 rows; hand-checked 75-85% strict / 85-95% lenient per relation. Why:
+    `doc_identity.instrument_id` pools COPIES of one text but not EDITIONS or renamings, which
+    is where the pilots-that-scale gap lived (`successor-detector.md`); with this table 11.3% of
+    central pilots have a visible successor vs 5.9% by the pilot rule alone.
   - **Nightly validation (2026-10-06)** — `scripts/validate_cascades.py`, Phase 2d after
     the 2c rebuilds: 13 read-only checks (known cascades GD 52d / JS 82d / BJ 116d; 城乡规划法
     inbound band; AI+ implementing vs mentions; proxy-target guards; table sanity; top-5

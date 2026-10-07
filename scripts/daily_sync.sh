@@ -308,6 +308,11 @@ timeout 900 nice -n 19 python3 scripts/rnd/classification/issuer_parser.py >> "$
 # IS the lock holder.
 log "Phase 2b: Rebuilding doc_identity (per-document level / instrument / genre)..."
 timeout 600 nice -n 19 python3 scripts/build_doc_identity.py --force >> "$LOG" 2>&1 || log "  build_doc_identity had errors"
+# instrument_succession (corpus-lessons A2b): instrument -> successor edges (stated repeal,
+# revised edition, renamed, pilot -> national). Reads doc_identity, so it runs right after
+# it. Full rebuild, ~70s, tiny write (one transaction of ~13k rows).
+log "Phase 2b: Rebuilding instrument_succession..."
+timeout 600 nice -n 19 python3 scripts/build_instrument_succession.py --write --force >> "$LOG" 2>&1 || log "  build_instrument_succession had errors"
 
 # --- Phase 2c: Refresh the BM25 (word-segmented) search index -----------------
 # doc_search (trigram) is trigger-maintained, but doc_search_seg (jieba words, the
