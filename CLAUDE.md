@@ -67,7 +67,11 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     `instrument_role` (canonical|mirror|unique; mirror promulgations of one text pooled by
     normalized title-core within ±400d, edition-aware — 政府信息公开条例 is 2 instruments,
     2007 and 2019), `genre` (promulgation|implementing|explainer|readout|news|other, 88%),
-    `date_quality` (good|crawl_stamped|missing; 76 sites / 29k docs are crawl-stamped),
+    `date_quality` (good|crawl_stamped|missing; `crawl_stamped` fires only when ≥70% of a site's
+    modal-crawl-day docs are dated THAT day, currently 0 docs. The earlier "76 sites / 29k
+    crawl-stamped" was a false positive of a ≥70%-in-crawl-year rule that caught shallow
+    archives; hand-checked 2026-10-07, see `corpus-lessons.md` A4. `scripts/redate_from_html.py
+    --site X` re-parses saved HTML for dates without a recrawl),
     `lead_issuer` (from `doc_issuers`), `localized_of` (the in-chain higher-level doc whose
     stem a sub-national promulgation re-issues; set on the 2,583 docs re-typed `implementing`.
     The flip requires the parent to be CENTRAL or in the doc's own province/city chain via

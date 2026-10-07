@@ -484,3 +484,13 @@ Not applied: no data bug was filed and no numbers were recomputed (the review's 
 bug" and the 提振消费 fix are the resolver agent's work, in progress); the `ai-regulatory-web.md`
 Table 1 per-site split for the 2017 plan was not re-pulled (would need a DB read); L9 and L10
 (cosmetic count differences) were left as is.
+
+## Applied (2026-10-07, A4 correction)
+
+- The "74 date-stamped sites" premise shared by `industrial-policy-targeting.md` §1,
+  `corpus-lessons.md` A4 and `doc_identity.date_quality` was tested and failed: stored dates
+  match page `PubDate` metadata on the flagged sites; the rule was detecting shallow archives.
+  Both memos carry a dated correction; the identity rule was rewritten (bulk-crawl-day test),
+  `crawl_stamped` is now 0 docs; the industrial exclusion is kept under its corrected label
+  (archive depth). Lesson for the review method: a flag derived from a date DISTRIBUTION needs
+  one hand-check against the page before it becomes a filter.

@@ -60,6 +60,19 @@ with ≥70% of dates in 2026, i.e. crawl-stamped, dropped from the analysis), an
 body scans in every crawler; flag crawl-stamped sites with a `date_quality` so trend studies
 exclude them by default rather than by hand.
 
+*(Correction 2026-10-07. The "74 sites / 27,915 docs crawl-stamped" claim was wrong. A
+hand-check of the two flagged Jiangsu sites against their pages' own `<meta PubDate>` found the
+stored dates correct (319/417 and 200/262 exact), and a sweep of all 76 flagged sites found no
+crawler that writes the crawl date and no bulk crawl day whose documents are mostly dated that
+day. The ≥70%-in-the-crawl-year rule was flagging SHALLOW ARCHIVES (a site first crawled 30 list
+pages deep in 2026 is mostly 2026), not stamped dates. The real defects were narrower: single-
+quoted meta attributes unmatched, `&nbsp;` overflowing the label window, and a list-row date
+bleeding onto the neighbouring row (98/417 docs on js_mzt shifted 1-17 days). All three fixed
+in `govcms.py`; `scripts/redate_from_html.py` re-parses saved HTML without a recrawl. The A4
+rule now fires only when ≥70% of a site's modal-crawl-day documents are dated that day;
+`date_quality='crawl_stamped'` is 0 docs. The industrial-policy exclusion stands for a different
+reason, shallow archives cannot carry a trend, and its label is corrected there.)*
+
 ### A5. Issuer identity
 **Exposed by:** the joint-issuance study (the naive proxy found 852 joint documents; the parser
 found 13,004) and its 粤办 phantom-pair bug (a registry problem).
