@@ -150,7 +150,7 @@ _PROV_EXACT = {
     "audit": "gd", "fgw": "gd", "ga": "gd", "hrss": "gd", "jtys": "gd", "mzj": "gd",
     "sf": "gd", "stic": "gd", "swj": "gd", "szeb": "gd", "wjw": "gd", "yjgl": "gd", "zjj": "gd",
     # Jiangsu
-    "suzhou": "js", "changzhou": "js", "huaian": "js", "lyg": "js", "nantong": "js",
+    "suzhou": "js", "nanjing": "js", "changzhou": "js", "huaian": "js", "lyg": "js", "nantong": "js",
     "taizhou_js": "js", "wuxi": "js", "yancheng": "js",
     # Beijing / Shanghai / Chongqing (province-tier municipalities)
     "bj": "bj", "sh": "sh", "cq": "cq",
@@ -183,7 +183,8 @@ _PROV_EXACT = {
     "xjbz": "xj", "xjht": "xj", "xjkz": "xj", "xjtc": "xj", "xjyl": "xj",
 }
 _PROV_PREFIX = [
-    ("gd", "gd"), ("sz", "gd"),            # gd*, sz* (districts)
+    ("szd_", "js"),                        # Suzhou districts/county cities, BEFORE the sz* rule
+    ("gd", "gd"), ("sz", "gd"),            # gd*, sz* (Shenzhen districts)
     ("js_", "js"), ("js", "js"), ("njd_", "js"),
     ("bjb_", "bj"), ("bjd_", "bj"), ("shb_", "sh"),
     ("cq_", "cq"), ("cqd_", "cq"), ("fj_", "fj"), ("hn_", "hn"), ("jl_", "jl"),
