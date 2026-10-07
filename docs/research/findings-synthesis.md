@@ -120,6 +120,26 @@ methodological contribution.
   diffusion method turned into a nightly instrument: per implementation area, this week's new
   documents by level and the active cascades, sub-second because it reads two precomputed tables.
 
+*(Update 2026-10-07, `fidelity-jiangsu.md`: the three nested findings above were replicated on
+Jiangsu after its deepening (13 provincial departments, 9 Nanjing and Suzhou districts), with
+Guangdong recomputed on the same `doc_identity` layer. All three hold in direction and level.
+Province-before-city 82.1% of 39 nested pairs (Guangdong 65.1% of 704 on this layer; 78.5% when
+Guangdong is cut to five cities, because the share rises as fewer cities are watched). City
+fidelity to the province: median 0.125, relay 8.4%, mid 26.2% (Guangdong 0.109 / 10.8% / 21.3%),
+same lag slope (rho −0.51 vs −0.49), same genre ordering, 14 of 16 relays are 市政府办公室
+re-issuances of the 省政府办公厅 text under Suzhou's name at a 160-day median. Chains: the city is
+closer to the province in 89.9% of 89 (city tier 94.0%; Guangdong 92.1% / 92.8%), center-only text
+1.4% at the median. Every Jiangsu number sits inside the range of 40 Jiangsu-sized Guangdong
+subsamples, so the differences are coverage: Jiangsu's sub-provincial tier is 1/15 of Guangdong's
+in documents, 1/29 in pairs, and is one city (Suzhou is 92% of its pairs). The renaming layer
+(`localized_of`) corroborates from titles alone: 80 to 82% of renamed sub-provincial re-issuances
+in both provinces are renamed from a provincial text, at mid-to-relay overlap, and the citation
+graph sees fewer than half of them, so the provincial memo's relay counts are floors. Verdict:
+hardens, on one city; B1 is discharged only when a second Jiangsu prefecture is crawled to
+Suzhou's depth. Corpus finding on the way: Suzhou's `date_published` is crawl-stamped in two
+batches (2023-02-09, 2025-02-11) that the A4 rule does not catch; the memo re-dates from the URL
+path and flags the 171 affected `diffusion_events` lags.)*
+
 ### Part III. Central-local dynamics
 - **Recentralization and experimentation** (`recentralization-experimentation.md`;
   Luo/Wang/Yang recentralization claim and Wang/Yang pilots, NBER w29402). The upward-citation
