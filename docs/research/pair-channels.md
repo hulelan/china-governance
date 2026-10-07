@@ -244,9 +244,10 @@ travel with the rows. [inferred]
 - **Boilerplate sample differs.** The memos sampled 1,000 random corpus bodies; the builder takes
   a deterministic stride sample of the pair universe (a corpus-wide random sample is a full body
   scan). `ovlp_src_nb` is carried but not used above.
-- **Runtime.** The default build and report run in 127 s on the droplet with two workers (147 s
-  for all six hops, 340 s when two builds overlap). Bodies are fetched per parent batch with the
-  150k cap applied in SQL; nothing is written.
+- **Runtime.** The default build and report run in 127 s on a quiet droplet with two workers
+  (147 s for all six hops). The box has two vCPUs, so one competing CPU-bound process doubles
+  it (269 s measured beside an unrelated job; 340 s when two builds overlap). Bodies are fetched
+  per parent batch with the 150k cap applied in SQL; nothing is written.
 - **Chronology, not causation; publication, not adoption.** As in every memo in this series.
 
 ---
