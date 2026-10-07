@@ -85,6 +85,22 @@ A2  instrument_id — mirrors of one text share one id.
             息公开条例 re-posted by a 民政局 in 2017 belongs to the 2007 text, the
             2019 npc copy opens the 2019 revision). Undated docs join the key's
             only edition, else stay `unique`.
+    LOCALIZED RE-ISSUANCE (2026-10-06): a doc is a MIRROR of an instrument only if
+            its core is the instrument's core with NO locality / issuing-body prefix.
+            深圳市人民政府关于印发推动大规模设备更新和消费品以旧换新行动方案的通知 shares
+            the core of the State Council's 《推动…行动方案》 but is Shenzhen's OWN plan —
+            the consumption-diffusion memo's key adoption signal, which must be a
+            diffusion SOURCE, not a pooled mirror. Rule: a doc whose title names a
+            sub-national locality (a 省/市/区/县 masthead before 关于/印发, or a
+            <locality>X core) is a *localized re-issuance* whenever its stem (core minus
+            the locality) also appears on a HIGHER-level member (central text, or a
+            province above a city). It is then its own instrument — `unique`, or the
+            canonical of its own local pool keyed (stem, locality) — with genre
+            `implementing`, and never pools with the higher-level text. A bare《X》
+            repost (no locality anywhere in the title) stays a mirror: 受权发布丨…印发《X》
+            on Xinhua, or 国务院…《X》 re-posted by a ministry. Locality names come from
+            issuer_parser.DOCNUM_SUBNATIONAL (the 文号 registry's agency names) plus the
+            doc's own masthead; province-shaped names (X省 / X自治区) are always accepted.
     canonical = promulgation genre > highest admin_level_doc > earliest date
                 (first publication is the authoritative copy) > lowest id.
     `unique` docs carry their own id as instrument_id, so GROUP BY instrument_id
@@ -158,7 +174,7 @@ sys.path.insert(0, str(ROOT / "scripts" / "rnd" / "analysis"))
 
 from extract_citations import (  # noqa: E402
     _norm_title, _title_cores_of_title, _WRAP_QUOTED, _WRAP_PLAIN, _MASTHEAD_PRE,
-    _INST_SUFFIX)
+    _INST_SUFFIX, _STATUS_TAG, _NEWS_LEAD)
 from issuer_parser import REGISTRY, DOCNUM_SUBNATIONAL, DOCNUM_CENTRAL  # noqa: E402
 from build_diffusion_events import NONISSUE_RE  # noqa: E402
 from genre_typer import clean_title, _TRAILING_ANNOT_RE  # noqa: E402
@@ -448,11 +464,12 @@ EDITION_GAP_DAYS = 400
 POOL_CLASS = {"promulgation": "p", "other": "p", "implementing": "i"}
 
 
-def instrument_key(title):
-    """Normalized instrument core of a stored title (the matcher's exact-core tier)."""
+def _best_core(title):
+    """-> (raw core, normalized core) of a stored title (the matcher's exact-core
+    tier), or (None, None) when nothing reaches KEY_MIN."""
     title = _FULLTEXT_TAIL.sub("", clean_title(title))
     cores = _title_cores_of_title(title or "")
-    best = None
+    best = raw = None
     for core, flag in cores:
         if flag != 1:
             continue  # non-institutional lead ('北京发布《X》') is news ABOUT X
@@ -461,11 +478,125 @@ def instrument_key(title):
             continue
         # prefer the innermost (shortest) institutional core: the 《X》 over the wrapper
         if best is None or len(nc) < len(best):
-            best = nc
+            best, raw = nc, core
     if best is None:
-        nt = _norm_title(clean_title(title))
-        best = nt if len(nt) >= KEY_MIN else None
-    return best
+        raw = clean_title(title)
+        nt = _norm_title(raw)
+        if len(nt) >= KEY_MIN:
+            best = nt
+        else:
+            raw = None
+    return raw, best
+
+
+def instrument_key(title):
+    """Normalized instrument core of a stored title (the matcher's exact-core tier)."""
+    return _best_core(title)[1]
+
+
+# --- localized re-issuance ---------------------------------------------------
+# First locality element of a name: X省 / X自治区 / X市 / X自治州 / X地区 / X盟
+# (乌鲁木齐市 is 4 chars; 新疆维吾尔自治区 is 5 + 自治区); optional district element.
+_LOC_FIRST = re.compile(
+    r"^([一-鿿]{2,3}省|[一-鿿]{2,7}?自治区|[一-鿿]{2,4}?(?:市|自治州|地区|盟))")
+_LOC_DISTRICT = re.compile(r"^[一-鿿]{2,4}?(?:新区|区|县|旗)")
+_LOC_LEVELS = ("provincial", "municipal", "district")
+
+
+def _known_localities():
+    """Locality names the 文号 registry already vouches for (广东省, 深圳市, 苏州市 …)."""
+    out = set(_PROV_MUNI)
+    for agency in DOCNUM_SUBNATIONAL.values():
+        a = agency[2:] if agency.startswith("中共") else agency
+        m = _LOC_FIRST.match(a)
+        if m:
+            out.add(m.group(1))
+    return frozenset(out)
+
+
+KNOWN_LOCALITIES = _known_localities()
+
+
+def masthead_of(title):
+    """The issuing-body masthead before the 关于/印发 frame of a title ('' if none)."""
+    t = _NEWS_LEAD.sub("", _STATUS_TAG.sub("", title_core(title)))
+    m = _WRAP_QUOTED.match(t) or _WRAP_PLAIN.match(t)
+    if m:
+        pre = m.group("pre")
+    else:
+        i = t.find("关于")
+        pre = t[:i] if i > 0 else ""
+    pre = pre.strip(" 　丨·、")
+    return pre if pre and _MASTHEAD_PRE.match(pre) else ""
+
+
+def locality_of_head(head):
+    """Sub-national locality named by an issuer masthead: '深圳市', '广东省',
+    '深圳市龙华区'; '<municipal>' for an unqualified self-reference (市人民政府办公室);
+    None for a central or unrecognized head."""
+    lvl = level_of_name(head)
+    if lvl not in _LOC_LEVELS:
+        return None
+    h = head[2:] if head.startswith("中共") else head
+    m = _LOC_FIRST.match(h)
+    loc = m.group(1) if m else ""
+    if lvl == "district":
+        md = _LOC_DISTRICT.match(h[len(loc):])
+        if md:
+            loc += md.group(0)
+    return loc or f"<{lvl}>"
+
+
+def locality_in_core(core, masthead_loc):
+    """A locality PREFIX inside an instrument core ('深圳市推动…行动方案' -> '深圳市'),
+    accepted only when the 文号 registry knows the name, the doc's own masthead names
+    it, or it is province-shaped (X省 / X自治区) — '智慧城市建设方案' is not a locality."""
+    m = _LOC_FIRST.match(core) or _LOC_DISTRICT.match(core)
+    if not m:
+        return None
+    loc = m.group(0)
+    if loc in KNOWN_LOCALITIES:
+        return loc
+    if masthead_loc and (masthead_loc.startswith(loc) or masthead_loc.endswith(loc)):
+        return loc
+    if loc.endswith(("省", "自治区")) and _PROV_HEAD.match(loc):
+        return loc
+    return None
+
+
+def locality_rank(loc):
+    """LEVEL_RANK of a locality string from locality_of_head / locality_in_core."""
+    if loc.startswith("<"):
+        return LEVEL_RANK[loc.strip("<>")]
+    return LEVEL_RANK.get(level_of_name(loc + "人民政府"), 5)
+
+
+def localize(title, site):
+    """-> (stem, locality, locality_rank) for pooling. stem = normalized core minus a
+    locality prefix (the text a central instrument and its local re-issuance share);
+    locality = the sub-national name the title carries (masthead or core prefix),
+    None when the title names none (a bare / central-masthead copy)."""
+    raw, key = _best_core(title)
+    if key is None:
+        return None, None, None
+    mast_loc = locality_of_head(masthead_of(title))
+    core_loc = locality_in_core(raw, mast_loc if mast_loc and not mast_loc.startswith("<") else "")
+    stem = key
+    if core_loc:
+        s = _norm_title(raw[len(core_loc):])
+        if len(s) >= KEY_MIN:
+            stem = s
+        else:
+            core_loc = None
+    loc = core_loc or mast_loc
+    if core_loc and mast_loc and not mast_loc.startswith("<") and mast_loc.endswith(core_loc):
+        loc = mast_loc  # 龙华区X issued by 深圳市龙华区人民政府: the fuller name
+    if loc is None:
+        return stem, None, None
+    if loc.startswith("<"):
+        loc = f"{loc}@{site}"  # unqualified 市政府: its own site, never pooled across
+        return stem, loc, LEVEL_RANK[loc[1:loc.index(">")]]
+    return stem, loc, locality_rank(loc)
 
 
 _DATE_RE = re.compile(r"^\s*(\d{4})-(\d{1,2})-(\d{1,2})")
@@ -490,15 +621,37 @@ def _canon_sort_key(d):
 
 def assign_instruments(docs):
     """Set instrument_id / instrument_role on every doc dict (in place)."""
-    groups = defaultdict(list)
+    # Pass 1: group by (class, stem) to find LOCALIZED re-issuances — a doc naming a
+    # sub-national locality whose stem also appears on a higher-level member. Those
+    # pool under (class, stem, locality); everything else keeps the plain core key.
+    stems = defaultdict(list)
     for d in docs.values():
         d["instrument_id"], d["instrument_role"] = d["id"], "unique"
+        d["localized"] = False
         cls = POOL_CLASS.get(d["genre"])
         if not cls:
             continue
         k = instrument_key(d["title"])
-        if k:
-            groups[(cls, k)].append(d)
+        if not k:
+            continue
+        stem, loc, rank = localize(d["title"], d["site"])
+        d["_key"], d["_stem"], d["_loc"] = k, stem, loc
+        d["_rank"] = rank if loc else LEVEL_RANK.get(d["level"], 5)
+        stems[(cls, stem)].append(d)
+    groups = defaultdict(list)
+    n_localized = 0
+    for (cls, stem), members in stems.items():
+        if len(members) > 1:
+            for m in members:
+                if m["_loc"] and any(
+                        o["_rank"] < m["_rank"] and o["_loc"] != m["_loc"] for o in members):
+                    m["localized"] = True
+                    n_localized += 1
+                    if m["genre"] == "promulgation" and m["level"] in SUBNATIONAL:
+                        m["genre"] = "implementing"
+        for m in members:
+            key = (cls, stem, m["_loc"]) if m["localized"] else (cls, m["_key"])
+            groups[key].append(m)
     n_pooled = 0
     for members in groups.values():
         if len(members) < 2 or len({m["site"] for m in members}) < 2:
@@ -532,7 +685,7 @@ def assign_instruments(docs):
                 m["instrument_id"] = canon["id"]
                 m["instrument_role"] = "canonical" if m is canon else "mirror"
                 n_pooled += 1
-    return n_pooled
+    return n_pooled, n_localized
 
 
 # --------------------------------------------------------------------------- #
@@ -603,7 +756,7 @@ def build(conn):
         d["level"], d["level_source"] = derive_level(d, sl, li)
         d["genre"] = derive_genre(d["title"], d["algo"], d["level"])
         d["site_level"] = sl
-    n_pooled = assign_instruments(docs)
+    n_pooled, n_localized = assign_instruments(docs)
     stamped = crawl_stamped_sites(docs, site_level, crawl_year)
     for d in docs.values():
         if not d["has_date"]:
@@ -613,7 +766,7 @@ def build(conn):
         else:
             d["date_quality"] = "good"
     meta = {"t_load": t_load, "t_total": time.time() - t0, "n_pooled": n_pooled,
-            "stamped": stamped, "crawl_year": crawl_year}
+            "n_localized": n_localized, "stamped": stamped, "crawl_year": crawl_year}
     return docs, meta
 
 
@@ -667,7 +820,8 @@ def print_stats(docs, meta, site_level):
     for (a, b), v in xt.most_common(12):
         print(f"  {a:11s} -> {b:11s} {v:7,}")
     n_inst = len({d["instrument_id"] for d in docs.values()})
-    print(f"\ninstruments: {n_inst:,} for {n:,} docs ({meta['n_pooled']:,} docs in pools)")
+    print(f"\ninstruments: {n_inst:,} for {n:,} docs ({meta['n_pooled']:,} docs in pools; "
+          f"{meta['n_localized']:,} localized re-issuances kept out of higher-level pools)")
     print(f"crawl-stamped sites: {len(meta['stamped'])}  "
           f"({sum(1 for d in docs.values() if d['date_quality'] == 'crawl_stamped'):,} docs)")
 
@@ -709,6 +863,15 @@ def validate(docs, meta):
           and docs[900105357]["instrument_id"] != 12650974) if all(
         k in docs for k in (12650974, 12704698, 900105357)) else None
     print(f"   提振消费 check (gov canonical, xinhua mirror, bj news out): {ok}")
+    for did in (900039931, 11271152):
+        d = docs.get(did)
+        if d:
+            print(f"   {did} {d['site']:7s} inst={d['instrument_id']} role={d['instrument_role']:9s} "
+                  f"lvl={d['level']} genre={d['genre']} | {d['title'][:48]}")
+    ok2 = (docs[11271152]["instrument_id"] != docs[900039931]["instrument_id"]
+           and docs[11271152]["genre"] == "implementing") if all(
+        k in docs for k in (900039931, 11271152)) else None
+    print(f"   以旧换新 check (Shenzhen localized re-issuance is NOT a mirror of the SC text): {ok2}")
     n_inst = len({d["instrument_id"] for d in docs.values()})
     roles = Counter(d["instrument_role"] for d in docs.values())
     print(f"instruments {n_inst:,} vs docs {len(docs):,}; roles {dict(roles)}")
@@ -816,6 +979,60 @@ _KEY_TESTS = [
     ("广东省人民政府关于印发广东省推动消费品以旧换新行动方案的通知",
      "广东省推动消费品以旧换新行动方案", True),
 ]
+# localize(title, site) -> (stem, locality): the stem a central text and its local
+# re-issuance share, and the sub-national name the title carries (None = bare copy).
+_LOCALIZE_TESTS = [
+    ("国务院关于印发《推动大规模设备更新和消费品以旧换新行动方案》的通知", "gov",
+     "推动大规模设备更新和消费品以旧换新行动方案", None),
+    ("深圳市人民政府关于印发推动大规模设备更新和消费品以旧换新行动方案的通知", "sz",
+     "推动大规模设备更新和消费品以旧换新行动方案", "深圳市"),
+    ("深圳市人民政府办公厅关于印发深圳市推动大规模设备更新和消费品以旧换新行动方案的通知", "sz",
+     "推动大规模设备更新和消费品以旧换新行动方案", "深圳市"),
+    ("受权发布丨中共中央办公厅 国务院办公厅印发《提振消费专项行动方案》", "xinhua",
+     "提振消费专项行动方案", None),
+    ("广东省人民政府关于印发广东省推动消费品以旧换新行动方案的通知", "gd",
+     "推动消费品以旧换新行动方案", "广东省"),
+    ("深圳市龙华区人民政府办公室关于印发龙华区政务公开办法的通知", "lh",
+     "政务公开办法", "深圳市龙华区"),
+    ("智慧城市建设行动方案", "sz", "智慧城市建设行动方案", None),  # not a locality
+    ("市人民政府办公室关于印发市级储备粮管理办法的通知", "huizhou",
+     "市级储备粮管理办法", "<municipal>@huizhou"),
+]
+# assign_instruments on synthetic pools: (docs, {id: (expected instrument_id, role, genre)})
+_D = date
+_POOL_TESTS = [
+    # the live case: Shenzhen's own 以旧换新 plan shares the SC core but is NOT a mirror;
+    # the gov + mee copies still pool.
+    ([dict(id=900039931, site="gov", level="central", site_level="central", genre="promulgation",
+           date=_D(2024, 3, 13), title="国务院关于印发《推动大规模设备更新和消费品以旧换新行动方案》的通知"),
+      dict(id=12684861, site="mee", level="central", site_level="central", genre="promulgation",
+           date=_D(2024, 3, 18), title="国务院关于印发《推动大规模设备更新和消费品以旧换新行动方案》的通知"),
+      dict(id=11271152, site="sz", level="municipal", site_level="municipal", genre="promulgation",
+           date=_D(2024, 5, 1), title="深圳市人民政府关于印发推动大规模设备更新和消费品以旧换新行动方案的通知")],
+     {900039931: (900039931, "canonical", "promulgation"), 12684861: (900039931, "mirror", "promulgation"),
+      11271152: (11271152, "unique", "implementing")}),
+    # the xinhua 受权发布 copy is still a mirror of the gov text
+    ([dict(id=12650974, site="gov", level="central", site_level="central", genre="promulgation",
+           date=_D(2025, 3, 16), title="中共中央办公厅 国务院办公厅印发《提振消费专项行动方案》"),
+      dict(id=12704698, site="xinhua", level="media", site_level="media", genre="promulgation",
+           date=_D(2025, 3, 16), title="受权发布丨中共中央办公厅 国务院办公厅印发《提振消费专项行动方案》")],
+     {12650974: (12650974, "canonical", "promulgation"), 12704698: (12650974, "mirror", "promulgation")}),
+    # a province's localized re-issuance + its bare copy on a dept site form their OWN
+    # local pool (canonical = the notice), apart from the central text
+    ([dict(id=1, site="gov", level="central", site_level="central", genre="promulgation",
+           date=_D(2024, 3, 13), title="国务院关于印发《推动消费品以旧换新行动方案》的通知"),
+      dict(id=2, site="gd", level="provincial", site_level="provincial", genre="promulgation",
+           date=_D(2024, 4, 20), title="广东省人民政府关于印发广东省推动消费品以旧换新行动方案的通知"),
+      dict(id=3, site="swj", level="provincial", site_level="provincial", genre="promulgation",
+           date=_D(2024, 4, 25), title="广东省推动消费品以旧换新行动方案")],
+     {1: (1, "unique", "promulgation"), 2: (2, "canonical", "implementing"), 3: (2, "mirror", "implementing")}),
+    # with NO higher-level text, a local notice and its bare copy pool exactly as before
+    ([dict(id=2, site="gd", level="provincial", site_level="provincial", genre="promulgation",
+           date=_D(2024, 4, 20), title="广东省人民政府关于印发广东省推动消费品以旧换新行动方案的通知"),
+      dict(id=3, site="swj", level="provincial", site_level="provincial", genre="promulgation",
+           date=_D(2024, 4, 25), title="广东省推动消费品以旧换新行动方案")],
+     {2: (2, "canonical", "promulgation"), 3: (2, "mirror", "promulgation")}),
+]
 
 
 def self_test():
@@ -840,7 +1057,20 @@ def self_test():
         if (ka == kb) != same:
             fails += 1
             print(f"XX instrument_key: {ka!r} vs {kb!r} (expected same={same})")
-    total = len(_LEVEL_TESTS) + len(_TITLE_LEVEL_TESTS) + len(_GENRE_TESTS) + len(_KEY_TESTS)
+    for title, site, exp_stem, exp_loc in _LOCALIZE_TESTS:
+        stem, loc, _ = localize(title, site)
+        if (stem, loc) != (exp_stem, exp_loc):
+            fails += 1
+            print(f"XX localize({title[:40]!r}) = {(stem, loc)!r}, expected {(exp_stem, exp_loc)!r}")
+    for members, expected in _POOL_TESTS:
+        docs = {m["id"]: dict(m) for m in members}
+        assign_instruments(docs)
+        got = {i: (d["instrument_id"], d["instrument_role"], d["genre"]) for i, d in docs.items()}
+        if got != expected:
+            fails += 1
+            print(f"XX assign_instruments: {got!r}\n   expected {expected!r}")
+    total = (len(_LEVEL_TESTS) + len(_TITLE_LEVEL_TESTS) + len(_GENRE_TESTS) + len(_KEY_TESTS)
+             + len(_LOCALIZE_TESTS) + len(_POOL_TESTS))
     print(f"self-test: {total - fails}/{total} passed")
     return fails == 0
 
