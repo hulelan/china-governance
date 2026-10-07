@@ -10,7 +10,10 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
+# extract_citations moved to scripts/rnd/citations/ in the July 2026 scripts reorg
+sys.path.insert(0, str(ROOT / "scripts" / "rnd" / "citations"))
 from analyze import REF_PATTERN, NAMED_REF_PATTERN, is_policy_document
 
 
@@ -37,7 +40,8 @@ def db():
             category TEXT DEFAULT '', importance TEXT DEFAULT '',
             policy_area TEXT DEFAULT '', topics TEXT DEFAULT '',
             classify_main_name TEXT DEFAULT '', body_text_en TEXT DEFAULT '',
-            doc_type TEXT DEFAULT '', policy_significance TEXT DEFAULT ''
+            doc_type TEXT DEFAULT '', policy_significance TEXT DEFAULT '',
+            algo_doc_type TEXT DEFAULT ''  -- read by the resolver's genre gate (compute_scores)
         );
         CREATE TABLE citations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -112,7 +116,7 @@ def test_regex_extracts_named_ref():
 
 def test_references_json_creates_citations(db):
     """LLM-extracted references_json should be converted into citations."""
-    from scripts.extract_citations import extract_all
+    from extract_citations import extract_all
     extract_all(db)
 
     # The media article (id=4) has references_json with 2 policy names
@@ -129,7 +133,7 @@ def test_references_json_creates_citations(db):
 
 def test_references_json_resolves_to_corpus(db):
     """references_json refs should resolve to matching documents in corpus."""
-    from scripts.extract_citations import extract_all
+    from extract_citations import extract_all
     extract_all(db)
 
     # The media article references "国务院关于深入实施"人工智能+"行动的意见"
@@ -147,7 +151,7 @@ def test_references_json_resolves_to_corpus(db):
 
 def test_media_articles_get_citations(db):
     """After extraction, media articles should have citations via references_json."""
-    from scripts.extract_citations import extract_all
+    from extract_citations import extract_all
     extract_all(db)
 
     media_cite_count = db.execute(
@@ -163,7 +167,7 @@ def test_media_articles_get_citations(db):
 
 def test_chain_includes_inbound_citations(db):
     """The AI chain should include docs that CITE AI policies, not just those matching the keyword."""
-    from scripts.extract_citations import extract_all
+    from extract_citations import extract_all
     extract_all(db)
 
     # Simulate chain query: find all docs connected to "人工智能"
@@ -199,7 +203,7 @@ def test_chain_includes_inbound_citations(db):
 
 def test_chain_shows_policy_cascade(db):
     """The chain should show central → provincial → municipal cascade."""
-    from scripts.extract_citations import extract_all
+    from extract_citations import extract_all
     extract_all(db)
 
     # Doc 2 (provincial) cites doc 1 (central) via formal ref
@@ -222,7 +226,7 @@ def test_chain_shows_policy_cascade(db):
 
 def test_explainer_links_to_original(db):
     """An explainer (图解) should have a citation to the original policy via references_json."""
-    from scripts.extract_citations import extract_all
+    from extract_citations import extract_all
     extract_all(db)
 
     explainer_cites = db.execute(
