@@ -240,6 +240,131 @@ def init_db(db_path: Path = None) -> sqlite3.Connection:
     return conn
 
 
+# --- Write contention (SQLITE_BUSY / "database is locked") ---
+#
+# `busy_timeout` is set on every connection (above), but it is NOT sufficient on
+# its own: it only waits out a lock, and the nightly/ad-hoc writers here hold
+# transactions far longer than any fixed timeout (a crawler commits every 20-50
+# docs with multi-second HTTP fetches between rows, so one batch can hold the
+# write lock for minutes). Measured 2026-10-07: nine of thirteen
+# `gkmlpt --backfill-bodies` runs died on the per-row UPDATE with "database is
+# locked" while `crawlers.gov --library --deep` was writing — AFTER paying for the
+# HTTP fetch. The fetches are the expensive, non-reproducible part, so a write
+# loop that throws them away on one busy lock is the bug.
+#
+# Rule for any loop that writes rows it paid network time to obtain:
+#   1. per-row write through `write_with_retry` (bounded backoff, then SKIP),
+#   2. incremental `commit_with_retry` so earlier rows survive a later failure,
+#   3. report `WriteRetryStats` and exit non-zero when anything was skipped.
+
+LOCK_RETRY_ATTEMPTS = 6          # 1 try + 5 retries
+LOCK_RETRY_BASE_DELAY = 1.0      # seconds; doubles each retry
+LOCK_RETRY_MAX_DELAY = 30.0
+
+
+class WriteRetryStats:
+    """Mutable counters a write loop accumulates and its caller reports."""
+
+    __slots__ = ("written", "retried", "skipped")
+
+    def __init__(self):
+        self.written = 0   # writes that landed
+        self.retried = 0   # retry attempts spent (not rows)
+        self.skipped = 0   # writes abandoned after exhausting attempts
+
+    def __repr__(self):
+        return (f"WriteRetryStats(written={self.written}, "
+                f"retried={self.retried}, skipped={self.skipped})")
+
+    def as_dict(self):
+        return {"written": self.written, "retried": self.retried,
+                "skipped": self.skipped}
+
+
+def is_lock_error(exc: BaseException) -> bool:
+    """True for SQLite's transient contention errors only.
+
+    A real bug (no such column, UNIQUE constraint, malformed statement) must NOT
+    be retried away — it would just burn the backoff and hide the cause.
+    """
+    if not isinstance(exc, sqlite3.OperationalError):
+        return False
+    msg = str(exc).lower()
+    return "database is locked" in msg or "database is busy" in msg or "locked" in msg
+
+
+def _retry_on_lock(fn, *, what: str, attempts: int, base_delay: float,
+                   max_delay: float, stats: "WriteRetryStats | None",
+                   sleep=None):
+    """Run fn(), retrying transient lock errors with bounded exponential backoff.
+
+    Returns (ok, result). ok=False means every attempt hit a lock error; the
+    caller logs and skips that row rather than aborting the run. Non-lock
+    errors propagate immediately.
+    """
+    sleep = sleep or time.sleep
+    delay = base_delay
+    for i in range(attempts):
+        try:
+            return True, fn()
+        except sqlite3.OperationalError as e:
+            if not is_lock_error(e):
+                raise
+            if i == attempts - 1:
+                log.error(f"  DB locked, giving up after {attempts} attempts "
+                          f"({what}): {e} — SKIPPING this row")
+                if stats is not None:
+                    stats.skipped += 1
+                return False, None
+            if stats is not None:
+                stats.retried += 1
+            log.warning(f"  DB locked ({what}), retry {i + 1}/{attempts - 1} "
+                        f"in {delay:.0f}s: {e}")
+            sleep(delay)
+            delay = min(delay * 2, max_delay)
+    return False, None  # unreachable
+
+
+def write_with_retry(conn, sql: str, params=(), *, stats: WriteRetryStats = None,
+                     what: str = "write", many: bool = False,
+                     attempts: int = LOCK_RETRY_ATTEMPTS,
+                     base_delay: float = LOCK_RETRY_BASE_DELAY,
+                     max_delay: float = LOCK_RETRY_MAX_DELAY, sleep=None) -> bool:
+    """One write, retried on SQLITE_BUSY. True = written, False = skipped.
+
+    `stats.written` is incremented on success and `stats.skipped` on give-up, so
+    a caller can report (and exit non-zero on) partial failure.
+    """
+    runner = conn.executemany if many else conn.execute
+    ok, _ = _retry_on_lock(lambda: runner(sql, params), what=what,
+                           attempts=attempts, base_delay=base_delay,
+                           max_delay=max_delay, stats=stats, sleep=sleep)
+    if ok and stats is not None:
+        stats.written += 1
+    return ok
+
+
+def commit_with_retry(conn, *, stats: WriteRetryStats = None,
+                      what: str = "commit",
+                      attempts: int = LOCK_RETRY_ATTEMPTS,
+                      base_delay: float = LOCK_RETRY_BASE_DELAY,
+                      max_delay: float = LOCK_RETRY_MAX_DELAY,
+                      sleep=None) -> bool:
+    """Commit, retried on SQLITE_BUSY. True = committed.
+
+    False leaves the transaction OPEN with its rows still pending — the next
+    batch commit can still land them, so a failed commit is not counted as
+    skipped rows here; the caller decides at the end of the loop.
+    """
+    ok, _ = _retry_on_lock(conn.commit, what=what, attempts=attempts,
+                           base_delay=base_delay, max_delay=max_delay,
+                           stats=None, sleep=sleep)
+    if not ok:
+        log.error(f"  commit failed after {attempts} attempts ({what}); "
+                  f"rows remain pending in the open transaction")
+    return ok
+
+
 # --- HTTP ---
 
 # Permissive TLS context: many CN gov servers use legacy ciphers / curves / renego

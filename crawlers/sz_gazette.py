@@ -62,11 +62,14 @@ import argparse
 import json
 import re
 import sqlite3
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 from crawlers.base import (
+    WriteRetryStats,
+    commit_with_retry,
     fetch,
     init_db,
     log,
@@ -74,6 +77,7 @@ from crawlers.base import (
     show_stats,
     store_document,
     store_site,
+    write_with_retry,
 )
 
 DEFAULT_DELAY = 1.0
@@ -407,8 +411,13 @@ def crawl(conn, years: set[int] | None = None, fetch_bodies: bool = True,
 
 
 def backfill_bodies(conn, limit: int = 0, delay: float = DEFAULT_DELAY,
-                    site: str = DEFAULT_SITE) -> int:
-    """Fetch bodies for docs listed with --list-only."""
+                    site: str = DEFAULT_SITE) -> dict:
+    """Fetch bodies for docs listed with --list-only.
+
+    Returns a counts dict; `skipped` > 0 means rows were fetched over HTTP but
+    could not be stored (DB stayed locked) — see the "Write contention" note in
+    crawlers/base.py.
+    """
     cfg = NFCMS_SITES[site]
     site_key = cfg["site_key"]
     sql = "SELECT id FROM documents WHERE site_key = ? AND body_text_cn = ''"
@@ -418,30 +427,47 @@ def backfill_bodies(conn, limit: int = 0, delay: float = DEFAULT_DELAY,
         params.append(f"%{cfg['url_filter']}%")
     rows = conn.execute(sql + " ORDER BY id", params).fetchall()
     log.info(f"=== {cfg['label']} body backfill: {len(rows)} docs without body ===")
-    done = 0
-    for (doc_id,) in rows:
-        body, content_html, att = fetch_body(doc_id, cfg)
-        time.sleep(delay)
-        if not body:
-            continue
-        raw = save_raw_html(site_key, doc_id, content_html) if content_html else ""
-        docnum = docnum_from_body(body) if cfg["docnum_from_body"] else ""
-        conn.execute(
-            "UPDATE documents SET body_text_cn = ?, attachments_json = ?, "
-            "raw_html_path = CASE WHEN ? != '' THEN ? ELSE raw_html_path END, "
-            "document_number = CASE WHEN document_number = '' THEN ? ELSE document_number END, "
-            "crawl_timestamp = ? WHERE id = ?",
-            (body, json.dumps(att, ensure_ascii=False), raw, raw, docnum,
-             datetime.now(timezone.utc).isoformat(), doc_id))
-        done += 1
-        if done % 50 == 0:
-            conn.commit()
-            log.info(f"  {done}/{len(rows)} bodies")
-        if limit and done >= limit:
-            break
-    conn.commit()
-    log.info(f"=== {cfg['label']} body backfill done: {done} bodies ===")
-    return done
+    stats = WriteRetryStats()
+    fetched = 0
+    pending = 0
+    try:
+        for (doc_id,) in rows:
+            body, content_html, att = fetch_body(doc_id, cfg)
+            time.sleep(delay)
+            if not body:
+                continue
+            fetched += 1
+            raw = save_raw_html(site_key, doc_id, content_html) if content_html else ""
+            docnum = docnum_from_body(body) if cfg["docnum_from_body"] else ""
+            if write_with_retry(
+                conn,
+                "UPDATE documents SET body_text_cn = ?, attachments_json = ?, "
+                "raw_html_path = CASE WHEN ? != '' THEN ? ELSE raw_html_path END, "
+                "document_number = CASE WHEN document_number = '' THEN ? ELSE document_number END, "
+                "crawl_timestamp = ? WHERE id = ?",
+                (body, json.dumps(att, ensure_ascii=False), raw, raw, docnum,
+                 datetime.now(timezone.utc).isoformat(), doc_id),
+                stats=stats, what=f"sz_gazette body id={doc_id}",
+            ):
+                pending += 1
+            if pending >= 50:
+                # Commit incrementally so a later hard failure keeps these rows.
+                if commit_with_retry(conn, what=f"sz_gazette batch @{stats.written}"):
+                    pending = 0
+                log.info(f"  {stats.written}/{len(rows)} bodies "
+                         f"({stats.skipped} skipped)")
+            if limit and fetched >= limit:
+                break
+    finally:
+        if commit_with_retry(conn, what="sz_gazette final"):
+            pending = 0
+        if pending:
+            log.error(f"  {pending} fetched rows LOST — final commit never landed")
+            stats.skipped += pending
+    log.info(f"=== {cfg['label']} body backfill done: {stats.written} bodies "
+             f"({fetched} fetched, {stats.retried} lock retries, "
+             f"{stats.skipped} SKIPPED) ===")
+    return {"candidates": len(rows), "fetched": fetched, **stats.as_dict()}
 
 
 def main():
@@ -466,7 +492,14 @@ def main():
         if args.stats:
             show_stats(conn)
         elif args.backfill_bodies:
-            backfill_bodies(conn, limit=args.limit, delay=args.delay, site=args.site)
+            counts = backfill_bodies(conn, limit=args.limit, delay=args.delay,
+                                     site=args.site)
+            print("backfill counts: " +
+                  ", ".join(f"{k}={v}" for k, v in counts.items()))
+            if counts["skipped"]:
+                print(f"FAILED: {counts['skipped']} fetched rows were not stored "
+                      f"(DB locked). Re-run --backfill-bodies to recover them.")
+                return 1
         else:
             crawl(conn, years=parse_years(args.year), fetch_bodies=not args.list_only,
                   limit=args.limit, delay=args.delay, site=args.site)
@@ -479,4 +512,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

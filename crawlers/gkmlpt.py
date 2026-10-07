@@ -15,6 +15,7 @@ import argparse
 import json
 import re
 import sqlite3
+import sys
 import time
 import urllib.parse
 from datetime import datetime, timezone
@@ -23,6 +24,8 @@ import uuid
 
 from crawlers.base import (
     REQUEST_DELAY,
+    WriteRetryStats,
+    commit_with_retry,
     fetch,
     fetch_json,
     init_db,
@@ -30,6 +33,7 @@ from crawlers.base import (
     save_raw_html,
     show_stats,
     store_site,
+    write_with_retry,
 )
 
 # --- Configuration ---
@@ -855,11 +859,18 @@ def crawl_site(conn, site_key: str, site_cfg: dict, fetch_bodies: bool = True):
              f"{total_bodies} bodies, {skipped} skipped (id owned by another site / dup URL) ===")
 
 
-def backfill_bodies(conn, site_key: str = None, policy_first: bool = False, delay: float = REQUEST_DELAY):
+def backfill_bodies(conn, site_key: str = None, policy_first: bool = False,
+                    delay: float = REQUEST_DELAY, commit_every: int = 20) -> dict:
     """Fetch body text for documents that are missing it.
 
     Only processes gkmlpt-compatible URLs (content/post_ pages).
     Skips external URLs (WeChat, Xinhua, CCTV, etc.) and non-gkmlpt sites.
+
+    Returns a counts dict (candidates/fetched/written/retried/skipped/no_body).
+    `skipped` > 0 means rows were FETCHED but could not be stored (the DB stayed
+    locked through the whole backoff) — the caller must surface that and exit
+    non-zero. See the "Write contention" note in crawlers/base.py: the fetch is
+    the expensive part, so one busy lock must cost one row, not the whole run.
     """
     where = ("WHERE body_text_cn = '' AND url != '' "
              "AND site_key NOT IN ('ndrc', 'gov') "
@@ -884,30 +895,57 @@ def backfill_bodies(conn, site_key: str = None, policy_first: bool = False, dela
         log.info(f"  {sk}: {cnt} docs need body text")
 
     start_time = time.time()
-    success = 0
-    for i, (doc_id, sk, url) in enumerate(rows):
-        ua_headers = {"User-Agent": BROWSER_UA} if sk in SITES_NEEDING_BROWSER_UA else None
-        body_text, raw_html = fetch_document_body(url, headers=ua_headers)
-        if body_text:
-            # Sanitize surrogates that crash SQLite's UTF-8 codec
-            body_text = body_text.encode("utf-8", errors="replace").decode("utf-8")
-            raw_html_path = save_raw_html(sk, doc_id, raw_html) if raw_html else ""
-            conn.execute(
-                "UPDATE documents SET body_text_cn=?, raw_html_path=?, crawl_timestamp=? WHERE id=?",
-                (body_text, raw_html_path, datetime.now(timezone.utc).isoformat(), doc_id),
-            )
-            success += 1
-        if (i + 1) % 20 == 0:
-            conn.commit()
-            elapsed = time.time() - start_time
-            rate = (i + 1) / elapsed
-            remaining = (len(rows) - i - 1) / rate if rate > 0 else 0
-            log.info(f"  Backfill: {i+1}/{len(rows)} ({success} ok) | "
-                     f"{rate:.1f} docs/s | ETA: {remaining/60:.0f}m")
-        time.sleep(delay)
+    stats = WriteRetryStats()
+    fetched = 0        # bodies successfully fetched over HTTP
+    no_body = 0        # pages that yielded no body (not a failure of ours)
+    pending = 0        # rows written but not yet committed
+    try:
+        for i, (doc_id, sk, url) in enumerate(rows):
+            ua_headers = {"User-Agent": BROWSER_UA} if sk in SITES_NEEDING_BROWSER_UA else None
+            body_text, raw_html = fetch_document_body(url, headers=ua_headers)
+            if body_text:
+                fetched += 1
+                # Sanitize surrogates that crash SQLite's UTF-8 codec
+                body_text = body_text.encode("utf-8", errors="replace").decode("utf-8")
+                raw_html_path = save_raw_html(sk, doc_id, raw_html) if raw_html else ""
+                if write_with_retry(
+                    conn,
+                    "UPDATE documents SET body_text_cn=?, raw_html_path=?, crawl_timestamp=? WHERE id=?",
+                    (body_text, raw_html_path, datetime.now(timezone.utc).isoformat(), doc_id),
+                    stats=stats, what=f"backfill body id={doc_id} site={sk}",
+                ):
+                    pending += 1
+            else:
+                no_body += 1
+            if (i + 1) % commit_every == 0:
+                # Commit incrementally so an eventual hard failure keeps the rows
+                # already fetched instead of discarding the whole site's work.
+                if commit_with_retry(conn, what=f"backfill batch @{i + 1}"):
+                    pending = 0
+                elapsed = time.time() - start_time
+                rate = (i + 1) / elapsed if elapsed > 0 else 0
+                remaining = (len(rows) - i - 1) / rate if rate > 0 else 0
+                log.info(f"  Backfill: {i+1}/{len(rows)} ({stats.written} ok, "
+                         f"{stats.skipped} skipped) | {rate:.1f} docs/s | "
+                         f"ETA: {remaining/60:.0f}m")
+            time.sleep(delay)
+    finally:
+        # Even on KeyboardInterrupt or an unexpected error, land what we have.
+        if commit_with_retry(conn, what="backfill final"):
+            pending = 0
+        if pending:
+            log.error(f"  {pending} fetched rows LOST — final commit never landed")
+            stats.skipped += pending
 
-    conn.commit()
-    log.info(f"Backfill complete: {success}/{len(rows)} bodies fetched")
+    counts = {"candidates": len(rows), "fetched": fetched, "no_body": no_body,
+              **stats.as_dict()}
+    log.info(f"Backfill complete: {counts['written']}/{len(rows)} bodies written "
+             f"({fetched} fetched, {no_body} no body, {stats.retried} lock retries, "
+             f"{stats.skipped} SKIPPED)")
+    if stats.skipped:
+        log.error(f"Backfill PARTIAL: {stats.skipped} fetched rows could not be "
+                  f"stored (DB locked). Re-run to recover them.")
+    return counts
 
 
 # --- Incremental Sync ---
@@ -1200,10 +1238,19 @@ def main():
         return
 
     if args.backfill_bodies:
-        backfill_bodies(conn, args.site, args.policy_first, delay=args.backfill_delay)
+        counts = backfill_bodies(conn, args.site, args.policy_first,
+                                 delay=args.backfill_delay)
         show_stats(conn)
         conn.close()
-        return
+        print(f"\nbackfill counts: " +
+              ", ".join(f"{k}={v}" for k, v in counts.items()))
+        # Exit non-zero when rows were fetched but not stored, so a wrapper
+        # `for site in ...; do ... ; done` loop cannot silently swallow it.
+        if counts["skipped"]:
+            print(f"FAILED: {counts['skipped']} fetched rows were not stored "
+                  f"(DB locked). Re-run --backfill-bodies to recover them.")
+            return 1
+        return 0
 
     if args.search:
         if not args.site or args.site not in SITES:
@@ -1268,4 +1315,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

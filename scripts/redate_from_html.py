@@ -45,6 +45,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from crawlers.base import (  # noqa: E402
+    WriteRetryStats,
+    commit_with_retry,
+    write_with_retry,
+)
 from crawlers.govcms import _body_date, _meta_date  # noqa: E402
 
 DB_PATH = ROOT / "documents.db"
@@ -72,7 +77,7 @@ def _day_shift(shift, old, new):
             pass
 
 
-def redate_site_dater(conn, site_key, dry_run=False, verbose=False):
+def redate_site_dater(conn, site_key, dry_run=False, verbose=False, wstats=None):
     """Per-site route: the crawler's own page_date(html, url), URL-month fallback when the
     page is absent/dateless AND the stored date is outside the URL month. Walks ALL docs of
     the site (not only those with raw HTML) because the URL fallback needs no file."""
@@ -135,24 +140,32 @@ def redate_site_dater(conn, site_key, dry_run=False, verbose=False):
         big = sum(n for d, n in shift.items() if abs(d) > 60)
         print(f"  {sum(shift.values())} shifted; {big} by >60 days; "
               f"median shift {sorted(d for d, n in shift.items() for _ in range(n))[sum(shift.values()) // 2]:+d}d")
-    return _apply(conn, updates, dry_run)
+    return _apply(conn, updates, dry_run, wstats)
 
 
-def _apply(conn, updates, dry_run):
+def _apply(conn, updates, dry_run, wstats=None):
     if dry_run or not updates:
         print(f"  {'would update' if dry_run else 'updated'} {len(updates)} rows")
         return len(updates)
+    done = 0
     for i in range(0, len(updates), 500):
-        conn.executemany("UPDATE documents SET date_published = ? WHERE id = ?",
-                         updates[i:i + 500])
-        conn.commit()
-    print(f"  updated {len(updates)} rows")
-    return len(updates)
+        batch = updates[i:i + 500]
+        # Retried on SQLITE_BUSY, then skipped: a batch lost to a nightly
+        # writer's lock must not abort the remaining batches.
+        if write_with_retry(conn, "UPDATE documents SET date_published = ? WHERE id = ?",
+                            batch, many=True, what=f"redate batch @{i}"):
+            commit_with_retry(conn, what=f"redate commit @{i}")
+            done += len(batch)
+        elif wstats is not None:
+            wstats.skipped += len(batch)   # row-level, not batch-level
+    print(f"  updated {done} rows" + (f" ({len(updates) - done} skipped, DB locked)"
+                                      if done != len(updates) else ""))
+    return done
 
 
-def redate(conn, site_key, dry_run=False, verbose=False):
+def redate(conn, site_key, dry_run=False, verbose=False, wstats=None):
     if site_key in SITE_DATERS:
-        return redate_site_dater(conn, site_key, dry_run, verbose)
+        return redate_site_dater(conn, site_key, dry_run, verbose, wstats)
     rows = conn.execute(
         """SELECT id, date_published, raw_html_path FROM documents
            WHERE site_key = ? AND raw_html_path IS NOT NULL AND raw_html_path != ''
@@ -201,7 +214,7 @@ def redate(conn, site_key, dry_run=False, verbose=False):
     if shift:
         print(f"  day shift of meta fixes (new - old): "
               + ", ".join(f"{d:+d}d×{n}" for d, n in sorted(shift.items())))
-    return _apply(conn, updates, dry_run)
+    return _apply(conn, updates, dry_run, wstats)
 
 
 def main(argv=None):
@@ -215,11 +228,18 @@ def main(argv=None):
     uri = f"file:{args.db}?mode=ro" if args.dry_run else args.db
     conn = sqlite3.connect(uri, uri=args.dry_run, timeout=30)
     conn.execute("PRAGMA busy_timeout=30000")
+    wstats = WriteRetryStats()
     total = 0
     for site in args.site:
-        total += redate(conn, site, dry_run=args.dry_run, verbose=args.verbose)
+        total += redate(conn, site, dry_run=args.dry_run, verbose=args.verbose,
+                        wstats=wstats)
     conn.close()
     print(f"total {'candidate' if args.dry_run else 'updated'} rows: {total}")
+    # Non-zero exit when rows were computed but not stored (DB locked), so a
+    # wrapper loop cannot silently swallow it.
+    if wstats.skipped:
+        print(f"FAILED: {wstats.skipped} rows were not stored (DB locked). Re-run.")
+        return 1
     return 0
 
 

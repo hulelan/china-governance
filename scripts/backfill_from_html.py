@@ -35,6 +35,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
+
+from crawlers.base import (  # noqa: E402  (needs sys.path above)
+    WriteRetryStats,
+    commit_with_retry,
+    write_with_retry,
+)
 DB_PATH = ROOT / "documents.db"
 RAW_HTML_DIR = ROOT / "raw_html"
 
@@ -248,48 +254,63 @@ def backfill(sites=None, dry_run: bool = False, limit: int = 0):
         for site, count in Counter(r[1] for r in rows).most_common():
             print(f"  {site}: {count}")
         conn.close()
-        return
+        return {"candidates": len(rows), "written": 0, "failed": 0,
+                "retried": 0, "skipped": 0}
 
     router = _site_router()
     before = {s: _site_pct(conn, s) for s in sorted({r[1] for r in rows})}
 
     updated = 0
     failed = 0
+    last_changes = conn.total_changes
     by_site = Counter()
     reasons = Counter()
     t0 = time.time()
 
-    for i, (doc_id, site_key, raw_path) in enumerate(rows, 1):
-        html_file = ROOT / raw_path
-        if not html_file.exists():
-            failed += 1
-            reasons[f"{site_key}|file missing"] += 1
-            continue
-        html = html_file.read_text(errors="replace")
-        body = extract_for_site(site_key, html, router)
-        if body:
-            # Never overwrite a non-empty body with a shorter one.
-            cur = conn.execute(
-                """UPDATE documents SET body_text_cn = ?
-                   WHERE id = ? AND (body_text_cn IS NULL OR LENGTH(body_text_cn) < LENGTH(?))""",
-                (body, doc_id, body))
-            if cur.rowcount:
-                updated += 1
-                by_site[site_key] += 1
-            if updated % 200 == 0:
-                conn.commit()
-        else:
-            failed += 1
-            reasons[f"{site_key}|{_why_failed(html)}"] += 1
-        if i % 2000 == 0:
-            conn.commit()
-            conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
-            print(f"  …{i}/{len(rows)} scanned, {updated} updated ({time.time() - t0:.0f}s)")
+    stats = WriteRetryStats()
+    try:
+        for i, (doc_id, site_key, raw_path) in enumerate(rows, 1):
+            html_file = ROOT / raw_path
+            if not html_file.exists():
+                failed += 1
+                reasons[f"{site_key}|file missing"] += 1
+                continue
+            html = html_file.read_text(errors="replace")
+            body = extract_for_site(site_key, html, router)
+            if body:
+                # Never overwrite a non-empty body with a shorter one.
+                # Retried on SQLITE_BUSY, then skipped — a nightly writer holding
+                # the lock must not abort the whole scan.
+                ok = write_with_retry(
+                    conn,
+                    """UPDATE documents SET body_text_cn = ?
+                       WHERE id = ? AND (body_text_cn IS NULL OR LENGTH(body_text_cn) < LENGTH(?))""",
+                    (body, doc_id, body), stats=stats,
+                    what=f"backfill_from_html id={doc_id} site={site_key}")
+                if not ok:
+                    # write_with_retry already counted stats.skipped
+                    reasons[f"{site_key}|DB locked (skipped)"] += 1
+                elif conn.total_changes != last_changes:
+                    last_changes = conn.total_changes
+                    updated += 1
+                    by_site[site_key] += 1
+                if updated and updated % 200 == 0:
+                    commit_with_retry(conn, what=f"backfill_from_html @{i}")
+            else:
+                failed += 1
+                reasons[f"{site_key}|{_why_failed(html)}"] += 1
+            if i % 2000 == 0:
+                commit_with_retry(conn, what=f"backfill_from_html @{i}")
+                conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
+                print(f"  …{i}/{len(rows)} scanned, {updated} updated, "
+                      f"{stats.skipped} skipped ({time.time() - t0:.0f}s)")
+    finally:
+        commit_with_retry(conn, what="backfill_from_html final")
+        conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
 
-    conn.commit()
-    conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
-
-    print(f"\nDone: {updated} bodies extracted, {failed} failed ({time.time() - t0:.0f}s)")
+    print(f"\nDone: {updated} bodies extracted, {failed} failed, "
+          f"{stats.retried} lock retries, {stats.skipped} skipped "
+          f"({time.time() - t0:.0f}s)")
     print(f"\n{'site':12s} {'docs':>6s} {'body% before':>12s} {'body% after':>11s} {'+bodies':>8s}")
     for s in before:
         n, b0 = before[s]
@@ -300,6 +321,8 @@ def backfill(sites=None, dry_run: bool = False, limit: int = 0):
         for k, c in reasons.most_common():
             print(f"  {k}: {c}")
     conn.close()
+    return {"candidates": len(rows), "written": updated, "failed": failed,
+            "retried": stats.retried, "skipped": stats.skipped}
 
 
 if __name__ == "__main__":
@@ -314,4 +337,10 @@ if __name__ == "__main__":
         site_list.append(args.site)
     if args.sites:
         site_list.extend(s.strip() for s in args.sites.split(",") if s.strip())
-    backfill(sites=site_list or None, dry_run=args.dry_run, limit=args.limit)
+    counts = backfill(sites=site_list or None, dry_run=args.dry_run, limit=args.limit)
+    # Non-zero exit when extracted bodies could not be stored, so a wrapper loop
+    # cannot silently swallow a contention failure.
+    if counts["skipped"]:
+        print(f"FAILED: {counts['skipped']} extracted bodies were not stored "
+              f"(DB locked). Re-run to recover them.")
+        sys.exit(1)
