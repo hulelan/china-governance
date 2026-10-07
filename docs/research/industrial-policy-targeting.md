@@ -898,3 +898,292 @@ cross-section, which should be read from (b) or, better, from `doc_identity` on 
 general lesson is in `corpus-lessons.md` A4: a site that is missing from the corpus is also
 missing from every share computed over it, and when the missing site is the lead ministry for
 a sector the level composition of that sector is not measured, it is assumed. `[inferred]`
+
+---
+
+## Level re-basing on doc_identity (2026-10-07)
+
+*Read-only re-run on the droplet (`?mode=ro`, 2026-10-07). R5 showed that the per-document
+level in `doc_identity.admin_level_doc` moves the universe central share from 31.8% to 22.3%
+and that twelve sectors then clear the 1.5 tilt line. This section re-bases section 4 on the
+document level, under universe (a) (shallow sites removed) and universe (b) (all dated
+government documents, which R7 concluded the cross-section should use). Site-level figures are
+kept beside document-level figures so the identity-layer effect can be read apart from the
+universe effect. Genre stays on `algo_doc_type`; `doc_identity.genre` is a different taxonomy.*
+
+**What the identity layer does to the level column.** In (b), 255,328 documents, every row has
+an `admin_level_doc` (0 NULL). Its source is the issuer parser for 194,326 (76%), the site for
+55,653 (22%), a title cue for 5,186 and 文号 or npc publisher for 163. The department tier
+disappears: 33,482 of 33,879 department-site documents become municipal, 142 provincial, 235
+central. The npc site's 24,385 documents split provincial 10,652, municipal 11,324, district
+735, central 1,674. Among sector-tagged documents 2,038 of 9,120 change level in (a) and 2,120
+of 10,732 in (b). `[measured]`
+
+### L1. Why the 1.5 line stops working
+
+The tilt divides a sector's central share by the universe's. Sector-tagged documents as a
+group are more central than the universe, and the gap doubles at document level.
+
+| set | universe central / prov / muni / dist / dept % | sector pool central % | pool tilt |
+|---|---|---:|---:|
+| (a) site | 31.8 / 19.1 / 23.5 / 10.7 / 15.0 | 40.0 | 1.26 |
+| (a) document | 22.3 / 23.8 / 42.7 / 11.2 / . | 34.6 | **1.55** |
+| (b) site | 32.0 / 19.6 / 25.1 / 10.0 / 13.3 | 42.0 | 1.32 |
+| (b) document | 23.3 / 24.1 / 42.0 / 10.6 / . | 37.0 | **1.59** |
+
+**Evidence.** At document level the average sector-tagged document sits at tilt 1.55 to 1.59.
+A threshold of 1.5 therefore selects the typical sector, not the outlier: 12 of 18 sectors
+clear it in (a) and 11 in (b). The sorted central tilts at document level show no natural
+break in the upper half (adjacent log-gaps of 0.00 to 0.10 from 1.5 up to 2.45 in (a)) and
+clear breaks only at the bottom (equipment 1.00 to low-altitude 0.74 to future industries 0.54
+to real estate 0.35). `[measured]`
+
+**Reading.** Central weight is the norm for sector titles. The published dichotomy asked the
+wrong null: "is this sector more central than the corpus" is true for almost every sector.
+The useful question is "is this sector more central than sector policy in general". `[inferred]`
+
+### L2. The rule
+
+Two nulls, both built by 200 sector-size-matched random draws without replacement, seed fixed.
+
+- *Universe null.* Draw n documents from the universe and compute the tilt. The 2.5-97.5
+  band is about 0.88-1.12 at n=500 and 0.77-1.23 at n=230. At document level 14 of 18 sectors
+  sit above this band in (a) with z between +4 and +19, and 4 sit below. This null is reported
+  for completeness; it confirms R5 and discriminates nothing. `[measured]`
+- *Pool null.* Draw n documents from the sector-tagged pool (a document with two tags counts
+  once) and compute the pool ratio, sector share divided by pool share, at each tier. The
+  2.5-97.5 band is about 0.89-1.11 at n=500 and 0.81-1.17 at n=230. **A sector is "centrally
+  targeted" when its central pool ratio has z >= +3 against this null, "locally initiated" when
+  z <= -3, and "at the sector norm" otherwise.** z >= 3 is roughly p < 0.003 two-sided, so
+  across 18 sectors the expected number of false labels is 0.05. The ratio is read alongside z
+  because z grows with n: a ratio of 1.17 is above the line at n=504 (ships, (b)) and not at
+  n=158 (new materials, (b)). `[measured]`
+
+**Bridge check.** Applied to the published configuration, (a) at site level, the pool rule
+returns exactly the seven sectors section 4 listed as tilt above 1.5 (ships 1.45, telecom 1.40,
+heavy 1.38, data 1.33, platforms 1.25, agriculture 1.24, NEV 1.22; all z >= +3.8). Below the
+line it returns the four section 4 listed as tilt below 0.75 (equipment 0.58, low-altitude
+0.46, real estate 0.44, future industries 0.34) plus two the 0.75 line missed, AI (0.84, z -3.8)
+and biopharma (0.79, z -4.1). So the rule reproduces the published upper list and tightens the
+lower one, and any change below is the identity layer or the universe, not the rule. `[measured]`
+
+### L3. Central tilt under the rule, document level, (a) and (b)
+
+Central share of the sector's documents (%), tilt against the universe, pool ratio with z
+against the pool null in brackets. Sorted by the (a) pool ratio.
+
+| sector | n (a) | (a) central | (a) tilt | (a) ratio (z) | n (b) | (b) central | (b) tilt | (b) ratio (z) | (a) / (b) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| telecom_iot | 255 | 54.5 | 2.45 | 1.58 (+6.9) | 485 | 69.9 | 3.00 | 1.89 (+16.0) | above / above |
+| platform_ecom | 642 | 50.2 | 2.25 | 1.45 (+9.2) | 720 | 46.9 | 2.02 | 1.27 (+5.6) | above / above |
+| digital_data | 1,031 | 49.2 | 2.21 | 1.42 (+12.0) | 1,173 | 47.3 | 2.03 | 1.28 (+8.3) | above / above |
+| aero_ship | 430 | 47.7 | 2.14 | 1.38 (+6.9) | 504 | 43.5 | 1.87 | 1.17 (+3.3) | above / above |
+| heavy_tradit | 769 | 47.1 | 2.11 | 1.36 (+7.4) | 838 | 45.9 | 1.97 | 1.24 (+5.3) | above / above |
+| nev | 499 | 45.5 | 2.04 | 1.32 (+5.2) | 621 | 51.5 | 2.21 | 1.39 (+7.9) | above / above |
+| semiconductor | 233 | 43.3 | 1.94 | 1.25 (+2.9) | 252 | 45.2 | 1.94 | 1.22 (+2.8) | norm / norm, at the line |
+| software | 128 | 42.2 | 1.89 | 1.22 (+1.8) | 151 | 48.3 | 2.08 | 1.31 (+3.2) | norm / above |
+| new_materials | 127 | 38.6 | 1.73 | 1.12 (+1.2) | 158 | 43.0 | 1.85 | 1.16 (+1.5) | norm / norm |
+| green_lowcarbon | 541 | 37.2 | 1.67 | 1.07 (+1.4) | 651 | 43.2 | 1.85 | 1.17 (+3.6) | norm / above |
+| ai | 818 | 34.4 | 1.54 | 0.99 (-0.2) | 1,109 | 43.1 | 1.85 | 1.16 (+4.4) | norm / above |
+| new_energy | 587 | 33.7 | 1.51 | 0.98 (-0.4) | 659 | 33.8 | 1.45 | 0.91 (-1.7) | norm / norm |
+| biopharma | 521 | 30.5 | 1.37 | 0.88 (-1.9) | 581 | 27.4 | 1.17 | 0.74 (-5.2) | norm / below |
+| agri_seed | 703 | 26.6 | 1.19 | 0.77 (-5.3) | 792 | 24.0 | 1.03 | 0.65 (-8.4) | below / below |
+| equipment_robot | 365 | 22.2 | 1.00 | 0.64 (-5.1) | 458 | 27.9 | 1.20 | 0.75 (-4.1) | below / below |
+| low_altitude | 326 | 16.6 | 0.74 | 0.48 (-7.4) | 349 | 17.2 | 0.74 | 0.46 (-7.7) | below / below |
+| future_industry | 201 | 11.9 | 0.54 | 0.35 (-6.2) | 309 | 28.5 | 1.22 | 0.77 (-3.0) | below / below, at the line |
+| real_estate | 1,287 | 7.8 | 0.35 | 0.23 (-22.3) | 1,339 | 8.0 | 0.34 | 0.22 (-25.7) | below / below |
+
+**Lists under the rule.**
+
+- (a), document level. Centrally targeted: telecom, platforms, data, ships and aerospace, heavy
+  industry, NEV. Locally initiated: real estate, future industries, low-altitude, equipment and
+  robotics, agriculture. At the sector norm: semiconductors (z +2.9), software, new materials,
+  carbon, AI, new energy, biopharma. `[measured]`
+- (b), document level. Centrally targeted: telecom, NEV, software, data, platforms, heavy
+  industry, ships and aerospace, carbon, AI. Locally initiated: real estate, low-altitude,
+  agriculture, biopharma, equipment and robotics, future industries (z -3.0, at the line). At
+  the sector norm: semiconductors (z +2.8), new materials, new energy. `[measured]`
+
+**The identity-layer effect, isolated ((a) site to (a) document).** One sector leaves the
+upper list: agriculture, 49.5% to 26.6% central, pool ratio 1.24 to 0.77, from above to below.
+Its "central" documents were npc-published local 种子, 农机 and 粮食 regulations. Two sectors
+leave the lower list for the norm: AI (0.84 to 0.99) and biopharma (0.79 to 0.88), because the
+municipal tier absorbs the department sites and the pool's own central share rises. The six
+remaining upper sectors and the four remaining lower sectors keep their labels. Within the
+upper six the order changes: ships and aerospace drop from first (1.45) to fourth (1.38) as
+npc-filed local 船舶 regulations re-level, and telecom moves to first. `[measured]`
+
+**The universe effect, isolated ((a) document to (b) document).** Adding the shallow sites,
+MIIT above all, lifts software (1.22 to 1.31), carbon (1.07 to 1.17) and AI (0.99 to 1.16) from
+the norm to above, and lifts future industries from 0.35 to 0.77, to the edge of the lower
+list. It pushes biopharma from the norm to below (0.88 to 0.74) by dilution. This is R4's MIIT
+finding restated on document level. `[measured]`
+
+**Reading.** The upper list is stable to both changes: telecom, platforms, data, heavy industry,
+ships and NEV are centrally targeted under every configuration tried, and they remain the
+network-rule and legacy-regulation sectors section 4 described. The lower list is stable for
+real estate, low-altitude and equipment, and agriculture joins it once the npc re-leveling is
+applied. The middle is where the configuration matters: semiconductors sit at the line in
+both universes, and AI, carbon, software and biopharma change label with the universe, because
+the ministry that writes most of their central documents is in one universe and not the other.
+Labels for those four should be read from (b). `[inferred]`
+
+### L4. The other tiers at document level
+
+Pool ratio with z against the pool null, (a) / (b). Only tiers with |z| >= 3 in at least one
+universe are listed. Tilt against the universe in brackets where it is quoted in section 4.
+
+- *Provincial.* Agriculture 1.96 (+16) / 2.04 (+17), universe tilt 2.05 in both. Heavy industry
+  1.22 (+4) / 1.19 (+3). Ships and aerospace 1.14 (+2) / 1.29 (+4). Future industries 1.42 (+4)
+  / 1.11 (+1), universe tilt 1.48 / 1.11. `[measured]`
+- *Municipal.* Real estate 2.15 (+33) / 2.19 (+34), universe tilt 1.64 / 1.63. Equipment and
+  robotics 1.33 (+5) / 1.25 (+4), universe tilt 1.01 / 0.94. Future industries 1.34 (+3) / 1.20
+  (+2). Negative: data 0.56 (-10) / 0.64 (-9), telecom 0.75 (-3) / 0.44 (-9), ships 0.61 (-7) /
+  0.67 (-5), heavy 0.68 (-7) / 0.77 (-4). `[measured]`
+- *District.* Low-altitude 3.60 (+13) / 3.69 (+14), universe tilt 2.55 / 2.56. Biopharma 2.08
+  (+8) / 2.05 (+8), universe tilt 1.48 / 1.43. Software 2.46 (+5) / 2.25 (+4). Equipment 1.76
+  (+4) / 1.57 (+4). AI 1.48 (+4) / 1.24 (+2). Semiconductors 1.62 (+3) / 1.62 (+3). Negative:
+  heavy 0.05 (-8) / 0.15 (-8), agriculture 0.22 (-7) / 0.48 (-4), telecom 0.20 (-4) / 0.14 (-6).
+  `[measured]`
+- *Department.* There is no department tier in `doc_identity`. The "department tilt" is a
+  site-type statistic, not a level statistic, and it cannot be re-based. It survives as a
+  within-tier split: inside the document-level municipal tier, department-type sites supply
+  34.6% of all documents in (a) and 31.2% in (b), against 72.1% / 71.0% of real-estate
+  documents (ratio 2.08 / 2.27), 57.4% / 53.4% of semiconductor documents (1.66 / 1.71), 50.5% /
+  45.7% of new energy (1.46), 48.6% / 44.0% of NEV (1.40 / 1.41). `[measured]`
+
+**Reading.** Low-altitude as a district phenomenon and agriculture as a provincial one are the
+two tier claims that hold at every level definition and in both universes. Housing is a
+municipal-bureau phenomenon: the same Shenzhen bureau, read as "municipal 1.64, pool 2.15" at
+document level and as "department 3.39" at site level. Equipment and robotics is municipal only
+relative to other sectors (1.33), not relative to the corpus (1.01); its published 1.49 was a
+denominator effect of the department tier, which held 15% of the universe and 10% of equipment
+documents. `[inferred]`
+
+### L5. Section 4.1 at document level: central share by period
+
+Central share (%) and tilt against the period's universe, document level. n < 20 omitted.
+
+| sector | (a) 2008-14 | (a) 2015-20 | (a) 2021-26 | (b) 2015-20 | (b) 2021-26 | reading |
+|---|---:|---:|---:|---:|---:|---|
+| semiconductor | 59 (2.16) | 65 (2.14) | 34 (1.84) | 65 (2.14) | 38 (1.83) | pile-on, tilt stable |
+| software | . | 86 (2.84) | 27 (1.47) | 86 (2.84) | 39 (1.86) | pile-on, tilt falls |
+| ai | . | 61 (2.03) | 33 (1.76) | 61 (2.03) | 42 (2.04) | pile-on in (a); flat in (b) |
+| digital_data | . | 51 (1.67) | 49 (2.62) | 50 (1.67) | 47 (2.26) | stays central, tilt rises |
+| telecom_iot | 37 (1.35) | 48 (1.58) | 66 (3.56) | 48 (1.58) | 80 (3.86) | recentralizes |
+| nev | 36 (1.32) | 61 (2.03) | 39 (2.08) | 61 (2.03) | 49 (2.37) | burst then pile-on, tilt stable |
+| new_energy | 66 (2.41) | 59 (1.96) | 24 (1.28) | 59 (1.96) | 25 (1.23) | pile-on, tilt falls |
+| green_lowcarbon | 40 (1.44) | 29 (0.96) | 38 (2.02) | 29 (0.97) | 45 (2.15) | **raw share rises**, tilt rises |
+| biopharma | 26 (0.95) | 57 (1.89) | 24 (1.30) | 57 (1.89) | 21 (1.02) | burst then pile-on |
+| equipment_robot | . | 37 (1.21) | 19 (1.00) | 36 (1.19) | 27 (1.28) | parity |
+| new_materials | . | 70 (2.33) | 25 (1.34) | 70 (2.33) | 34 (1.66) | pile-on, tilt falls |
+| aero_ship | 56 (2.03) | 69 (2.28) | 34 (1.84) | 69 (2.28) | 31 (1.48) | tilt falls in (b) |
+| low_altitude | . | 60 (1.98) | 12 (0.64) | 60 (1.99) | 13 (0.63) | strongest pile-on |
+| future_industry | . | . | 10 (0.55) | . | 28 (1.34) | local in (a), parity in (b) |
+| agri_seed | 24 (0.86) | 40 (1.31) | 19 (1.03) | 40 (1.31) | 16 (0.78) | parity throughout |
+| real_estate | 21 (0.77) | 17 (0.56) | 4 (0.21) | 17 (0.56) | 4 (0.21) | localizes |
+| platform_ecom | 30 (1.11) | 57 (1.89) | 48 (2.55) | 57 (1.89) | 43 (2.09) | recentralizes |
+| heavy_tradit | 57 (2.08) | 64 (2.13) | 33 (1.76) | 64 (2.13) | 33 (1.60) | tilt stable |
+| universe central % | 27 | 30 | 19 | 30 | 21 | |
+
+**Evidence.** The raw central share falls from 2015-20 to 2021-26 for 14 of 16 sectors with
+data in both periods, not 15 of 16. Telecom rises as before. Carbon now rises too (29 to 38 in
+(a), 29 to 45 in (b)): its 2015-20 "central" documents were npc-filed local 节能 and 循环经济
+regulations, which re-level and take its 2015-20 document-level share to 29% against 48% at
+site level. The universe central share falls 30 to 19 (a) and 30 to 21 (b), against 45 to 26 at
+site level. The four material tilt falls hold in both universes: low-altitude 1.98 to 0.64,
+new energy 1.96 to 1.28 (1.23), new materials 2.33 to 1.34 (1.66), biopharma 1.89 to 1.30
+(1.02). Software also falls materially (2.84 to 1.47, or 1.86), as it already did at site level
+(1.82 to 1.09), so "only" in the published sentence was loose before this re-basing. The four
+tilt rises hold and strengthen: data 1.67 to 2.62 (2.26), telecom 1.58 to 3.56 (3.86), platforms
+1.89 to 2.55 (2.09), carbon 0.96 to 2.02 (2.15). Agriculture's 2008-14 tilt moves from 1.20 to
+0.86: it was never centrally led. `[measured]`
+
+### L6. Which published sentences survive
+
+*Survive, both universes.*
+
+- "Centrally-targeted sectors: ships and aerospace, telecom, heavy industry, data, platforms,
+  NEV." Six of the seven named survive under the pool rule at document level in (a) and (b).
+  The number 1.5 does not survive; the rule in L2 replaces it.
+- "Low-altitude is a district phenomenon (2.65)." Survives: 2.55 / 2.56 against the universe,
+  3.60 / 3.69 against the pool, z +13 / +14.
+- "Real estate and low-altitude are locally initiated." Survives, both the strongest below the
+  line in every configuration.
+- Section 4.1: the pile-on numbers in Headline 3 (semiconductors 59 to 34, new energy 66 to 24,
+  low-altitude 60 to 12); the four material tilt falls; the four tilt rises; the place-based
+  against network-rule reading. All hold at document level with larger spreads.
+- Section 4.2 (lags) uses no level column and is untouched.
+
+*Flip.*
+
+- "Agriculture is centrally targeted (tilt 1.56)." Flips to below the sector norm in both
+  universes (pool ratio 0.77 / 0.65, z -5 / -8). At document level agriculture is provincial
+  (2.05) and nothing else. This is the identity layer alone; R5 anticipated it.
+- "AI is the only sector with tilt near 1.0 at every tier above department: it is evenly
+  spread." Flips. AI's central tilt against the universe is 1.54 (a) and 1.85 (b), z +8 and
+  +16, and its municipal tilt is 0.70 / 0.64. Against the pool AI is at the sector norm in (a)
+  (0.99) and above it in (b) (1.16, z +4). No sector is within the universe null band at every
+  tier at document level. The nearest is equipment and robotics in (a) (1.00 / 0.83 / 1.01 /
+  1.25), and it is below the pool norm centrally.
+- "Equipment and robotics are municipal (1.49)." Flips against the universe (1.01 / 0.94) and
+  survives only relative to other sectors (1.33 / 1.25, z +5 / +4). The 1.49 was the department
+  denominator.
+- "The raw central share falls for 15 of 16 sectors." Becomes 14 of 16; carbon rises.
+- "The universe central share also falls (45% to 26%)." Becomes 30 to 19 (a) or 30 to 21 (b).
+- "Future industries are a provincial phenomenon (1.88)." Already withdrawn in R4 on the
+  universe; the identity layer alone trims it to 1.48 (a), and (b) takes it to 1.11, z +1.
+
+*Undecidable or redefined.*
+
+- Every "department tilt" in section 4, including "real estate 50.6% department (3.35)" and
+  section 6's "3.35 department tilt for housing", has no document-level counterpart. The
+  department tier is a site type. It survives as the within-municipal split in L4 (72% of
+  housing documents in the municipal tier come from department-type sites, ratio 2.1 to 2.3)
+  and as the municipal tilt 1.64. Section 3's "money is a district-and-department instrument"
+  is a site-type statement about `algo_doc_type` and is not affected.
+- "Locally initiated: future industries." Below the line in (a) (0.35, z -6) and exactly at it
+  in (b) (0.77, z -3.0). The verdict depends on whether MIIT is in the universe. Read from (b):
+  future industries are at the lower edge of the sector norm, not a local sector.
+- Semiconductors sit at z +2.9 / +2.8, one tenth below the line in both universes. The memo
+  never labelled them; they remain unlabelled.
+- Labels for software, carbon and biopharma change with the universe (norm to above, norm to
+  above, norm to below). They are decidable only after the universe is chosen, and R7 chose (b).
+
+**Bottom line for section 4.** The ordering survives; the thresholds do not. The stable upper
+set is telecom, platforms, data, heavy industry, ships and aerospace, and NEV. The stable lower
+set is real estate, low-altitude, equipment and robotics, and agriculture. The 1.5 and 0.75
+lines should be read as "z >= +3 and z <= -3 against a sector-size-matched pool null", which
+reproduces the published lists on the published data and corrects them on the identity layer.
+`[inferred]`
+
+```sql
+-- L1. Universe and sector-pool level mix at document level (universe (b); add the
+--     NOT IN (<77 shallow sites>) clause for (a)). Sector tagging was the Python regex
+--     table in section 1; the pool is any document with >= 1 tag, counted once.
+SELECT di.admin_level_doc AS lvl, count(*) AS n,
+       round(100.0 * count(*) / sum(count(*)) OVER (), 1) AS pct
+FROM documents d JOIN sites s ON s.site_key = d.site_key
+JOIN doc_identity di ON di.doc_id = d.id
+WHERE d.date_published >= '2008' AND d.date_published < '2027'
+  AND s.admin_level IN ('central','provincial','municipal','district','department')
+GROUP BY 1;                             -- (b): central 23.3, provincial 24.1, municipal 42.0, district 10.6
+
+-- L2. Where the department-site and npc documents land
+SELECT s.admin_level AS site_level, di.admin_level_doc AS doc_level, count(*)
+FROM documents d JOIN sites s ON s.site_key = d.site_key JOIN doc_identity di ON di.doc_id = d.id
+WHERE <universe filter> AND (s.admin_level = 'department' OR d.site_key = 'npc')
+GROUP BY 1, 2;                          -- department -> municipal 33,482; npc -> provincial 10,652, municipal 11,324
+
+-- L3. Null draws (Python): for each sector with n tagged docs, 200 x random.sample(pool_levels, n)
+--     -> share_central / pool_share_central; z = (observed - mean) / sd of the 200 draws;
+--     band = 2.5th and 97.5th draw. Universe null identical with the universe in place of the pool.
+--     Seed 20261007. Script: a one-off read-only pass, not in the repo.
+
+-- L4. Department-type share inside the document-level municipal tier
+SELECT round(100.0 * sum(s.admin_level = 'department') / count(*), 1) AS dept_share
+FROM documents d JOIN sites s ON s.site_key = d.site_key JOIN doc_identity di ON di.doc_id = d.id
+WHERE <universe filter> AND di.admin_level_doc = 'municipal'
+  AND (d.title LIKE '%房地产%' OR d.title LIKE '%商品房%' OR d.title LIKE '%保障性住房%'
+       OR d.title LIKE '%住房租赁%' OR d.title LIKE '%住房市场%');   -- 71-72% against 31-35% for all municipal docs
+```

@@ -220,6 +220,12 @@ path and flags the 171 affected `diffusion_events` lags.)*
   that restores the 74 shallow-archive sites (incl. MIIT) leaves the HHI, rise-fall and
   instrument-mix findings within 2 points but moves the level composition of MIIT's own sectors
   by 5-19 points central, so "future industries are local from the start" is withdrawn.
+  Re-basing the level analysis on `doc_identity.admin_level_doc` (same date) replaces the 1.5
+  tilt line, which at document level selects the average sector, with a z >= 3 test against a
+  sector-size-matched pool null: telecom, platforms, data, heavy industry, ships and NEV stay
+  centrally targeted, real estate, low-altitude and equipment stay local, agriculture flips from
+  central to local (its "central" documents were npc-filed local regulations), and "AI is evenly
+  spread" is withdrawn.
 - **Attention and campaigns** (`attention-campaigns.md`; Baumgartner-Jones punctuated
   equilibrium, Q1+Q4). Attention is punctuated at the topic level (Party 2020-21, Health 2020,
   Credit 2018) but not classically fat-tailed when pooled. The campaign label moved UP the
