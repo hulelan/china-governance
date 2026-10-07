@@ -199,6 +199,7 @@ from extract_citations import (  # noqa: E402
     _INST_SUFFIX, _STATUS_TAG, _NEWS_LEAD)
 from issuer_parser import REGISTRY, DOCNUM_SUBNATIONAL, DOCNUM_CENTRAL  # noqa: E402
 from build_diffusion_events import NONISSUE_RE  # noqa: E402
+from geo import CITY_PROVINCE, DISTRICT_CITY, CITY_PROVINCE_CSV, load_city_province  # noqa: E402,F401
 from genre_typer import clean_title, _TRAILING_ANNOT_RE  # noqa: E402
 
 # The `npc` site (国家法律法规数据库, crawlers/npc.py) is tagged admin_level=central
@@ -622,36 +623,9 @@ def localize(title, site):
 
 
 # --- jurisdictional chain (for the genre flip) --------------------------------
-CITY_PROVINCE_CSV = ROOT / "data" / "city_province.csv"
-
-
-def load_city_province(path=CITY_PROVINCE_CSV):
-    """city -> province for every prefecture-level division (地级市/自治州/地区/盟);
-    the four 直辖市 map to themselves (they ARE their province)."""
-    import csv
-    out = {}
-    with open(path, encoding="utf-8", newline="") as f:
-        for row in csv.DictReader(f):
-            out[row["city"].strip()] = row["province"].strip()
-    return out
-
-
-CITY_PROVINCE = load_city_province()
-# Bare district names the corpus emits WITHOUT a city prefix (Shenzhen district sites
-# write 龙华区X / 坪山区X; Wuhan / Nanjing / Qingdao / Chongqing bureaus likewise).
-# A '<city><district>' locality (深圳市龙华区, 北京市密云区) is parsed by prefix instead.
-DISTRICT_CITY = {
-    "福田区": "深圳市", "罗湖区": "深圳市", "南山区": "深圳市", "盐田区": "深圳市",
-    "宝安区": "深圳市", "龙岗区": "深圳市", "龙华区": "深圳市", "坪山区": "深圳市",
-    "光明区": "深圳市", "光明新区": "深圳市", "大鹏新区": "深圳市", "前海合作区": "深圳市",
-    "硚口区": "武汉市", "洪山区": "武汉市", "江汉区": "武汉市", "东湖高新区": "武汉市",
-    "江宁区": "南京市", "崂山区": "青岛市", "福山区": "烟台市", "仲恺高新区": "惠州市",
-    "龙门县": "惠州市", "周矶管理区": "潜江市", "后湖管理区": "潜江市",
-    "重庆高新区": "重庆市", "重庆经开区": "重庆市", "万盛经开区": "重庆市",
-}
-_BJ_DISTRICTS = ("东城区 西城区 朝阳区 丰台区 石景山区 海淀区 门头沟区 房山区 通州区 顺义区 "
-                 "昌平区 大兴区 怀柔区 平谷区 密云区 延庆区 北京经济技术开发区").split()
-DISTRICT_CITY.update({d: "北京市" for d in _BJ_DISTRICTS})
+# CITY_PROVINCE (data/city_province.csv) and DISTRICT_CITY (bare district -> city) live in
+# scripts/rnd/analysis/geo.py, shared with build_diffusion_events.province_of so the
+# two scripts cannot drift apart on which city sits in which province.
 
 # Stems every government writes for ITSELF (self-government housekeeping): a same-stem
 # text above the doc is not its parent, so these never flip to `implementing`.

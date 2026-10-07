@@ -75,7 +75,9 @@ ROOT = _HERE.parents[3]
 DEFAULT_DB = ROOT / "documents.db"
 # Reuse the citation resolver's matcher + normalization (do NOT reinvent).
 sys.path.insert(0, str(_HERE.parents[1] / "citations"))
+sys.path.insert(0, str(_HERE.parent))
 from extract_citations import TitleMatcher, _norm_title, _INNER_TITLE  # noqa: E402
+from geo import province_code_of_site_name, PROVINCE_CODE  # noqa: E402
 
 DATE_LO, DATE_HI = "2000-01-01", "2026-12-31"
 MAX_LAG = 1500  # days; cap positive lags (0..~4yr)
@@ -137,10 +139,20 @@ GENERIC_FYP_RE = re.compile(r"^十[一二三四五六]五(规划|规划纲要|�
 
 
 # --- Provincial anchors: province map + helpers ------------------------------
-# site_key -> province code, for every site that has a province-tier unit in the
-# corpus (a sub-provincial site whose province is uncrawled can never match a
-# provincial anchor, so it needs no entry). Exact keys first, then prefixes.
-# (A SITE attribute — where a doc was crawled — not document identity.)
+# site_key -> province code. TWO layers (a SITE attribute — where a doc was crawled —
+# not document identity):
+#   1. OVERRIDE: the hand table below (_PROV_EXACT exact keys, then _PROV_PREFIX
+#      prefixes) — for site keys whose display name is opaque (gz, sz_invest, bjb_*)
+#      or where a prefix rule is cheaper than 20 rows (szd_, bjd_, xz_).
+#   2. FALLBACK (geo.py): derive the province from the site's display name in
+#      `sites.name` (晋城市 -> 山西省 -> sx; "Wuhan Qiaokou District (武汉硚口区)" ->
+#      武汉市 -> hb) via data/city_province.csv + DISTRICT_CITY + the English alias
+#      table. Added 2026-10 when 42 of the municipal/district sites (7.8k docs) had
+#      silently rotted out of the hand table (jcgov, wuhan, suzhou_ah, leshan, …),
+#      so their docs never joined a provincial chain. New sites now resolve as long
+#      as their name carries the city; a site that resolves to None is counted and
+#      printed once at build time (`_report_unresolved`).
+# Codes: see geo.PROVINCE_CODE (existing codes kept verbatim; the rest ISO 3166-2:CN).
 _PROV_EXACT = {
     # Guangdong: portal + depts, Guangzhou, Shenzhen portals/bureaus/districts, gkmlpt cities
     "gz": "gd", "sz": "gd", "sz_invest": "gd",
@@ -199,7 +211,18 @@ ISSUE_CORE_RE = re.compile(r"印发(.{8,}?)的通知")
 PROV_STEM_MIN = 8
 
 
-def province_of(site):
+_SITE_NAMES = {}  # site_key -> sites.name; filled by load_site_names() before load()
+
+
+def load_site_names(conn):
+    """Read `sites` (key -> display name) for the province_of fallback."""
+    _SITE_NAMES.clear()
+    _SITE_NAMES.update(conn.execute("SELECT site_key, name FROM sites"))
+    return _SITE_NAMES
+
+
+def province_of_override(site):
+    """Layer 1 only: the hand table (exact keys, then prefixes). None if absent."""
     p = _PROV_EXACT.get(site)
     if p:
         return p
@@ -207,6 +230,30 @@ def province_of(site):
         if site.startswith(pref):
             return code
     return None
+
+
+def province_of(site, site_name=None):
+    """Province code of a site: hand-table override, else derived from the site's
+    display name (`site_name`, default: the `sites` table loaded by load_site_names).
+    None when neither layer knows the site."""
+    p = province_of_override(site)
+    if p:
+        return p
+    return province_code_of_site_name(site_name if site_name is not None else _SITE_NAMES.get(site))
+
+
+def _report_unresolved(docs):
+    """Count and print ONCE the sub-national sites (with docs in the window) that
+    province_of cannot place — these docs never join a provincial chain."""
+    per_site = Counter(d["site"] for d in docs.values()
+                       if d["level"] in SUBNATIONAL and not province_of(d["site"]))
+    if per_site:
+        n_docs = sum(per_site.values())
+        shown = ", ".join(f"{s}({n})" for s, n in per_site.most_common(12))
+        more = f", +{len(per_site) - 12} more" if len(per_site) > 12 else ""
+        print(f"  province_of: {len(per_site)} sub-national sites / {n_docs} docs unresolved "
+              f"(no provincial chain): {shown}{more}")
+    return per_site
 
 
 def prov_core(title):
@@ -813,20 +860,106 @@ def validate(docs, rows, anchors, prov_rows=None, prov_anchors=None):
         cascade("PROVINCIAL 广东 以旧换新 (2024-04-13)", [4406243, 4406240, 4406241, 4518476, 4485000])
 
 
+# --------------------------------------------------------------------------- #
+# Geo self-test + coverage report (read-only)                                  #
+# --------------------------------------------------------------------------- #
+# Display names as the live `sites` table carries them (2026-10), so the test runs
+# without a DB and pins the shapes the fallback must parse.
+_GEO_TEST_SITES = {
+    "szd_zjg": "Zhangjiagang (苏州张家港市)", "szdp": "Dapeng New District",
+    "nanjing": "南京市", "wuhan": "Wuhan Municipality",
+    "whd_qiaokou": "Wuhan Qiaokou District (武汉硚口区)", "suzhou_ah": "Suzhou, Anhui (宿州市)",
+    "jcgov": "晋城市", "xa": "西安市", "hbqj": "潜江市", "xlgl": "锡林郭勒盟",
+    "shijiazhuang": "Shijiazhuang (石家庄市)", "abazhou": "阿坝藏族羌族自治州",
+    "linxia": "Linxia Hui Prefecture (临夏回族自治州)", "laiwu": "Laiwu (莱芜)",
+    "bjd_daxing": "Beijing Daxing District (北京大兴区)", "cq": "Chongqing Municipality",
+    "yushu": "Yushu (玉树藏族自治州)", "zzz_nowhere": "Nowhere Portal",
+}
+_GEO_TEST_CASES = [
+    ("szd_zjg", "js"), ("szdp", "gd"), ("nanjing", "js"), ("wuhan", "hb"),
+    ("whd_qiaokou", "hb"), ("suzhou_ah", "ah"), ("jcgov", "sx"), ("xa", "sn"),
+    ("hbqj", "hb"), ("xlgl", "nm"), ("shijiazhuang", "he"), ("abazhou", "sc"),
+    ("linxia", "gs"), ("laiwu", "sd"), ("bjd_daxing", "bj"), ("cq", "cq"),
+    ("yushu", "qh"), ("zzz_nowhere", None), ("zzz_noname", None),
+]
+
+
+def self_test_geo():
+    bad = []
+    for site, want in _GEO_TEST_CASES:
+        got = province_of(site, _GEO_TEST_SITES.get(site, ""))
+        if got != want:
+            bad.append((site, want, got))
+    for site, want, got in bad:
+        print(f"  FAIL {site}: want {want!r} got {got!r}")
+    # every code the hand table emits must be a known province code
+    stray = {c for c in _PROV_EXACT.values()} | {c for _, c in _PROV_PREFIX}
+    stray -= set(PROVINCE_CODE.values())
+    if stray:
+        bad.append(("hand-table codes", "known", stray))
+        print(f"  FAIL hand table emits codes geo does not know: {sorted(stray)}")
+    print(f"geo self-test: {len(_GEO_TEST_CASES) + 1 - len(bad)}/{len(_GEO_TEST_CASES) + 1} passed")
+    return not bad
+
+
+def geo_report(conn):
+    """Read-only: municipal/district sites resolved by the hand table alone vs with
+    the site-name fallback, with doc counts, and the sites still unresolved."""
+    load_site_names(conn)
+    rows = conn.execute(
+        """SELECT s.site_key, s.name, s.admin_level, COUNT(d.id)
+           FROM sites s LEFT JOIN documents d ON d.site_key = s.site_key
+           WHERE s.admin_level IN ('municipal', 'district')
+           GROUP BY s.site_key ORDER BY COUNT(d.id) DESC""").fetchall()
+    n_sites = len(rows)
+    n_docs = sum(r[3] for r in rows)
+    before = [r for r in rows if province_of_override(r[0])]
+    after = [r for r in rows if province_of(r[0])]
+    print(f"municipal/district sites: {n_sites} ({n_docs} docs)")
+    print(f"  hand table only : {len(before):>4} sites / {sum(r[3] for r in before):>6} docs")
+    print(f"  + name fallback : {len(after):>4} sites / {sum(r[3] for r in after):>6} docs")
+    gained = [r for r in after if not province_of_override(r[0])]
+    print(f"  gained by fallback ({len(gained)} sites / {sum(r[3] for r in gained)} docs):")
+    for sk, name, lvl, n in gained:
+        print(f"    {sk:<16}{province_of(sk):<4}{n:>6}  {name}")
+    left = [r for r in rows if not province_of(r[0])]
+    print(f"  still unresolved ({len(left)} sites / {sum(r[3] for r in left)} docs):")
+    for sk, name, lvl, n in left:
+        print(f"    {sk:<16}{lvl:<10}{n:>6}  {name!r}")
+    # disagreements between the layers are the hand table's bugs-in-waiting
+    for sk, name, lvl, n in rows:
+        a, b = province_of_override(sk), province_code_of_site_name(name)
+        if a and b and a != b:
+            print(f"  DISAGREE {sk}: hand table {a} vs name {b} ({name})")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--db", default=str(DEFAULT_DB))
     ap.add_argument("--write", action="store_true", help="write the diffusion_events table")
     ap.add_argument("--validate", action="store_true", help="print validation cascades")
+    ap.add_argument("--self-test-geo", action="store_true",
+                    help="unit-test province_of (hand table + site-name fallback), no DB")
+    ap.add_argument("--geo-report", action="store_true",
+                    help="read-only: which municipal/district sites province_of resolves")
     args = ap.parse_args()
+
+    if args.self_test_geo:
+        sys.exit(0 if self_test_geo() else 1)
 
     dbpath = Path(args.db)
     if not dbpath.exists():
         sys.exit(f"DB not found: {dbpath}")
     t0 = time.time()
     conn = sqlite3.connect(f"file:{dbpath}?mode=ro", uri=True)
+    if args.geo_report:
+        geo_report(conn)
+        conn.close()
+        return
+    load_site_names(conn)
     docs = load(conn)
     print(f"Loaded {len(docs)} docs in {time.time()-t0:.1f}s")
+    _report_unresolved(docs)
 
     anchors, member_to_anchor, core_exact = build_anchors(docs)
     print(f"Anchors: {len(anchors)} pooled central instruments "
