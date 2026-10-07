@@ -403,6 +403,17 @@ layer is an identity device and should not be read as a provenance claim; the pr
 `renamed` rows have a provincial framework target as successor. It is not built for the P→M
 hop and adds nothing here. [measured]
 
+**Re-based on the union pair set (2026-10-07).** The "fewer than half" in point 3 counts
+metadata-only sources that cannot cite anything; conditioned on a source body, the citation
+path sees three in four renamed re-issuances (Guangdong province-to-city: 220 `localized_of`
+pairs with a body, 56 without a resolved citation, 25.5%; Jiangsu 13 and 3, 23.1%), so the
+figure measures body coverage, not a resolver deficit (`pair-channels.md` §3, re-run
+2026-10-07 on the 2026-10-06 nightly's `doc_identity`, 2,592 `localized_of` rows, pre-A6
+schema). On the union (citation ∪ title_reissue ∪ localized_of, `scripts/rnd/analysis/pairs.py`)
+the Guangdong relay count moves from 474 to 496 (8.9% to 9.1%) and the renamed re-issuance
+count from 377 to 398, while Jiangsu's 14 relays do not move, so the floor in point 3 is about
+5% of relays, restated in `fidelity-provincial.md` §2.2. [measured]
+
 ---
 
 ## 8. Findings

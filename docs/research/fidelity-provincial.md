@@ -183,6 +183,38 @@ Excluding 转发 and mirror rows leaves 5,009 Guangdong pairs with median 0.079,
 times the central hop's rate with them. At the central hop, stripping 转发 made relay nearly
 vanish. Here it does not. [measured]
 
+**Re-based on the union pair set (2026-10-07).** The table above and the 381 are citation-only
+(resolved citations plus `title_reissue`, 5,462 scored Guangdong pairs). `pair-channels.md`
+pooled citation ∪ title_reissue ∪ localized_of in `scripts/rnd/analysis/pairs.py`. Re-run
+read-only on the droplet with `nice -n 19 python3 scripts/rnd/analysis/pairs.py --report --csv
+pairs_union.csv --workers 2` (166 s, two workers, beside the nightly crawl). Identity build
+measured on: the 2026-10-06 nightly's `doc_identity`, 2,592 `localized_of` rows (`SELECT
+COUNT(*) FROM doc_identity WHERE localized_of IS NOT NULL`), pre-A6 schema with no `province`
+or `instrument_kind` column, so the `localized_of` trigger is not date-ordered (530 negative-lag
+edges dropped by the lag rule) and the framework gate is the old `algo_doc_type` + title-cue
+gate. The date-ordered A6 build (1,958 rows) was not yet on the droplet. Guangdong
+province-to-city at the memo's gate: citation basis 5,954 pairs, 5,297 scored, 474 relays
+(8.9% relay, 18.0% mid, 73.0% elaboration); union 6,287 pairs, 5,458 scored, 496 relays (9.1%,
+18.3%, 72.6%). Decomposition of the relays by the table's rule (转发 in the source title; the
+parent's title core inside the source title; the rest), citation basis then union: 转发 81 then
+82 (17%, 98% both-ways, median lag 44 d), mirror 16 then 16 (3%, 75%, 172 d), **renamed
+re-issuance 377 then 398** (80%, 75% both-ways, 184 d). The union adds 21 renamed re-issuances
+and one 转发 notice: 13 seen by `title_reissue` alone, 5 by `title_reissue` + `localized_of`, 4
+by `localized_of` alone. Genre of the 398: action_plan 217, policy_issuance 70, work_plan 54,
+strategy 18, notice 17, opinion 10, decision 4, regulation 4. Cities: 揭阳 86, 阳江 74, 江门 54,
+惠州 46, 汕尾 42, 珠海 26, 韶关 25, 中山 21, 云浮 7, 广州 6. Excluding 转发 and mirror rows: citation
+4,872 scored, median 0.075, relay 7.7%, mid 17.8%, elaboration 74.5%; union 5,028 scored, 0.077,
+7.9%, 18.0%, 74.0%. The split reads 80 / 17 / 3 on both bases against the table's 75 / 20 / 5;
+that gap is the pair-set reconstruction and the mirror rule (`pair-channels.md` §7), not the
+union. Jiangsu province-to-city: 14 relays on both bases (12 renamed, 2 转发, all Suzhou), the
+union adds none. One caveat on the Jiangsu citation basis: it is 473 pairs, 426 scored, relay
+3.3% here, not the 200 scored, 8.0% in §2.1; the builder's province derivation and the Suzhou
+date rule changed between the runs (`b7162c8`, `5465b8e`) and 456 of the 473 pairs are Suzhou
+at a median lag of 777 days. That shift sits in the citation basis, not in the union, and is
+logged here, not resolved. Net: the relay share is a floor by 0.2 points, the relay count by
+about 5%, and the renamed re-issuance count by 21. The gate is the larger lever (637 against
+474 relays with it off, `pair-channels.md` §5). [measured]
+
 ### 2.3 What the mid band is
 
 1,022 Guangdong pairs. Typical rows: 中山 turning the provincial 森林防火工作责任制 into a 中山市…
