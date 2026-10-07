@@ -225,10 +225,92 @@ def _extract_meta(html: str) -> dict:
     return meta
 
 
-def _extract_metadata_table(html: str) -> dict:
-    """Extract structured fields from the metadata table (Template A only).
+# Generic header-table label -> field map, in PRIORITY order per field (the first
+# alias listed wins when a page carries several, e.g. 发文字号 beats 文号).
+# Labels are compared after _norm_label (tags/whitespace/colon stripped), so
+# "标　　题", "发文字号：" and "文件编号:" all match.
+_META_LABEL_ALIASES = {
+    "document_number": ("发文字号", "文件编号", "文号", "发文文号", "文件文号", "字号"),
+    "publisher": ("发文机关", "发布机构", "发文单位", "发布单位", "制发机关", "发布部门"),
+    "date_written_str": ("成文日期", "发文日期", "印发日期", "签发日期"),  # NOT 生成日期: it is the index-record stamp (梁溪 shows it AFTER 公开日期)
+    "date_published_str": ("发布日期", "公开日期", "公布日期"),
+    "classify_theme_name": ("主题分类",),
+    # NO title alias here: generic tables on dept sites (fj_zjt procurement notices)
+    # carry a "名称" cell that would replace the real title; pass 1 still sets title.
+    "identifier": ("索引号", "信息索引号", "公开索引号"),
+}
+_META_LABEL_TO_FIELD = {}
+for _f, _als in _META_LABEL_ALIASES.items():
+    for _rank, _a in enumerate(_als):
+        _META_LABEL_TO_FIELD[_a] = (_f, _rank)
 
-    Parses the table with 索引号, 发文机关, 发文字号, etc.
+_TAG_RE = re.compile(r"<[^>]+>")
+_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+_WS_RE = re.compile(r"[\s\u3000\xa0]+")          # label normalisation: ALL whitespace
+# Value whitespace: collapse ASCII/nbsp runs but KEEP \u2002 / \u3000 separators --
+# gov.cn separates multi-issuer publishers with it ("财政部\u2002商务部") and the
+# stored values carry it. Zero-width chars (\u200b/\ufeff) are stripped outright.
+_VALUE_WS_RE = re.compile(r"[ \t\r\n\f\v\xa0]+")  # \u3000 kept too (feed-style separators)
+_ZERO_WIDTH_RE = re.compile(r"[\u200b\u200c\u200d\ufeff]")
+# "—  —", "---", "无", "暂无" placeholders the CMS renders in an empty cell
+_PLACEHOLDER_RE = re.compile(r"^[\s\u3000\xa0—\-－–―/]*(?:无|暂无|空)?[\s\u3000\xa0—\-－–―/]*$")
+
+
+def _meta_text(fragment: str) -> str:
+    """HTML fragment -> plain text: drop comments/tags, unescape, collapse space."""
+    t = _COMMENT_RE.sub("", fragment)
+    t = _TAG_RE.sub("", t)
+    t = (t.replace("&nbsp;", " ").replace("&#160;", " ").replace("&amp;", "&")
+          .replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"'))
+    t = _ZERO_WIDTH_RE.sub("", t)
+    return _VALUE_WS_RE.sub(" ", t).strip()
+
+
+def _norm_label(fragment: str) -> str:
+    """Label cell -> comparable key: no whitespace, no trailing 全角/半角 colon."""
+    t = _meta_text(fragment)
+    t = _WS_RE.sub("", t)
+    return t.rstrip("：:∶").strip()
+
+
+def _iter_label_value_pairs(html: str):
+    """Yield (label_key, raw_value_fragment) from every header-table dialect.
+
+    Supported layouts:
+      (1) <th>/<td> cells walked in order -- a cell whose text is a known label is
+          paired with the NEXT cell (so rows holding 2-3 label/value pairs work);
+      (2) <dt>LABEL</dt><dd>VALUE</dd>;
+      (3) <li>/<p>/<div> with a leading <span|b|strong|label|em>LABEL</...> and the
+          value as the rest of the container's text.
+    """
+    cells = [m.group(2) for m in re.finditer(r"<(t[hd])\b[^>]*>(.*?)</\1\s*>", html, re.DOTALL | re.IGNORECASE)]
+    for i in range(len(cells) - 1):
+        key = _norm_label(cells[i])
+        if key in _META_LABEL_TO_FIELD:
+            yield key, cells[i + 1]
+    for m in re.finditer(r"<dt\b[^>]*>(.*?)</dt\s*>\s*<dd\b[^>]*>(.*?)</dd\s*>", html, re.DOTALL | re.IGNORECASE):
+        key = _norm_label(m.group(1))
+        if key in _META_LABEL_TO_FIELD:
+            yield key, m.group(2)
+    for m in re.finditer(
+        r"<(li|p|div)\b[^>]*>\s*<(span|b|strong|label|em|i)\b[^>]*>(.*?)</\2\s*>(.*?)</\1\s*>",
+        html, re.DOTALL | re.IGNORECASE,
+    ):
+        key = _norm_label(m.group(3))
+        if key in _META_LABEL_TO_FIELD:
+            yield key, m.group(4)
+
+
+def _extract_metadata_table(html: str) -> dict:
+    """Extract structured fields from a document's metadata header table.
+
+    Pass 1 is the original gov.cn Template A parser (<td><b>LABEL：</b></td><td>VALUE</td>)
+    and is unchanged, so every site that already produced fields keeps producing the
+    SAME values. Pass 2 is the generic label->field walk (_iter_label_value_pairs) and
+    only fills keys pass 1 left empty -- it is what reaches the intertid CMS tables
+    (无锡 + wxd_* districts: 文件编号 / 发布机构 / 成文日期 / 公开日期 ... with
+    <!--<$[WJBH]>--> comment-wrapped values and "—  —" placeholders) and the
+    dt/dd and li/span header lists of other CMSes. 公开方式 / 效力状况 etc. are ignored.
     """
     info = {}
     # Match table rows: <td><b>LABEL：</b></td><td>VALUE</td>
@@ -252,6 +334,20 @@ def _extract_metadata_table(html: str) -> dict:
             info['title'] = value
         elif label == '索引号' or '索' in label:
             info['identifier'] = value
+
+    # Generic pass: best-ranked alias per field, never overriding pass-1 values.
+    best = {}  # field -> (rank, value)
+    for key, raw in _iter_label_value_pairs(html):
+        field, rank = _META_LABEL_TO_FIELD[key]
+        if info.get(field):
+            continue
+        value = _meta_text(raw).lstrip("：:∶ ").strip()
+        if not value or len(value) > 300 or _PLACEHOLDER_RE.match(value):
+            continue
+        if field not in best or rank < best[field][0]:
+            best[field] = (rank, value)
+    for field, (_rank, value) in best.items():
+        info[field] = value
     return info
 
 
