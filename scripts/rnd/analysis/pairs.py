@@ -138,9 +138,9 @@ def load_docs(conn, repair_suzhou_dates=True):
     for row in conn.execute(
             """SELECT d.id, d.site_key, d.title, d.date_published, d.algo_doc_type, d.url,
                       i.admin_level_doc, i.instrument_id, i.instrument_role, i.genre,
-                      i.date_quality, i.lead_issuer, i.localized_of
+                      i.date_quality, i.lead_issuer, i.localized_of, i.province
                FROM documents d JOIN doc_identity i ON i.doc_id = d.id"""):
-        (did, site, title, dp, dtype, url, lvl, inst, role, igenre, dq, issuer, loc) = row
+        (did, site, title, dp, dtype, url, lvl, inst, role, igenre, dq, issuer, loc, iprov) = row
         d = _d10(dp)
         if repair_suzhou_dates and site == "suzhou":
             d = _suzhou_date(url, d)
@@ -150,7 +150,9 @@ def load_docs(conn, repair_suzhou_dates=True):
             "level": lvl or "", "inst": inst if inst is not None else did,
             "role": role or "unique", "genre": igenre or "", "date_quality": dq or "",
             "issuer": issuer or "", "localized_of": loc,
-            "prov": province_of(site),
+            # per-document province (doc_identity A6) first — npc 地方法规 carry no site
+            # province — else the site's
+            "prov": iprov or province_of(site),
         }
     return docs
 
@@ -509,7 +511,7 @@ def _self_test_db():
                            algo_doc_type TEXT, url TEXT, body_text_cn TEXT);
     CREATE TABLE doc_identity(doc_id INTEGER PRIMARY KEY, admin_level_doc TEXT, level_source TEXT,
                               instrument_id INTEGER, instrument_role TEXT, genre TEXT,
-                              date_quality TEXT, lead_issuer TEXT, localized_of INTEGER);
+                              date_quality TEXT, lead_issuer TEXT, localized_of INTEGER, province TEXT);
     CREATE TABLE citations(id INTEGER PRIMARY KEY, source_id INTEGER, target_ref TEXT, target_id INTEGER,
                            citation_type TEXT, source_level TEXT, target_level TEXT);
     CREATE TABLE diffusion_events(id INTEGER PRIMARY KEY, source_id INTEGER, anchor_id INTEGER,
@@ -553,8 +555,8 @@ def _self_test_db():
          "municipal", 12, "unique", "promulgation", "good", "", None),
     ]
     c.executemany("INSERT INTO documents VALUES (?,?,?,?,?,?,?)", [d[:7] for d in docs])
-    c.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?)",
-                  [(d[0], d[7], "test", d[8], d[9], d[10], d[11], d[12], d[13]) for d in docs])
+    c.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?,?)",
+                  [(d[0], d[7], "test", d[8], d[9], d[10], d[11], d[12], d[13], None) for d in docs])
     c.executemany("INSERT INTO citations(source_id, target_ref, target_id, citation_type, source_level, target_level) "
                   "VALUES (?,?,?,?,?,?)", [
         (2, "x", 1, "named", "provincial", "central"),     # C→P citation (+ localized_of 2→1)

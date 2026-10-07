@@ -28,8 +28,11 @@ SCHEMA
         genre TEXT,             -- promulgation|implementing|explainer|readout|news|other
         date_quality TEXT,      -- good|crawl_stamped|body_scanned|missing
         lead_issuer TEXT,       -- from doc_issuers.lead_issuer (NULL if none)
-        localized_of INTEGER    -- id of the IN-CHAIN higher text whose stem this doc
+        localized_of INTEGER,   -- id of the IN-CHAIN higher text whose stem this doc
                                 -- localizes (the genre flip's trigger); NULL otherwise
+        province TEXT           -- A6: 2-letter province code of the ISSUING locality
+                                -- (geo.PROVINCE_CODE); NULL for central/media/research
+                                -- docs and when no header field names a locality
     ) + indexes on admin_level_doc, instrument_id, genre.
     The table is DROPPED and recreated on every build (schema changes need no migration).
 
@@ -117,6 +120,23 @@ A2  instrument_id — mirrors of one text share one id.
             深圳市人大常委会议事规则 <- 福建省); the in-chain rule scores 44/45. The
             trigger's id is persisted as `localized_of`. A locality the map does not
             know (false detections such as 转发市) never flips; the count is reported.
+    DATE-ORDERED TRIGGER (2026-10-07, docs/research/pair-channels.md §1): a localized
+            re-issuance cannot precede the text it localizes, yet 488 of 2,592 persisted
+            edges pointed at a trigger dated AFTER the document (云南省行政执法监督条例
+            1998 <- the State Council's 行政执法监督条例 2025; 重庆 2006–2016 notices <- a
+            later central re-issuance of a same-stem text). Measured on those edges, the
+            reversed lags do not cluster near zero — 86% are more than 180 days apart and
+            none joins the trigger's instrument pool — so they are false triggers, not
+            mirror re-posts. Rule: a candidate trigger must be dated no later than the doc
+            plus LOCALIZED_SLACK_DAYS (7: publication-order noise — a ministry text adopted
+            before, posted after, the province's copy; the 0..7-day forward bin is as thin
+            as the -7..-1 bin), plus MONTH_SLACK_DAYS (31) when either date is a `-01`
+            month-precision stamp. Among the date-valid in-chain candidates the LATEST one
+            wins (the nearest parent: a city text localizes its province's re-issuance,
+            not the central original it also matches), ties -> closest level, lowest id.
+            An undated doc or trigger is never date-valid. With no valid trigger the doc
+            stays `promulgation`, `localized_of` NULL (the pre-date-rule pick is kept in
+            `_chain_trigger` for --dry-run-flips only).
     canonical = promulgation genre > highest admin_level_doc > earliest date
                 (first publication is the authoritative copy) > lowest id.
     `unique` docs carry their own id as instrument_id, so GROUP BY instrument_id
@@ -166,11 +186,27 @@ A4  date_quality — per SITE, the industrial-policy memo's rule (docs/research/
 
 A5  lead_issuer — doc_issuers.lead_issuer verbatim (the issuer field of record).
 
+A6  province (2026-10-07) — the 2-letter code (scripts/rnd/analysis/geo.PROVINCE_CODE) of
+    the locality that ISSUED a sub-national document, so that docs on NATIONAL sites
+    (npc 地方法规 ~28.6k, miit 省通信管理局 ~740, bjrd …) can join a provincial chain:
+    build_diffusion_events.province_of() is per SITE and returns None for them, which
+    dropped 163 localized_of pairs in pair-channels.md and kept every npc provincial
+    instrument out of the provincial-anchor matcher. The name is taken from the SAME
+    header fields that set the level, in the A1 order — lead_issuer, the 文号 agency
+    (DOCNUM_SUBNATIONAL), `publisher` (X省人大常委会), the title masthead, the
+    localize() locality, the title head — and resolved to a province through
+    jurisdiction_chain() (province itself / city -> province / district -> city ->
+    province), falling back to the longest province- or city-name prefix of the name
+    (延边朝鲜族自治州人民政府). NULL for central / media / research docs and when no
+    field names a locality; consumers fall back to province_of(site) on NULL, so a doc
+    whose site already carries a province behaves exactly as before.
+
 USAGE (repo root; the DB is the droplet's documents.db)
 -------------------------------------------------------
     python3 scripts/build_doc_identity.py --self-test
     python3 scripts/build_doc_identity.py --dry-run          # compute + stats, no write
-    python3 scripts/build_doc_identity.py --dry-run-flips    # broad vs in-chain flip counts + 30 flip-backs, read-only
+    python3 scripts/build_doc_identity.py --dry-run-flips    # flip counts (broad / in-chain / date rule), reversed-edge
+                                                             # audit, slack evidence, province coverage; read-only
     python3 scripts/build_doc_identity.py                    # full rebuild, one transaction
     python3 scripts/build_doc_identity.py --validate         # A1–A4 checks against known truth
     python3 scripts/build_doc_identity.py --sample 60 --seed 7   # stratified hand-check dump
@@ -201,8 +237,10 @@ from extract_citations import (  # noqa: E402
     _norm_title, _title_cores_of_title, _WRAP_QUOTED, _WRAP_PLAIN, _MASTHEAD_PRE,
     _INST_SUFFIX, _STATUS_TAG, _NEWS_LEAD)
 from issuer_parser import REGISTRY, DOCNUM_SUBNATIONAL, DOCNUM_CENTRAL  # noqa: E402
-from build_diffusion_events import NONISSUE_RE  # noqa: E402
-from geo import CITY_PROVINCE, DISTRICT_CITY, CITY_PROVINCE_CSV, load_city_province  # noqa: E402,F401
+from build_diffusion_events import NONISSUE_RE, load_site_names, province_of  # noqa: E402
+from geo import (  # noqa: E402,F401
+    CITY_PROVINCE, DISTRICT_CITY, CITY_PROVINCE_CSV, PROVINCE_CODE, load_city_province,
+    province_name_of_place)
 from genre_typer import clean_title, _TRAILING_ANNOT_RE  # noqa: E402
 
 # The `npc` site (国家法律法规数据库, crawlers/npc.py) is tagged admin_level=central
@@ -296,7 +334,8 @@ _WEB_PREFIXES = sorted(((p, lvl) for lvl, ps in ADMIN_LEVEL_PREFIXES.items() for
                        key=lambda x: len(x[0]), reverse=True)
 
 
-def level_of_docnum(docnum, site_level):
+def _docnum_prefix(docnum):
+    """The agency prefix of a 文号 (粤府办 of 粤府办〔2024〕3号), None if none / generic."""
     dn = (docnum or "").strip()
     for meta in ("依据", "依照"):
         if dn.startswith(meta):
@@ -307,9 +346,26 @@ def level_of_docnum(docnum, site_level):
     prefix = m.group(0)
     if prefix.startswith(("公告", "通告", "通知", "令", "第")):
         return None
-    for p in _SUBNAT_PREFIXES:
-        if prefix.startswith(p):
-            return level_of_name(DOCNUM_SUBNATIONAL[p])
+    return prefix
+
+
+def docnum_agency(docnum):
+    """Sub-national agency the 文号 registry names for this prefix (粤府 -> 广东省人民政府)."""
+    prefix = _docnum_prefix(docnum)
+    if prefix:
+        for p in _SUBNAT_PREFIXES:
+            if prefix.startswith(p):
+                return DOCNUM_SUBNATIONAL[p]
+    return None
+
+
+def level_of_docnum(docnum, site_level):
+    prefix = _docnum_prefix(docnum)
+    if not prefix:
+        return None
+    agency = docnum_agency(docnum)
+    if agency:
+        return level_of_name(agency)
     for p, lvl in _WEB_PREFIXES:
         if prefix.startswith(p):
             return lvl
@@ -330,8 +386,9 @@ _HEAD_END = re.compile(
     _INST_SUFFIX + r"$|(?:条例|办法|规定|规则|准则|细则|章程|规程|决定|意见|方案|计划|规划|纲要|措施|法|法典)$")
 
 
-def level_of_title(title):
-    """Level of the issuer named at the HEAD of a title (before the verb frame)."""
+def title_head(title):
+    """The issuer / instrument HEAD of a title (before the verb frame), or None when the
+    head is not name-shaped."""
     t = _STATUS_LEAD.sub("", clean_title(title))
     m = _TITLE_HEAD_CUT.search(t)
     head = t[: m.start()] if m else t
@@ -339,6 +396,14 @@ def level_of_title(title):
     # an issuer head is a contiguous CJK run (no spaces / digits / punctuation):
     # '保障防控前提下租房需求 经纪人进社区 人数次数设限制' is a headline, not a name
     if not head or len(head) > 40 or not _HEAD_SHAPE.match(head) or not _HEAD_END.search(head):
+        return None
+    return head
+
+
+def level_of_title(title):
+    """Level of the issuer named at the HEAD of a title (before the verb frame)."""
+    head = title_head(title)
+    if not head:
         return None
     if head.startswith("中华人民共和国"):
         return "central"
@@ -367,6 +432,61 @@ def derive_level(doc, site_level, lead_issuer):
     # the 13 `department` sites are all Shenzhen MUNICIPAL bureaus (crawlers/gkmlpt.py);
     # a bureau's level is its government's level, so the fallback is municipal.
     return DEPT_SITE_FALLBACK.get(site_level, site_level or "unknown"), "site"
+
+
+# --------------------------------------------------------------------------- #
+# A6. province of the issuing locality                                         #
+# --------------------------------------------------------------------------- #
+# Longest-first province / prefecture names, the fallback for heads _LOC_FIRST cannot
+# segment (延边朝鲜族自治州人民政府: a 5-char 自治州).
+_PLACE_PREFIXES = sorted(set(PROVINCE_CODE) | set(CITY_PROVINCE), key=len, reverse=True)
+
+
+def province_code_of_locality(loc):
+    """2-letter code of the province a localize()/locality_of_head() locality sits in:
+    the province itself, a city's province, a district's city's province. None for an
+    unknown / unqualified ('<municipal>@sz') locality."""
+    if not loc or loc.startswith("<"):
+        return None
+    chain = jurisdiction_chain(loc)
+    if chain is None:
+        name = province_name_of_place(loc)
+    else:
+        name = loc if chain == () else chain[-1]
+    return PROVINCE_CODE.get(name) if name else None
+
+
+def province_of_name(name):
+    """Province code of a sub-national agency / locality NAME (江苏省人民代表大会常务委员会
+    -> js, 深圳市人民政府 -> gd, 海南省通信管理局 -> hi); None for a central or
+    unrecognized name."""
+    if not name:
+        return None
+    name = name.strip(" 　​")
+    if level_of_name(name) == "central":
+        return None
+    code = province_code_of_locality(locality_of_head(name))
+    if code:
+        return code
+    for place in _PLACE_PREFIXES:
+        if name.startswith(place) and len(name) > len(place):
+            return PROVINCE_CODE.get(province_name_of_place(place))
+    return None
+
+
+def derive_province(doc, lead_issuer):
+    """A6: province code of a SUB-NATIONAL doc's issuing locality, from the header
+    fields in A1 order; None when none names a locality (consumers then fall back
+    to the site's province)."""
+    for name in (lead_issuer, docnum_agency(doc["docnum"]), doc["publisher"],
+                 masthead_of(doc["title"])):
+        code = province_of_name(name)
+        if code:
+            return code
+    code = province_code_of_locality(doc.get("_loc"))
+    if code:
+        return code
+    return province_of_name(title_head(doc["title"]))
 
 
 # --------------------------------------------------------------------------- #
@@ -693,6 +813,40 @@ def _to_date(s):
         return None
 
 
+# A localized re-issuance cannot precede the text it localizes. Publication order is
+# noisy by a few days (a ministry text adopted before, posted after, the province's
+# copy), and a `-01` day is usually a month-precision stamp (docs/research/pair-channels.md
+# §1; the distribution is printed by --dry-run-flips).
+LOCALIZED_SLACK_DAYS = 7
+MONTH_SLACK_DAYS = 31
+
+
+def trigger_lag_floor(doc_date, trig_date):
+    """Minimum accepted (doc_date - trig_date) in days for a date-valid trigger."""
+    slack = LOCALIZED_SLACK_DAYS
+    if doc_date.day == 1 or trig_date.day == 1:
+        slack += MONTH_SLACK_DAYS
+    return -slack
+
+
+def is_date_valid_trigger(m, o):
+    """Is candidate trigger `o` dated no later than doc `m` (within the slack)? An
+    undated doc or trigger is never valid."""
+    if not m["date"] or not o["date"]:
+        return False
+    return (m["date"] - o["date"]).days >= trigger_lag_floor(m["date"], o["date"])
+
+
+def pick_trigger(m, higher):
+    """The nearest date-valid IN-CHAIN parent among the higher same-stem members:
+    latest date first (a city localizes its province's re-issuance, not the central
+    original it also matches), then the closest level, then the lowest id."""
+    valid = [o for o in higher if in_chain(m, o) and is_date_valid_trigger(m, o)]
+    if not valid:
+        return None
+    return max(valid, key=lambda o: (o["date"], o["_rank"], -o["id"]))
+
+
 def _canon_sort_key(d):
     """promulgation genre > highest doc level > earliest date (the first publication
     is the authoritative copy; reposts come later) > lowest id."""
@@ -709,6 +863,7 @@ def assign_instruments(docs):
     for d in docs.values():
         d["instrument_id"], d["instrument_role"] = d["id"], "unique"
         d["localized"], d["localized_of"], d["_broad_trigger"] = False, None, None
+        d["_chain_trigger"] = None  # the in-chain pick BEFORE the date rule (dry-run audit)
         cls = POOL_CLASS.get(d["genre"])
         if not cls:
             continue
@@ -721,6 +876,7 @@ def assign_instruments(docs):
         stems[(cls, stem)].append(d)
     groups = defaultdict(list)
     n_localized = n_flipped = n_flipped_broad = n_unknown_loc = 0
+    n_flipped_chain = 0
     for (cls, stem), members in stems.items():
         if len(members) > 1:
             generic = bool(GENERIC_STEM_RE.search(stem))
@@ -745,7 +901,12 @@ def assign_instruments(docs):
                 if jurisdiction_chain(m["_loc"]) is None:
                     n_unknown_loc += 1  # unknown / unqualified locality: cannot place it, no flip
                     continue
-                trig = next((o for o in higher if in_chain(m, o)), None)
+                chain_trig = next((o for o in higher if in_chain(m, o)), None)
+                if chain_trig is None:
+                    continue
+                m["_chain_trigger"] = chain_trig["id"]  # the 2026-10-06 rule's pick
+                n_flipped_chain += 1
+                trig = pick_trigger(m, higher)  # date-ordered, nearest parent
                 if trig is None:
                     continue
                 m["genre"] = "implementing"
@@ -755,7 +916,8 @@ def assign_instruments(docs):
             key = (cls, stem, m["_loc"]) if m["localized"] else (cls, m["_key"])
             groups[key].append(m)
     stats = {"n_localized": n_localized, "n_flipped": n_flipped,
-             "n_flipped_broad": n_flipped_broad, "n_unknown_loc": n_unknown_loc}
+             "n_flipped_broad": n_flipped_broad, "n_unknown_loc": n_unknown_loc,
+             "n_flipped_chain": n_flipped_chain}
     n_pooled = 0
     for members in groups.values():
         if len(members) < 2 or len({m["site"] for m in members}) < 2:
@@ -789,6 +951,20 @@ def assign_instruments(docs):
                 m["instrument_id"] = canon["id"]
                 m["instrument_role"] = "canonical" if m is canon else "mirror"
                 n_pooled += 1
+    # The nearest dated parent may be a MIRROR of the triggering text (the mee repost of
+    # the SC 以旧换新 plan, 5 days after gov): persist the instrument's canonical copy
+    # when it is itself date-valid (the canonical is the earliest copy, so it is).
+    n_trigger_moved = 0
+    for m in docs.values():
+        if m["localized_of"] is None:
+            continue
+        t = docs[m["localized_of"]]
+        c = docs.get(t["instrument_id"])
+        if c is not None and c is not t and is_date_valid_trigger(m, c):
+            m["localized_of"] = c["id"]
+        if m["localized_of"] != m["_chain_trigger"]:
+            n_trigger_moved += 1
+    stats["n_trigger_moved"] = n_trigger_moved
     stats["n_pooled"] = n_pooled
     return stats
 
@@ -921,6 +1097,7 @@ def build(conn):
     inst = assign_instruments(docs)
     stamped = crawl_stamped_sites(docs, site_level, crawl_year)
     for d in docs.values():
+        d["province"] = derive_province(d, d["lead_issuer"]) if d["level"] in SUBNATIONAL else None
         if not d["has_date"]:
             d["date_quality"] = "missing"
         elif d["site"] in stamped:
@@ -943,7 +1120,8 @@ CREATE TABLE doc_identity (
     genre TEXT,
     date_quality TEXT,
     lead_issuer TEXT,
-    localized_of INTEGER
+    localized_of INTEGER,
+    province TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_doc_identity_level ON doc_identity(admin_level_doc);
 CREATE INDEX IF NOT EXISTS idx_doc_identity_instrument ON doc_identity(instrument_id);
@@ -954,14 +1132,14 @@ CREATE INDEX IF NOT EXISTS idx_doc_identity_genre ON doc_identity(genre);
 def write(conn, docs):
     t0 = time.time()
     rows = [(d["id"], d["level"], d["level_source"], d["instrument_id"], d["instrument_role"],
-             d["genre"], d["date_quality"], d["lead_issuer"], d["localized_of"])
+             d["genre"], d["date_quality"], d["lead_issuer"], d["localized_of"], d["province"])
             for d in docs.values()]
     conn.execute("BEGIN IMMEDIATE")
     try:
         for stmt in DDL.strip().split(";"):
             if stmt.strip():
                 conn.execute(stmt)
-        conn.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?)", rows)
+        conn.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?,?)", rows)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")
@@ -986,9 +1164,14 @@ def print_stats(docs, meta, site_level):
     n_inst = len({d["instrument_id"] for d in docs.values()})
     print(f"\ninstruments: {n_inst:,} for {n:,} docs ({meta['n_pooled']:,} docs in pools; "
           f"{meta['n_localized']:,} localized re-issuances kept out of higher-level pools)")
-    print(f"genre flips promulgation->implementing: {meta['n_flipped']:,} in-chain "
-          f"(broad any-higher rule would flip {meta['n_flipped_broad']:,}; "
-          f"{meta['n_unknown_loc']:,} skipped for an unknown locality)")
+    print(f"genre flips promulgation->implementing: {meta['n_flipped']:,} in-chain + date-ordered "
+          f"(in-chain alone {meta['n_flipped_chain']:,}; broad any-higher rule {meta['n_flipped_broad']:,}; "
+          f"{meta['n_unknown_loc']:,} skipped for an unknown locality; "
+          f"{meta['n_trigger_moved']:,} triggers moved to the nearest dated parent)")
+    sub = [d for d in docs.values() if d["level"] in SUBNATIONAL]
+    n_prov = sum(1 for d in sub if d["province"])
+    print(f"province (A6): {n_prov:,} of {len(sub):,} sub-national docs resolved "
+          f"({n_prov / max(len(sub), 1) * 100:.1f}%)")
     print(f"crawl-stamped sites: {len(meta['stamped'])}  "
           f"({sum(1 for d in docs.values() if d['date_quality'] == 'crawl_stamped'):,} docs)")
 
@@ -1077,6 +1260,8 @@ def dry_run_flips(docs, meta, n=30, seed=7):
     print("flip-backs by level: " + ", ".join(f"{k}={v:,}" for k, v in lv.most_common()))
     kept = Counter(docs[d["localized_of"]]["level"] for d in docs.values() if d["localized_of"])
     print("kept flips by trigger level: " + ", ".join(f"{k}={v:,}" for k, v in kept.most_common()))
+    dry_run_date_rule(docs, meta)
+    dry_run_province(docs)
     rnd = random.Random(seed)
     print(f"\n--- {min(n, len(backs))} flip-backs (title | locality | trigger title) ---")
     for d in rnd.sample(backs, min(n, len(backs))):
@@ -1091,6 +1276,119 @@ def dry_run_flips(docs, meta, n=30, seed=7):
         hits = [d for d in docs.values() if clean_title(d["title"]) == title]
         for d in hits[:2]:
             print(f"   sanity {d['id']} genre={d['genre']:12s} localized_of={d['localized_of']} | {title}")
+
+
+_LAG_BINS = ((-10**9, -731, "<= -731"), (-730, -366, "-730..-366"), (-365, -181, "-365..-181"),
+             (-180, -91, "-180..-91"), (-90, -61, "-90..-61"), (-60, -31, "-60..-31"),
+             (-30, -8, "-30..-8"), (-7, -1, "-7..-1"), (0, 7, "0..7"), (8, 31, "8..31"),
+             (32, 90, "32..90"), (91, 365, "91..365"), (366, 730, "366..730"), (731, 10**9, "> 730"))
+
+
+def _lag_bin(lag):
+    return next(label for lo, hi, label in _LAG_BINS if lo <= lag <= hi)
+
+
+def dry_run_date_rule(docs, meta):
+    """The date rule's audit: flips before/after, the lag distribution of the pre-date-rule
+    edges (reversed vs forward), the slack and its evidence, and the reversed edges
+    REMAINING among the persisted triggers (must be 0)."""
+    print("\n=== date-ordered trigger (pair-channels.md §1) ===")
+    pre = [d for d in docs.values() if d["_chain_trigger"] is not None]
+    print(f"flips before the date rule (in-chain, any date): {meta['n_flipped_chain']:,}")
+    print(f"flips after  the date rule (nearest dated parent): {meta['n_flipped']:,}  "
+          f"(triggers moved to a nearer parent: {meta['n_trigger_moved']:,})")
+    rejected = [d for d in pre if d["localized_of"] is None]
+    why = Counter()
+    for d in rejected:
+        t = docs[d["_chain_trigger"]]
+        if not d["date"]:
+            why["doc undated"] += 1
+        elif not t["date"]:
+            why["trigger undated"] += 1
+        else:
+            why["all in-chain candidates dated after the doc"] += 1
+    print(f"rejected: {len(rejected):,}  (" + "; ".join(f"{k}: {v:,}" for k, v in why.most_common()) + ")")
+
+    # lag distribution of the PRE-date-rule edges, by bin
+    bins = Counter()
+    month = Counter()
+    for d in pre:
+        t = docs[d["_chain_trigger"]]
+        if d["date"] and t["date"]:
+            lag = (d["date"] - t["date"]).days
+            b = _lag_bin(lag)
+            bins[b] += 1
+            if d["date"].day == 1 or t["date"].day == 1:
+                month[b] += 1
+    dated = sum(bins.values())
+    neg = sum(v for k, v in bins.items() if k.startswith("-") or k.startswith("<"))
+    print(f"\npre-date-rule edges with both dates: {dated:,}; reversed (doc before trigger): {neg:,}")
+    print("  doc_date - trigger_date (days)   edges   of which a -01 (month-precision) date")
+    for _, _, label in _LAG_BINS:
+        if bins.get(label):
+            print(f"  {label:>12}  {bins[label]:7,}  {month.get(label, 0):7,}")
+    far = sum(v for k, v in bins.items() if k in ("<= -731", "-730..-366", "-365..-181"))
+    near7 = bins.get("-7..-1", 0)
+    near31 = near7 + bins.get("-30..-8", 0)
+    near60 = near31 + bins.get("-60..-31", 0)
+    fwd7 = bins.get("0..7", 0)
+    print(f"\nslack chosen: {LOCALIZED_SLACK_DAYS}d, +{MONTH_SLACK_DAYS}d when either date is a -01 stamp. Why:")
+    print(f"  reversed edges > 180d apart: {far:,} of {neg:,} ({far / max(neg, 1) * 100:.0f}%) — false triggers "
+          f"(a later central re-issuance of a same-stem text), not re-posts;")
+    print(f"  reversed within 7d: {near7:,}, within 31d: {near31:,}, within 60d: {near60:,}; forward within 7d: {fwd7:,} — "
+          f"the near-zero mass is thin and symmetric (publication-order noise), there is no re-post cluster;")
+    print(f"  8..60d reversed are annual-cycle siblings (city 立法工作计划 before the province's), so the slack stops at 7d.")
+
+    # reversed edges REMAINING among the persisted triggers — must be 0 (beyond slack)
+    strict = beyond = 0
+    for d in docs.values():
+        if d["localized_of"] is None:
+            continue
+        t = docs[d["localized_of"]]
+        if not d["date"] or not t["date"]:
+            beyond += 1  # cannot happen: an undated pair is never date-valid
+            continue
+        lag = (d["date"] - t["date"]).days
+        if lag < 0:
+            strict += 1
+        if lag < trigger_lag_floor(d["date"], t["date"]):
+            beyond += 1
+    print(f"\nreversed edges remaining among persisted localized_of: beyond slack {beyond:,} "
+          f"({'OK' if beyond == 0 else 'FAIL'}; must be 0); strictly negative within slack {strict:,}")
+
+
+def dry_run_province(docs):
+    """A6 coverage where it matters: sub-national docs whose SITE has no province
+    (npc / miit / bjrd …), plus agreement with the site's province where both exist."""
+    print("\n=== province (A6) ===")
+    sub = [d for d in docs.values() if d["level"] in SUBNATIONAL]
+    n_prov = sum(1 for d in sub if d["province"])
+    print(f"sub-national docs: {len(sub):,}; province resolved: {n_prov:,} ({n_prov / max(len(sub), 1) * 100:.1f}%)")
+    gap = [d for d in sub if not province_of(d["site"])]
+    per_site = defaultdict(lambda: [0, 0])
+    for d in gap:
+        per_site[d["site"]][0 if d["province"] else 1] += 1
+    print(f"docs on sites province_of() cannot place (the matcher's gap): {len(gap):,} on {len(per_site)} sites")
+    print("  site            resolved  unresolved")
+    for s, (ok, bad) in sorted(per_site.items(), key=lambda kv: -(kv[1][0] + kv[1][1]))[:12]:
+        print(f"  {s:14s}  {ok:8,}  {bad:10,}")
+    unresolved = [d for d in gap if not d["province"]]
+    pubs = Counter((d["publisher"] or d["lead_issuer"] or "-")[:24] for d in unresolved)
+    print(f"  top unresolved publishers/issuers ({len(unresolved):,} docs):")
+    for p, n in pubs.most_common(10):
+        print(f"    {n:6,}  {p}")
+    for d in unresolved[:6]:
+        print(f"    e.g. {d['id']} {d['site']:8s} {d['level']:10s} src={d['level_source']:13s} "
+              f"pub={d['publisher'][:14]!r} | {d['title'][:40]}")
+    both = [(d["province"], province_of(d["site"])) for d in sub if d["province"] and province_of(d["site"])]
+    agree = sum(1 for a, b in both if a == b)
+    print(f"agreement with the site's province where both exist: {agree:,}/{len(both):,} "
+          f"({agree / max(len(both), 1) * 100:.1f}%)")
+    dis = Counter((d["site"], d["province"]) for d in sub
+                  if d["province"] and province_of(d["site"]) and d["province"] != province_of(d["site"]))
+    for (s, p), n in dis.most_common(8):
+        ex = next(d for d in sub if d["site"] == s and d["province"] == p)
+        print(f"  {s:12s} site={province_of(s)} doc={p} {n:5,}  e.g. {(ex['lead_issuer'] or ex['publisher'] or '-')[:16]} | {ex['title'][:36]}")
 
 
 def sample(docs, n, seed, field):
@@ -1273,10 +1571,92 @@ _POOL_TESTS = [
            date=_D(2023, 1, 1), title="深圳市罗湖区人民政府办公室关于印发《罗湖区建设工程造价管理办法》的通知")],
      {50: (50, "unique", "promulgation"), 51: (51, "unique", "implementing"),
       52: (52, "unique", "promulgation"), 53: (53, "unique", "promulgation")}),
+    # --- pair-channels.md §1: the trigger must be DATED no later than the doc ---
+    # reversed: 云南省行政执法监督条例 (1998) cannot localize the SC 条例 of 2025 -> no flip
+    ([dict(id=60, site="gov", site_level="central", level="central", genre="promulgation",
+           date=_D(2025, 12, 17), title="行政执法监督条例"),
+      dict(id=61, site="npc", site_level="central", level="provincial", genre="promulgation",
+           date=_D(1998, 11, 27), title="云南省行政执法监督条例")],
+     {60: (60, "unique", "promulgation"), 61: (61, "unique", "promulgation")}),
+    # nearest dated parent: the GD re-issuance (Apr) is the city's trigger, not the
+    # higher-ranked SC original (Mar) and not the later SC repost (Jul, reversed)
+    ([dict(id=70, site="gov", site_level="central", level="central", genre="promulgation",
+           date=_D(2024, 3, 13), title="国务院关于印发《推动消费品以旧换新行动方案》的通知"),
+      dict(id=71, site="gd", site_level="provincial", level="provincial", genre="promulgation",
+           date=_D(2024, 4, 20), title="广东省人民政府关于印发广东省推动消费品以旧换新行动方案的通知"),
+      dict(id=72, site="huizhou", site_level="municipal", level="municipal", genre="promulgation",
+           date=_D(2024, 6, 10), title="惠州市人民政府关于印发惠州市推动消费品以旧换新行动方案的通知"),
+      dict(id=73, site="ndrc", site_level="central", level="central", genre="promulgation",
+           date=_D(2024, 7, 10), title="国家发展改革委关于印发《推动消费品以旧换新行动方案》的通知")],
+     {70: (70, "canonical", "promulgation"), 71: (71, "unique", "implementing"),
+      72: (72, "unique", "implementing"), 73: (70, "mirror", "promulgation")}),
+    # a higher-ranked LATER text is not the parent when an earlier in-chain one exists:
+    # SC text dated after the city doc (reversed, > slack), the GD text before it
+    ([dict(id=80, site="gov", site_level="central", level="central", genre="promulgation",
+           date=_D(2024, 8, 1), title="国务院关于印发《物业服务收费管理办法》的通知"),
+      dict(id=81, site="gd", site_level="provincial", level="provincial", genre="promulgation",
+           date=_D(2023, 5, 4), title="广东省人民政府关于印发广东省物业服务收费管理办法的通知"),
+      dict(id=82, site="zhuhai", site_level="municipal", level="municipal", genre="promulgation",
+           date=_D(2024, 6, 20), title="珠海市人民政府关于印发珠海市物业服务收费管理办法的通知")],
+     {80: (80, "unique", "promulgation"), 81: (81, "unique", "promulgation"),
+      82: (82, "unique", "implementing")}),
+    # month-precision slack: a city doc stamped 2024-05-01 and the GD text of 2024-05-20
+    # (lag -19d) is within the 31d month slack -> flips; the same lag on two day-precise
+    # dates (05-02 vs 05-21) is beyond the 7d slack -> stays promulgation
+    ([dict(id=90, site="gd", site_level="provincial", level="provincial", genre="promulgation",
+           date=_D(2024, 5, 20), title="广东省人民政府关于印发广东省能源发展规划的通知"),
+      dict(id=91, site="jieyang", site_level="municipal", level="municipal", genre="promulgation",
+           date=_D(2024, 5, 1), title="揭阳市人民政府关于印发揭阳市能源发展规划的通知"),
+      dict(id=92, site="gd", site_level="provincial", level="provincial", genre="promulgation",
+           date=_D(2024, 5, 21), title="广东省人民政府关于印发广东省粮食安全责任考核办法的通知"),
+      dict(id=93, site="jieyang", site_level="municipal", level="municipal", genre="promulgation",
+           date=_D(2024, 5, 2), title="揭阳市人民政府关于印发揭阳市粮食安全责任考核办法的通知")],
+     {90: (90, "unique", "promulgation"), 91: (91, "unique", "implementing"),
+      92: (92, "unique", "promulgation"), 93: (93, "unique", "promulgation")}),
+    # undated doc / undated trigger: never date-valid -> no flip (the doc stays promulgation)
+    ([dict(id=100, site="gov", site_level="central", level="central", genre="promulgation",
+           date=_D(2020, 1, 15), title="国务院关于印发《保障农民工工资支付条例》的通知"),
+      dict(id=101, site="cq", site_level="provincial", level="provincial", genre="promulgation",
+           date=None, title="重庆市人民政府关于印发重庆市保障农民工工资支付条例的通知"),
+      dict(id=102, site="gov", site_level="central", level="central", genre="promulgation",
+           date=None, title="国务院关于印发《城镇排水与污水处理条例》的通知"),
+      dict(id=103, site="gd", site_level="provincial", level="provincial", genre="promulgation",
+           date=_D(2021, 3, 3), title="广东省人民政府关于印发广东省城镇排水与污水处理条例的通知")],
+     {100: (100, "unique", "promulgation"), 101: (101, "unique", "promulgation"),
+      102: (102, "unique", "promulgation"), 103: (103, "unique", "promulgation")}),
 ]
 # localized_of expectations, one dict per _POOL_TESTS entry (id -> trigger id; unlisted = NULL).
 # In test 3 the bare GD copy (id 3) is also a provincial-level localization of the SC text.
-_LOCALIZED_OF = [{11271152: 900039931}, {}, {2: 1, 3: 1}, {}, {}, {}, {31: 30}, {41: 40}, {51: 50}]
+_LOCALIZED_OF = [{11271152: 900039931}, {}, {2: 1, 3: 1}, {}, {}, {}, {31: 30}, {41: 40}, {51: 50},
+                 {}, {71: 70, 72: 71}, {82: 81}, {91: 90}, {}]
+# A6 province: (doc fields, level, lead_issuer) -> 2-letter code. Central docs are tested
+# through derive_province's caller (build() passes only SUBNATIONAL levels) — here a
+# central NAME must resolve to None.
+_PROVINCE_TESTS = [
+    # npc 地方法规: the publisher is the only locality field
+    (dict(title="江苏省大气污染防治条例", docnum="", publisher="江苏省人民代表大会常务委员会"), None, "js"),
+    (dict(title="深圳经济特区养老服务条例", docnum="", publisher="深圳市人民代表大会常务委员会"), None, "gd"),
+    (dict(title="内蒙古自治区草原条例", docnum="", publisher="内蒙古自治区人民代表大会常务委员会"), None, "nm"),
+    # miit: a 省通信管理局 lead issuer on the ministry's site (publisher = the ministry)
+    (dict(title="海南省通信管理局关于开展职称评审专家征集的通知", docnum="", publisher="工业和信息化部"),
+     "海南省通信管理局", "hi"),
+    # bjrd: no issuer / publisher, the title head names the body
+    (dict(title="北京市人民代表大会法制委员会关于《北京市测绘地理信息条例（草案）》审议结果的报告",
+          docnum="", publisher=""), None, "bj"),
+    # 文号 agency (粤府办 -> 广东省人民政府办公厅) when the issuer is missing
+    (dict(title="关于印发若干措施的通知", docnum="粤府办〔2024〕3号", publisher=""), None, "gd"),
+    # district issuer -> its city's province; 直辖市 district -> the 直辖市
+    (dict(title="关于印发龙华区政务公开办法的通知", docnum="", publisher=""), "深圳市龙华区人民政府", "gd"),
+    (dict(title="密云区文化和旅游发展规划", docnum="", publisher=""), "北京市密云区文化和旅游局", "bj"),
+    # 5-char 自治州 head: the longest-prefix fallback
+    (dict(title="关于印发延边州若干措施的通知", docnum="", publisher=""), "延边朝鲜族自治州人民政府", "jl"),
+    # localize() locality (a bare core with a city prefix) when every header field is empty
+    (dict(title="苏州市推动消费品以旧换新实施方案", docnum="", publisher="", _loc="苏州市"), None, "js"),
+    # central name / no locality anywhere -> None
+    (dict(title="关于印发《信息通信行业发展规划》的通知", docnum="", publisher="工业和信息化部"), "工业和信息化部", None),
+    (dict(title="市人民政府办公室关于印发市级储备粮管理办法的通知", docnum="", publisher="", _loc="<municipal>@huizhou"),
+     None, None),
+]
 _CHAIN_TESTS = [
     ("广东省", ()), ("北京市", ()), ("宁夏回族自治区", ()), ("广州市", ("广东省",)),
     ("苏州市", ("江苏省",)), ("深圳市龙华区", ("深圳市", "广东省")), ("大鹏新区", ("深圳市", "广东省")),
@@ -1408,6 +1788,11 @@ def self_test():
         if got != exp:
             fails += 1
             print(f"XX jurisdiction_chain({loc!r}) = {got!r}, expected {exp!r}")
+    for fields, issuer, exp in _PROVINCE_TESTS:
+        got = derive_province(fields, issuer)
+        if got != exp:
+            fails += 1
+            print(f"XX derive_province({fields['title'][:30]!r}, {issuer!r}) = {got!r}, expected {exp!r}")
     for stem, exp in _GENERIC_STEM_TESTS:
         if bool(GENERIC_STEM_RE.search(stem)) != exp:
             fails += 1
@@ -1419,7 +1804,7 @@ def self_test():
             print(f"XX crawl_stamped_sites[{label}] = {got!r}, expected {exp!r}")
     total = (len(_LEVEL_TESTS) + len(_TITLE_LEVEL_TESTS) + len(_GENRE_TESTS) + len(_KEY_TESTS)
              + len(_LOCALIZE_TESTS) + len(_POOL_TESTS) + len(_CHAIN_TESTS) + len(_GENERIC_STEM_TESTS)
-             + len(_STAMP_TESTS))
+             + len(_STAMP_TESTS) + len(_PROVINCE_TESTS))
     print(f"self-test: {total - fails}/{total} passed")
     return fails == 0
 
@@ -1448,6 +1833,7 @@ def main(argv=None):
         return 2
 
     conn = connect(args.db, ro=not writing)
+    load_site_names(conn)  # province_of(site) for the A6 coverage audit
     docs, meta = build(conn)
     site_level = {d["site"]: d["site_level"] for d in docs.values()}
     print_stats(docs, meta, site_level)

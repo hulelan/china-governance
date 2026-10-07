@@ -99,6 +99,10 @@ SITE_NAME_ALIASES = {
     "Nanshan District": "深圳市", "Pingshan District": "深圳市", "Yantian District": "深圳市",
 }
 
+# Longest-first province + prefecture names: the last resort for an INSTITUTION name
+# whose place is its prefix (北京市人大 -> 北京市; 深圳市发展和改革委员会 -> 深圳市).
+_PLACE_PREFIXES = sorted(set(PROVINCE_CODE) | set(CITY_PROVINCE), key=len, reverse=True)
+
 _CJK_PAREN = re.compile(r"[（(]\s*([一-鿿][^（）()]*?)\s*[)）]")
 _CJK_LEAD = re.compile(r"^[一-鿿]+")
 _DIVISION_TAIL = re.compile(r"(?:市|区|县|旗|园区|新区|管理区|高新区|经开区)$")
@@ -120,8 +124,9 @@ def chinese_place(site_name):
 
 def province_name_of_place(place):
     """Province NAME of a Chinese place: a province itself, a prefecture-level city,
-    a bare district (DISTRICT_CITY), or '<city-prefix><district>' (武汉硚口区,
-    苏州张家港市, 北京大兴区, 深圳市龙华区). None when unknown."""
+    a bare district (DISTRICT_CITY), '<city-prefix><district>' (武汉硚口区,
+    苏州张家港市, 北京大兴区, 深圳市龙华区), or an institution whose name starts with
+    a province / city (北京市人大). None when unknown."""
     if not place:
         return None
     if place in PROVINCE_CODE:
@@ -138,6 +143,9 @@ def province_name_of_place(place):
             for cand in (head, head + "市"):
                 if cand in CITY_PROVINCE and len(place) > len(cand):
                     return CITY_PROVINCE[cand]
+    for k in _PLACE_PREFIXES:
+        if len(place) > len(k) and place.startswith(k):
+            return k if k in PROVINCE_CODE else CITY_PROVINCE[k]
     return None
 
 
@@ -158,6 +166,8 @@ def _self_test():
         ("Linxia Hui Prefecture (临夏回族自治州)", "gs"), ("Laiwu (莱芜)", "sd"),
         ("Chongqing Municipality", "cq"), ("Dapeng New District", "gd"),
         ("广东省", "gd"), ("Nowhere Portal", None), ("", None), (None, None),
+        ("Beijing Municipal People's Congress (北京市人大)", "bj"),       # institution prefix
+        ("Shenzhen DRC (深圳市发展和改革委员会)", "gd"), ("广州日报", None),  # city prefix / no place
     ]
     bad = [(n, want, province_code_of_site_name(n)) for n, want in cases
            if province_code_of_site_name(n) != want]

@@ -166,6 +166,10 @@ _PROV_EXACT = {
     "taizhou_js": "js", "wuxi": "js", "yancheng": "js",
     # Beijing / Shanghai / Chongqing (province-tier municipalities)
     "bj": "bj", "sh": "sh", "cq": "cq",
+    # `sites.name` says "Qianjiang (潜江市)" (Hubei) but www.qianjiang.gov.cn is 重庆市黔江区
+    # (its docs carry 黔江府发 文号; Hubei 潜江 is `hbqj`) — found 2026-10-07 by the
+    # doc_identity.province audit, 28/40 docs name 黔江. Override beats the name.
+    "qianjiang": "cq",
     # Fujian
     "fujian": "fj", "fuzhou_fj": "fj", "longyan": "fj", "quanzhou": "fj", "sm": "fj",
     # Hunan
@@ -246,7 +250,7 @@ def _report_unresolved(docs):
     """Count and print ONCE the sub-national sites (with docs in the window) that
     province_of cannot place — these docs never join a provincial chain."""
     per_site = Counter(d["site"] for d in docs.values()
-                       if d["level"] in SUBNATIONAL and not province_of(d["site"]))
+                       if d["level"] in SUBNATIONAL and not d["prov"])
     if per_site:
         n_docs = sum(per_site.values())
         shown = ", ".join(f"{s}({n})" for s, n in per_site.most_common(12))
@@ -348,10 +352,10 @@ def load(conn):
     for row in conn.execute(
             f"""SELECT d.id, d.site_key, d.title, d.date_published, d.algo_doc_type,
                        d.citation_rank, d.topics_algo,
-                       i.admin_level_doc, i.instrument_id, i.genre
+                       i.admin_level_doc, i.instrument_id, i.genre, i.province
                 FROM documents d LEFT JOIN doc_identity i ON i.doc_id = d.id
                 WHERE d.date_published BETWEEN '{DATE_LO}' AND '{DATE_HI}'"""):
-        did, sk, title, dp, genre, cr, topics, lvl, iid, igenre = row
+        did, sk, title, dp, genre, cr, topics, lvl, iid, igenre, iprov = row
         if lvl is None:
             n_noid += 1  # crawled after the identity build: no level → never anchor/source
         docs[did] = {
@@ -363,6 +367,9 @@ def load(conn):
             "igenre": igenre or "",
             "indeg": indeg.get(did, 0),
             "ntitle": _norm_title(title or ""),
+            # per-DOCUMENT province (doc_identity A6: the issuing locality, so npc 地方法规
+            # and 省通信管理局 docs on national sites join their province), else the site's
+            "prov": iprov or province_of(sk),
         }
     if n_noid:
         print(f"  ({n_noid} docs have no doc_identity row — excluded as anchors/sources)")
@@ -442,7 +449,7 @@ def build_prov_anchors(docs, central_members):
     (province, normalized core)."""
     pools = defaultdict(list)
     for d in docs.values():
-        if d["level"] == "provincial" and province_of(d["site"]):
+        if d["level"] == "provincial" and d["prov"]:
             pools[d["inst"]].append(d)
 
     anchors, member_to_anchor, core_exact = {}, {}, {}
@@ -453,7 +460,7 @@ def build_prov_anchors(docs, central_members):
             continue
         by_prov = defaultdict(list)
         for m in members:
-            by_prov[province_of(m["site"])].append(m)
+            by_prov[m["prov"]].append(m)
         for prov, pm in by_prov.items():
             eligible = [m for m in pm if can_anchor(m) and m["date"]]
             if not eligible:
@@ -593,7 +600,7 @@ def match_citation_prov(conn, docs, anchors, member_to_anchor, core_exact):
         s = docs.get(src)
         if not s or s["level"] not in SUBPROVINCIAL:
             continue
-        prov = province_of(s["site"])
+        prov = s["prov"]
         if not prov:
             continue
         aid = None
@@ -642,7 +649,7 @@ def match_title_and_topic_prov(docs, anchors, cited_pairs):
     for s in docs.values():
         if s["level"] not in SUBPROVINCIAL:
             continue
-        prov = province_of(s["site"])
+        prov = s["prov"]
         if not prov or (prov not in stem_anchors and prov not in cue_anchors
                         and prov not in topic_anchors):
             continue
@@ -874,8 +881,11 @@ _GEO_TEST_SITES = {
     "linxia": "Linxia Hui Prefecture (临夏回族自治州)", "laiwu": "Laiwu (莱芜)",
     "bjd_daxing": "Beijing Daxing District (北京大兴区)", "cq": "Chongqing Municipality",
     "yushu": "Yushu (玉树藏族自治州)", "zzz_nowhere": "Nowhere Portal",
+    "qianjiang": "Qianjiang (潜江市)", "bjrd": "Beijing Municipal People's Congress (北京市人大)",
 }
 _GEO_TEST_CASES = [
+    ("qianjiang", "cq"),   # override beats a wrong display name (see _PROV_EXACT)
+    ("bjrd", "bj"),        # geo: leading city/province prefix of an institution name
     ("szd_zjg", "js"), ("szdp", "gd"), ("nanjing", "js"), ("wuhan", "hb"),
     ("whd_qiaokou", "hb"), ("suzhou_ah", "ah"), ("jcgov", "sx"), ("xa", "sn"),
     ("hbqj", "hb"), ("xlgl", "nm"), ("shijiazhuang", "he"), ("abazhou", "sc"),
