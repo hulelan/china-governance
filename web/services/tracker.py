@@ -76,6 +76,31 @@ DIVERSE_MIN_EVENTS = 3
 DIVERSE_MIN_SITES = 3
 DIVERSE_MAX_SHARE = 0.5
 
+# Anchor-concentration gate — the complement of the site gate. 2026-W33 (75 events
+# from 26 sites, modal site 0.20) passes the site gate but is one INSTRUMENT echoed
+# everywhere in one week: 生态环境法典 supplies 25/75. That reads as tempo in the
+# weekly count but is a single law's arrival, so the week gets a "single-instrument"
+# tag. The rollup stores per cell n_anchors / top_anchor_share / top_anchor, anchors
+# pooled by doc_identity.instrument_id (mirror promulgations of one text count as
+# one instrument; 4,611 anchors -> 4,607 instruments on 2026-10-07).
+# Thresholds from the live distribution (build_tracker_rollup.py --dry-run,
+# 2026-10-07, topic='all', 449 weeks with >= 3 events): the modal instrument's
+# share is < 0.2 in 349 weeks (78%), <= 0.3 in 430 (96%); the 19 above 0.3 are the
+# tail, and W33 sits at exactly 1/3 (25/75), 0.033 over the cut with nothing between
+# 0.304 and 0.333. The suggested 0.5 cut (3 weeks, 0.7%) would NOT catch W33 — a
+# majority rule fits portals (a batch is one site's upload) but one law echoed by a
+# third of a 75-event week is already the anomaly. A bare share cut misfires at the
+# floor: 3 events from 3 anchors is 0.333 too (uniform, the opposite of
+# concentration) — of the 18 weeks above 0.3, 9 have only 1–2 events on the modal
+# instrument (3–6-event weeks). So the modal instrument must also supply
+# >= SINGLE_INSTR_MIN_TOP events (the role n_sites >= 3 plays for the site gate).
+# Result: 9/449 weeks flagged (2.0%), W33 among them; the next-largest flagged
+# burst is 2025-W31 (23 events, 7 on one 监督法 amendment), and W33 is the only
+# one of the top-20 pooled bursts that flags.
+SINGLE_INSTR_MIN_EVENTS = DIVERSE_MIN_EVENTS
+SINGLE_INSTR_MIN_SHARE = 0.3    # strict: share must exceed it
+SINGLE_INSTR_MIN_TOP = 3        # events on the modal instrument
+
 
 def is_diverse(cascade_events, n_sites, top_site_share):
     """The gate. None when the week has too few events to judge (< DIVERSE_MIN_EVENTS),
@@ -83,6 +108,43 @@ def is_diverse(cascade_events, n_sites, top_site_share):
     if not cascade_events or cascade_events < DIVERSE_MIN_EVENTS:
         return None
     return bool(n_sites >= DIVERSE_MIN_SITES and top_site_share <= DIVERSE_MAX_SHARE)
+
+
+def is_single_instrument(cascade_events, n_anchors, top_anchor_share):
+    """The anchor gate. None below the burst floor, else True when one instrument
+    supplies more than SINGLE_INSTR_MIN_SHARE of the week's cascade events AND at
+    least SINGLE_INSTR_MIN_TOP of them (share x events, rounded) — a single law's
+    arrival echoed across portals, not tempo. n_anchors is carried for display."""
+    if not cascade_events or cascade_events < SINGLE_INSTR_MIN_EVENTS:
+        return None
+    top_n = int(round(top_anchor_share * cascade_events))
+    return bool(top_anchor_share > SINGLE_INSTR_MIN_SHARE and top_n >= SINGLE_INSTR_MIN_TOP)
+
+
+def row_instrument(cells):
+    """Merge per-level cells ({cas, n_anchors, top_anchor_share, top_anchor}) into
+    one pooled week, the same way row_diversity does for sites: the modal
+    instrument's counts merged by key across levels (slightly LENIENT when the
+    true modal instrument is not modal in every level — more often than for sites,
+    since one law is routinely modal at one level and runner-up at another;
+    --dry-run reports the disagreement against the exact pooled counter: 13 of
+    1,250 weeks on 2026-10-07, vs 1 for the site gate). n_anchors is SUMMED over
+    levels — an upper bound, since one instrument is routinely implemented at
+    both the provincial and municipal level in the same week; it is informational
+    only and does not enter the gate. Returns
+    {n_anchors, top_anchor_share, top_anchor, top_anchor_n, single_instrument}."""
+    cas = sum(c.get("cas", 0) for c in cells)
+    n_anchors = sum(c.get("n_anchors", 0) for c in cells)
+    per_anchor = defaultdict(int)
+    for c in cells:
+        if c.get("cas") and c.get("top_anchor"):
+            per_anchor[c["top_anchor"]] += int(round(c["top_anchor_share"] * c["cas"]))
+    top_anchor, top_n = (max(per_anchor.items(), key=lambda kv: (kv[1], kv[0]))
+                         if per_anchor else (0, 0))
+    share = round(top_n / cas, 4) if cas else 0.0
+    return {"n_anchors": n_anchors, "top_anchor_share": share, "top_anchor": top_anchor,
+            "top_anchor_n": top_n,
+            "single_instrument": is_single_instrument(cas, n_anchors, share)}
 
 
 def row_diversity(cells):
@@ -216,6 +278,29 @@ async def _has_diversity_cols(db) -> bool:
     return _store("tw_diversity_cols", {"n_sites", "top_site_share", "top_site"} <= cols)
 
 
+async def _has_instrument_cols(db) -> bool:
+    """True once the rollup carries n_anchors/top_anchor_share/top_anchor (the anchor
+    gate's columns, added after the site gate's — a table rebuilt between the two
+    commits has the site columns only, so each set is checked on its own)."""
+    hit = _cached("tw_instrument_cols")
+    if hit is not None:
+        return hit
+    rows = await db.fetch("PRAGMA table_info(tracker_weekly)")
+    cols = {r["name"] for r in rows}
+    return _store("tw_instrument_cols", {"n_anchors", "top_anchor_share", "top_anchor"} <= cols)
+
+
+async def _anchor_titles(db, ids):
+    """instrument_id -> cleaned anchor title, for the flagged weeks' tooltips. The
+    instrument id is the canonical doc's id, so a PK lookup on documents suffices."""
+    ids = sorted({i for i in ids if i})
+    if not ids:
+        return {}
+    rows = await db.fetch(
+        "SELECT id, title FROM documents WHERE id = ANY($1::int[])", ids)
+    return {r["id"]: _clean(r["title"]) for r in rows}
+
+
 async def get_weekly(db, topic: str, weeks: int):
     """The last ``weeks`` ISO weeks × admin_level matrix for ``topic``.
 
@@ -227,40 +312,55 @@ async def get_weekly(db, topic: str, weeks: int):
     implementing-only; ``men`` is the confirmed-but-mention count. ``diverse`` is the
     site-diversity gate (is_diverse): None = too few events to judge, False = a
     single-source batch week (the template tags it; counts are NOT changed).
+    ``single_instrument`` is the anchor-concentration gate (is_single_instrument):
+    True = one instrument (``top_anchor``, ``top_anchor_title``) supplied
+    ``top_anchor_n`` of the week's events; the two gates are independent and a
+    week can carry both tags.
     """
     wk = recent_weeks(weeks)
     lo, hi = wk[-1][0], wk[0][0]
     div = await _has_diversity_cols(db)
+    inst = await _has_instrument_cols(db)
     div_cols = ", n_sites, top_site_share, top_site" if div else ""
+    inst_cols = ", n_anchors, top_anchor_share, top_anchor" if inst else ""
     rows = await db.fetch(
         f"""SELECT iso_week, admin_level, week_start, new_docs,
                   cascade_events, cascade_events_lowconf, cascade_events_prov,
-                  cascade_events_mentions{div_cols}
+                  cascade_events_mentions{div_cols}{inst_cols}
            FROM tracker_weekly
            WHERE topic = $1 AND iso_week BETWEEN $2 AND $3""", topic, lo, hi)
     cells = defaultdict(dict)
     seen_levels = set()
     KEYS = ("new", "cas", "low", "prov", "men")
     DIV = {"n_sites": 0, "top_site_share": 0.0, "top_site": "", "diverse": None}
+    INST = {"n_anchors": 0, "top_anchor_share": 0.0, "top_anchor": 0, "top_anchor_n": 0,
+            "top_anchor_title": "", "single_instrument": None}
     for r in rows:
         if (r["new_docs"] or r["cascade_events"] or r["cascade_events_lowconf"]
                 or r["cascade_events_prov"] or r["cascade_events_mentions"]):
             seen_levels.add(r["admin_level"])
         cell = {"new": r["new_docs"], "cas": r["cascade_events"],
                 "low": r["cascade_events_lowconf"], "prov": r["cascade_events_prov"],
-                "men": r["cascade_events_mentions"], **DIV}
+                "men": r["cascade_events_mentions"], **DIV, **INST}
         if div:
             cell.update(n_sites=r["n_sites"] or 0, top_site_share=r["top_site_share"] or 0.0,
                         top_site=r["top_site"] or "",
                         diverse=is_diverse(cell["cas"], r["n_sites"] or 0,
                                            r["top_site_share"] or 0.0))
+        if inst:
+            share = r["top_anchor_share"] or 0.0
+            cell.update(n_anchors=r["n_anchors"] or 0, top_anchor_share=share,
+                        top_anchor=r["top_anchor"] or 0,
+                        top_anchor_n=int(round(share * cell["cas"])),
+                        single_instrument=is_single_instrument(cell["cas"], r["n_anchors"] or 0,
+                                                               share))
         cells[r["iso_week"]][r["admin_level"]] = cell
     levels = [l for l in LEVEL_ORDER if l in seen_levels]
     levels += sorted(l for l in seen_levels if l not in LEVEL_ORDER)
 
     out_rows, totals = [], dict.fromkeys(KEYS, 0)
     level_totals = {l: dict.fromkeys(KEYS, 0) for l in levels}
-    empty = {**dict.fromkeys(KEYS, 0), **DIV}
+    empty = {**dict.fromkeys(KEYS, 0), **DIV, **INST}
     for i, (iw, monday) in enumerate(wk):
         c = cells.get(iw, {})
         row = {"iso_week": iw, "week_start": monday, "is_current": i == 0,
@@ -273,7 +373,13 @@ async def get_weekly(db, topic: str, weeks: int):
         for k in KEYS:
             totals[k] += row[k]
         row.update(row_diversity(list(row["cells"].values())) if div else DIV)
+        row.update({**INST, **row_instrument(list(row["cells"].values()))} if inst else INST)
         out_rows.append(row)
+    # Titles for the flagged weeks' modal instruments (a PK lookup on <= `weeks` ids).
+    titles = await _anchor_titles(
+        db, [row["top_anchor"] for row in out_rows if row["single_instrument"]])
+    for row in out_rows:
+        row["top_anchor_title"] = titles.get(row["top_anchor"], "")
     return {"weeks": out_rows, "levels": levels, "totals": totals,
             "level_totals": level_totals,
             "window_start": wk[-1][1], "window_end": wk[0][1]}

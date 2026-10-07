@@ -89,6 +89,8 @@
             <em>mention</em> an instrument are not cascades; they are totalled separately as <span class="cell-low">+N<sub>m</sub></span>. The current week is partial — crawls land with a lag.
             A week tagged <span class="tag tag-single">single-source</span> has its cascade events supplied mostly by one portal
             (fewer than 3 source sites, or one site above half) — a publication batch, not a tempo signal; the count is left as is.
+            A week tagged <span class="tag tag-single">single-instrument</span> has one central instrument behind more than 30% of its
+            cascade events (at least 3 of them) — one law's arrival echoed across many portals, not a broad tempo; the count is left as is.
         </p>
         <div class="card table-scroll">
         <table class="data-table">
@@ -101,7 +103,7 @@
             <tbody>
             {% for r in W.weeks %}
                 <tr class="{{ 'wk-current' if r.is_current }}">
-                    <td class="mono">{{ r.iso_week }}{% if r.is_current %} <span class="text-[10px] text-brand uppercase tracking-wider">now</span>{% endif %}{% if r.diverse is sameas false %} <span class="tag tag-single" title="{{ r.cas }} cascade events from {{ r.n_sites }} site{{ '' if r.n_sites == 1 else 's' }}; {{ r.top_site }} supplied {{ (100 * r.top_site_share)|round|int }}% — one portal's batch, not tempo">single-source</span>{% endif %}</td>
+                    <td class="mono">{{ r.iso_week }}{% if r.is_current %} <span class="text-[10px] text-brand uppercase tracking-wider">now</span>{% endif %}{% if r.diverse is sameas false %} <span class="tag tag-single" title="{{ r.cas }} cascade events from {{ r.n_sites }} site{{ '' if r.n_sites == 1 else 's' }}; {{ r.top_site }} supplied {{ (100 * r.top_site_share)|round|int }}% — one portal's batch, not tempo">single-source</span>{% endif %}{% if r.single_instrument %} <a class="tag tag-single" href="/document/{{ r.top_anchor }}" title="{{ r.top_anchor_n }} of {{ r.cas }} cascade events ({{ (100 * r.top_anchor_share)|round|int }}%) implement one instrument: {{ r.top_anchor_title or ('#' ~ r.top_anchor) }} — one law's arrival, not tempo">single-instrument</a>{% endif %}</td>
                     <td class="mono text-muted text-xs hidden sm:table-cell">{{ r.week_start }}</td>
                     {% for l in W.levels %}{% set c = r.cells[l] %}
                     <td class="text-right">
