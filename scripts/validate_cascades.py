@@ -96,6 +96,9 @@ CXGH_CITERS_MAX = 2140
 AIPLUS_ID = 900039770
 AIPLUS_IMPL_MIN = 20
 AIPLUS_IMPL_MAX = 60
+# topic_genre is the weakest tier and grows as AI documents arrive inside the anchor's
+# 365-day window, so it gets a loose ceiling that catches a runaway, not a tight band.
+AIPLUS_TOPIC_MAX = 400
 # and: mention-only (source_implementing=0) must EXCEED implementing — i.e. the
 # gate is actually active, not defaulted to 1 for every row.
 
@@ -226,11 +229,38 @@ def check_cxgh_citations(conn: sqlite3.Connection, r: Result) -> None:
 
 # --- 3 -----------------------------------------------------------------------
 def check_aiplus_gate(conn: sqlite3.Connection, r: Result) -> None:
+    """AI+ cascade size, counted on the CONFIRMED match tiers only.
+
+    Why the split (2026-10-07): this check used to count every `source_implementing=1`
+    event regardless of match_type, and it FAILED at 131 against a band of [20, 60] after
+    a rebuild in which the cascade itself had not changed. 102 of those 131 were
+    `topic_genre`, the matcher's own weakest tier ("probable-but-unconfirmed
+    implementation" — same topic tag, implementing genre, inside a 365-day window). That
+    tier is gated on the anchor's `citation_rank >= TOPIC_ANCHOR_CR`, and the
+    mirror-determinism fix consolidated the AI+ edges onto the pool's canonical copy,
+    which pushed the anchor over the gate and switched the tier on. The AI+ opinion is
+    also recent (2025-08), so its topic window is wide open and fills as AI documents
+    arrive.
+
+    The memos (`ai-plus-fidelity.md`, `ai-governance-diffusion.md`) quote the CONFIRMED
+    count, and on the same rebuild that is citation 21 + title_reissue 8 = 29, inside the
+    original band. So the band was never wrong about the cascade; the metric was
+    ambiguous, exactly like `cxgh_inbound` counting edges while saying citers. Confirmed
+    and topic_genre are now separate checks with their own bands, so a composition shift
+    is visible instead of being read as a cascade change.
+    """
     pool_sql = ("anchor_id IN (SELECT doc_id FROM doc_identity WHERE instrument_id = "
                 "(SELECT instrument_id FROM doc_identity WHERE doc_id=?))")
-    impl = _one(
+    confirmed = _one(
         conn,
-        f"SELECT COUNT(*) FROM diffusion_events WHERE {pool_sql} AND source_implementing=1",
+        f"SELECT COUNT(*) FROM diffusion_events WHERE {pool_sql} AND source_implementing=1 "
+        "AND match_type IN ('citation', 'title_reissue')",
+        AIPLUS_ID,
+    )
+    topical = _one(
+        conn,
+        f"SELECT COUNT(*) FROM diffusion_events WHERE {pool_sql} AND source_implementing=1 "
+        "AND match_type = 'topic_genre'",
         AIPLUS_ID,
     )
     mention = _one(
@@ -240,13 +270,20 @@ def check_aiplus_gate(conn: sqlite3.Connection, r: Result) -> None:
     )
     r.record(
         "aiplus_implementing",
-        AIPLUS_IMPL_MIN <= impl <= AIPLUS_IMPL_MAX,
-        f"{impl} implementing events (band [{AIPLUS_IMPL_MIN}, {AIPLUS_IMPL_MAX}])",
+        AIPLUS_IMPL_MIN <= confirmed <= AIPLUS_IMPL_MAX,
+        f"{confirmed} CONFIRMED implementing events, citation+title_reissue "
+        f"(band [{AIPLUS_IMPL_MIN}, {AIPLUS_IMPL_MAX}]; {topical} topic_genre excluded)",
+    )
+    r.record(
+        "aiplus_topic_genre",
+        topical <= AIPLUS_TOPIC_MAX,
+        f"{topical} topic_genre (probable-but-unconfirmed) events (max {AIPLUS_TOPIC_MAX})",
     )
     r.record(
         "aiplus_source_gate",
-        mention > impl,
-        f"{mention} mention-only vs {impl} implementing (gate active iff mention > implementing)",
+        mention > confirmed,
+        f"{mention} mention-only vs {confirmed} confirmed implementing "
+        "(gate active iff mention > confirmed)",
     )
 
 
