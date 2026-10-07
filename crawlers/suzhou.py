@@ -37,8 +37,10 @@ dl/dd `发文日期` is the 成文 date (-> date_written). `page_date()` therefo
   1. the article-attr 时间/PUBLISHTIME stamp (day precision);
   2. meta PubDate ONLY when its YYYYMM equals the URL's `/YYYYMM/` segment (then it is a
      genuine publish-time stamp, not a regeneration);
-  3. the URL `/YYYYMM/` segment with day = 01 — MONTH precision. The schema has no
-     date-precision column, so a `-01` day on a Suzhou doc means "sometime that month".
+  3. `fallback_date()`: 发文日期 (date_written) when it falls in the URL month or the URL
+     month is a 2021 migration folder (>= 6 months after 成文); else the URL `/YYYYMM/`
+     segment with day = 01 — MONTH precision. The schema has no date-precision column,
+     so a `-01` day on a Suzhou doc means "sometime that month".
 The list API's PUBLISHED_TIME_FORMAT carries the same regeneration stamp, so it is only a
 last resort (--list-only runs with no detail page).
 
@@ -252,6 +254,48 @@ def page_date(html: str, url: str = "") -> tuple:
     return "", ""
 
 
+def fallback_date(url: str, date_written: int = 0) -> tuple:
+    """Date for a doc whose detail page is unavailable: (YYYY-MM-DD, 'written'|'url'|'').
+
+    The URL /YYYYMM/ folder is the publication month — EXCEPT for the 2021 CMS migration
+    (folders 202104/202105/202107/202110 hold 1991–2011 规范性文件 whose 文号 years and
+    发文日期 all predate the folder by years). `date_written` (the page's 发文日期 / API
+    C_FWRQ_FORMAT, a real day) is therefore used when it falls IN the URL month (day
+    precision, both sources agree — 2,602 of the 3,359 stamped docs) or when the URL month
+    is >= 6 months AFTER it (migration shape: nothing is published half a year after 成文).
+    Otherwise the URL month, day 01 (month precision)."""
+    um = url_month(url)
+    dw = None
+    if date_written and date_written > 0:
+        try:
+            dw = datetime.fromtimestamp(int(date_written), tz=CST).date()
+        except (ValueError, OSError, OverflowError):
+            dw = None
+    if um and dw:
+        uy, umo = int(um[:4]), int(um[5:7])
+        months_after = (uy - dw.year) * 12 + (umo - dw.month)
+        if months_after == 0 or months_after >= 6:
+            return dw.isoformat(), "written"
+        return f"{um}-01", "url"
+    if um:
+        return f"{um}-01", "url"
+    if dw:
+        return dw.isoformat(), "written"
+    return "", ""
+
+
+_FALLBACK_TESTS = [
+    # (url, date_written ts (CST midnight), expected)
+    ("http://www.suzhou.gov.cn/szsrmzf/szfqt/202302/x.shtml", 1675353600, ("2023-02-03", "written")),  # in month
+    ("http://www.suzhou.gov.cn/szsrmzf/zfwj/202107/x.shtml", _parse_date("2010-05-10"), ("2010-05-10", "written")),  # migration
+    ("http://www.suzhou.gov.cn/szsrmzf/zfwj/202011/x.shtml", _parse_date("2020-08-20"), ("2020-11-01", "url")),  # 3 months: publish month
+    ("http://www.suzhou.gov.cn/szsrmzf/zfwj/202011/x.shtml", _parse_date("2021-01-05"), ("2020-11-01", "url")),  # written AFTER folder: impossible, url
+    ("http://www.suzhou.gov.cn/szsrmzf/zfwj/201911/x.shtml", 0, ("2019-11-01", "url")),
+    ("http://www.suzhou.gov.cn/x.shtml", _parse_date("2012-11-01"), ("2012-11-01", "written")),
+    ("http://www.suzhou.gov.cn/x.shtml", 0, ("", "")),
+]
+
+
 _PAGE_DATE_TESTS = [
     # (html, url, expected)
     ('<meta name="PubDate" content="2023-02-09 21:53:58"/> <div class="article-attr clearfix">'
@@ -276,7 +320,13 @@ def _self_test_dates() -> bool:
         if got != exp:
             fails += 1
             print(f"XX page_date(...{url[-28:]!r}) = {got!r}, expected {exp!r}")
-    print(f"page_date self-test: {len(_PAGE_DATE_TESTS) - fails}/{len(_PAGE_DATE_TESTS)} passed")
+    for url, dw, exp in _FALLBACK_TESTS:
+        got = fallback_date(url, dw)
+        if got != exp:
+            fails += 1
+            print(f"XX fallback_date(...{url[-24:]!r}, {dw}) = {got!r}, expected {exp!r}")
+    n = len(_PAGE_DATE_TESTS) + len(_FALLBACK_TESTS)
+    print(f"page_date/fallback_date self-test: {n - fails}/{n} passed")
     return fails == 0
 
 
@@ -419,7 +469,7 @@ def crawl_section(
         # run never stores the stamp. page_date() below refines it from the detail page.
         um = url_month(doc_url)
         if um and date_published[:7] != um:
-            date_published = f"{um}-01"
+            date_published = fallback_date(doc_url, date_written)[0] or date_published
 
         body_text = ""
         raw_html_path = ""

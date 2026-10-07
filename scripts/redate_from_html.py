@@ -22,10 +22,10 @@ Suzhou's `<meta PubDate>` is the page-REGENERATION time (2023-02-09 / 2025-02-11
 site), so the govcms rule would re-apply the stamp. Suzhou rules:
   * page date (article-attr 时间 PUBLISHTIME, or a PubDate meta agreeing with the URL month)
     wins when present and different from the stored date;
-  * no page date (raw HTML missing on the droplet for 3,820/4,918 Suzhou docs — the files
-    were never copied from the Mac) → URL `/YYYYMM/` fallback, day 01, MONTH precision —
-    applied ONLY when the stored date is NOT already inside the URL month (a stored date
-    inside the URL month is day-precision and consistent; the 1st would be a downgrade).
+  * no page date (raw HTML missing on the droplet for 3,814/4,918 Suzhou docs — the files
+    were never copied from the Mac) → crawlers.suzhou.fallback_date: 发文日期 when in the URL
+    month or the URL month is a 2021 migration folder, else URL month day 01 — applied ONLY
+    when the stored date is a site-wide PILE (a source stamp) outside the URL month.
 The per-site line reports page_fix / url_fix / kept_in_url_month / no_html counts.
 
 Usage (repo root; the DB is the droplet's documents.db):
@@ -49,11 +49,18 @@ from crawlers.govcms import _body_date, _meta_date  # noqa: E402
 
 DB_PATH = ROOT / "documents.db"
 
-# site_key -> (module, page-date function name, url-month function name). The function
-# takes (html, url) and returns (YYYY-MM-DD, source) with source in {'attr','meta','url',''}.
+# site_key -> (module, page-date fn, fallback fn, url-month fn).
+#   page_date(html, url)            -> (YYYY-MM-DD, 'attr'|'meta'|'url'|'')
+#   fallback_date(url, date_written) -> (YYYY-MM-DD, 'written'|'url'|'')
+#   url_month(url)                  -> 'YYYY-MM' | ''
 SITE_DATERS = {
-    "suzhou": ("crawlers.suzhou", "page_date", "url_month"),
+    "suzhou": ("crawlers.suzhou", "page_date", "fallback_date", "url_month"),
 }
+# A stored date is treated as a SOURCE STAMP (and so eligible for the no-page fallback) only
+# when it is a pile: >= PILE_MIN docs of the site on that exact day AND >= PILE_SHARE of the
+# site's dated docs (the A4 bulk-day definition). Real day-precision dates outside the URL
+# month — 2011-12-31 in a 2021 migration folder, 2021-08-31 in /202109/ — are KEPT.
+PILE_MIN, PILE_SHARE = 20, 0.10
 
 
 def _day_shift(shift, old, new):
@@ -70,16 +77,20 @@ def redate_site_dater(conn, site_key, dry_run=False, verbose=False):
     page is absent/dateless AND the stored date is outside the URL month. Walks ALL docs of
     the site (not only those with raw HTML) because the URL fallback needs no file."""
     import importlib
-    mod_name, fn_name, um_name = SITE_DATERS[site_key]
+    mod_name, fn_name, fb_name, um_name = SITE_DATERS[site_key]
     mod = importlib.import_module(mod_name)
-    page_date, url_month = getattr(mod, fn_name), getattr(mod, um_name)
+    page_date, fallback_date, url_month = (getattr(mod, fn_name), getattr(mod, fb_name),
+                                           getattr(mod, um_name))
     rows = conn.execute(
-        """SELECT id, date_published, raw_html_path, url FROM documents
+        """SELECT id, date_published, raw_html_path, url, date_written FROM documents
            WHERE site_key = ? ORDER BY id""", (site_key,)).fetchall()
+    dated = [r[1] for r in rows if r[1]]
+    piles = {d for d, n in Counter(dated).items()
+             if n >= PILE_MIN and n / max(1, len(dated)) >= PILE_SHARE}
     stats = Counter()
     updates = []
     shift = Counter()
-    for doc_id, old, raw_path, url in rows:
+    for doc_id, old, raw_path, url, dw in rows:
         old = old or ""
         html = ""
         if raw_path:
@@ -100,20 +111,26 @@ def redate_site_dater(conn, site_key, dry_run=False, verbose=False):
                     print(f"  {doc_id} {old!r} -> {new!r} ({src})")
             continue
         um = url_month(url)
-        if not um:
-            stats["no_url_month"] += 1
-            continue
-        if old[:7] == um:
+        if old and old[:7] == um:
             stats["kept_in_url_month"] += 1
             continue
-        new = f"{um}-01"
-        stats["url_fix" if old else "url_fill"] += 1
+        if old and old not in piles:
+            stats["kept_real_date"] += 1
+            continue
+        new, src = fallback_date(url, dw or 0)
+        if not new:
+            stats["no_fallback"] += 1
+            continue
+        if new == old:
+            stats["fallback_same"] += 1
+            continue
+        stats[f"{src}_fix" if old else f"{src}_fill"] += 1
         updates.append((new, doc_id))
         _day_shift(shift, old, new)
         if verbose:
-            print(f"  {doc_id} {old!r} -> {new!r} (url month)")
-    print(f"[{site_key}] {len(rows)} docs (site dater {mod_name}.{fn_name}): "
-          + ", ".join(f"{k}={v}" for k, v in sorted(stats.items())))
+            print(f"  {doc_id} {old!r} -> {new!r} ({src})")
+    print(f"[{site_key}] {len(rows)} docs (site dater {mod_name}.{fn_name}; stamp piles "
+          f"{sorted(piles)}): " + ", ".join(f"{k}={v}" for k, v in sorted(stats.items())))
     if shift:
         big = sum(n for d, n in shift.items() if abs(d) > 60)
         print(f"  {sum(shift.values())} shifted; {big} by >60 days; "
