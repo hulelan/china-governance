@@ -13,7 +13,7 @@ exit status is non-zero if ANY check fails. All queries hit indexes (<1s total).
 
     python3 scripts/validate_cascades.py                 # default thresholds
     python3 scripts/validate_cascades.py --db other.db
-    python3 scripts/validate_cascades.py --set CXGH_INBOUND_MAX=2000   # override a
+    python3 scripts/validate_cascades.py --set CXGH_EDGES_MAX=2000     # override a
         # threshold constant (any name below) — used to prove the test bites.
 
 The publish is NOT aborted on failure (fresh data with a regression still beats
@@ -52,15 +52,38 @@ BOOST_EXPECTED_LAGS = {                        # province → (lag_days, site_ke
 }
 BOOST_LAG_TOLERANCE = 2                        # ± days
 
-# --- 2. 城乡规划法 inbound citations ------------------------------------------
-# The single most-cited framework law. Its inbound count is the canary for the
-# whole resolver: a matcher that over-resolves (the 河南省实施办法 proxy-target bug)
-# pushes it DOWN as edges get stolen; a normalisation regression or a broken
-# `citations` rebuild pushes it down too; a containment-gate regression (news
-# titles counted as citations) pushes it UP. Band is ±~12% around 2,141.
-CXGH_ID = 12747143                             # 中华人民共和国城乡规划法
-CXGH_INBOUND_MIN = 1900
-CXGH_INBOUND_MAX = 2400
+# --- 2. 城乡规划法 citations: TWO metrics, two bands --------------------------
+# The single most-cited framework law, and the canary for the whole resolver: a
+# matcher that over-resolves (the 河南省实施办法 proxy-target bug) pushes it DOWN as
+# edges get stolen; a normalisation regression or a broken `citations` rebuild pushes
+# it down too; a containment-gate regression (news titles counted as citations)
+# pushes it UP.
+#
+# These used to be ONE check named `cxgh_inbound` that printed "inbound citations"
+# while measuring COUNT(*) = EDGE ROWS. `doc_inbound` meanwhile calls its
+# COUNT(DISTINCT source_id) column `inbound`, so the same word named both metrics and
+# a healthy +16 edges read as a 235-citer drop when the two were compared across
+# nights (docs/working/qa-cxgh-citer-drop.md §0). Both are now asserted separately:
+#   edges  = raw resolved rows, what citation_rank weights (today 2,158)
+#   citers = COUNT(DISTINCT source_id), self-cites dropped, what doc_inbound.inbound
+#            stores (today 1,907)
+# The gap between the bands is the DUPLICATE-EDGE OVERHANG (251 today: one document
+# citing the law under 2+ distinct target_ref strings / tiers, which
+# UNIQUE(source_id, target_ref, citation_type) permits). Asserting both makes that
+# overhang a monitored quantity instead of a blind spot.
+# CHANGED 2026-10-07 from 12747143 (npc, 2015 edition) to 12685270 (mee, 2019): the
+# law is held 3× under a byte-identical title (mee 12685270 / npc 12742122 / npc
+# 12747143, all central, all genre 'law'), and until the resolver fix in this same
+# commit the copy that collected every edge was whichever row an UNORDERED SELECT
+# scanned LAST — the highest id, by accident of rowid order. TitleMatcher's documented
+# (genre_rank, level_rank, LOWEST id) tie-break now actually decides, so the 2,158
+# edges move to the lowest-id copy. Verified read-only against the live corpus before
+# the rebuild. If this id ever reads ~0 again, check the tie-break, not the graph.
+CXGH_ID = 12685270                             # 中华人民共和国城乡规划法 (mee, lowest-id copy)
+CXGH_EDGES_MIN = 1900                          # band ±~12% around 2,141 edges (unchanged)
+CXGH_EDGES_MAX = 2400
+CXGH_CITERS_MIN = 1680                         # band ±~12% around 1,907 distinct citers
+CXGH_CITERS_MAX = 2140
 
 # --- 3. AI+ anchor: implementing vs mention-only ------------------------------
 # 国务院关于深入实施“人工智能+”行动的意见 draws many 党组会议 readouts / 解读 / media
@@ -175,12 +198,29 @@ def check_boost_cascade(conn: sqlite3.Connection, r: Result) -> None:
 
 
 # --- 2 -----------------------------------------------------------------------
-def check_cxgh_inbound(conn: sqlite3.Connection, r: Result) -> None:
-    n = _one(conn, "SELECT COUNT(*) FROM citations WHERE target_id=?", CXGH_ID)
+def check_cxgh_citations(conn: sqlite3.Connection, r: Result) -> None:
+    """Two named checks, two bands: edge rows and distinct citers. Never collapse
+    them back into one — the words are not interchangeable (see §2 above)."""
+    # edges  = every resolved row, exactly what citation_rank weights
+    # citers = distinct sources with self-cites dropped, exactly doc_inbound.inbound
+    edges, citers = conn.execute(
+        "SELECT COUNT(*), "
+        "       COUNT(DISTINCT CASE WHEN source_id <> target_id THEN source_id END) "
+        "FROM citations WHERE target_id=?",
+        (CXGH_ID,),
+    ).fetchone()
+    dupes = edges - citers  # duplicate-edge overhang (same citer, 2+ ref strings/tiers)
     r.record(
-        "cxgh_inbound",
-        CXGH_INBOUND_MIN <= n <= CXGH_INBOUND_MAX,
-        f"{n} inbound citations (band [{CXGH_INBOUND_MIN}, {CXGH_INBOUND_MAX}])",
+        "cxgh_edges",
+        CXGH_EDGES_MIN <= edges <= CXGH_EDGES_MAX,
+        f"{edges} citation EDGE rows on doc {CXGH_ID} "
+        f"(band [{CXGH_EDGES_MIN}, {CXGH_EDGES_MAX}]; {dupes} duplicate-edge overhang)",
+    )
+    r.record(
+        "cxgh_citers",
+        CXGH_CITERS_MIN <= citers <= CXGH_CITERS_MAX,
+        f"{citers} DISTINCT citing documents, self-cites dropped "
+        f"(band [{CXGH_CITERS_MIN}, {CXGH_CITERS_MAX}]; {edges} edges)",
     )
 
 
@@ -281,7 +321,7 @@ def check_top_rank(conn: sqlite3.Connection, r: Result) -> None:
 
 CHECKS = (
     check_boost_cascade,
-    check_cxgh_inbound,
+    check_cxgh_citations,
     check_aiplus_gate,
     check_proxy_targets,
     check_tables,

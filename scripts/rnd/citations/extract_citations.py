@@ -343,9 +343,21 @@ class TitleMatcher:
     An EXACT normalized-title match (>= _EXACT_MIN_LEN) is tried FIRST, before
     any containment tier, so a cited law resolves to the law, not to a measure
     whose title contains the law's name (see the proxy-target note above).
+
+    MIRROR SELECTION is this class's own responsibility and is deterministic:
+    among documents whose titles normalize identically, (genre_rank, level_rank,
+    id) picks the representative — promulgation over news, highest-level host,
+    then LOWEST id, so a newly ingested mirror can never flip an established
+    target. Callers must therefore pass EVERY copy (use the pair form below);
+    de-duplicating by title upstream hands the decision to insertion order.
     """
 
     def __init__(self, title_to_doc, site_levels=None, aliases=None):
+        # title_to_doc: either {title: value} or an ITERABLE OF (title, value) PAIRS.
+        # The pair form exists so callers holding several documents under the SAME
+        # title (mirror promulgations) can hand all of them over instead of letting a
+        # dict silently keep whichever one was inserted last — the ranking below, not
+        # insertion order, then decides which copy represents the instrument.
         # aliases: {norm cited_as -> norm canonical title}; default = data/instrument_aliases.csv
         self.aliases = load_aliases() if aliases is None else dict(aliases)
         # Index on NORMALIZED titles (punctuation/prefix folded). When two titles
@@ -359,7 +371,8 @@ class TitleMatcher:
         self.meta = {}   # id -> (genre_rank or None, level_rank, norm-title length)
         best = {}        # norm-title -> (genre_rank, level_rank, id)
         best_core = {}   # norm-core  -> (genre_rank, level_rank, wrapper_flag, id)
-        for t, v in title_to_doc.items():
+        items = title_to_doc.items() if hasattr(title_to_doc, "items") else title_to_doc
+        for t, v in items:
             nt = _norm_title(t)
             if not nt:
                 continue
@@ -546,20 +559,46 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
             return docnum_core_zs.get(zk) or title_docnum_zs.get(zk)
         return None
 
-    # title -> (id, site_key) for named ref resolution. Floor was 10, then 8 (excluded
-    # 9-char provincial 条例); now 5 (2026-10): 广东省公路条例 (7 chars) was held x4 yet
-    # never indexed, so 41 citers stayed unresolved. Short titles are reachable ONLY
-    # through the exact tier (containment tiers keep their min_len=8 floor on both
-    # sides), so lowering the floor cannot create new fuzzy/proxy matches.
-    title_to_doc = {}
+    # (title, (id, site_key, algo_doc_type)) PAIRS for named ref resolution. Floor
+    # was 10, then 8 (excluded 9-char provincial 条例); now 5 (2026-10): 广东省公路条例
+    # (7 chars) was held x4 yet never indexed, so 41 citers stayed unresolved. Short
+    # titles are reachable ONLY through the exact tier (containment tiers keep their
+    # min_len=8 floor on both sides), so lowering the floor cannot create new
+    # fuzzy/proxy matches.
+    #
+    # A LIST, not a dict (2026-10-07, docs/working/qa-cxgh-citer-drop.md §4.2): this
+    # used to be `title_to_doc[row[1]] = ...` over an UNORDERED SELECT, so when several
+    # documents shared a byte-identical title the LAST row scanned silently clobbered
+    # its predecessors and only that one reached TitleMatcher. The winner was therefore
+    # decided by scan order, not by the documented (genre_rank, level_rank, id)
+    # tie-break — 中华人民共和国城乡规划法 is held 3× and all 2,158 edges landed on the
+    # HIGHEST id purely because rowid order put it last, so ingesting a higher-id mirror
+    # would silently move them again. Passing every row through lets TitleMatcher's
+    # existing ranking be the single arbiter (it is order-independent: a strict `<` over
+    # (grank, lvl, id)), and lowest-id-wins means a newly ingested mirror can never flip
+    # an established target. The 5-char floor widened exactly this query, so the
+    # exposure had grown.
+    #
+    # Why not read `doc_identity.instrument_id` (the corpus's other "which copy is the
+    # instrument" authority) instead: it is rebuilt in daily_sync Phase 2b AFTER this
+    # script, so the resolver would consume a day-stale table and brand-new documents
+    # would have no row at all on the night they are ingested; TitleMatcher is also
+    # constructed from ad-hoc title indexes by build_diffusion_events, where no
+    # doc_identity rows exist. And for this very case doc_identity is not authoritative:
+    # it leaves all three 城乡规划法 copies `instrument_role='unique'` (its title-core
+    # pooling misses them). The ranking here stays the resolver's own source of truth.
+    title_rows = []
     _title_dn_strong = {}  # own-number-position 文号 in a title
     _title_dn_weak = {}    # mid-title mention of a 文号 (fallback only)
     # (algo_doc_type feeds the resolver's genre priority + containment gate; a doc
     #  not yet scored has NULL/'' and is treated as "no information" — ungated)
     for row in conn.execute(
-        "SELECT id, title, site_key, algo_doc_type FROM documents WHERE LENGTH(title) >= 5"
+        # ORDER BY id so the 文号 indexes below (setdefault = first-wins) are
+        # reproducible too, independent of storage/rowid order.
+        "SELECT id, title, site_key, algo_doc_type FROM documents "
+        "WHERE LENGTH(title) >= 5 ORDER BY id"
     ).fetchall():
-        title_to_doc[row[1]] = (row[0], row[2], row[3])
+        title_rows.append((row[1], (row[0], row[2], row[3])))
         for zk, is_own in _title_docnums(row[1]):
             (_title_dn_strong if is_own else _title_dn_weak).setdefault(zk, row[0])
     # own-number positions win over mere in-title mentions of another doc's number
@@ -571,8 +610,9 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
     for row in conn.execute("SELECT site_key, admin_level FROM sites").fetchall():
         site_levels[row[0]] = row[1] or "unknown"
 
-    matcher = TitleMatcher(title_to_doc, site_levels)  # indexed fuzzy title resolver (fast)
-    print(f"Lookup tables: {len(docnum_to_id)} doc numbers, {len(title_to_doc)} titles, {len(site_levels)} sites")
+    matcher = TitleMatcher(title_rows, site_levels)  # indexed fuzzy title resolver (fast)
+    print(f"Lookup tables: {len(docnum_to_id)} doc numbers, {len(title_rows)} title rows "
+          f"({len(matcher.exact)} distinct normalized titles), {len(site_levels)} sites")
 
     # --- Fetch all documents with body text OR references_json ---
     docs = conn.execute(
