@@ -44,6 +44,55 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     topic/document dossier. `?q=<topic>` → attention timeline, admin-level &
     genre & issuer breakdowns, most-cited anchor docs (title-match only, no body
     scans, 1h cache). `?doc=<id>` → outbound/inbound citation neighborhood.
+  - **Policy Tracker (2026-10-01)** — `/tracker?topic=<area>&weeks=<n>`
+    (`web/services/tracker.py`, `templates/tracker.html`): the LIVE daily/weekly
+    layer (`docs/research/daily-tracker-concept.md`). Reads only two nightly
+    precomputed tables, so pages render in ~0.03s: `diffusion_events` (the
+    auto-matcher — each sub-national doc → the central instrument it implements,
+    match_type citation/title_reissue/topic_genre + lag_days; built by
+    `scripts/rnd/analysis/build_diffusion_events.py --write`, validated to
+    reproduce the hand-built cascades in `consumption-diffusion.md`) and
+    `tracker_weekly` (per topic × ISO week × admin_level new-doc + cascade counts,
+    `scripts/build_tracker_rollup.py`). Both rebuild in `daily_sync.sh` Phase 2c
+    after citations/scores/topics. Anchor set excludes `npc` 地方法规 (they're
+    local 人大 regs mis-leveled as central) and explainer representatives. Known
+    gap: `diffusion_events.topic` stores only the anchor's FIRST topic tag; the
+    tracker service compensates with a cached anchor→topics map.
+  - **Per-document identity layer (2026-10-06)** — `doc_identity` side table
+    (`scripts/build_doc_identity.py`, nightly Phase 2b LAST step, `--force` because the
+    nightly holds the lock; ~37s, one transaction): `admin_level_doc` + `level_source`
+    (per-DOCUMENT level from issuer/文号/npc-publisher/title-cue, falling back to the
+    site; 98% precision; 21% of docs differ from their site's level, incl. all 28.6k npc
+    地方法规 which are provincial/municipal, not central), `instrument_id` +
+    `instrument_role` (canonical|mirror|unique; mirror promulgations of one text pooled by
+    normalized title-core within ±400d, edition-aware — 政府信息公开条例 is 2 instruments,
+    2007 and 2019), `genre` (promulgation|implementing|explainer|readout|news|other, 88%),
+    `date_quality` (good|crawl_stamped|missing; 76 sites / 29k docs are crawl-stamped),
+    `lead_issuer` (from `doc_issuers`), `localized_of` (the in-chain higher-level doc whose
+    stem a sub-national promulgation re-issues; set on the 2,583 docs re-typed `implementing`.
+    The flip requires the parent to be CENTRAL or in the doc's own province/city chain via
+    `data/city_province.csv`, and the stem must not be a housekeeping genre like 议事规则 /
+    三定规定 — a 60-doc hand-check (`docs/working/qa-genre-flip.md`) found the earlier
+    any-higher-text rule 80% precise, every error out-of-chain or housekeeping).
+    Rationale: `docs/research/corpus-lessons.md` A1-A5
+    — the replications showed level/instrument/genre/date/issuer were inferred or
+    per-site. `build_diffusion_events.py` now reads level, pooling and the implementing
+    flag FROM this table (its own derivations were deleted). Prefer joining `doc_identity`
+    over `sites.admin_level` / `algo_doc_type` in any new analysis.
+  - **Nightly validation (2026-10-06)** — `scripts/validate_cascades.py`, Phase 2d after
+    the 2c rebuilds: 13 read-only checks (known cascades GD 52d / JS 82d / BJ 116d; 城乡规划法
+    inbound band; AI+ implementing vs mentions; proxy-target guards; table sanity; top-5
+    rank are formal instruments). Fails loudly (exit 1, `🧪 Validation:` Telegram line)
+    but never aborts publish. `--set NAME=VALUE` overrides a threshold for testing. Run it
+    after ANY resolver/matcher/identity change.
+  - **Research memo reader (2026-10-01)** — `/research` (index, curated by the
+    volume's structure) and `/research/<slug>` (`web/services/research.py`,
+    `templates/research.html`, `research_doc.html`): renders `docs/research/*.md`
+    via python-markdown (tables, fenced code; `name.md` cross-links rewritten to
+    `/research/<name>`), 1h cache keyed by mtime, slug locked to `^[a-z0-9-]+$`
+    inside `docs/research/` (traversal → 404). The research memos are committed
+    and deployed; add a new memo by dropping a `.md` in `docs/research/` and
+    (optionally) adding its slug to the curated order in `research.py`.
   - **Genre typer** — `scripts/rnd/classification/genre_typer.py` (wired into
     `compute_scores.classify_doc_type`): strips HTML/文号/date tails + adds ~11
     genres; cut `algo_doc_type='other'` from ~50% → ~37.6%.
@@ -386,6 +435,13 @@ Three algorithmic scores computed locally via `scripts/compute_scores.py`:
 - **ai_relevance**: 0.0-1.0 keyword density score. Weighted terms (人工智能=10, 大模型=9, 算力=7...) with diversity bonus. Normalized by doc length.
 
 Browse page supports filtering by doc type, AI relevance threshold, and sorting by citation rank or AI relevance.
+- **Raw inbound beside rank (2026-10-06):** `doc_inbound(doc_id PK, inbound, edges)` is
+  built by `scripts/build_site_stats.py` (one `GROUP BY target_id` pass over `citations`,
+  ~1s, nightly Phase 2c after the citations rebuild); `inbound` = distinct citing docs,
+  self-cites dropped. Shown next to `citation_rank` on browse/document/lens/annotations
+  ("3307.5 · 2143 cited"), `?sort=inbound` on browse and `/api/v1/documents?sort=`. Why:
+  the 3x-central weighting in `citation_rank` still shapes the top-30 (19/30 overlap with
+  the raw ranking, `docs/research/citation-network-structure.md`); readers should see both.
 
 ### Classification (DeepSeek API)
 
@@ -461,7 +517,16 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   list (ties into the coverage campaign). A conservative round-2 matcher fix
   (`_agg_docnum`/`_core_docnum` 文号 folding + `resolve_ref` 《》 title-core
   fallback, length-gated ≥10, zero-regression) recovers the fixable minority:
-  **+2,803 edges → 51.5%**. Applied by nightly Phase 2b. NOTE: ~2% of unresolved
+  **+2,803 edges → 51.5%**. Applied by nightly Phase 2b.
+  **(2026-10-01 proxy-target fix.)** The resolver was crediting citations of a national law
+  to whichever corpus doc EMBEDS the law's name (河南省实施《城乡规划法》办法 held 2,139
+  inbound + the corpus-max `citation_rank`; the law itself held 0) because `TitleMatcher`
+  gated its exact tier on `len(ref) >= 8` and short law names (城乡规划法 = 5 chars) never
+  got an exact chance. Fix (commits `cd42903`, `c979a82`): exact normalized-title / title-
+  core matches win before any containment; mirror tie-break by level then id; 1-tuple caller
+  compat. `tests/test_citation_proxy_fix.py` (6 cases). Resolved edges 279,409 → **287,607**
+  (+8,198, no loss); top-30 by `citation_rank` is now framework laws. Earlier "byte-identical
+  resolved counts" baselines are superseded. NOTE: ~2% of unresolved
   named refs are **character-scrambled inside `body_text_cn`** (anti-scraping
   artifact) — unrecoverable without re-extracting those bodies.
 - **(2026-07) Crawler timeouts.** `CRAWLER_TIMEOUT=1800` (30 min/crawler). Recent
@@ -510,7 +575,10 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   (`idx_documents_category` is on `category_id`, a look-alike trap), so the categories facet
   + category browse filter full-scan (1.3-5.7s); `CREATE INDEX idx_documents_classify_main
   ON documents(classify_main_name)` fixes both. Everything else (<250ms) is healthy. See
-  the fix plan in `perf-diagnosis.md`.
+  the fix plan in `perf-diagnosis.md`. **All three fixes shipped:** `site_stats` (74s → 2.3s),
+  the index, and `corpus_stats` (commit `ebf1dc8`, same single scan in `build_site_stats.py`,
+  read by `get_stats` with a live-query fallback) → `/` cold **0.23s**, `/browse` **0.35s**.
+  Both tables rebuild nightly in Phase 2c.
 - **(2026-08-11) The public site is PRIVATE — behind HTTP Basic Auth.** nginx
   server-level `auth_basic` on the chinagovernance :443 block; creds in
   `/etc/nginx/.htpasswd` (user `admin`, apr1 hash — NOT in the repo). This supersedes
