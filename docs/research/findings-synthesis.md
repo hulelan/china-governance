@@ -302,3 +302,15 @@ removed as anchors but kept as sources in the atlas), so level shares are within
 the 以旧换新 "median lag" has four definitions (consumption ~49 days, first title-matched
 re-issuance per unit; atlas 76 / 79 days, adoption-grade / confirmed events; this memo's 38
 days, the Guangdong 实施方案 to 26 cities provincial hop), all correct on their own base.
+
+*(2026-10-07) The volume now has one measurement that is not coverage-limited. `wenhao-denominator.md`
+reads the 文号 serial as a register count rather than a document we hold, so the maximum serial observed
+per series per year estimates Shenzhen's total numbered issuance whether or not the gazette printed it:
+the municipal government's own numbered 文件 series (深府) falls from 276-365 a year in 1995-1998 to
+83-105 in 2017-2024 (-5.9%/yr even when cut to the single post-2009 administrative regime), the General
+Office's series (深府办) collapses from 86-239 to 3-24, the 规范性文件 registers created 2007-2019 are too
+small to account for either, and the letter series do **not** rise to absorb them (深府函 +0.2%/yr by
+max-serial and -5.2%/yr by method-of-moments), which withdraws the 函 rise asserted in
+`sz-gazette-scoping.md` §3.2. So the formal-document channel narrowed beside a letter channel that was
+already larger than it in 2001; that is a change in instrument form, not evidence of less governing, and
+it is n=1 on a special economic zone.*
