@@ -243,16 +243,21 @@ async def get_documents(db, site_key=None, category=None, year=None,
     # Sort order
     order_clause = "d.date_written DESC"
     if sort_by == "inbound" and join_inbound:
-        # Raw (unweighted) inbound. Fast path: drive from doc_inbound (INNER join,
-        # ~33k cited docs) ordered by its (inbound, rowid) index — no sort of the
-        # wide document rows (the LEFT-JOIN sort over 321k rows measured ~0.6s).
-        # Uncited docs (inbound 0) sort after every cited one, so a FULL page from
-        # the inner join IS the correct page. Only the boundary/beyond pages (a
-        # short inner result) fall through to the exact LEFT-JOIN query below.
-        # `total` above is unchanged: all docs, same as the other sorts.
+        # Raw (unweighted) inbound — served as two ordered runs, never as a sort of
+        # the wide document rows (a LEFT-JOIN ORDER BY over 321k rows measured 0.6s
+        # on page 1 and ~11s on deep pages).
+        #   run 1: cited docs from doc_inbound (~33k), in its (inbound, rowid) index
+        #          order. CROSS JOIN pins that order (plain JOIN made SQLite scan
+        #          documents via idx_documents_citation_rank + temp-sort, 0.19s); with
+        #          a selective site/category filter the planner's own choice (that
+        #          index, then a small sort) is the cheaper one, so use JOIN there.
+        #   run 2: uncited docs (inbound 0) by rowid DESC via an anti-join — no sort.
+        # Uncited docs sort after every cited one, so a FULL page from run 1 is the
+        # page; a short one is topped up from run 2. `total` is unchanged (all docs).
+        join_kw = "JOIN" if (site_key or category or include_sites) else "CROSS JOIN"
         rows = await db.fetch(
             f"""SELECT {select_cols}
-                FROM doc_inbound di JOIN documents d ON d.id = di.doc_id {join_sites}
+                FROM doc_inbound di {join_kw} documents d ON d.id = di.doc_id {join_sites}
                 WHERE {where_sql}
                 ORDER BY di.inbound DESC, d.id DESC
                 LIMIT ${limit_idx} OFFSET ${offset_idx}""",
@@ -260,7 +265,23 @@ async def get_documents(db, site_key=None, category=None, year=None,
         )
         if len(rows) == per_page:
             return rows, total
-        order_clause = f"{inbound_expr} DESC, d.id DESC"
+        if rows:
+            un_offset = 0           # boundary page: run 2 starts at its top
+        else:                       # beyond the cited set: skip what run 1 covered
+            n_cited = await db.fetchval(
+                f"""SELECT COUNT(*) FROM doc_inbound di
+                    JOIN documents d ON d.id = di.doc_id {join_sites}
+                    WHERE {where_sql}""", *params)
+            un_offset = max(offset - (n_cited or 0), 0)
+        un_rows = await db.fetch(
+            f"""SELECT {select_cols}
+                FROM documents d {join_sites} {join_inbound}
+                WHERE {where_sql} AND di.doc_id IS NULL
+                ORDER BY d.id DESC
+                LIMIT ${limit_idx} OFFSET ${offset_idx}""",
+            *params, per_page - len(rows), un_offset
+        )
+        return list(rows) + list(un_rows), total
     elif sort_by in ("citation_rank", "inbound"):
         order_clause = "d.citation_rank DESC NULLS LAST"
     elif sort_by == "ai_relevance":
