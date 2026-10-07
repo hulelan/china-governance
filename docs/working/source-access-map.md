@@ -125,7 +125,16 @@ Real sites, but our NYC IP is blocked (blackhole/WAF). See `china-vantage-option
   海南 Hainan, 贵州 Guizhou, 陕西 Shaanxi (all blackhole); 河南 Henan, 安徽 Anhui,
   内蒙古 Inner Mongolia (403); 湖北 Hubei, 甘肃 Gansu (412);
   **云南 Yunnan (403 on all policy sections — homepage 200 is a false positive).**
-- **GD cities:** 惠州 Huizhou, 阳江 Yangjiang (blackhole).
+- **GD cities:** 惠州 Huizhou, 阳江 Yangjiang (blackhole); **中山 Zhongshan `zs.gov.cn`
+  (added 2026-10-07 — RATE-TRIGGERED, not a clean blackhole: a `zs_lyj` crawl from the droplet
+  took 113 rows in 22 min and then went silent, and curl with the full Chrome UA now returns
+  nothing before a 30s timeout while the control `gd.gov.cn` returns 200 / 124,059 bytes in
+  1.8s on the same UA from the same host). The 30,873-document listing in
+  `a6-recoverable-head.md` was measured FROM THE MAC and does not transfer. Consequence: the
+  Zhongshan A6 head items — 国土空间规划技术标准与准则（2023版） 257 citers, 控规管理实施细则 225,
+  plus 城市设计指引 / 容积率 ×3 / 村庄规划编制指引 ×3 — are **not** recoverable from NYC, so
+  roughly 480 citers move out of A6's "29% confirmed reachable" into the HK/residential bucket.
+  The 113 rows actually taken are 政务动态 news, not the 规划 documents wanted.**
 
 ## Tier D — ANTI-BOT (needs a browser/cookie-solving fetch) 🤖
 

@@ -116,3 +116,35 @@ pages + 2 full-param tests + 115 instrument probes + 8 follow-ups (byte-checks, 
 3 full-text GD searches). Scripts (scratch, not committed): `a6_denoise.py` (resolver re-run,
 `?mode=ro`), `a6_ctx.py` (文号 context), `a6_instruments.py` (grouping), `a6_probe.py`,
 `a6_build.py`. No DB writes, no crawler runs, CLAUDE.md / daily_sync.sh / crawlers untouched.
+
+---
+
+## Correction 2026-10-07 (measured on the droplet, after the apply run)
+
+Two of this memo's conclusions do not survive execution from the droplet.
+
+**1. 中山自然资源局 `zs_lyj` is not reachable from NYC.** The 30,873-document listing above was
+measured from the Mac. Run from the droplet it produced **113 rows in 22 minutes and then went
+silent**, and those 113 are 政务动态 news items, not the 规划 documents the queue wants. A byte-
+checked re-probe with the full Chrome UA returns nothing before a 30s timeout, while the control
+`gd.gov.cn` returns 200 / 124,059 bytes in 1.8s on the same UA from the same host, so this is the
+site and not the network. It looks rate-triggered rather than a clean blackhole. Moved to Tier C
+in `source-access-map.md`. **Consequence: the Zhongshan head items (国土空间规划技术标准与准则
+257 citers, 控规管理实施细则 225, 城市设计指引, 容积率 ×3, 村庄规划编制指引 ×3) are not
+recoverable from NYC, so about 480 citers move out of the "29.1% confirmed reachable" figure and
+into the HK / residential bucket.** Any future reachability claim in this memo should say which
+host it was measured from.
+
+**2. Two "permanently DELISTED" documents are now held, as predicted.** `sz_gazette` ran and the
+corpus now contains `4952494` 《深圳市行政听证办法》 市政府令第157号 (2006-09-26) and `10832248`
+深财规〔2023〕3号 深圳市财政局政府采购供应商信用信息管理办法 (2023-09-11), together ~167 citers.
+Of the four documents CLAUDE.md called permanently delisted, only 苏住建规〔2011〕4号 remains
+genuinely gone.
+
+**What the apply run actually delivered** (row-count deltas, not `crawl_timestamp` windows):
+`gov` 23,669 rows at 99.1% body, including 中国共产党章程 (20,747 chars) and 中国共产党党内监督条例
+(6,808 chars); `sz_gazette` **11,450 rows across 38 continuous years, 1987-2026**, bodies
+filling at about 28/min so the 14,400s step cap will cover roughly 7,000 of them and a follow-up
+run is needed; `szdp` +42 exactly. The `gov --library --categories gw --deep` walk was cut at
+**page 70 of 125**, so the historical 国发 tail is still partly unfetched and the step is worth
+re-running (it skips what is already stored).
