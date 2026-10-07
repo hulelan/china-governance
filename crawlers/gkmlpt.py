@@ -707,9 +707,25 @@ def store_categories(conn, site_key: str, tree: list, parent_id: int = 0):
 
 
 def store_gkmlpt_document(conn, site_key: str, article: dict, body_text: str, raw_html_path: str):
-    """Insert or update a document record from gkmlpt API data."""
+    """Insert or update a document record from gkmlpt API data.
+
+    Returns True only if a row for THIS site_key was actually written.
+
+    gkmlpt post ids live in ONE platform-wide namespace shared by every
+    Guangdong site (and they collide with the synthetic ids other crawlers
+    assign — the ranges fully overlap). The upsert is keyed on the `id`
+    PRIMARY KEY, so without the `site_key` guard below a post that appears in
+    a second site's feed would UPDATE the row owned by the first site,
+    overwriting its body_text_cn/raw_html_path while keeping the original
+    site_key. That happened: see docs/working/qa-gkmlpt-sync-diff.md.
+
+    A cross-site id hit is therefore SKIPPED (the existing owner's row wins)
+    and logged loudly. We cannot distinguish a genuine cross-post from two
+    different documents that merely share an id, so preserving the stored row
+    is the only non-destructive choice.
+    """
     try:
-        conn.execute(
+        cur = conn.execute(
         """INSERT INTO documents (
             id, site_key, category_id, title, document_number, identifier,
             publisher, keywords, date_written, date_published, display_publish_time,
@@ -720,7 +736,8 @@ def store_gkmlpt_document(conn, site_key: str, article: dict, body_text: str, ra
         ON CONFLICT(id) DO UPDATE SET
             body_text_cn=excluded.body_text_cn,
             raw_html_path=excluded.raw_html_path,
-            crawl_timestamp=excluded.crawl_timestamp""",
+            crawl_timestamp=excluded.crawl_timestamp
+        WHERE documents.site_key = excluded.site_key""",
         (
             article["id"],
             site_key,
@@ -748,6 +765,19 @@ def store_gkmlpt_document(conn, site_key: str, article: dict, body_text: str, ra
             datetime.now(timezone.utc).isoformat(),
         ),
         )
+        if cur.rowcount == 0:
+            # The DO UPDATE was suppressed by the site_key guard: this id is
+            # already owned by a DIFFERENT site. Skip, don't clobber.
+            owner = conn.execute(
+                "SELECT site_key FROM documents WHERE id = ?", (article["id"],)
+            ).fetchone()
+            log.warning(
+                f"  ID COLLISION: gkmlpt post {article['id']} "
+                f"({article.get('title', '')[:40]}) requested by site "
+                f"'{site_key}' is already owned by '{owner[0] if owner else '?'}' "
+                f"— skipped (body NOT overwritten)"
+            )
+            return False
         return True
     except sqlite3.IntegrityError:
         # Same article URL already stored under a different gkmlpt id
@@ -781,6 +811,7 @@ def crawl_site(conn, site_key: str, site_cfg: dict, fetch_bodies: bool = True):
 
     total_docs = 0
     total_bodies = 0
+    skipped = 0
     for cat_id, cat_name in leaves:
         articles = crawl_category(base_url, sid, cat_id, cat_name, headers=ua_headers)
         time.sleep(REQUEST_DELAY)
@@ -789,13 +820,17 @@ def crawl_site(conn, site_key: str, site_cfg: dict, fetch_bodies: bool = True):
             body_text = ""
             raw_html_path = ""
 
+            # Scoped to site_key: an id owned by ANOTHER site is a collision,
+            # not our document — adopting its body would mislabel it.
             existing = conn.execute(
-                "SELECT body_text_cn FROM documents WHERE id = ?",
-                (article["id"],),
+                "SELECT body_text_cn FROM documents WHERE id = ? AND site_key = ?",
+                (article["id"], site_key),
             ).fetchone()
             if existing and existing[0]:
-                store_gkmlpt_document(conn, site_key, article, existing[0], "")
-                total_docs += 1
+                if store_gkmlpt_document(conn, site_key, article, existing[0], ""):
+                    total_docs += 1
+                else:
+                    skipped += 1
                 continue
 
             if fetch_bodies and article.get("url"):
@@ -806,15 +841,18 @@ def crawl_site(conn, site_key: str, site_cfg: dict, fetch_bodies: bool = True):
                     total_bodies += 1
                 time.sleep(REQUEST_DELAY)
 
-            store_gkmlpt_document(conn, site_key, article, body_text, raw_html_path)
-            total_docs += 1
+            if store_gkmlpt_document(conn, site_key, article, body_text, raw_html_path):
+                total_docs += 1
+            else:
+                skipped += 1
 
             if total_docs % 50 == 0:
                 conn.commit()
                 log.info(f"  Progress: {total_docs} docs stored, {total_bodies} bodies fetched")
 
     conn.commit()
-    log.info(f"=== Done: {site_cfg['name']} — {total_docs} documents, {total_bodies} bodies ===")
+    log.info(f"=== Done: {site_cfg['name']} — {total_docs} documents, "
+             f"{total_bodies} bodies, {skipped} skipped (id owned by another site / dup URL) ===")
 
 
 def backfill_bodies(conn, site_key: str = None, policy_first: bool = False, delay: float = REQUEST_DELAY):
@@ -968,7 +1006,14 @@ def sync_site(conn, site_key: str, site_cfg: dict):
     log.info(f"Diff: {len(new_ids)} new, {len(deleted_ids)} deleted, {len(common_ids)} existing")
 
     # Step 4: Process NEW documents — insert with body text
+    #
+    # NOTE: `new_ids` is "not in the DB *for this site_key*". Because gkmlpt
+    # post ids are one platform-wide namespace, an id can be new to THIS site
+    # and still already own a row under another site_key. store_gkmlpt_document
+    # refuses those (returns False) so we neither clobber the other site's body
+    # nor count a document we did not add.
     added = 0
+    collided = 0
     for doc_id in sorted(new_ids):
         article = api_docs[doc_id]
         body_text = ""
@@ -984,6 +1029,8 @@ def sync_site(conn, site_key: str, site_cfg: dict):
         if store_gkmlpt_document(conn, site_key, article, body_text, raw_html_path):
             _record_change(conn, doc_id, site_key, "added", None, None, None, sync_run_id)
             added += 1
+        else:
+            collided += 1
 
         if added % 20 == 0:
             conn.commit()
@@ -991,7 +1038,12 @@ def sync_site(conn, site_key: str, site_cfg: dict):
 
     if new_ids:
         conn.commit()
-        log.info(f"  Added {added} new documents total")
+        log.info(f"  Added {added} new documents total "
+                 f"({collided} of {len(new_ids)} skipped — id owned by another site "
+                 f"or duplicate URL)")
+    if collided:
+        log.warning(f"  {collided} listing entries for '{site_key}' resolved to ids "
+                    f"owned by OTHER sites and were skipped (no rows added for them)")
 
     # Step 5: Detect CHANGES in existing documents
     changed_docs = 0
@@ -1040,11 +1092,13 @@ def sync_site(conn, site_key: str, site_cfg: dict):
     # Summary
     log.info(f"=== Sync complete: {site_cfg['name']} ===")
     log.info(f"  Run ID: {sync_run_id}")
-    log.info(f"  New: {added} | Changed: {changed_docs} | Deleted: {len(deleted_ids)} | Unchanged: {len(common_ids) - changed_docs}")
+    log.info(f"  New: {added} | Skipped(collision/dup): {collided} | Changed: {changed_docs} "
+             f"| Deleted: {len(deleted_ids)} | Unchanged: {len(common_ids) - changed_docs}")
 
     return {
         "run_id": sync_run_id,
         "new": added,
+        "skipped_collision": collided,
         "changed": changed_docs,
         "deleted": len(deleted_ids),
         "unchanged": len(common_ids) - changed_docs,

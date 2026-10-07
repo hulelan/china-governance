@@ -452,10 +452,17 @@ def store_document(conn: sqlite3.Connection, site_key: str, doc: dict):
     All other fields are optional and default to empty/zero.
     Uses ON CONFLICT(id) for id-based dedup, then catches URL uniqueness
     violations to prevent duplicates when crawling from multiple machines.
+
+    Returns True only if a row for THIS site_key was written. Document ids are
+    NOT namespaced per site (gkmlpt's platform-wide post ids and the synthetic
+    ids other crawlers assign share one overlapping range), so the DO UPDATE is
+    guarded on site_key: an id already owned by a different site is SKIPPED
+    with a loud warning rather than having its body overwritten. See
+    docs/working/qa-gkmlpt-sync-diff.md.
     """
     import sqlite3 as _sqlite3
     try:
-        conn.execute(
+        cur = conn.execute(
             """INSERT INTO documents (
                 id, site_key, category_id, title, document_number, identifier,
                 publisher, keywords, date_written, date_published, display_publish_time,
@@ -466,7 +473,8 @@ def store_document(conn: sqlite3.Connection, site_key: str, doc: dict):
             ON CONFLICT(id) DO UPDATE SET
                 body_text_cn=CASE WHEN excluded.body_text_cn != '' THEN excluded.body_text_cn ELSE documents.body_text_cn END,
                 raw_html_path=CASE WHEN excluded.raw_html_path != '' THEN excluded.raw_html_path ELSE documents.raw_html_path END,
-                crawl_timestamp=excluded.crawl_timestamp""",
+                crawl_timestamp=excluded.crawl_timestamp
+            WHERE documents.site_key = excluded.site_key""",
         (
             doc["id"],
             site_key,
@@ -494,9 +502,20 @@ def store_document(conn: sqlite3.Connection, site_key: str, doc: dict):
             datetime.now(timezone.utc).isoformat(),
         ),
     )
+        if cur.rowcount == 0:
+            owner = conn.execute(
+                "SELECT site_key FROM documents WHERE id = ?", (doc["id"],)
+            ).fetchone()
+            log.warning(
+                f"  ID COLLISION: doc {doc['id']} ({str(doc.get('title', ''))[:40]}) "
+                f"requested by site '{site_key}' is already owned by "
+                f"'{owner[0] if owner else '?'}' — skipped (body NOT overwritten)"
+            )
+            return False
+        return True
     except _sqlite3.IntegrityError:
         # URL already exists (duplicate from another machine) — skip silently
-        pass
+        return False
 
 
 def save_raw_html(site_key: str, doc_id, html: str) -> str:
