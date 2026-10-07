@@ -85,6 +85,37 @@ def test_attachment_only_and_video_pages_stay_empty():
     assert _extract_body(video) == ""
 
 
+def test_region_is_bounded_at_container_close():
+    """saac/cq_gaj: attachment-only container followed by a long nav/footer list
+    must NOT yield the list as body; a real body still comes through intact."""
+    nav = "".join(f'<li><a href="/{i}">{n}</a></li>' for i, n in enumerate(
+        ["中央政府网", "北 京", "天 津", "河 北", "山 西", "内蒙古", "辽 宁", "吉 林", "黑龙江", "上 海",
+         "江 苏", "浙 江", "安 徽", "福 建", "江 西", "山 东", "河 南", "湖 北", "湖 南", "广 东"]))
+    html = _page('<div class="pages_content"><p><img src="pdf.gif"><a href="f.pdf">国家档案局本级2025年度决算</a>'
+                 f'</p></div><div class="links"><ul>{nav}</ul></div>')
+    assert _extract_body(html) == "", _extract_body(html)
+    html_ok = _page(f'<div class="pages_content"><p>{PARA}</p><div class="inner"><p>第二段。</p></div></div>'
+                    f'<div class="links"><ul>{nav}</ul></div>')
+    t = _extract_body(html_ok)
+    assert PARA in t and "第二段" in t and "黑龙江" not in t, t
+
+
+def test_hanweb_metadata_table_is_not_body():
+    """js_jtyst 一图读懂: 索引号/发布机构 table + image-only zoom → empty, not the table."""
+    tbl = ('<table class="xxgk_table"><tr><td>索 引 号</td><td>014000810/2022-00181</td><td>分 类</td>'
+           '<td>政策解读</td></tr><tr><td>发布机构</td><td>江苏省交通运输厅</td><td>发文日期</td><td>2022-09-19</td>'
+           '</tr><tr><td>标 题</td><td colspan="3">一图读懂：关于进一步推动港口岸线资源集约高效利用的指导意见</td></tr></table>')
+    html = _page(f'<div class="bt-article-y">{tbl}<div class="zoom"><meta name="ContentStart">'
+                 '<p><img src="/pic/1.png"/></p><meta name="ContentEnd"></div></div>')
+    assert _extract_body(html) == "", _extract_body(html)
+
+
+def test_no_dangling_partial_tag():
+    html = _page(f'<div class="wip_art_con"><p>{PARA}</p>\n<div class="share-box">x</div></div>')
+    t = _extract_body(html)
+    assert "<" not in t, t
+
+
 def test_backfill_guard_never_shortens():
     """The UPDATE predicate used by scripts/backfill_from_html.py."""
     conn = sqlite3.connect(":memory:")

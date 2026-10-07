@@ -1380,6 +1380,32 @@ _DATA_IMG = re.compile(r'<img\b[^>]*?\bsrc="data:[^"]*"[^>]*>', re.I)
 # Inline <script>/<style> blocks inside/near the body div were counted as "text"
 # (jl_swt: the div-scoring fallback returned 900 chars of `var file_appendix=…`).
 _SCRIPT_STYLE = re.compile(r"<(script|style)\b.*?</\1\s*>", re.S | re.I)
+# Hanweb 信息公开 metadata table (索引号/发布机构/文号…) sits inside the article box;
+# it is not body text (js_jtyst image-only pages were "recovered" as this table).
+_META_TABLE = re.compile(r'<table\b[^>]*class="[^"]*xxgk[-_]?table[^"]*".*?</table\s*>', re.S | re.I)
+
+
+def _container_region(html: str, attr_pos: int, cap: int = 120_000) -> str:
+    """HTML inside the element whose attribute matched at attr_pos, bounded at
+    its matching close tag by depth-counting the same tag name. Without this the
+    region ran `cap` chars past the container — on attachment-only pages that
+    swept the sibling nav/footer (saac 档案网站 list, cq_gaj 国务院部门网站 list)
+    in as 'body'. Unbalanced markup (no close within cap) keeps the old slice."""
+    start = html.find(">", attr_pos) + 1
+    if start <= 0:
+        return html[attr_pos:attr_pos + cap]
+    lt = html.rfind("<", 0, attr_pos)
+    tm = re.match(r"<([A-Za-z][A-Za-z0-9]*)", html[lt:lt + 24]) if lt != -1 else None
+    if not tm:
+        return html[start:start + cap]
+    tag = tm.group(1)
+    depth = 1
+    window = html[start:start + cap]
+    for t in re.finditer(rf"<(/?){tag}\b", window, re.I):
+        depth += -1 if t.group(1) else 1
+        if depth == 0:
+            return window[:t.start()]
+    return window
 
 
 def _clean(t: str) -> str:
@@ -1400,6 +1426,7 @@ def _valid_ymd(s: str) -> bool:
 
 def _region_text(region: str) -> str:
     region = _FOOT_CUT.split(region, 1)[0]
+    region = re.sub(r"<[^>]*$", "", region)   # FOOT_CUT can split mid-tag; drop the dangling `<div`
     region = re.sub(r"<br\s*/?>", "\n", region)
     region = re.sub(r"</p>", "\n", region)
     text = H.unescape(re.sub(r"<[^>]+>", "", region))
@@ -1413,14 +1440,13 @@ def _extract_body(html: str) -> str:
     we skip wrapper divs that also contain the sidebar/nav)."""
     # Inline base64 images (amr.org.cn pastes 100KB+ data: URIs) blow the 120K region
     # cap mid-tag, leaving the truncated `<img src="data:…` as 100K of "body text".
-    html = _SCRIPT_STYLE.sub("", _DATA_IMG.sub("", html))
+    html = _META_TABLE.sub("", _SCRIPT_STYLE.sub("", _DATA_IMG.sub("", html)))
     for pat in _BODY_CONTAINERS:
         m = re.search(pat, html)
         if m:
-            # start AFTER the container's own '>' so the partial tag text
-            # (`class="contentbox">`) doesn't lead the body.
-            start = html.find(">", m.start()) + 1 or m.start()
-            t = _region_text(html[start:start + 120_000])
+            # region = inside the matched element only (starts AFTER its own '>'
+            # so `class="contentbox">` doesn't lead the body; ends at its close tag).
+            t = _region_text(_container_region(html, m.start()))
             if len(t) > 80:
                 return t
     # explicit CMS body delimiters (Hanweb ContentStart/ContentEnd)
