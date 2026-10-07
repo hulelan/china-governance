@@ -88,6 +88,26 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     per-site. `build_diffusion_events.py` now reads level, pooling and the implementing
     flag FROM this table (its own derivations were deleted). Prefer joining `doc_identity`
     over `sites.admin_level` / `algo_doc_type` in any new analysis.
+  - **Identity-layer additions (2026-10-07)** — `doc_identity` gained `province` (2-letter
+    code per DOCUMENT from lead_issuer / 文号 agency / publisher / masthead / `localize()`, so
+    the 28.6k npc 地方法规 and other sub-national docs on national sites join provincial
+    chains; `build_diffusion_events` and `pairs.py` prefer it over the site map in
+    `scripts/rnd/analysis/geo.py`, which itself derives a site's province from `sites.name` ×
+    `data/city_province.csv` with the hand table as override) and `instrument_kind`
+    (framework | housekeeping | other, from the issuance wrapper + title core; replaces the
+    matcher's `is_framework` regex gate, which a 60-doc hand-check found 23% precise,
+    `docs/working/qa-framework-gate.md`). `localized_of` is now date-ordered: the trigger must
+    be dated ≤ the doc + 7 d (+31 d for month-precision dates) and the NEAREST earlier in-chain
+    parent wins (488 reversed edges were later central re-issuances, not re-posts); flips
+    2,592 → 1,958. Resolver: `data/instrument_aliases.csv` (cited-as → held title, applied only
+    when the ref has no exact candidate), HTML-entity unescape of refs, and the title index
+    floor lowered 8 → 5 chars (1,661 short held titles like 广东省公路条例 were never candidates).
+    Research infrastructure: `scripts/rnd/analysis/pairs.py` builds the union pair set
+    (citation ∪ title_reissue ∪ localized_of) with the memos' fidelity scores in code
+    (`docs/research/pair-channels.md`: the citation-only relay figures are floors, +0.2 pt).
+    New memos: `fidelity-jiangsu` (nested findings replicate on Jiangsu, on one city),
+    `policy-tempo` (B7: the tracker is an instrument for burstiness and level timing, not yet
+    for cross-area tempo), `bottom-up-channel`, `pair-channels`.
   - **Instrument succession (2026-10-06)** — `instrument_succession(instrument_id,
     successor_id, relation, confidence, evidence, lag_days)` (`scripts/build_instrument_succession.py
     --write --force`, Phase 2b right after doc_identity, ~70s). Relations: superseded_by_stated
@@ -131,10 +151,15 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     **KEY FINDING — the coverage ceiling is real:** resolution % held ~flat
     (52.05→52.16) despite +16k resolved, because the 13k new docs brought +30k of
     their OWN citations (many dangling). The absolute resolved count, not the %, is
-    the honest metric. The single highest-demand missing docs (苏住建规〔2011〕4号,
-    深圳市行政听证办法, 采购供应商信用信息管理办法, 广东省控规条例) are permanently
-    **DELISTED** from origin sites — recoverable only via 北大法宝 / 国家法律法规数据库
-    / archive.org, a separate project. The queue's `coverage_status`/demand are noisy
+    the honest metric. **(Corrected 2026-10-07, `docs/working/a6-recoverable-head.md`.)**
+    Of the four "delisted" head items only 苏住建规〔2011〕4号 is truly gone. 深圳市行政听证办法
+    (2006) and 深财规〔2023〕3号 (采购供应商信用信息管理办法) live in the Shenzhen 政府公报
+    archive `sz.gov.cn/zfgb/<year>/` (byte-checked; http only, https fails from Python);
+    广东省控规条例 was ALREADY HELD under its full title 广东省城市控制性详细规划管理条例 and
+    is resolved by a row in `data/instrument_aliases.csv` (340 citers, zero crawl). The
+    top-400 unresolved head: 29% confirmed reachable from NYC, 43% likely, 16% is the
+    部门规章 wall (ministerial 令 not in gov.cn's library, ministries blocked → HK / 北大法宝),
+    10% queue noise (permit names, GB standards). The queue's `coverage_status`/demand are noisy
     (false-`have`, already-resolved, delisted), so per-institution investigation
     (not blind mass-crawl) is required — Chongqing was ~98% already complete.
 - **base.fetch() now gunzips** gzip/deflate responses (some gov servers force-gzip).
