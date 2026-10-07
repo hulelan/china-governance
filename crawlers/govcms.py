@@ -54,6 +54,18 @@ SITES = {
         "sections": ["/zw/zcfg/fl/", "/zw/zcfg/xzfg/", "/zw/zcfg/bmgz/",
                      "/zw/zcfg/gfxwj/", "/zw/slzx/slyw/"],
     },
+    "mfa": {
+        # 外交部 — plain t-date dialect (A): /<section>/YYYYMM/tYYYYMMDD_ID.shtml.
+        # Reachable from the droplet's NYC IP (no proxy). zyxw=重要新闻 (the main
+        # news/readout column) + wjbzhd=部长活动 (FM activities) are static t-date
+        # list pages (~80 anchors on page 0 each). fyrbt_674889=发言人表态 302-redirects
+        # (same host) to a /web/system/ landing that STILL server-renders ~38 t-date
+        # rows — fetch() follows the redirect transparently. Article bodies live in a
+        # TRS_UEDITOR container (matched by _BODY_CONTAINERS), so bodies populate.
+        "name": "外交部 (Ministry of Foreign Affairs)",
+        "base_url": "https://www.mfa.gov.cn", "admin_level": "central",
+        "sections": ["/zyxw/", "/wjbzhd/", "/fyrbt_674889/", "/wjbxw_new/"],  # +外交部新闻 (section sweep: 61 arts, 0 held)
+    },
     "mct": {
         "name": "Ministry of Culture & Tourism (文旅部)",
         "base_url": "http://www.mct.gov.cn", "admin_level": "central",
@@ -82,7 +94,36 @@ SITES = {
     "cppcc": {
         "name": "CPPCC National Committee (全国政协)",
         "base_url": "http://www.cppcc.gov.cn", "admin_level": "central",
-        "sections": ["/llyj/", "/wylz/wyjy/", "/zxgk/"],   # +政协公开 (section-coverage sweep: 111 arts, 7% held)
+        "sections": ["/llyj/", "/wylz/wyjy/", "/zxgk/",   # +政协公开 (section-coverage sweep: 111 arts, 7% held)
+                     # B2 bottom-up channel (2026-10): 提案委员会 (ARTI + t-date), 视察调研 + its
+                     # 报告展示 leaf, 地方政协 (provincial CPPCC proposal/supervision stories).
+                     "/jgzc/tawyh/", "/zxgz/scdy/", "/zxgz/scdy/bgzs/", "/dfzx/"],
+        "group": "feedback",
+    },
+    # --- Bottom-up / feedback channel (corpus-lessons B2, 2026-10) -------------------
+    # Sources that carry local-to-center signals the promulgation record does not:
+    # 人大 建议/议案 handling, 政协 提案, 调研报告. group="feedback". Probed from the
+    # droplet 2026-10-06 (byte-checked, bodies verified). SKIPPED with reason:
+    #   drc.gov.cn (国务院发展研究中心) — 109-byte anti-bot shell at root; article pages
+    #     are ASP.NET Leaf.aspx/DocView.aspx (no govcms dialect).
+    #   rd.gd.cn (广东人大) — connection refused from the droplet IP (datacenter block);
+    #     rd.gd.gov.cn does not resolve.  zjrd.gov.cn (浙江人大) — connection fails.
+    #   spcsc.sh.cn (上海人大) — HTTP 403 from the droplet IP.
+    #   国务院研究室 — no standalone publication site (gov.cn carries only its 机构 page).
+    "npc_dbgz": {  # 全国人大 代表工作: 议案建议 + 报告. t-date dialect A, index_N.html pagination (30/page).
+        "name": "NPC Deputies' Work: Bills, Suggestions & Reports (全国人大 议案建议/报告)",
+        "base_url": "http://www.npc.gov.cn", "admin_level": "central", "group": "feedback",
+        "sections": ["/npc/c2/c185/c12492/", "/npc/c2/c12435/c12491/"],
+    },
+    "jsrd": {  # 江苏省人大: 建议办理, 视察调研, 执法检查报告, 理论研究会 成果集萃, 研究室. t-date .shtml, index_N.shtml.
+        "name": "Jiangsu Provincial People's Congress (江苏省人大)",
+        "base_url": "https://www.jsrd.gov.cn", "admin_level": "provincial", "group": "feedback",
+        "sections": ["/dbyd/jybl/", "/dbyd/scdy/", "/zfjc/zfjcbg/", "/llyjh/cgjc/", "/jgzy/yjs/"],
+    },
+    "bjrd": {  # 北京市人大: 代表工作, 重要发布 (reports to the standing committee), 理论研究. t-date; NO index_N (page-0 only).
+        "name": "Beijing Municipal People's Congress (北京市人大)",
+        "base_url": "http://www.bjrd.gov.cn", "admin_level": "provincial", "group": "feedback",
+        "sections": ["/zyfb/zdgz/dbgz/", "/zyfb/", "/xwzx/llyj/"],
     },
     # NOTE: gov.cn /yaowen/liebiao/ renders its article list via JS — a static govcms
     # crawl only matches the page's footer/nav chrome, not the news items. So there is NO
@@ -208,7 +249,7 @@ SITES = {
         # law links — the crawler keeps only native mem.gov.cn t-date docs).
         "name": "Ministry of Emergency Management (应急管理部)",
         "base_url": "https://www.mem.gov.cn", "admin_level": "central",
-        "sections": ["/fw/flfgbz/fg/", "/fw/flfgbz/"],
+        "sections": ["/fw/flfgbz/fg/", "/fw/flfgbz/", "/gk/"],   # +信息公开 (section sweep: 126 arts, 1% held)
     },
     "moj": {
         # 司法部 — t-date dialect A. Reachable ONLY with cookie replay of the openresty
@@ -372,11 +413,51 @@ SITES = {
         "sections": ["/seac/xxgk/zcfb/index.shtml", "/seac/xxgk/zcjd/index.shtml",
                      "/seac/xxgk/tzgg/index.shtml"],
     },
+    # -- Associated bodies tier (研究院/智库/学会/协会; docs/working/associated-bodies.csv;
+    #    group="assoc", admin_level="research" like tsinghua_aiig). Probed 2026-10-01
+    #    from the droplet. NOT addable (recorded for later): caict 信通院 (412 WAF, also
+    #    via curl_cffi), cesi 电子标准院 (云防护 JS challenge), cics-cert 工信安全 (504),
+    #    istic 中信所 + ccf 计算机学会 (Vue SPA shells), cae 工程院 (/colN/YYYY-MM/DD/<hex>_N.html),
+    #    cert.org.cn CNCERT (/publish/main/N/N/<hex>/<hex>_.html), cie 电子学会 (/list_N/N.html),
+    #    drc 国研中心 (ASP.NET Leaf.aspx?leafid=), itsec 测评中心 (t-date, but its
+    #    `class="contentbox"` is the PAGE wrapper → body = nav JS + text; mostly republished laws).
+    "amr": {  # 中国宏观经济研究院 (NDRC 国家高端智库) — t-date dialect A, TRS_Editor body, index_N pages.
+        "name": "Academy of Macroeconomic Research (中国宏观经济研究院)",
+        "base_url": "https://www.amr.org.cn", "admin_level": "research", "group": "assoc",
+        "sections": ["/zjjd/", "/ghdt/kydt/", "/ghdt/zkdt/", "/ghdt/gnhz/", "/tzgg/"],
+    },
+    "cass": {  # 中国社会科学院 — t-date dialect A (.shtml); unquoted <div class=TRS_Editor> body.
+        # 学术成果 (per-学部 landing) / 科研动态 (landing) / 国家高端智库 / 创新工程 / 通知 / 政务公开.
+        "name": "Chinese Academy of Social Sciences (中国社会科学院)",
+        "base_url": "https://www.cass.cn", "admin_level": "research", "group": "assoc",
+        "sections": ["/xueshuchengguo/", "/keyandongtai/", "/gjgdzk/", "/chuangxingongcheng/",
+                     "/tongzhigonggao/", "/zwgk/"],
+    },
+    "cast": {  # 中国科协 — /art/ dialect B (year-only /art/YYYY/art_<hex>.html → body 发布日期).
+        # Leaf lists (/xw/TZGG/ etc.) are ~2KB JS stubs; the channel LANDING pages
+        # server-render 30–85 rows each, so crawl those (page-0 only — no index_N).
+        "name": "China Association for Science and Technology (中国科协)",
+        "base_url": "https://www.cast.org.cn", "admin_level": "research", "group": "assoc",
+        "sections": ["/xw/index.html", "/zk/index.html", "/xs/index.html", "/kp/index.html",
+                     "/dj/index.html"],
+    },
+    "isc": {  # 中国互联网协会 — snow dialect W (/article/<16-digit>.html), row dates.
+        # Lists are /category/<id>.html; page 1 == /category/<id>_1.html and pages
+        # continue _2, _3… so sections are given in the _1 form (Scheme-A pagination).
+        # Giving the bare /category/<id>.html would make --deep walk <id>+1 = OTHER categories.
+        # 7330 通知公告 / 7328 要闻视点 / 7329 协会动态 / 7349 行业资讯 / 7356 发展报告 /
+        # 7358 团体标准 / 7429 倡议公约 / 7464 规章制度 / 7486 人工智能+产业生态大会.
+        "name": "Internet Society of China (中国互联网协会)",
+        "base_url": "https://www.isc.org.cn", "admin_level": "research", "group": "assoc",
+        "sections": ["/category/7330_1.html", "/category/7328_1.html", "/category/7329_1.html",
+                     "/category/7349_1.html", "/category/7356_1.html", "/category/7358_1.html",
+                     "/category/7429_1.html", "/category/7464_1.html", "/category/7486_1.html"],
+    },
     # -- City tier (existing dialects A/B/I/Q/S; group="city") --
     "baoji": {"name": "Baoji (宝鸡市)", "base_url": "https://www.baoji.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col46/col47/", "/col46/col52/"]},
     "shannan": {"name": "Shannan (山南市)", "base_url": "https://www.shannan.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zwgk/", "/jytadf/"]},
     "wuzhong": {"name": "Wuzhong (吴忠市)", "base_url": "https://www.wuzhong.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/sy/zcjd/"]},
-    "zhangye": {"name": "Zhangye (张掖市)", "base_url": "https://www.zhangye.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/dzdt/tzgg/", "/zyszfxxgk/zfwj_5652/zcjd_8944/sjzcjd_8947/"]},
+    "zhangye": {"name": "Zhangye (张掖市)", "base_url": "https://www.zhangye.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/dzdt/tzgg/", "/zyszfxxgk/zfwj_5652/zcjd_8944/sjzcjd_8947/", "/swj/"]},  # +市委机关 news column (section sweep: 35 arts, 0 held)
     "zhoukou": {"name": "Zhoukou (周口市)", "base_url": "https://www.zhoukou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/sitesources/zksrmzf/page_pc/xwzx/tzgg/"]},
     "dingxi": {"name": "Dingxi (定西市)", "base_url": "https://www.dingxi.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col/col15863/", "/col/col15887/"]},
     "weihai": {"name": "Weihai (威海市)", "base_url": "https://www.weihai.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col/col102604/"]},
@@ -455,6 +536,17 @@ SITES = {
     "fushun": {"name": "抚顺市", "base_url": "https://www.fushun.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "lasa": {"name": "拉萨市", "base_url": "https://www.lasa.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "xinxiang": {"name": "新乡市", "base_url": "https://www.xinxiang.gov.cn", "admin_level": "municipal", "group": "city3", "sections": ["/zwgk/index.html"]},   # public (Y)
+    # 南京市 — t-date A on the shared Nanjing CMS. Homepage `/` is a Jiasule JS challenge
+    # (618B stub) but the 政务公开 tree passes with the full Chrome UA. Static 20-row lists at
+    # /zdgk/214/<cat>/index_<tpl>.html: 400 市政府文件 / 406 市政府办文件 / 394/396 行政规范性文件 /
+    # 394/397 地方性法规 / 225 政策解读 / 2617 规划信息 / 418/420 常务会议. url_date (rows list
+    # 有效期 before 发布日期). Added 2026-10-06 (Jiangsu second-deep-province build-out).
+    "nanjing": {"name": "南京市", "base_url": "https://www.nanjing.gov.cn", "admin_level": "municipal",
+        "group": "city", "url_date": True,
+        "sections": ["/zdgk/214/400/index_17989.html", "/zdgk/214/406/index_17989.html",
+                     "/zdgk/214/394/396/index_17989.html", "/zdgk/214/394/397/index_17989.html",
+                     "/zdgk/214/225/index_17647.html", "/zdgk/214/2617/index_17647.html",
+                     "/zdgk/214/418/420/index_17647.html"]},
     "wuxi": {"name": "无锡市", "base_url": "https://www.wuxi.gov.cn", "admin_level": "municipal", "group": "city3",
         "sections": ["/zfxxgk/szfxxgkml/fgwjjjd/zfwj/index.shtml",       # docymd /doc/YYYY/MM/DD/<id>.shtml
                      "/zfxxgk/szfxxgkml/fgwjjjd/dfxfg/index.shtml",
@@ -558,7 +650,7 @@ SITES = {
     "jl_gxt": {"name": "Jilin Industry & IT Dept (吉林工信厅)", "base_url": "https://gxt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/xxgk/zcwj_200601/", "/xxgk/tzgg/", "/xxgk/zcjd/"]},
     "jl_kjt": {"name": "Jilin S&T Dept (吉林科技厅)", "base_url": "https://kjt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/xxgk/fgwj/", "/xwzx/tztg/", "/xxgk/zcjd/"]},
     "jl_czt": {"name": "Jilin Finance Dept (吉林财政厅)", "base_url": "https://czt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/xwfb/tzgg/", "/zwgk/czsj/"]},
-    "jl_swt": {"name": "Jilin Commerce Dept (吉林商务厅)", "base_url": "https://swt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zcfg/", "/tzgg/", "/zcjd/"]},
+    "jl_swt": {"name": "Jilin Commerce Dept (吉林商务厅)", "base_url": "https://swt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zcfg/", "/tzgg/", "/zcjd/", "/cwgk/"]},  # +财务公开 (section sweep: 20 arts, 0 held)
     "jl_jyt": {"name": "Jilin Education Dept (吉林教育厅)", "base_url": "https://jyt.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/ggl/", "/zwgk/rsrm/"]},
     "jl_hrss": {"name": "Jilin HR & Social Security Dept (吉林人社厅)", "base_url": "https://hrss.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/flfg/dfxfggz2017/", "/fwzc/bszn/"]},
     "jl_zrzy": {"name": "Jilin Natural Resources Dept (吉林自然资源厅)", "base_url": "https://zrzy.jl.gov.cn", "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/fgwj/gfxwj/", "/zwgk/fgwj/zcjd/"]},
@@ -581,11 +673,11 @@ SITES = {
     "bjb_ghzrzyw": {"name": "Beijing Planning & Natural Resources Commission (北京市规划自然资源委)", "base_url": "https://ghzrzyw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zhengwuxinxi/zcwj/qtwj/", "/zhengwuxinxi/zcfg/fl/", "/zhengwuxinxi/tzgg/"]},
     "bjb_sthjj": {"name": "Beijing Ecology & Environment Bureau (北京市生态环境局)", "base_url": "https://sthjj.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/bjhrb/index/xxgk69/zfxxgk43/fdzdgknr2/zcfb/szfgfxwj/index.html", "/bjhrb/index/xxgk69/zfxxgk43/fdzdgknr2/ywdt28/xwfb/index.html"]},
     # 上海市 bureaus (dialect T shhex /YYYYMMDD/<32hex>.html):
-    "shb_fgw": {"name": "Shanghai DRC (上海市发改委)", "base_url": "https://fgw.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/fgw_zcwjfl/index.html", "/fgw_gfxwj/index.html"]},
+    "shb_fgw": {"name": "Shanghai DRC (上海市发改委)", "base_url": "https://fgw.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/fgw_zcwjfl/index.html", "/fgw_gfxwj/index.html", "/fgw_zfxxgk/"]},  # +政府信息公开 aggregator (/YYYYMMDD/<32hex>.html, same dialect; section sweep: 50 arts, 0 held)
     "shb_sheitc": {"name": "Shanghai Economy & Informatization Commission (上海市经信委)", "base_url": "https://www.sheitc.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zfxxgkml/"]},
     "shb_stcsm": {"name": "Shanghai S&T Commission (上海市科委)", "base_url": "https://stcsm.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgk/kjzc/zcwj/kwzcxwj/", "/zwgk/kjzc/zcjd/"]},
-    "shb_sww": {"name": "Shanghai Commerce Commission (上海市商务委)", "base_url": "https://sww.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgkgfqtzcwj/index.html"]},
-    "shb_rsj": {"name": "Shanghai HR & Social Security Bureau (上海市人社局)", "base_url": "https://rsj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/tgsgg_17341/index.html", "/tmsztc_17502/index.html", "/tbmts_17501/index.html"]},
+    "shb_sww": {"name": "Shanghai Commerce Commission (上海市商务委)", "base_url": "https://sww.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwgkgfqtzcwj/index.html", "/zxxxgk/"]},  # +最新信息公开 aggregator (section sweep: 20 arts, 0 held)
+    "shb_rsj": {"name": "Shanghai HR & Social Security Bureau (上海市人社局)", "base_url": "https://rsj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/tgsgg_17341/index.html", "/tmsztc_17502/index.html", "/tbmts_17501/index.html", "/txxgk_17196/"]},  # +信息公开 aggregator (section sweep: 18 arts, 0 held)
     "shb_ghzyj": {"name": "Shanghai Planning & Natural Resources Bureau (上海市规划资源局)", "base_url": "https://ghzyj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zcwj/", "/gzdt/"]},
     # ── Dept tier round 4 (2026-08-12): additional bureaus of Jiangsu/Beijing/Shanghai.
     # 江苏 (dialect B):
@@ -609,16 +701,16 @@ SITES = {
     "bjb_jw": {"name": "Beijing Education Commission (北京市教委)", "base_url": "https://jw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/xxgk/2024zcwj/", "/xxgk/2024zcjd/", "/tzgg/"]},
     "bjb_sw": {"name": "Beijing Water Authority (北京市水务局)", "base_url": "https://sw.beijing.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zwxx/2024zcwj/", "/zwxx/2024zcjd/", "/tzgg/"]},
     # 上海市 (dialect T shhex):
-    "shb_nyncw": {"name": "Shanghai Agriculture & Rural Commission (上海市农业农村委)", "base_url": "https://nyncw.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/gsgg/index.html"]},
+    "shb_nyncw": {"name": "Shanghai Agriculture & Rural Commission (上海市农业农村委)", "base_url": "https://nyncw.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/gsgg/index.html", "/qtzdgkxx/"]},  # +其他重点公开信息 (section sweep: 20 arts, 0 held)
     "shb_jtw": {"name": "Shanghai Transportation Commission (上海市交通委)", "base_url": "https://jtw.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zxzfxx/index.html"]},
     "shb_swj": {"name": "Shanghai Water Authority (上海市水务局)", "base_url": "https://swj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/swj-ghjhwj/index.html", "/swj-gzdt/index.html"]},
     "shb_mzj": {"name": "Shanghai Civil Affairs Bureau (上海市民政局)", "base_url": "https://mzj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/jicxx/index.html"]},
-    "shb_sfj": {"name": "Shanghai Justice Bureau (上海市司法局)", "base_url": "https://sfj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/2020zwdt_tzgg/index.html"]},
+    "shb_sfj": {"name": "Shanghai Justice Bureau (上海市司法局)", "base_url": "https://sfj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/2020zwdt_tzgg/index.html", "/ztzl_sfxzdwjyzd/"]},  # +司法行政队伍教育整顿 专题 (section sweep: 28 arts, 0 held)
     "shb_whlyj": {"name": "Shanghai Culture & Tourism Bureau (上海市文旅局)", "base_url": "https://whlyj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/wlyw/index.html", "/cysc/index.html", "/gbds/", "/jqxxgk/"]},
     "shb_scjgj": {"name": "Shanghai Market Supervision Administration (上海市市场监管局)", "base_url": "https://scjgj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/056/index.html"]},
     "shb_ybj": {"name": "Shanghai Medical Insurance Bureau (上海市医保局)", "base_url": "https://ybj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/gfxwj/index.html", "/qtwj/index.html", "/zcjd/index.html", "/zxzc/", "/zxgkzfxx/"]},
     "shb_yjj": {"name": "Shanghai Emergency Management Bureau (上海市应急管理局)", "base_url": "https://yjj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/zjyw/index.html", "/sjdt/index.html", "/ypylqxcpzczxxgg/", "/zcztc/", "/zcjd/"]},
-    "shb_tjj": {"name": "Shanghai Statistics Bureau (上海市统计局)", "base_url": "https://tjj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/xxgk_gw/index.html", "/gfxwj/index.html"]},
+    "shb_tjj": {"name": "Shanghai Statistics Bureau (上海市统计局)", "base_url": "https://tjj.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/xxgk_gw/index.html", "/gfxwj/index.html", "/tjgb/", "/tjzyzgks/"]},  # +统计公报 + 统计资料总规划 (section sweep: 20 + 18 arts, 0 held)
     "shb_edu": {"name": "Shanghai Education Commission (上海市教委)", "base_url": "https://edu.sh.gov.cn", "admin_level": "municipal", "group": "dept", "sections": ["/xwzx_gnxw/index.html", "/xwzx_bsxw/index.html", "/xxgk_zcjd/", "/xxgk2_zdgz_jyfz_04/", "/xxgk2_zdgz_xxhqbw_02/", "/xxgk_flfg/"]},
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
@@ -705,7 +797,7 @@ SITES = {
     "xz_tzcjj": {"name": "Tibet Investment Promotion Bureau (西藏投资促进局)", "base_url": "https://tzcjj.xizang.gov.cn",
         "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/tzgg/index.html", "/zwgk/zcjd/index.html"]},
     "xz_ee": {"name": "Tibet Ecology & Environment Dept (西藏生态环境厅)", "base_url": "https://ee.xizang.gov.cn",
-        "admin_level": "provincial", "group": "dept", "sections": ["/xwzx/gsgg/index.html"]},
+        "admin_level": "provincial", "group": "dept", "sections": ["/xwzx/gsgg/index.html", "/zwgk/"]},  # +政务公开 (incl. 自治区规范性文件; section sweep: 17 arts, 0 held)
     "xz_sport": {"name": "Tibet Sports Bureau (西藏体育局)", "base_url": "https://sport.xizang.gov.cn",
         "admin_level": "provincial", "group": "dept", "sections": ["/zwgk/tzgz/index.html", "/zwgk/zwxx/index.html"]},
     "xz_tyjr": {"name": "Tibet Veterans Affairs Dept (西藏退役军人事务厅)", "base_url": "https://tyjr.xizang.gov.cn",
@@ -960,10 +1052,57 @@ SITES = {
     "bjd_xicheng": {"name": "Beijing Xicheng District (北京西城区)", "base_url": "https://www.bjxch.gov.cn",
         "admin_level": "district", "group": "dept", "sections": ["/xxgk/tzgg.html", "/xxgk/gfxwj/zfgfxwj.html", "/xxgk/zcjdw.html"]},
     # --- Other major-city districts (t-date, discovered via probe agent) ---
+    # Nanjing districts share the municipal CMS (t-date A): the 公开 menu is a JS `?id=xxgk_N`
+    # shell, but each category has a STATIC 20-row list at <prefix>/214/<cat>/index_<tpl>.html
+    # (222 区政府文件 / 223 区政府办文件 / 225 政策解读 / 394 法规规章 / 228 公示公告 / 2617 规划).
+    # Found 2026-10-06 by reading the shell's embedded JS. All carry url_date (see crawl_site).
+    # Jiasule WAF: the HOMEPAGE is a JS challenge, inner sections pass with the full Chrome UA.
     "njd_gulou": {"name": "Nanjing Gulou District (南京鼓楼区)", "base_url": "http://www.njgl.gov.cn",
-        "admin_level": "district", "group": "dept", "sections": ["/xxgk/"]},
+        "admin_level": "district", "group": "dept", "url_date": True,
+        "sections": ["/xxgk/", "/glqrmzf/214/222/index_18001.html", "/glqrmzf/214/223/index_18001.html",
+                     "/glqrmzf/214/394/index_18001.html", "/glqrmzf/214/225/index_18001.html",
+                     "/glqrmzf/214/228/index_17559.html"]},
     "njd_jiangning": {"name": "Nanjing Jiangning District (南京江宁区)", "base_url": "http://www.jiangning.gov.cn",
-        "admin_level": "district", "group": "dept", "sections": ["/xxgk/", "/xxgk/ldzc/"]},
+        "admin_level": "district", "group": "dept", "url_date": True,
+        "sections": ["/xxgk/", "/xxgk/ldzc/", "/jnqrmzf/214/222/index_18006.html",
+                     "/jnqrmzf/214/223/index_18006.html", "/jnqrmzf/214/394/index_18006.html",
+                     "/jnqrmzf/214/225/index_18006.html", "/jnqrmzf/214/228/index_17695.html"]},
+    "njd_jianye": {"name": "Nanjing Jianye District (南京建邺区)", "base_url": "http://www.njjy.gov.cn",
+        "admin_level": "district", "group": "dept", "url_date": True,
+        "sections": ["/cszwgk/zdgk/214/222/index_18000.html", "/cszwgk/zdgk/214/223/index_18000.html",
+                     "/cszwgk/zdgk/214/225/index_18000.html", "/cszwgk/zdgk/214/228/index_17188.html",
+                     "/ztzl/ghxxgk_70036/index.html", "/jyyw/"]},
+    "njd_qinhuai": {"name": "Nanjing Qinhuai District (南京秦淮区)", "base_url": "http://www.njqh.gov.cn",
+        "admin_level": "district", "group": "dept", "url_date": True,
+        "sections": ["/qhqrmzf/214/222/index_17999.html", "/qhqrmzf/214/223/index_17999.html",
+                     "/qhqrmzf/214/394/index_17999.html", "/qhqrmzf/214/225/index_17662.html",
+                     "/qhqrmzf/214/2617/index_17662.html", "/zfxxgk/", "/ywdt/gsgg/"]},
+    # Suzhou districts / county-level cities — hexmon dialect I (/<col>/<YYYYMM>/<32hex>.shtml,
+    # Hanweb). Lists are server-rendered *_list.shtml / common_list.shtml pages (page 0 only;
+    # no index_N). Probed 2026-10-06 from the droplet. NOT reachable from NYC: 吴中 szwz (TLS
+    # fail), 昆山 ks.gov.cn (DNS), 南京 玄武/栖霞/浦口 (DNS).
+    "szd_sipac": {"name": "Suzhou Industrial Park (苏州工业园区)", "base_url": "https://www.sipac.gov.cn",
+        "admin_level": "district", "group": "dept",
+        "sections": ["/szgyyq/fzjs/zwgk_fzzfjs_list.shtml", "/szgyyq/ggxx/common_list3.shtml",
+                     "/szgyyq/dczj/common_list.shtml", "/szgyyq/zwgk/ywtk_index.shtml"]},
+    "szd_gusu": {"name": "Suzhou Gusu District (苏州姑苏区)", "base_url": "https://www.gusu.gov.cn",
+        "admin_level": "district", "group": "dept",
+        "sections": ["/gsq/zdhyxxgk/nav_list.shtml", "/gsq/c100274/zdly_list2.shtml",
+                     "/gsq/tongzhigonggao/nav_list.shtml", "/gsq/snbt/zdly_list.shtml", "/gsq/xxgk/xxgk.shtml"]},
+    "szd_wujiang": {"name": "Suzhou Wujiang District (苏州吴江区)", "base_url": "https://www.wujiang.gov.cn",
+        "admin_level": "district", "group": "dept",
+        "sections": ["/zgwj/gfxwj/flfgqwjsxt.shtml", "/zgwj/zcjd/xxgk_nav_list.shtml",
+                     "/zgwj/zcfgjd/xxgk_list.shtml", "/zgwj/gggsh/xwzx_list.shtml",
+                     "/zgwj/ghjh/xxgk_nav_list.shtml", "/zgwj/gkzd/xxgkml_list.shtml", "/zgwj/xxgk/wj2021_xxgk.shtml"]},
+    "szd_zjg": {"name": "Zhangjiagang (苏州张家港市)", "base_url": "https://www.zjg.gov.cn",
+        "admin_level": "district", "group": "dept",
+        "sections": ["/zjg/zcfg1/common_list.shtml", "/zjg/zcfgjd/common_list.shtml", "/zjg/tzgg/common_list.shtml",
+                     "/zjg/xxgk/zwgk.shtml", "/zjg/cwhztlm/full_list.shtml", "/zjg/zxta/common_list.shtml",
+                     "/zjg/rdjy/common_list.shtml"]},
+    "szd_changshu": {"name": "Changshu (苏州常熟市)", "base_url": "https://www.changshu.gov.cn",
+        "admin_level": "district", "group": "dept",
+        "sections": ["/zgcs/c108190/list.shtml", "/zgcs/c100355/list.shtml", "/zgcs/c100356/list.shtml",
+                     "/zgcs/c100442/list.shtml", "/zgcs/gkzd/csqxxgkml_list.shtml"]},
     "whd_jianghan": {"name": "Wuhan Jianghan District (武汉江汉区)", "base_url": "http://www.jianghan.gov.cn",
         "admin_level": "district", "group": "dept", "sections": ["/xwzx/tzgg/", "/xwzx/jhyw/"]},
     "whd_wuchang": {"name": "Wuhan Wuchang District (武汉武昌区)", "base_url": "http://www.wuchang.gov.cn",
@@ -1126,7 +1265,20 @@ _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
 # (e.g. TC260 /portal/ + the dateless numid/pnidpv/ccontent dialects). Label-anchored
 # on 发布/发表/时间/日期 so it can't grab a random in-body date; fires only as a fallback.
-_PUB_DATE = re.compile(r'(?:发布|发表|时间|日期)[^0-9<]{0,10}(\d{4})[-/年.](\d{1,2})[-/月.](\d{1,2})')
+_PUB_DATE = re.compile(r'(?:发布|发表|时间|日期)(?:[^0-9<]|<[^>]*>){0,12}(\d{4})[-/年.](\d{1,2})[-/月.](\d{1,2})')
+#   ^ the label and the date may be split by a few whole tags (cast.org.cn:
+#     `发布日期： <span>2026.09.02 </span>`); each gap token is one non-digit char or
+#     ONE complete tag, so the window can't skip across unrelated markup to a wrong date.
+# Hanweb/TRS CMSes (cast.org.cn) also stamp `<meta name="PubDate" content="2026-09-30 13:37">`.
+# Tried BEFORE _PUB_DATE: on 延期公告/申报通知 pages the body's "截止时间延至2026年10月10日"
+# precedes the visible 发布日期, so the label scan returned a (future) deadline.
+_META_PUBDATE = re.compile(r'<meta\s+name="(?:PubDate|pubdate|publishdate)"\s+content="(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})', re.I)
+
+
+def _body_date(html: str) -> str:
+    """Publish date from an article page: PubDate meta first, then the label-anchored body scan."""
+    m = _META_PUBDATE.search(html) or _PUB_DATE.search(html)
+    return f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}" if m else ""
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
 # Known tight content containers, tried first (fast path for common templates).
 _BODY_CONTAINERS = [
@@ -1134,6 +1286,7 @@ _BODY_CONTAINERS = [
     r'class="[^"]*trs_editor_view',          # TRS UEditor (mva etc.)
     r'class="[^"]*TRS_UEDITOR',
     r'class="[^"]*TRS_Editor',
+    r'class=TRS_Editor',                     # UNQUOTED attr (cass.cn / amr.org.cn TRS templates)
     r'id="zoom"', r'id="Zoom"',
     r'class="[^"]*\bview\b[^"]*TRS',
     r'class="[^"]*xxgk[-_]?content',
@@ -1144,8 +1297,10 @@ _BODY_CONTAINERS = [
     r'id="ivs_content"',                     # 上海市 depts (Article_content / ivs_content)
     r'class="[^"]*Article_content',          # 上海市 depts
     r'class="[^"]*main[-_]txt',              # 江苏省 depts (dialect B, main-txt)
+    r'class="[^"]*article[-_]detail\b',      # 苏州吴江区 (hexmon Hanweb; short docs have no <p> → div-scoring missed them)
 ]
 _FOOT_CUT = re.compile(r'(相关(?:附件|链接|文件|报道)|扫一扫|打印本页|class="[^"]*(?:foot|share|xglj|fujian|print))')
+_DATA_IMG = re.compile(r'<img\b[^>]*?\bsrc="data:[^"]*"[^>]*>', re.I)
 
 
 def _clean(t: str) -> str:
@@ -1177,10 +1332,16 @@ def _extract_body(html: str) -> str:
     """Extract article body. Try known containers first; else fall back to the
     INNERMOST <div> carrying the most <p>-text (deepest wins on nested ties, so
     we skip wrapper divs that also contain the sidebar/nav)."""
+    # Inline base64 images (amr.org.cn pastes 100KB+ data: URIs) blow the 120K region
+    # cap mid-tag, leaving the truncated `<img src="data:…` as 100K of "body text".
+    html = _DATA_IMG.sub("", html)
     for pat in _BODY_CONTAINERS:
         m = re.search(pat, html)
         if m:
-            t = _region_text(html[m.start():m.start() + 120_000])
+            # start AFTER the container's own '>' so the partial tag text
+            # (`class="contentbox">`) doesn't lead the body.
+            start = html.find(">", m.start()) + 1 or m.start()
+            t = _region_text(html[start:start + 120_000])
             if len(t) > 80:
                 return t
     # fallback: score every div by the <p>-text immediately inside it
@@ -1210,7 +1371,10 @@ def _list_articles(page_html: str, page_url: str) -> list:
         matches.append((m, m.group(1), m.group(3), f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}"))
     for m in _ART_ART_RE.finditer(page_html):
         y, mo, d = m.group(2), m.group(3), m.group(4)
-        url_date = f"{y}-{int(mo):02d}-{int(d):02d}" if mo and d else f"{y}-01-01"
+        # Year-only /art/YYYY/ URLs used to pin YYYY-01-01; leave the date EMPTY instead so
+        # crawl_site's body _PUB_DATE fallback (发布日期：2026.09.05 on cast.org.cn/Hanweb)
+        # fills the real day. A row date (_DATE_NEAR) still wins when the list carries one.
+        url_date = f"{y}-{int(mo):02d}-{int(d):02d}" if mo and d else ""
         matches.append((m, m.group(1), m.group(5), url_date))
     for m in _ART_CONTENT_RE.finditer(page_html):
         y, mo, d = m.group(2), m.group(3), m.group(4)
@@ -1370,12 +1534,16 @@ def _pages(base: str, section: str, deep: bool, max_pages: int):
     """Yield (url, html) for a section: page 0, then index_N if --deep."""
     first = urljoin(base, section)
     try:
-        yield first, fetch(first, headers=UA)
+        first_html = fetch(first, headers=UA)
+        yield first, first_html
     except Exception as e:
         log.warning(f"  {section}: {e}")
         return
     if not deep:
         return
+    # Sites whose article URLs are .shtml (jsrd.gov.cn, cass.cn) paginate as
+    # index_N.shtml; index_N.html 404s there. Pick the extension from page 0.
+    page_ext = ".shtml" if re.search(r't\d{8}_\d+\.shtml', first_html or "") else ".html"
     # Scheme A — section ends in /<int>.html (西安-style bare page files, e.g.
     # …/xaszfwj/1.html): paginate by incrementing that integer (2.html, 3.html…).
     pm = re.search(r'^(.*/)(\d+)(\.s?html?)$', section)
@@ -1394,7 +1562,7 @@ def _pages(base: str, section: str, deep: bool, max_pages: int):
         return
     # Scheme B — append index_N.html to the section dir (central-ministry default).
     for n in range(1, max_pages + 1):
-        u = urljoin(first, f"index_{n}.html")
+        u = urljoin(first, f"index_{n}{page_ext}")
         try:
             html = fetch(u, headers=UA)
         except Exception:
@@ -1428,6 +1596,15 @@ def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30,
     for section in sections:
         for page_url, html in _pages(base, section, deep, max_pages):
             arts = _list_articles(html, page_url)
+            if cfg.get("url_date"):
+                # Site-scoped: the Nanjing municipal/district CMS lists `<a>` then a
+                # 有效期 span (.d3, e.g. 2031-09-12) BEFORE the 发布日期 span (.d2), so the
+                # generic row-date lookback grabs a validity date or the previous row's
+                # date. The t-date URL (tYYYYMMDD_ID) IS the publish date there → use it.
+                for it in arts:
+                    um = re.search(r'/t(\d{4})(\d{2})(\d{2})_\d+\.s?html?$', it["url"])
+                    if um:
+                        it["date"] = f"{um.group(1)}-{um.group(2)}-{um.group(3)}"
             new = 0
             for it in arts:
                 if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''",
@@ -1444,9 +1621,7 @@ def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30,
                         body = _extract_body(dh)
                         meta = _extract_metadata_table(dh)
                         if not it["date"]:            # list row had no date → try body
-                            pdm = _PUB_DATE.search(dh)
-                            if pdm:
-                                it["date"] = f"{pdm.group(1)}-{int(pdm.group(2)):02d}-{int(pdm.group(3)):02d}"
+                            it["date"] = _body_date(dh)
                     except Exception as e:
                         log.warning(f"    body {it['url']}: {e}")
                     time.sleep(REQUEST_DELAY)

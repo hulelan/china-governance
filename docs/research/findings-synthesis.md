@@ -25,6 +25,18 @@ internal upward channels.** Every memo states this boundary rather than papering
 this way it is a strength, not a hedge, it is a clear account of what this instrument can and
 cannot see.
 
+*(Update 2026-10-06, `bottom-up-channel.md`: we then hunted the upward channel deliberately.
+The center's acknowledgment lexicon (典型经验 / 复制推广 / 向全国推广) rose from 2-3% of central
+promulgations in 2008-13 to a 17-19% peak in 2021-22, but 92% of it is exhortation; only 296 docs
+(0.8%) name a locality near the phrase and only 79 carry recognition in the title. Lexicon docs
+cite downward no more than other central docs (0.31% vs 0.24%). The center absorbs a local model
+by restating it in prose and naming the place, never by citing the local document, so the
+citation graph is structurally blind to upward flow. Who gets named tracks pilot selection:
+Spearman with GDP per capita 0.664, richest ten provinces take 62.5%. The through-line therefore
+hardens for the citation record and softens for the prose record. Four feedback sources (全国人大
+议案建议, 全国政协 提案, 江苏人大, 北京人大; 1,427 docs) are now in the corpus under
+`group="feedback"` as the place a document-level upward link could still appear.)*
+
 The second recurring result is methodological. Two 2025 NBER papers (Luo/Wang/Yang; Fang/Li/Lu)
 chose the same object (millions of Chinese policy documents) and inferred relationships from text
 similarity. Our edge is an **explicit, resolved citation-and-reissuance graph** plus
@@ -124,8 +136,26 @@ methodological contribution.
   experiments), linked to local implementation and traced for rollout. Designation flows down
   (pilots cited by 833 sub-national docs; a pre-resolver-fix raw-citation count) but
   generalization barely flows up (0.4-1.2% reach a visible national instrument, a visibility
-  floor). Their causal findings (GDP site-selection,
-  fiscal effort, learning bias) need external data we do not hold, stated as out of reach.
+  floor). Their causal findings (fiscal effort, learning bias) need external data we do not
+  hold, stated as out of reach. *(Update 2026-10-06: the site-selection finding is now
+  replicated descriptively at province grain, `site-selection-gdp.md`, via a provincial GDP
+  join (31 units × 23 years from NBS yearbooks; 2014-19 interpolated and flagged). 77.6% of
+  the 737 selective pilot guidelines name a majority-above-median pilot set (random draw 41%);
+  named provinces sit at the 0.705 GDP-per-capita percentile (random 0.50), robust across five
+  cuts; Spearman(selection ratio, GDP/capita) 0.625; the richest tercile takes 55% of
+  designations on 38% of population. 批复 (locality-requested) designations select less than
+  assigned ones (0.60 vs 0.73 percentile), an automatic proxy for their assigned-vs-voluntary
+  split. Province grain biases toward the null; the promotion-incentive mechanism remains
+  untestable.)* *(Update 2026-10-06, `successor-detector.md`: the pilots-that-scale anomaly
+  is mostly measurement. A scored successor detector (core similarity + topic + generalization
+  cue + issuer + citation, 76-87% precision) lifts the rate from ~1% to 5.9% raw / 6.9%
+  ex-mid-flight (8-9.5% on 试点 trials only), median lag 564 days, inside W&Y's 820-day mean.
+  Hand-classifying the pilots with no successor: 40% are zone designations that "scale" as
+  more zones, 23% scaled under a RENAMED or absorbing instrument (海南自贸试验区 → 自贸港方案,
+  刑事速裁试点 → the 2018 刑诉法 amendment), 20% are mid-flight, 7% never scaled. Of 12 mature
+  substantive pilots, 9 have an in-corpus successor the core match cannot reach, bracketing
+  their 53.9%. The finding is not that pilots fail to scale; it is that they scale under new
+  names, which no title-based method sees without a renaming layer.)*
 - **Inter-agency coordination** (`joint-issuance.md`, Q7; fragmented-authority tradition).
   Built on a new 文号/issuer parser (`doc_issuers`, 79% coverage, 97% precision) that finds
   13,004 jointly-issued documents (13,370 before the 粤办 fix below), 13x the agenda's naive

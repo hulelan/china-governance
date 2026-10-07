@@ -189,6 +189,9 @@ run_crawler "govcms (city2 group)" python3 -m crawlers.govcms --group city2
 # City tier batch 3 (static deep-list big-city portals: snow/docymd/public/article/pcon
 # dialects behind JS menus —西安/无锡/朝阳/湛江/芜湖…). --deep walks N.html/index_N pagination.
 run_crawler "govcms (city3 group)" python3 -m crawlers.govcms --group city3 --deep --workers 4
+# Feedback institutions (人大 议案建议办理, 政协 提案, provincial 人大; group=feedback). These are
+# the bottom-up-channel sources from docs/research/bottom-up-channel.md.
+run_crawler "govcms (feedback group)" python3 -m crawlers.govcms --group feedback
 
 for crawler in beijing shanghai jiangsu chongqing wuhan suzhou heilongjiang; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
