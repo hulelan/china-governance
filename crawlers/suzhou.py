@@ -27,6 +27,21 @@ Detail pages:
             + dl/dd metadata block in div.xxgkml-content
               (索引号, 分类, 发布机构, 发文日期, 文号, 标题, 内容概述)
 
+DATES (2026-10-07 — see docs/research/fidelity-jiangsu.md §7). `<meta name="PubDate">` on
+this CMS is the PAGE GENERATION time (`<meta name="others" content="页面生成时间 …">` carries
+the same value), NOT the publish date: the site regenerated its archive on 2023-02-09 and
+2025-02-11, so 68% of the corpus's Suzhou docs were stored on those two days (1,860 + 1,499)
+while their 文号 years and URL months said otherwise. The real publish date is the article
+header `<div class="article-attr"> … 时间：<PUBLISHTIME>2023-02-07 11:18</PUBLISHTIME>`; the
+dl/dd `发文日期` is the 成文 date (-> date_written). `page_date()` therefore takes, in order:
+  1. the article-attr 时间/PUBLISHTIME stamp (day precision);
+  2. meta PubDate ONLY when its YYYYMM equals the URL's `/YYYYMM/` segment (then it is a
+     genuine publish-time stamp, not a regeneration);
+  3. the URL `/YYYYMM/` segment with day = 01 — MONTH precision. The schema has no
+     date-precision column, so a `-01` day on a Suzhou doc means "sometime that month".
+The list API's PUBLISHED_TIME_FORMAT carries the same regeneration stamp, so it is only a
+last resort (--list-only runs with no detail page).
+
 Sections (by channel_id):
   All:      all policy documents (no filter, ~5000 docs)
   zfwj:     市政府文件 (Municipal government docs)
@@ -41,6 +56,7 @@ Usage:
     python -m crawlers.suzhou --stats               # Show database stats
     python -m crawlers.suzhou --list-only           # List without fetching bodies
     python -m crawlers.suzhou --db /tmp/suzhou.db   # Write to temp DB
+    python -m crawlers.suzhou --self-test-dates     # page_date() cases
 """
 
 import argparse
@@ -197,6 +213,73 @@ def _extract_meta(html: str) -> dict:
     return meta
 
 
+_URL_MONTH = re.compile(r"/((?:19|20)\d\d)(0[1-9]|1[0-2])/")
+_ATTR_TIME = re.compile(
+    r'<div[^>]*class="article-attr[^"]*"[^>]*>.{0,400}?时\s*间\s*[：:]\s*(?:<[^>]+>\s*)*'
+    r'((?:19|20)\d\d)[-/.年](\d{1,2})[-/.月](\d{1,2})', re.DOTALL)
+_META_PUBDATE = re.compile(
+    r'<meta\s+name=["\']PubDate["\']\s+content=["\']\s*((?:19|20)\d\d)[-/.](\d{1,2})[-/.](\d{1,2})',
+    re.IGNORECASE)
+
+
+def url_month(url: str) -> str:
+    """'YYYY-MM' from the CMS URL's /YYYYMM/ segment, or ''."""
+    m = _URL_MONTH.search(url or "")
+    return f"{m.group(1)}-{m.group(2)}" if m else ""
+
+
+def page_date(html: str, url: str = "") -> tuple:
+    """(YYYY-MM-DD, source) publish date of a Suzhou detail page; ('', '') if none.
+
+    source is 'attr' (article header 时间 stamp, day precision), 'meta' (PubDate meta that
+    agrees with the URL month), or 'url' (URL /YYYYMM/ -> day 01, MONTH precision). See the
+    module docstring: a PubDate meta whose month differs from the URL month is the site's
+    archive-regeneration stamp (2023-02-09 / 2025-02-11) and is never used.
+    """
+    um = url_month(url)
+    m = _ATTR_TIME.search(html or "")
+    if m:
+        y, mo, d = m.groups()
+        return f"{y}-{int(mo):02d}-{int(d):02d}", "attr"
+    m = _META_PUBDATE.search(html or "")
+    if m:
+        y, mo, d = m.groups()
+        ds = f"{y}-{int(mo):02d}-{int(d):02d}"
+        if not um or ds[:7] == um:
+            return ds, "meta"
+    if um:
+        return f"{um}-01", "url"
+    return "", ""
+
+
+_PAGE_DATE_TESTS = [
+    # (html, url, expected)
+    ('<meta name="PubDate" content="2023-02-09 21:53:58"/> <div class="article-attr clearfix">'
+     '<div class="article-attr-l"><span class="date">时间：<b> <PUBLISHTIME> 2023-02-07 11:18 '
+     '</PUBLISHTIME> </b></span>', "http://www.suzhou.gov.cn/szsrmzf/szfqt/202302/7bee.shtml",
+     ("2023-02-07", "attr")),                                   # live page: regeneration meta + real attr
+    ('<meta name="PubDate" content="2025-02-11 09:00:00"/>', "http://www.suzhou.gov.cn/szsrmzf/rsrm/201911/x.shtml",
+     ("2019-11-01", "url")),                                    # regeneration stamp, no attr -> URL month
+    ('<meta name="PubDate" content="2026-07-14 09:03:01"/>', "http://www.suzhou.gov.cn/szsrmzf/rsrm/202607/x.shtml",
+     ("2026-07-14", "meta")),                                   # meta agrees with URL month -> genuine
+    ('<meta name="PubDate" content="2026-07-14 09:03:01"/>', "", ("2026-07-14", "meta")),  # no URL month to check
+    ("<html></html>", "http://www.suzhou.gov.cn/szsrmzf/zfwj/201211/x.shtml", ("2012-11-01", "url")),
+    ("<html></html>", "http://www.suzhou.gov.cn/x.shtml", ("", "")),
+    ('<div class="article-attr"><span class="date">时间：<b>2024年11月7日</b></span>', "", ("2024-11-07", "attr")),
+]
+
+
+def _self_test_dates() -> bool:
+    fails = 0
+    for html, url, exp in _PAGE_DATE_TESTS:
+        got = page_date(html, url)
+        if got != exp:
+            fails += 1
+            print(f"XX page_date(...{url[-28:]!r}) = {got!r}, expected {exp!r}")
+    print(f"page_date self-test: {len(_PAGE_DATE_TESTS) - fails}/{len(_PAGE_DATE_TESTS)} passed")
+    return fails == 0
+
+
 def _extract_body(html: str) -> str:
     """Extract plain text body from document detail page.
 
@@ -331,6 +414,12 @@ def crawl_section(
         date_published = item.get("PUBLISHED_TIME_FORMAT", "")[:10]
         date_written_str = item.get("C_FWRQ_FORMAT", "")[:10]
         date_written = _parse_date(date_written_str) if date_written_str else _parse_date(date_published)
+        # The API's PUBLISHED_TIME_FORMAT is the archive-regeneration stamp when it does
+        # not fall in the URL month: fall back to the URL month (day 01) so a --list-only
+        # run never stores the stamp. page_date() below refines it from the detail page.
+        um = url_month(doc_url)
+        if um and date_published[:7] != um:
+            date_published = f"{um}-01"
 
         body_text = ""
         raw_html_path = ""
@@ -355,8 +444,11 @@ def crawl_section(
 
                 if meta.get("date_written_str"):
                     date_written = _parse_date(meta["date_written_str"])
-                if meta.get("PubDate"):
-                    date_published = meta["PubDate"].split()[0]
+                # Page date beats the list API's PUBLISHED_TIME_FORMAT (a regeneration
+                # stamp on 68% of the archive — see the module docstring).
+                pd, _src = page_date(doc_html, doc_url)
+                if pd:
+                    date_published = pd
 
                 if doc_html:
                     raw_html_path = save_raw_html(SITE_KEY, doc_id, doc_html)
@@ -433,7 +525,14 @@ def main():
         type=str,
         help="Path to SQLite database (default: documents.db)",
     )
+    parser.add_argument(
+        "--self-test-dates", action="store_true",
+        help="Run the page_date() cases (no network, no DB) and exit",
+    )
     args = parser.parse_args()
+
+    if args.self_test_dates:
+        raise SystemExit(0 if _self_test_dates() else 1)
 
     conn = init_db(Path(args.db) if args.db else None)
 

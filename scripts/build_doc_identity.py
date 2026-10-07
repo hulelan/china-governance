@@ -158,7 +158,10 @@ A4  date_quality — per SITE, the industrial-policy memo's rule (docs/research/
     t-dates match the stored dates). The stamp is now measured where it would have to show:
     a site is `crawl_stamped` iff >=70% of the docs pulled on its modal (bulk) crawl day,
     >=20 of them, are dated ON that day — see the comment above crawl_stamped_sites(). The
-    >=100-doc floor is kept. `missing` = no date_published. `body_scanned` is reserved: the
+    >=100-doc floor is kept. (2026-10-07) PLUS a multi-batch DATE-day test for the source's
+    own regeneration stamps (Suzhou: 38% + 31% on two days we never crawled on): bulk
+    date-days (>=20 docs, >=10% of the site, day != 1) summing to >=50% of the site's dated
+    docs. `missing` = no date_published. `body_scanned` is reserved: the
     crawlers do not record where a date came from, so it cannot be derived today. Else `good`.
 
 A5  lead_issuer — doc_issuers.lead_issuer verbatim (the issuer field of record).
@@ -811,13 +814,32 @@ STAMP_MIN_BULK = 20
 # docs are dated on that very day. On the 2026-10-07 corpus this fires on 0 sites (the max is
 # leshan, 88% of a 17-doc day, under the floor) — the 74-site / 27.9k-doc exclusion in
 # industrial-policy-targeting.md was a coverage-DEPTH artefact, not a date-quality one.
+#
+# (2026-10-07) SECOND test — the SOURCE's own regeneration stamp, which the crawl-day test
+# cannot see. Suzhou (fidelity-jiangsu.md §7): the CMS regenerated its archive on 2023-02-09
+# and 2025-02-11 and wrote that time into <meta PubDate>, so 1,860 + 1,499 = 68% of the site
+# sat on two DATE days while we crawled it on 2026-03-31. Neither day was our crawl day, and
+# neither batch alone reached 70%. Multi-batch rule: "bulk date-days" are days carrying
+# >= STAMP_MIN_BULK docs AND >= STAMP_BULK_DAY_SHARE of the site's dated docs; the site is
+# stamped when the bulk days together hold >= STAMP_MULTI_SHARE of its dated docs. Two
+# calibrations from the 2026-10-07 corpus: (a) day-01 dates are EXEMPT — a YYYY-MM-01 (or
+# YYYY-01-01) pile is the URL-month/year fallback that crawlers write when only the month is
+# known (yc/abazhou/ganzhou/kashi 77-80% on 2026-09-01, laiwu 95% on 2026-01-01: month-
+# precision, real month, shallow one-month crawls — not stamps); (b) a single real heavy
+# publication day does not reach 50%: gov 2,308 docs on 2018-12-31 = 11.5%, samr 1,841 on
+# 2024-05-07 = 42%, mot 429 on 2025-12-26 = 32%, moe 81 on 2008-04-25 = 24% all stay `good`.
+STAMP_BULK_DAY_SHARE = 0.10
+STAMP_MULTI_SHARE = 0.50
 
 
 def crawl_stamped_sites(docs, site_level, crawl_year):
-    """{site: (n_dated_2008plus, n_on_bulk_day, n_bulk_day_dated_that_day)} for sites whose
-    dates are crawl stamps: >=100 dated docs, and >=70% of the docs pulled on the site's
-    busiest (modal) crawl day are dated ON that day (an archive pull cannot be)."""
-    per_site = defaultdict(lambda: [0, Counter(), Counter()])  # n, crawl-day counts, stamped-per-day
+    """{site: (n_dated_2008plus, n_bulk, n_stamped)} for sites whose dates are stamps. Two
+    tests, either fires: (1) crawl-day — >=70% of the docs pulled on the site's busiest
+    (modal) crawl day (>=20 docs) are dated ON that day (an archive pull cannot be);
+    (2) multi-batch date-day — the docs sitting on bulk DATE days (>=20 docs and >=10% of the
+    site's dated docs each, day != 1) together make >=50% of the site's dated docs. Both need
+    >=100 dated docs. For (2) the tuple is (n, n_on_bulk_days, n_on_bulk_days)."""
+    per_site = defaultdict(lambda: [0, Counter(), Counter(), Counter()])  # n, crawl-day, stamped, date-day
     for d in docs.values():
         if site_level.get(d["site"]) in NON_ISSUER_SITE_LEVELS:
             continue
@@ -826,19 +848,28 @@ def crawl_stamped_sites(docs, site_level, crawl_year):
             continue
         c = per_site[d["site"]]
         c[0] += 1
+        if dt.day != 1:
+            c[3][dt] += 1
         cd = d.get("crawl_date")
         if cd:
             c[1][cd] += 1
             if cd == dt:
                 c[2][cd] += 1
     out = {}
-    for s, (n, days, eq) in per_site.items():
-        if n < STAMP_MIN_DOCS or not days:
+    for s, (n, days, eq, by_date) in per_site.items():
+        if n < STAMP_MIN_DOCS:
             continue
-        bulk_day, nb = max(days.items(), key=lambda kv: (kv[1], kv[0]))
-        e = eq.get(bulk_day, 0)
-        if nb >= STAMP_MIN_BULK and e / nb >= STAMP_SHARE:
-            out[s] = (n, nb, e)
+        if days:  # (1) single crawl-day test
+            bulk_day, nb = max(days.items(), key=lambda kv: (kv[1], kv[0]))
+            e = eq.get(bulk_day, 0)
+            if nb >= STAMP_MIN_BULK and e / nb >= STAMP_SHARE:
+                out[s] = (n, nb, e)
+                continue
+        # (2) multi-batch date-day test
+        bulk = sum(k for k in by_date.values()
+                   if k >= STAMP_MIN_BULK and k / n >= STAMP_BULK_DAY_SHARE)
+        if bulk and bulk / n >= STAMP_MULTI_SHARE:
+            out[s] = (n, bulk, bulk)
     return out
 
 
@@ -1277,8 +1308,45 @@ def _stamp_docs(bulk, bulk_stamped, daily, daily_same_day=True, bulk_day=date(20
     return out
 
 
+def _pile_docs(piles, spread, crawl_day=date(2026, 3, 31)):
+    """Site 's' crawled on ONE day (far from every date, so the crawl-day test is silent):
+    `piles` = [(date, n)] docs sitting on that exact DATE day, plus `spread` docs with real
+    dates fanned over 2012-2025 (one per ~3 days, never the 1st)."""
+    from datetime import timedelta
+    out, i = {}, 0
+    for dt, n in piles:
+        for _ in range(n):
+            out[i] = {"site": "s", "date": dt, "crawl_date": crawl_day}; i += 1
+    for j in range(spread):
+        dt = date(2012, 1, 2) + timedelta(days=(3 * j) % 5000)
+        if dt.day == 1:
+            dt += timedelta(days=1)
+        out[i] = {"site": "s", "date": dt, "crawl_date": crawl_day}; i += 1
+    return out
+
+
 _STAMP_TESTS = [
     # (label, docs, expected stamped set)
+    # --- (2) multi-batch date-day test ---
+    ("suzhou shape: two regeneration batches 1,860 + 1,499 of 4,840 (38% + 31%), crawled 2026-03-31",
+     _pile_docs([(date(2023, 2, 9), 1860), (date(2025, 2, 11), 1499)], 1481), {"s"}),
+    ("suzhou after the URL-month redate: piles gone, 3,359 docs spread over months (day 01 exempt)",
+     _pile_docs([(date(2023, 2, 1), 60), (date(2025, 2, 1), 55)], 4700), set()),
+    ("gazette / gov shape: ONE real heavy publication day, 2,308 of 20,150 (11.5%)",
+     _pile_docs([(date(2018, 12, 31), 2308)], 17842), set()),
+    ("samr shape: one 1,841-doc day of 4,361 (42%) — under the 50% multi-batch bar",
+     _pile_docs([(date(2024, 5, 7), 1841)], 2520), set()),
+    ("single source-stamp batch of 55% (one regeneration day, not our crawl day)",
+     _pile_docs([(date(2023, 2, 9), 110)], 90), {"s"}),
+    ("URL-month fallback shape (yc): 80% on 2026-09-01 — day 01 is exempt",
+     _pile_docs([(date(2026, 9, 1), 225)], 55), set()),
+    ("year fallback shape (laiwu): 95% on 2026-01-01 — exempt", _pile_docs([(date(2026, 1, 1), 125)], 6), set()),
+    ("many small piles: 6 days x 9% each (54%) — none reaches the 10% bulk-day bar",
+     _pile_docs([(date(2020, 3, 3 + k), 18) for k in range(6)], 92), set()),
+    ("two batches 30% + 25% = 55%, each >= 20 docs and >= 10%", _pile_docs([(date(2021, 6, 6), 60), (date(2022, 7, 7), 50)], 90), {"s"}),
+    ("two batches 30% + 19% = 49% — under the bar", _pile_docs([(date(2021, 6, 6), 60), (date(2022, 7, 7), 38)], 102), set()),
+    ("too small for the multi-batch test (<100 dated docs)", _pile_docs([(date(2023, 2, 9), 50), (date(2025, 2, 11), 40)], 9), set()),
+    # --- (1) single crawl-day test ---
     ("bulk stamp: 150-doc pull all dated on the pull day", _stamp_docs(150, 150, 0), {"s"}),
     ("bulk stamp + daily tail (stamped site kept syncing)", _stamp_docs(150, 140, 60), {"s"}),
     ("shallow recent crawl: 200-doc bulk with real dates, 100 daily same-day (jcgov shape)",
@@ -1289,7 +1357,10 @@ _STAMP_TESTS = [
     ("too small (<100 docs)", _stamp_docs(80, 80, 0), set()),
     ("bulk day under the 20-doc floor (leshan shape: 17-doc day, 88% stamped)", _stamp_docs(17, 15, 150), set()),
     ("borderline: exactly 70% of a 20-doc bulk day", _stamp_docs(20, 14, 100), {"s"}),
-    ("just under: 69% of a 100-doc bulk day", _stamp_docs(100, 69, 0), set()),
+    ("just under: 69% of a 100-doc bulk day, on a 1,000-doc site (date-day share 6.9%)",
+     _stamp_docs(100, 69, 900), set()),
+    ("69% of a 100-doc bulk day on a 100-doc site: under the crawl-day bar but 69% of the site "
+     "sits on one date-day -> the multi-batch test flags it", _stamp_docs(100, 69, 0), {"s"}),
 ]
 
 
