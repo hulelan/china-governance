@@ -141,8 +141,13 @@ A2  instrument_id — mirrors of one text share one id.
             An undated doc or trigger is never date-valid. With no valid trigger the doc
             stays `promulgation`, `localized_of` NULL (the pre-date-rule pick is kept in
             `_chain_trigger` for --dry-run-flips only).
-    canonical = promulgation genre > highest admin_level_doc > earliest date
-                (first publication is the authoritative copy) > lowest id.
+    canonical = promulgation genre > highest admin_level_doc > hosted at-or-above the
+                text's own level > earliest date (first publication, among equally
+                authoritative copies) > lowest id. (2026-10-07) The host tier exists
+                because `admin_level_doc` is the level of the TEXT, so every mirror of a
+                national law ties on it and the date alone decided — a 福建省信访局 copy of
+                民法典 stamped 2020-01-08 beat the npc adoption of 2020-05-28. See
+                _canon_sort_key / _hosted_below_text (and why plausibility is not a tier).
     `unique` docs carry their own id as instrument_id, so GROUP BY instrument_id
     works unconditionally. build_diffusion_events pools anchors by this id and uses
     the canonical member as the anchor representative.
@@ -1003,11 +1008,46 @@ def pick_trigger(m, higher):
     return max(valid, key=lambda o: (o["date"], o["_rank"], -o["id"]))
 
 
+def _hosted_below_text(d):
+    """1 when this copy sits on a site BELOW the level of the text it carries — i.e. it
+    is a REPOST, not the issuing institution's own publication.
+
+    (2026-10-07) The canonical tie-break used to fall straight through to the earliest
+    date, and `level` is the level of the TEXT (a 中华人民共和国民法典 repost on a 福建省
+    信访局 site derives `central` from its own title cue), so for the whole class of
+    nationally-mirrored instruments the level tier is CONSTANT and the date decided
+    alone — handing the canonical slot to whichever copy carried the earliest date,
+    bad dates included: 民法典's canonical was the fj_xfj copy stamped 2020-01-08,
+    four months BEFORE the NPC adopted it on 2020-05-28.
+
+    The hosting SITE is the discriminator, and this file already uses exactly this test
+    for exactly this reason in the edition walk ("only a site at or above the edition's
+    level can open a new edition; a bureau's late copy is a repost"). Measured: a raw
+    site-level rank (prefer the grandest host) is worse than this boolean — it promotes
+    a central PORTAL's reprint of a sub-national text over the issuer's own copy (an
+    empty-bodied miit copy of 福建省通信管理局's report; the npc reprint of a 深圳经济特区
+    条例 over the sz_gazette original). Asking only "is this copy hosted below its own
+    text's level" leaves those alone and still fixes 77 of the 88 pools whose canonical
+    is a repost while a non-repost copy exists."""
+    return 1 if LEVEL_RANK.get(d["site_level"], 5) > LEVEL_RANK.get(d["level"], 5) else 0
+
+
 def _canon_sort_key(d):
-    """promulgation genre > highest doc level > earliest date (the first publication
-    is the authoritative copy; reposts come later) > lowest id."""
+    """promulgation genre > highest doc level > hosted at-or-above the text's own level
+    (a repost loses to the issuer's own copy, _hosted_below_text) > earliest date (among
+    equally authoritative copies the first publication is the original; reposts come
+    later) > lowest id.
+
+    Date PLAUSIBILITY is deliberately NOT a tier. The candidate test — a copy dated
+    before Jan 1 of its own 文号's year — fires on 5 pools corpus-wide and is wrong on 3
+    of them, because the `document_number` field is not reliably the document's own
+    (chinatax stores the SUPERSEDING instrument's 文号: 财税〔2009〕17号 on the 2007 text),
+    so the gate demotes copies whose date is right. Where a date is genuinely wrong on
+    the authoritative copy that is a `date_quality` fact about that copy, not a reason to
+    let a subordinate repost represent the instrument — level/host wins over plausibility,
+    and _POOL_TESTS encodes that choice."""
     return (0 if d["genre"] == "promulgation" else 1, LEVEL_RANK.get(d["level"], 5),
-            d["date"] or date.max, d["id"])
+            _hosted_below_text(d), d["date"] or date.max, d["id"])
 
 
 def assign_instruments(docs):
@@ -1116,8 +1156,10 @@ def assign_instruments(docs):
                 m["instrument_role"] = "canonical" if m is canon else "mirror"
                 n_pooled += 1
     # The nearest dated parent may be a MIRROR of the triggering text (the mee repost of
-    # the SC 以旧换新 plan, 5 days after gov): persist the instrument's canonical copy
-    # when it is itself date-valid (the canonical is the earliest copy, so it is).
+    # the SC 以旧换新 plan, 5 days after gov): persist the instrument's canonical copy when
+    # it is itself date-valid. (2026-10-07) The canonical is no longer necessarily the
+    # pool's earliest copy — the host tier can prefer a later, non-repost copy — so the
+    # is_date_valid_trigger guard below is what keeps the swap honest, not an invariant.
     n_trigger_moved = 0
     for m in docs.values():
         if m["localized_of"] is None:
@@ -1940,12 +1982,63 @@ _POOL_TESTS = [
            date=_D(2021, 9, 1), title="广东省安全生产条例")],
      {220: (220, "canonical", "promulgation"), 221: (220, "mirror", "promulgation"),
       222: (222, "unique", "implementing"), 223: (223, "unique", "promulgation")}),
+    # --- (2026-10-07) the canonical must be the issuer's copy, not the earliest REPOST ---
+    # the live 民法典 pool: every copy derives level `central` from its own title cue, so the
+    # level tier ties and the date used to decide alone — the 福建省信访局 copy stamped
+    # 2020-01-08 won the canonical slot four months before the NPC adopted the code. The
+    # host tier drops the three provincially-hosted reposts and the npc copy (lowest id of
+    # the two central-hosted 2020-05-28 copies) wins.
+    ([dict(id=900083261, site="fj_xfj", site_level="provincial", level="central",
+           genre="promulgation", date=_D(2020, 1, 8), title="中华人民共和国民法典"),
+      dict(id=12740336, site="npc", site_level="central", level="central",
+           genre="promulgation", date=_D(2020, 5, 28), title="中华人民共和国民法典"),
+      dict(id=900063006, site="chinatax", site_level="central", level="central",
+           genre="promulgation", date=_D(2020, 5, 28), title="中华人民共和国民法典"),
+      dict(id=900083626, site="fj_wjw", site_level="provincial", level="central",
+           genre="promulgation", date=_D(2020, 6, 1), title="中华人民共和国民法典"),
+      dict(id=900081808, site="fj_scjgj", site_level="provincial", level="central",
+           genre="promulgation", date=_D(2020, 7, 17), title="中华人民共和国民法典")],
+     {900083261: (12740336, "mirror", "promulgation"), 12740336: (12740336, "canonical", "promulgation"),
+      900063006: (12740336, "mirror", "promulgation"), 900083626: (12740336, "mirror", "promulgation"),
+      900081808: (12740336, "mirror", "promulgation")}),
+    # the earliest date must STILL win among equally authoritative copies: the real 科学绿化
+    # shape — a 重庆市林业局 repost 9 days early loses to the host tier, and between the two
+    # central-hosted copies the gov original (2021-06-02) beats the mee repost (2021-06-03).
+    ([dict(id=900088373, site="cq_lyj", site_level="provincial", level="central",
+           genre="promulgation", date=_D(2021, 5, 24),
+           title="国务院办公厅关于科学绿化的指导意见"),
+      dict(id=12651594, site="gov", site_level="central", level="central",
+           genre="promulgation", date=_D(2021, 6, 2),
+           title="国务院办公厅关于科学绿化的指导意见"),
+      dict(id=12685042, site="mee", site_level="central", level="central",
+           genre="promulgation", date=_D(2021, 6, 3),
+           title="国务院办公厅关于科学绿化的指导意见")],
+     {900088373: (12651594, "mirror", "promulgation"), 12651594: (12651594, "canonical", "promulgation"),
+      12685042: (12651594, "mirror", "promulgation")}),
+    # the ENCODED decision for a bad date at a higher level: LEVEL/HOST WINS, plausibility
+    # is not a tier. The real 网络音视频信息服务管理规定 shape — the gov copy is stamped
+    # 2018-12-31, before the 国信办通字〔2019〕3号 it carries and before the measure existed,
+    # yet it is the issuing portal's own copy and stays canonical; the correctly dated cac
+    # copy is an equally-hosted later publication, and the fj_xfj copy is a repost. A wrong
+    # date here is a date_quality fact about the canonical, not grounds to promote a repost.
+    ([dict(id=900056231, site="gov", site_level="central", level="central",
+           genre="promulgation", date=_D(2018, 12, 31),
+           title="关于印发《网络音视频信息服务管理规定》的通知"),
+      dict(id=12694184, site="cac", site_level="central", level="central",
+           genre="promulgation", date=_D(2019, 11, 29),
+           title="关于印发《网络音视频信息服务管理规定》的通知"),
+      dict(id=900081900, site="fj_xfj", site_level="provincial", level="central",
+           genre="promulgation", date=_D(2019, 11, 29),
+           title="关于印发《网络音视频信息服务管理规定》的通知")],
+     {900056231: (900056231, "canonical", "promulgation"),
+      12694184: (900056231, "mirror", "promulgation"),
+      900081900: (900056231, "mirror", "promulgation")}),
 ]
 # localized_of expectations, one dict per _POOL_TESTS entry (id -> trigger id; unlisted = NULL).
 # In test 3 the bare GD copy (id 3) is also a provincial-level localization of the SC text.
 _LOCALIZED_OF = [{11271152: 900039931}, {}, {2: 1, 3: 1}, {}, {}, {}, {31: 30}, {41: 40}, {51: 50},
                  {}, {71: 70, 72: 71}, {82: 81}, {91: 90}, {},
-                 {}, {}, {}, {222: 223}]
+                 {}, {}, {}, {222: 223}, {}, {}, {}]
 # A6 province: (doc fields, level, lead_issuer) -> 2-letter code. Central docs are tested
 # through derive_province's caller (build() passes only SUBNATIONAL levels) — here a
 # central NAME must resolve to None.
