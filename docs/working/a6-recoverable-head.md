@@ -143,7 +143,7 @@ genuinely gone.
 
 **What the apply run actually delivered** (row-count deltas, not `crawl_timestamp` windows):
 `gov` 23,669 rows at 99.1% body, including 中国共产党章程 (20,747 chars) and 中国共产党党内监督条例
-(6,808 chars); `sz_gazette` **11,450 rows across 38 continuous years, 1987-2026**, bodies
+(6,808 chars); `sz_gazette` **11,450 rows across **31.4 continuous years, 1995-04 to 2026-09** (corrected 2026-10-07 by `sz-gazette-scoping.md`: the 59 pre-1995 rows sit in retrospective compilation issues printed 2002-03, and the platform's earliest real issue folder is `zfgb/1995/gb68`, so issues 1-67 were never published; dates themselves are sound, 文号 year matches date year on 921 of 930 rows for 1987-2001), bodies
 filling at about 28/min so the 14,400s step cap will cover roughly 7,000 of them and a follow-up
 run is needed; `szdp` +42 exactly. The `gov --library --categories gw --deep` walk was cut at
 **page 70 of 125**, so the historical 国发 tail is still partly unfetched and the step is worth

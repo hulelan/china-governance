@@ -178,8 +178,7 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     Of the four "delisted" head items only 苏住建规〔2011〕4号 is truly gone. 深圳市行政听证办法
     (2006) and 深财规〔2023〕3号 (采购供应商信用信息管理办法) live in the Shenzhen 政府公报
     archive `sz.gov.cn/zfgb/<year>/` — **both are now HELD (2026-10-07)**: `crawlers/sz_gazette.py`
-    walks that archive through NFCMS JSON and brought in **11,450 documents spanning 38
-    continuous years, 1987-2026**, including `4952494` 《深圳市行政听证办法》 市政府令第157号 and
+    walks that archive through NFCMS JSON and brought in **11,450 documents spanning **31.4 continuous years, 1995-04 to 2026-09** (corrected 2026-10-07 by `sz-gazette-scoping.md`: the 59 pre-1995 rows sit in retrospective compilation issues printed 2002-03, and the platform's earliest real issue folder is `zfgb/1995/gb68`, so issues 1-67 were never published; dates themselves are sound, 文号 year matches date year on 921 of 930 rows for 1987-2001), including `4952494` 《深圳市行政听证办法》 市政府令第157号 and
     `10832248` 深财规〔2023〕3号, together ~167 citers of demand. **Of the four, only
     苏住建规〔2011〕4号 is still genuinely gone.** (byte-checked; http only, https fails from Python);
     广东省控规条例 was ALREADY HELD under its full title 广东省城市控制性详细规划管理条例 and
