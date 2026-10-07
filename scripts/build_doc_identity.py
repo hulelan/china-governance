@@ -153,10 +153,12 @@ A4  date_quality — per SITE, the industrial-policy memo's rule (docs/research/
     dated 2008+ documents are >=70% in the crawl year (2026) carries crawl dates,
     not publication dates; every doc on it is `crawl_stamped`. A >=100-doc floor
     reproduces the memo's 74-site universe (small sites cannot show a spread).
-    (2026-10-06) AND >=50% of those docs must be dated exactly on their own crawl day —
-    the stamp itself. The year rule alone mis-flagged shallow, recent-only crawls whose
-    dates are real (js_mzt / njd_jiangning: pages carry a matching <meta PubDate>); see
-    STAMP_EQ_CRAWL_SHARE. `missing` = no date_published. `body_scanned` is reserved: the
+    (2026-10-06, SUPERSEDED) the year rule flagged shallow, recent-only first crawls whose
+    dates are real (js_mzt / njd_jiangning / jcgov …: the pages' own <meta PubDate> and URL
+    t-dates match the stored dates). The stamp is now measured where it would have to show:
+    a site is `crawl_stamped` iff >=70% of the docs pulled on its modal (bulk) crawl day,
+    >=20 of them, are dated ON that day — see the comment above crawl_stamped_sites(). The
+    >=100-doc floor is kept. `missing` = no date_published. `body_scanned` is reserved: the
     crawlers do not record where a date came from, so it cannot be derived today. Else `good`.
 
 A5  lead_issuer — doc_issuers.lead_issuer verbatim (the issuer field of record).
@@ -820,24 +822,28 @@ def assign_instruments(docs):
 STAMP_SHARE = 0.70
 STAMP_MIN_DOCS = 100
 STAMP_DATE_LO = date(2008, 1, 1)
-# Second signal (2026-10-06): a stamped doc's date IS its crawl date. A site whose docs
-# are >=70% in the crawl year but where fewer than half carry date == crawl date is a
-# SHALLOW RECENT crawl (the Aug-2026 dept/district tier was first crawled 30 pages deep,
-# so most of its real dates fall in 2026), not a stamped one: 江苏民政厅 js_mzt (27.6% equal,
-# 319/417 match the page's own <meta PubDate>) and 南京江宁区 njd_jiangning (18.3%) were
-# flagged by the year rule alone. Truly stamped sites sit at 70-90% equal (jcgov 85.8,
-# liaoning 89.1, fujian 82.1, shijiazhuang 84.5). A live daily sync legitimately dates
-# ~20-30% of a real site's docs on their crawl day (new docs picked up same day), so the
-# bar is 50%, not 70%. crawl_timestamp is stable for govcms sites (known URLs are skipped,
-# not re-upserted), so the equality survives re-syncs there.
-STAMP_EQ_CRAWL_SHARE = 0.50
+STAMP_MIN_BULK = 20
+# (2026-10-06) The stamp is measured on the site's BULK crawl day, not on the year share.
+# The memo rule (>=70% of dated docs in the crawl year) was a proxy for "the crawler wrote
+# today's date"; measured against the raw HTML it turned out to flag SHALLOW RECENT crawls
+# instead: the Jul-Sep 2026 province/dept/district tier was first crawled ~30 list pages
+# deep, so most of its REAL dates fall in 2026 (js_mzt 319/417 equal the page's own
+# <meta PubDate>; jcgov/jilin/fujian URL t-dates equal the stored date for 95-100% of docs;
+# no crawler in crawlers/ writes today() into date_published). A whole-site "date == crawl
+# day" share is fooled the same way — a live site synced daily dates most of its NEW docs on
+# their crawl day (liaoning 89%, jcgov 86%, both real). What cannot happen on a real site is
+# the first bulk pull of an archive coming back dated on the pull day: that is the stamp. So
+# a site is crawl_stamped iff, on its modal crawl day (>= STAMP_MIN_BULK docs), >= 70% of the
+# docs are dated on that very day. On the 2026-10-07 corpus this fires on 0 sites (the max is
+# leshan, 88% of a 17-doc day, under the floor) — the 74-site / 27.9k-doc exclusion in
+# industrial-policy-targeting.md was a coverage-DEPTH artefact, not a date-quality one.
 
 
 def crawl_stamped_sites(docs, site_level, crawl_year):
-    """{site: (n_dated_2008plus, n_in_crawl_year, n_date_eq_crawl_date)} for sites whose
-    dates are crawl stamps: >=100 dated docs, >=70% in the crawl year (the memo rule) AND
-    >=50% dated exactly on their own crawl day (the stamp itself)."""
-    per_site = defaultdict(lambda: [0, 0, 0])  # n dated 2008+, n in crawl year, n == crawl day
+    """{site: (n_dated_2008plus, n_on_bulk_day, n_bulk_day_dated_that_day)} for sites whose
+    dates are crawl stamps: >=100 dated docs, and >=70% of the docs pulled on the site's
+    busiest (modal) crawl day are dated ON that day (an archive pull cannot be)."""
+    per_site = defaultdict(lambda: [0, Counter(), Counter()])  # n, crawl-day counts, stamped-per-day
     for d in docs.values():
         if site_level.get(d["site"]) in NON_ISSUER_SITE_LEVELS:
             continue
@@ -846,12 +852,20 @@ def crawl_stamped_sites(docs, site_level, crawl_year):
             continue
         c = per_site[d["site"]]
         c[0] += 1
-        if dt.year == crawl_year:
-            c[1] += 1
-        if d.get("crawl_date") == dt:
-            c[2] += 1
-    return {s: (n, k, e) for s, (n, k, e) in per_site.items()
-            if n >= STAMP_MIN_DOCS and k / n >= STAMP_SHARE and e / n >= STAMP_EQ_CRAWL_SHARE}
+        cd = d.get("crawl_date")
+        if cd:
+            c[1][cd] += 1
+            if cd == dt:
+                c[2][cd] += 1
+    out = {}
+    for s, (n, days, eq) in per_site.items():
+        if n < STAMP_MIN_DOCS or not days:
+            continue
+        bulk_day, nb = max(days.items(), key=lambda kv: (kv[1], kv[0]))
+        e = eq.get(bulk_day, 0)
+        if nb >= STAMP_MIN_BULK and e / nb >= STAMP_SHARE:
+            out[s] = (n, nb, e)
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -1040,8 +1054,8 @@ def validate(docs, meta):
     st = meta["stamped"]
     print(f"crawl-stamped sites: {len(st)}, docs: "
           f"{sum(1 for d in docs.values() if d['date_quality'] == 'crawl_stamped'):,}")
-    for s, (n, k, e) in sorted(st.items(), key=lambda kv: -kv[1][0])[:12]:
-        print(f"   {s:14s} n={n:6,} in-year={k / n:.2f} eq-crawl-day={e / n:.2f}")
+    for s, (n, nb, e) in sorted(st.items(), key=lambda kv: -kv[1][0])[:12]:
+        print(f"   {s:14s} n={n:6,} bulk-day docs={nb:5,} dated-on-bulk-day={e / nb:.2f}")
 
 
 def dry_run_flips(docs, meta, n=30, seed=7):
@@ -1274,26 +1288,34 @@ _GENERIC_STEM_TESTS = [
 ]
 
 
-def _stamp_docs(n, in_year, eq_crawl):
-    """n docs on site 's': `in_year` dated in 2026 (rest 2020), `eq_crawl` of the 2026 ones
-    dated on their crawl day (2026-08-13); the others carry a spread of real 2026 dates."""
-    out = {}
-    for i in range(n):
-        if i < in_year:
-            dt = date(2026, 8, 13) if i < eq_crawl else date(2026, 1, 1 + (i % 28))
-        else:
-            dt = date(2020, 3, 1 + (i % 28))
-        out[i] = {"site": "s", "date": dt, "crawl_date": date(2026, 8, 13)}
+def _stamp_docs(bulk, bulk_stamped, daily, daily_same_day=True, bulk_day=date(2026, 8, 13)):
+    """Site 's': `bulk` docs crawled on `bulk_day`, of which `bulk_stamped` are dated ON that
+    day and the rest carry a spread of older real dates; then `daily` docs crawled one per
+    following day, dated on their crawl day (a live site synced daily) or a day earlier."""
+    from datetime import timedelta
+    out, i = {}, 0
+    for j in range(bulk):
+        dt = bulk_day if j < bulk_stamped else date(2024, 1, 1) + timedelta(days=j % 700)
+        out[i] = {"site": "s", "date": dt, "crawl_date": bulk_day}; i += 1
+    for j in range(daily):
+        cd = bulk_day + timedelta(days=1 + j)
+        out[i] = {"site": "s", "date": cd if daily_same_day else cd - timedelta(days=1), "crawl_date": cd}; i += 1
     return out
 
 
 _STAMP_TESTS = [
     # (label, docs, expected stamped set)
-    ("bulk stamp: 90% in year, 85% == crawl day", _stamp_docs(200, 180, 170), {"s"}),
-    ("shallow recent crawl: 90% in year, 25% == crawl day (js_mzt shape)", _stamp_docs(200, 180, 50), set()),
-    ("deep archive: 30% in year", _stamp_docs(200, 60, 60), set()),
-    ("too small (<100 docs)", _stamp_docs(80, 80, 80), set()),
-    ("borderline: exactly 70% in year, exactly 50% == crawl day", _stamp_docs(200, 140, 100), {"s"}),
+    ("bulk stamp: 150-doc pull all dated on the pull day", _stamp_docs(150, 150, 0), {"s"}),
+    ("bulk stamp + daily tail (stamped site kept syncing)", _stamp_docs(150, 140, 60), {"s"}),
+    ("shallow recent crawl: 200-doc bulk with real dates, 100 daily same-day (jcgov shape)",
+     _stamp_docs(200, 10, 100), set()),
+    ("js_mzt shape: 200-doc bulk real dates, 217 daily picked up a day late", _stamp_docs(200, 0, 217, False), set()),
+    ("whole-site 'in crawl year' 100% but bulk is real (liaoning shape: 62 bulk, 1,100 daily)",
+     _stamp_docs(62, 4, 300), set()),
+    ("too small (<100 docs)", _stamp_docs(80, 80, 0), set()),
+    ("bulk day under the 20-doc floor (leshan shape: 17-doc day, 88% stamped)", _stamp_docs(17, 15, 150), set()),
+    ("borderline: exactly 70% of a 20-doc bulk day", _stamp_docs(20, 14, 100), {"s"}),
+    ("just under: 69% of a 100-doc bulk day", _stamp_docs(100, 69, 0), set()),
 ]
 
 
