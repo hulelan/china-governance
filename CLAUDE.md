@@ -521,6 +521,31 @@ read-only. Validated live: 4 of 5 previously-failing documents classified on the
 `max_tokens` is a ceiling, so the ~70% of documents that already finish under 2,000 cost the
 same as before. A one-off `--retry-failed` backfill of the ~1,864 unclassified docs is ~$11. As of June 2026 the droplet's nightly `daily_sync.sh` Phase 2 runs this UNBOUNDED (no `--limit`), so it drains the full backlog (~156k docs, ~$78, ~40h) on the first reliable run, then only touches new docs. The `mkdir` lock keeps the next day's cron from piling a second classifier on top.
 
+## A recurring bug shape: length floors measured on a NORMALIZED string
+
+Three separate bugs this project has shipped are the same mistake, and a fourth is likely
+waiting somewhere: **a minimum-length guard applied to a string AFTER normalization stripped
+characters from it.** Chinese statute names are the trap, because `中华人民共和国` is 7 characters
+and every normalizer folds it away.
+
+| where | the floor | what it silently refused |
+|---|---|---|
+| `extract_citations.TitleMatcher` exact tier | `len(ref) >= 8` | 城乡规划法 (5 after folding) never got an exact match, so containment won and credited the law's 2,139 citations to a provincial doc that merely embedded its name (the Oct 2026 "proxy target" bug) |
+| `extract_citations` title index | `WHERE LENGTH(title) >= 8` | 1,661 held titles of 5-7 chars were never candidates at all (广东省公路条例 held 0 citers while sitting in the corpus 4 times) |
+| `build_doc_identity._best_core` | `KEY_MIN = 6` on the folded core | every national statute got NO `instrument_key`, so all copies stayed `instrument_role='unique'` and nothing pooled (found 2026-10-07) |
+
+**Rule:** measure a length floor on the string the user wrote, not on the string your
+normalizer produced; or exempt the shapes you know fold short (`法|法典|条例|修正案`) with an
+explicit gate. If you add such a gate, check what else it admits — the 2026-10-07 fix had to
+exclude `中华人民共和国国务院令` because 20 *unrelated* State Council orders share that one title,
+so the 令/声明 is the vehicle, not a name.
+
+A second, related lesson from the same fix: a window measured from "the latest copy of any
+level" lets a low-level repost **bridge** two editions. A 北京市统计局 repost of 监察法 put the
+2024 amendment 212 days after the 2018 edition's tail and merged them. Measure an edition window
+from its **anchor** (the latest copy at or above the edition's own level): a bureau's repost
+cannot open an edition, so it must not extend one.
+
 ## SQLite Concurrency Rules
 
 - **WAL mode** is enabled. Multiple readers + 1 writer works fine.
