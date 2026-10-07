@@ -119,9 +119,16 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     is where the pilots-that-scale gap lived (`successor-detector.md`); with this table 11.3% of
     central pilots have a visible successor vs 5.9% by the pilot rule alone.
   - **Nightly validation (2026-10-06)** — `scripts/validate_cascades.py`, Phase 2d after
-    the 2c rebuilds: 13 read-only checks (known cascades GD 52d / JS 82d / BJ 116d; 城乡规划法
+    the 2c rebuilds: 14 read-only checks (known cascades GD 52d / JS 82d / BJ 116d; 城乡规划法
     inbound band; AI+ implementing vs mentions; proxy-target guards; table sanity; top-5
-    rank are formal instruments). Fails loudly (exit 1, `🧪 Validation:` Telegram line)
+    rank are formal instruments). The 城乡规划法 check is now TWO checks, `cxgh_edges`
+    (`COUNT(*)` edge rows, what `citation_rank` weights) and `cxgh_citers`
+    (`COUNT(DISTINCT source_id)`, self-cites dropped, = `doc_inbound.inbound`), because the
+    single check printed "inbound citations" while counting edges and that ambiguity caused a
+    false alarm on 2026-10-07 (someone compared yesterday's `edges` against today's `inbound`
+    and read a healthy +16 as a 235-citer drop). Keep both: the gap between them IS the
+    duplicate-edge overhang (251 citers carry 2+ edges), which is now monitored instead of
+    invisible. Fails loudly (exit 1, `🧪 Validation:` Telegram line)
     but never aborts publish. `--set NAME=VALUE` overrides a threshold for testing. Run it
     after ANY resolver/matcher/identity change.
   - **Research memo reader (2026-10-01)** — `/research` (index, curated by the
