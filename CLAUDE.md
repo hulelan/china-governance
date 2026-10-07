@@ -119,7 +119,7 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     is where the pilots-that-scale gap lived (`successor-detector.md`); with this table 11.3% of
     central pilots have a visible successor vs 5.9% by the pilot rule alone.
   - **Nightly validation (2026-10-06)** — `scripts/validate_cascades.py`, Phase 2d after
-    the 2c rebuilds: 14 read-only checks (known cascades GD 52d / JS 82d / BJ 116d; 城乡规划法
+    the 2c rebuilds: 15 read-only checks (known cascades GD 52d / JS 82d / BJ 116d; 城乡规划法
     inbound band; AI+ implementing vs mentions; proxy-target guards; table sanity; top-5
     rank are formal instruments). The 城乡规划法 check is now TWO checks, `cxgh_edges`
     (`COUNT(*)` edge rows, what `citation_rank` weights) and `cxgh_citers`
@@ -128,7 +128,16 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     false alarm on 2026-10-07 (someone compared yesterday's `edges` against today's `inbound`
     and read a healthy +16 as a 235-citer drop). Keep both: the gap between them IS the
     duplicate-edge overhang (251 citers carry 2+ edges), which is now monitored instead of
-    invisible. Fails loudly (exit 1, `🧪 Validation:` Telegram line)
+    invisible. The **AI+ check** was split the same way on 2026-10-07 and for the same reason:
+    `aiplus_implementing` counts only the CONFIRMED tiers (`citation` + `title_reissue`, 29 on
+    the current build, matching what the AI memos quote), `aiplus_topic_genre` carries a loose
+    ceiling for the matcher's "probable-but-unconfirmed" tier, and the source gate compares
+    mentions against the confirmed count. It had FAILED at 131 on a rebuild where the cascade
+    had not changed: 102 of the 131 were `topic_genre`, which is gated on the anchor's
+    `citation_rank >= TOPIC_ANCHOR_CR` and switched on when the mirror fix consolidated AI+
+    edges onto the pool's canonical copy. **The general lesson, now three times over: when a
+    nightly check fails, first ask whether its metric conflates two things.** Fails loudly
+    (exit 1, `🧪 Validation:` Telegram line)
     but never aborts publish. `--set NAME=VALUE` overrides a threshold for testing. Run it
     after ANY resolver/matcher/identity change.
   - **Research memo reader (2026-10-01)** — `/research` (index, curated by the
@@ -161,7 +170,11 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     the honest metric. **(Corrected 2026-10-07, `docs/working/a6-recoverable-head.md`.)**
     Of the four "delisted" head items only 苏住建规〔2011〕4号 is truly gone. 深圳市行政听证办法
     (2006) and 深财规〔2023〕3号 (采购供应商信用信息管理办法) live in the Shenzhen 政府公报
-    archive `sz.gov.cn/zfgb/<year>/` (byte-checked; http only, https fails from Python);
+    archive `sz.gov.cn/zfgb/<year>/` — **both are now HELD (2026-10-07)**: `crawlers/sz_gazette.py`
+    walks that archive through NFCMS JSON and brought in **11,450 documents spanning 38
+    continuous years, 1987-2026**, including `4952494` 《深圳市行政听证办法》 市政府令第157号 and
+    `10832248` 深财规〔2023〕3号, together ~167 citers of demand. **Of the four, only
+    苏住建规〔2011〕4号 is still genuinely gone.** (byte-checked; http only, https fails from Python);
     广东省控规条例 was ALREADY HELD under its full title 广东省城市控制性详细规划管理条例 and
     is resolved by a row in `data/instrument_aliases.csv` (340 citers, zero crawl). The
     top-400 unresolved head: 29% confirmed reachable from NYC, 43% likely, 16% is the
