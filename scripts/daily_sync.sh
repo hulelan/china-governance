@@ -136,13 +136,21 @@ CRAWL_OK=0
 CRAWL_FAIL=0
 
 CRAWLER_TIMEOUT=1800  # 30 minutes per crawler (prevents pipeline stalls)
+# Short cap for the measured zero-yield walkers. `docs/working/nightly-phase1-timing.md`
+# found Phase 1 runs 240-271 min/night and that 15 crawlers whose MEDIAN new-doc yield is
+# zero account for 196 of those minutes. A 30-min cap on a source that produces nothing
+# just means a hung host quietly eats 30 min, so those run under this cap instead.
+CRAWLER_TIMEOUT_SHORT=600
 
-run_crawler() {
+# run_crawler_t <timeout_seconds> <name> <cmd...> — run_crawler is this with the default.
+run_crawler_t() {
+    local t="$1"
+    shift
     local name="$1"
     shift
     local before=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
     log "  Crawling $name..."
-    if timeout "$CRAWLER_TIMEOUT" "$@" >> "$LOG" 2>&1; then
+    if timeout "$t" "$@" >> "$LOG" 2>&1; then
         local after=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
         local new=$((after - before))
         CRAWL_RESULTS="${CRAWL_RESULTS}✅ ${name}: +${new} docs\n"
@@ -152,7 +160,7 @@ run_crawler() {
         local after=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
         local new=$((after - before))
         if [ "$exit_code" -eq 124 ]; then
-            CRAWL_RESULTS="${CRAWL_RESULTS}⏰ ${name}: +${new} docs (timeout after ${CRAWLER_TIMEOUT}s)\n"
+            CRAWL_RESULTS="${CRAWL_RESULTS}⏰ ${name}: +${new} docs (timeout after ${t}s)\n"
         else
             CRAWL_RESULTS="${CRAWL_RESULTS}⚠️ ${name}: +${new} docs (errors)\n"
         fi
@@ -161,14 +169,36 @@ run_crawler() {
     fi
 }
 
+run_crawler() { run_crawler_t "$CRAWLER_TIMEOUT" "$@"; }
+
+# run_weekly <dow 1-7> <name> <cmd...> — for sources whose measured median nightly yield is
+# zero and whose ten-night total is 0-13 documents. Each gets its own weekday so no single
+# night absorbs the whole set. Worst-case recency loss is 6 days, on sources that publish
+# well under one document per day. Central ministries (gov/ndrc/mof/mee/cac/...) stay NIGHTLY
+# even where their yield is low, because the product is a daily tracker and central recency
+# is the thing it sells; their cost is better cut by an early exit than by cadence.
+run_weekly() {
+    local dow="$1"
+    shift
+    if [ "$(date -u +%u)" = "$dow" ]; then
+        run_crawler_t "$CRAWLER_TIMEOUT" "$@"
+    else
+        log "  Skipping $1 (weekly, runs on UTC weekday $dow)"
+    fi
+}
+
 # --- Phase 1: Crawl all sources ---
 log "Phase 1: Crawling..."
 
 run_crawler "gkmlpt (40+ sites)" python3 -m crawlers.gkmlpt --sync
 
-for crawler in gov ndrc mof mee cac nda sic samr mofcom ipc_court spp csrc chinatax pbc; do
+# Central ministries stay nightly (daily-tracker recency). `sic` and `ipc_court` are the two
+# measured zero-yield members of this list, so they move to a weekly slot.
+for crawler in gov ndrc mof mee cac nda samr mofcom spp csrc chinatax pbc; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
+run_weekly 2 "sic" python3 -m crawlers.sic
+run_weekly 3 "ipc_court" python3 -m crawlers.ipc_court
 
 # TRS WCM central bodies (recordset dialect — see crawlers/trs.py)
 for site in nhsa nrta; do
@@ -193,9 +223,12 @@ run_crawler "govcms (city3 group)" python3 -m crawlers.govcms --group city3 --de
 # the bottom-up-channel sources from docs/research/bottom-up-channel.md.
 run_crawler "govcms (feedback group)" python3 -m crawlers.govcms --group feedback
 
-for crawler in beijing shanghai jiangsu chongqing wuhan suzhou heilongjiang; do
+for crawler in beijing shanghai jiangsu suzhou heilongjiang; do
     run_crawler "$crawler" python3 -m crawlers.$crawler
 done
+# Measured zero-yield full-walkers (see nightly-phase1-timing.md §4 item 6), one weekday each.
+run_weekly 4 "chongqing" python3 -m crawlers.chongqing
+run_weekly 5 "wuhan" python3 -m crawlers.wuhan
 
 # Research institutions
 run_crawler "tsinghua_aiig" python3 -m crawlers.tsinghua_aiig
@@ -221,10 +254,23 @@ if [ "$IS_MAC" = "true" ]; then
         run_crawler "$crawler" python3 -m crawlers.$crawler
     done
 else
-    # Droplet: these APIs work well from Singapore
-    for crawler in miit most zhejiang hangzhou; do
-        run_crawler "$crawler" python3 -m crawlers.$crawler
-    done
+    # Droplet (NYC). MEASURED 2026-10-07 (`docs/working/nightly-phase1-timing.md`):
+    #   zhejiang  — 1800s cap hit 7 of 11 nights, ZERO new rows in 11 nights. Nothing
+    #               paginates from a US IP, so this is 30 min/night of pure waste. Kept as a
+    #               weekly short-capped reachability probe: if the host ever opens up from
+    #               this vantage we find out within a week, and it costs 10 min not 210.
+    #               The real fix is the HK/residential vantage (user-gated).
+    #   most, hangzhou — zero median yield, moved to their own weekdays.
+    #   miit      — stays nightly; it is a central ministry and the body gap there is an
+    #               anti-bot problem (5,383 stubs), not a cadence problem.
+    run_crawler "miit" python3 -m crawlers.miit
+    run_weekly 6 "most" python3 -m crawlers.most
+    run_weekly 7 "hangzhou" python3 -m crawlers.hangzhou
+    if [ "$(date -u +%u)" = "1" ]; then
+        run_crawler_t "$CRAWLER_TIMEOUT_SHORT" "zhejiang (weekly probe)" python3 -m crawlers.zhejiang
+    else
+        log "  Skipping zhejiang (weekly probe, UTC Monday; blocked from NYC)"
+    fi
 fi
 
 DOC_COUNT_AFTER_CRAWL=$(sqlite3 documents.db 'SELECT COUNT(*) FROM documents' 2>/dev/null || echo 0)
