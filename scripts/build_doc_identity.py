@@ -153,8 +153,11 @@ A4  date_quality — per SITE, the industrial-policy memo's rule (docs/research/
     dated 2008+ documents are >=70% in the crawl year (2026) carries crawl dates,
     not publication dates; every doc on it is `crawl_stamped`. A >=100-doc floor
     reproduces the memo's 74-site universe (small sites cannot show a spread).
-    `missing` = no date_published. `body_scanned` is reserved: the crawlers do not
-    record where a date came from, so it cannot be derived today. Else `good`.
+    (2026-10-06) AND >=50% of those docs must be dated exactly on their own crawl day —
+    the stamp itself. The year rule alone mis-flagged shallow, recent-only crawls whose
+    dates are real (js_mzt / njd_jiangning: pages carry a matching <meta PubDate>); see
+    STAMP_EQ_CRAWL_SHARE. `missing` = no date_published. `body_scanned` is reserved: the
+    crawlers do not record where a date came from, so it cannot be derived today. Else `good`.
 
 A5  lead_issuer — doc_issuers.lead_issuer verbatim (the issuer field of record).
 
@@ -817,10 +820,24 @@ def assign_instruments(docs):
 STAMP_SHARE = 0.70
 STAMP_MIN_DOCS = 100
 STAMP_DATE_LO = date(2008, 1, 1)
+# Second signal (2026-10-06): a stamped doc's date IS its crawl date. A site whose docs
+# are >=70% in the crawl year but where fewer than half carry date == crawl date is a
+# SHALLOW RECENT crawl (the Aug-2026 dept/district tier was first crawled 30 pages deep,
+# so most of its real dates fall in 2026), not a stamped one: 江苏民政厅 js_mzt (27.6% equal,
+# 319/417 match the page's own <meta PubDate>) and 南京江宁区 njd_jiangning (18.3%) were
+# flagged by the year rule alone. Truly stamped sites sit at 70-90% equal (jcgov 85.8,
+# liaoning 89.1, fujian 82.1, shijiazhuang 84.5). A live daily sync legitimately dates
+# ~20-30% of a real site's docs on their crawl day (new docs picked up same day), so the
+# bar is 50%, not 70%. crawl_timestamp is stable for govcms sites (known URLs are skipped,
+# not re-upserted), so the equality survives re-syncs there.
+STAMP_EQ_CRAWL_SHARE = 0.50
 
 
 def crawl_stamped_sites(docs, site_level, crawl_year):
-    per_site = defaultdict(lambda: [0, 0])  # n dated 2008+, n in crawl year
+    """{site: (n_dated_2008plus, n_in_crawl_year, n_date_eq_crawl_date)} for sites whose
+    dates are crawl stamps: >=100 dated docs, >=70% in the crawl year (the memo rule) AND
+    >=50% dated exactly on their own crawl day (the stamp itself)."""
+    per_site = defaultdict(lambda: [0, 0, 0])  # n dated 2008+, n in crawl year, n == crawl day
     for d in docs.values():
         if site_level.get(d["site"]) in NON_ISSUER_SITE_LEVELS:
             continue
@@ -831,8 +848,10 @@ def crawl_stamped_sites(docs, site_level, crawl_year):
         c[0] += 1
         if dt.year == crawl_year:
             c[1] += 1
-    return {s: (n, k) for s, (n, k) in per_site.items()
-            if n >= STAMP_MIN_DOCS and k / n >= STAMP_SHARE}
+        if d.get("crawl_date") == dt:
+            c[2] += 1
+    return {s: (n, k, e) for s, (n, k, e) in per_site.items()
+            if n >= STAMP_MIN_DOCS and k / n >= STAMP_SHARE and e / n >= STAMP_EQ_CRAWL_SHARE}
 
 
 # --------------------------------------------------------------------------- #
@@ -861,6 +880,7 @@ def load(conn):
             "id": did, "site": sk or "", "title": title or "", "docnum": dn or "",
             "publisher": pub or "", "date": _to_date(dp or ""), "has_date": bool(dp),
             "algo": at or "", "cat": cat or "",
+            "crawl_date": _to_date(ct[:10]) if ct else None,
         }
         if ct:
             crawl_years[ct[:4]] += 1
@@ -1020,8 +1040,8 @@ def validate(docs, meta):
     st = meta["stamped"]
     print(f"crawl-stamped sites: {len(st)}, docs: "
           f"{sum(1 for d in docs.values() if d['date_quality'] == 'crawl_stamped'):,}")
-    for s, (n, k) in sorted(st.items(), key=lambda kv: -kv[1][0])[:12]:
-        print(f"   {s:14s} n={n:6,} in-year={k / n:.2f}")
+    for s, (n, k, e) in sorted(st.items(), key=lambda kv: -kv[1][0])[:12]:
+        print(f"   {s:14s} n={n:6,} in-year={k / n:.2f} eq-crawl-day={e / n:.2f}")
 
 
 def dry_run_flips(docs, meta, n=30, seed=7):
@@ -1254,6 +1274,29 @@ _GENERIC_STEM_TESTS = [
 ]
 
 
+def _stamp_docs(n, in_year, eq_crawl):
+    """n docs on site 's': `in_year` dated in 2026 (rest 2020), `eq_crawl` of the 2026 ones
+    dated on their crawl day (2026-08-13); the others carry a spread of real 2026 dates."""
+    out = {}
+    for i in range(n):
+        if i < in_year:
+            dt = date(2026, 8, 13) if i < eq_crawl else date(2026, 1, 1 + (i % 28))
+        else:
+            dt = date(2020, 3, 1 + (i % 28))
+        out[i] = {"site": "s", "date": dt, "crawl_date": date(2026, 8, 13)}
+    return out
+
+
+_STAMP_TESTS = [
+    # (label, docs, expected stamped set)
+    ("bulk stamp: 90% in year, 85% == crawl day", _stamp_docs(200, 180, 170), {"s"}),
+    ("shallow recent crawl: 90% in year, 25% == crawl day (js_mzt shape)", _stamp_docs(200, 180, 50), set()),
+    ("deep archive: 30% in year", _stamp_docs(200, 60, 60), set()),
+    ("too small (<100 docs)", _stamp_docs(80, 80, 80), set()),
+    ("borderline: exactly 70% in year, exactly 50% == crawl day", _stamp_docs(200, 140, 100), {"s"}),
+]
+
+
 def self_test():
     fails = 0
     for name, exp in _LEVEL_TESTS:
@@ -1302,8 +1345,14 @@ def self_test():
         if bool(GENERIC_STEM_RE.search(stem)) != exp:
             fails += 1
             print(f"XX GENERIC_STEM_RE({stem!r}) expected {exp}")
+    for label, docs, exp in _STAMP_TESTS:
+        got = set(crawl_stamped_sites(docs, {"s": "municipal"}, 2026))
+        if got != exp:
+            fails += 1
+            print(f"XX crawl_stamped_sites[{label}] = {got!r}, expected {exp!r}")
     total = (len(_LEVEL_TESTS) + len(_TITLE_LEVEL_TESTS) + len(_GENRE_TESTS) + len(_KEY_TESTS)
-             + len(_LOCALIZE_TESTS) + len(_POOL_TESTS) + len(_CHAIN_TESTS) + len(_GENERIC_STEM_TESTS))
+             + len(_LOCALIZE_TESTS) + len(_POOL_TESTS) + len(_CHAIN_TESTS) + len(_GENERIC_STEM_TESTS)
+             + len(_STAMP_TESTS))
     print(f"self-test: {total - fails}/{total} passed")
     return fails == 0
 

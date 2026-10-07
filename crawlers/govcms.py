@@ -30,6 +30,7 @@ Usage:
 import argparse
 import html as H
 import re
+import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -1265,20 +1266,84 @@ _DATE_NEAR = re.compile(r'(\d{4}-\d{2}-\d{2})')
 # Publish-date from the ARTICLE body, used only when the list row carried no date
 # (e.g. TC260 /portal/ + the dateless numid/pnidpv/ccontent dialects). Label-anchored
 # on 发布/发表/时间/日期 so it can't grab a random in-body date; fires only as a fallback.
-_PUB_DATE = re.compile(r'(?:发布|发表|时间|日期)(?:[^0-9<]|<[^>]*>){0,12}(\d{4})[-/年.](\d{1,2})[-/月.](\d{1,2})')
+_PUB_DATE = re.compile(r'(?:发布|发表|时间|日期)(?:&[#\w]{1,8};|[^0-9<]|<[^>]*>){0,12}(\d{4})[-/年.](\d{1,2})[-/月.](\d{1,2})')
 #   ^ the label and the date may be split by a few whole tags (cast.org.cn:
-#     `发布日期： <span>2026.09.02 </span>`); each gap token is one non-digit char or
-#     ONE complete tag, so the window can't skip across unrelated markup to a wrong date.
+#     `发布日期： <span>2026.09.02 </span>`); each gap token is one non-digit char, ONE
+#     complete tag, or ONE HTML entity (`生成日期： &nbsp;</td> <td …>&nbsp;2026-08-07` on
+#     the Nanjing-district TRS 信息公开 table — spelled out, `&nbsp;` is 6 chars and blew the
+#     12-token window), so the window still can't skip across unrelated markup to a wrong date.
 # Hanweb/TRS CMSes (cast.org.cn) also stamp `<meta name="PubDate" content="2026-09-30 13:37">`.
 # Tried BEFORE _PUB_DATE: on 延期公告/申报通知 pages the body's "截止时间延至2026年10月10日"
 # precedes the visible 发布日期, so the label scan returned a (future) deadline.
-_META_PUBDATE = re.compile(r'<meta\s+name="(?:PubDate|pubdate|publishdate)"\s+content="(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})', re.I)
+# The attribute value may be SINGLE-quoted (jiangning.gov.cn: `content='2026-08-07 16:47'`)
+# and the two attributes may come in either order; `article:published_time` is the
+# OpenGraph spelling of the same stamp.
+_META_PUBDATE = re.compile(
+    r'<meta\s+(?:name|property)=["\'](?:PubDate|pubdate|publishdate|firstpublishedtime|article:published_time)["\']'
+    r'\s+content=["\'](\d{4})[-/.](\d{1,2})[-/.](\d{1,2})'
+    r'|<meta\s+content=["\'](\d{4})[-/.](\d{1,2})[-/.](\d{1,2})[^"\']*["\']'
+    r'\s+(?:name|property)=["\'](?:PubDate|pubdate|publishdate|firstpublishedtime|article:published_time)["\']',
+    re.I)
+
+
+def _fmt_ymd(groups) -> str:
+    y, mo, d = groups
+    try:
+        mo, d = int(mo), int(d)
+    except (TypeError, ValueError):
+        return ""
+    if not (1 <= mo <= 12 and 1 <= d <= 31):
+        return ""
+    return f"{y}-{mo:02d}-{d:02d}"
+
+
+def _meta_date(html: str) -> str:
+    """Publish date from the CMS's own `<meta PubDate>` stamp, or '' if the page has none.
+    This is the AUTHORITATIVE date when present: it is written by the CMS at publish time,
+    unlike the list-row `_DATE_NEAR` lookback (which can bleed the neighbouring row's date —
+    98/417 江苏民政厅 docs were stored one day late that way) or the body label scan."""
+    m = _META_PUBDATE.search(html)
+    if not m:
+        return ""
+    g = m.groups()
+    return _fmt_ymd(g[0:3] if g[0] else g[3:6])
 
 
 def _body_date(html: str) -> str:
     """Publish date from an article page: PubDate meta first, then the label-anchored body scan."""
-    m = _META_PUBDATE.search(html) or _PUB_DATE.search(html)
-    return f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}" if m else ""
+    md = _meta_date(html)
+    if md:
+        return md
+    m = _PUB_DATE.search(html)
+    return _fmt_ymd(m.groups()) if m else ""
+
+
+# --self-test-dates cases: (html snippet, expected). Each is a real shape seen in the wild.
+_DATE_TESTS = [
+    ('<meta name="PubDate" content="2026-09-30 13:37">', "2026-09-30"),            # cast.org.cn (Hanweb)
+    ("<meta name=\"PubDate\" content='2026-08-07 16:47'>", "2026-08-07"),           # jiangning.gov.cn single-quoted
+    ("<meta name='PubDate' content='2026-08-12 16:54'>", "2026-08-12"),             # mzt.jiangsu.gov.cn
+    ('<meta content="2024-03-05 09:00" name="publishdate">', "2024-03-05"),         # attrs reversed
+    ('<meta property="article:published_time" content="2025-12-01T08:00:00+08:00">', "2025-12-01"),
+    ('<meta name="PubDate" content="2026/1/9 10:00">', "2026-01-09"),               # slash + unpadded
+    ('发布日期： <span>2026.09.02 </span>', "2026-09-02"),                            # label + tag gap
+    ('<td>生成日期： &nbsp;</td> <td class="c3" align="left">&nbsp;2026-08-07</td>', "2026-08-07"),  # entity gap (TRS 信息公开 table)
+    ('截止时间延至2026年10月10日<p>发布日期：2026-09-05</p>', "2026-10-10"),         # label scan takes the first label (why meta is tried first)
+    ('<meta name="PubDate" content="2026-09-05"> 截止时间延至2026年10月10日', "2026-09-05"),  # meta beats the deadline
+    ('<meta name="PubDate" content="2026-13-40">', ""),                             # garbage month/day → empty
+    ('<p>正文 2026-08-07 没有标签</p>', ""),                                            # bare date, no label → empty
+]
+
+
+def self_test_dates() -> bool:
+    fails = 0
+    for html, exp in _DATE_TESTS:
+        got = _body_date(html)
+        if got != exp:
+            fails += 1
+            print(f"XX _body_date({html[:60]!r}) = {got!r}, expected {exp!r}")
+    print(f"self-test-dates: {len(_DATE_TESTS) - fails}/{len(_DATE_TESTS)} passed")
+    return fails == 0
 _SUBDIR_RE = re.compile(r'href="([^"]*?/[a-z0-9]+/)"')
 # Known tight content containers, tried first (fast path for common templates).
 _BODY_CONTAINERS = [
@@ -1620,8 +1685,12 @@ def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30,
                         dh = fetch(it["url"], headers=UA)
                         body = _extract_body(dh)
                         meta = _extract_metadata_table(dh)
-                        if not it["date"]:            # list row had no date → try body
-                            it["date"] = _body_date(dh)
+                        # The article's own CMS stamp (<meta PubDate>) beats the list-row
+                        # heuristic: the 240-char _DATE_NEAR lookback bleeds the adjacent
+                        # row's date on some Hanweb lists (江苏民政厅: 98/417 stored a day late).
+                        # Only when the page has no stamp does the row date stand, and only
+                        # a dateless row falls through to the label-anchored body scan.
+                        it["date"] = _meta_date(dh) or it["date"] or _body_date(dh)
                     except Exception as e:
                         log.warning(f"    body {it['url']}: {e}")
                     time.sleep(REQUEST_DELAY)
@@ -1659,8 +1728,12 @@ def main():
     ap.add_argument("--list-only", action="store_true", help="metadata only, skip bodies")
     ap.add_argument("--deep", action="store_true", help="attempt index_N pagination")
     ap.add_argument("--db")
+    ap.add_argument("--self-test-dates", action="store_true",
+                    help="run the article publish-date extraction cases (_DATE_TESTS) and exit")
     args = ap.parse_args()
 
+    if args.self_test_dates:
+        sys.exit(0 if self_test_dates() else 1)
     if args.list_sites:
         for k, c in SITES.items():
             grp = f" [{c['group']}]" if c.get("group") else ""
