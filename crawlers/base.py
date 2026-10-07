@@ -35,6 +35,7 @@ import sqlite3
 import time
 import urllib.request
 import urllib.error
+import urllib.parse
 import http.cookiejar
 from datetime import datetime, timezone
 from pathlib import Path
@@ -357,7 +358,8 @@ def fetch(url: str, timeout: int = 20, retries: int = 3, headers: dict = None) -
     raise last_err
 
 
-def _fetch_urllib(url: str, timeout: int = 20, retries: int = 3, headers: dict = None) -> str:
+def _fetch_urllib(url: str, timeout: int = 20, retries: int = 3, headers: dict = None,
+                  data: bytes = None) -> str:
     """Fetch a URL and return the response body as a string.
 
     Tries a STANDARD TLS context first — it's fast and works for many modern gov sites
@@ -365,12 +367,12 @@ def _fetch_urllib(url: str, timeout: int = 20, retries: int = 3, headers: dict =
     that permissive context is used only as a FALLBACK on an SSL handshake error (old
     sites that genuinely need it error out quickly rather than hang). Non-TLS failures
     (timeouts, HTTP errors) just retry within the current context — no fallback — so a
-    dead URL isn't tried twice.
+    dead URL isn't tried twice. `data` (bytes) turns the request into a POST.
     """
     hdrs = {"User-Agent": USER_AGENT}
     if headers:
         hdrs.update(headers)
-    req = urllib.request.Request(url, headers=hdrs)
+    req = urllib.request.Request(url, data=data, headers=hdrs)
     contexts = [_STD_CTX, _SSL_CTX] if url.startswith("https") else [None]
     for ctx in contexts:
         opener = _build_opener(ctx)
@@ -403,6 +405,21 @@ def fetch_json(url: str, timeout: int = 20, headers: dict = None):
     """Fetch a URL and parse the response as JSON."""
     text = fetch(url, timeout, headers=headers)
     return json.loads(text)
+
+
+def fetch_post(url: str, form: dict, timeout: int = 20, retries: int = 3, headers: dict = None) -> str:
+    """POST an application/x-www-form-urlencoded form and return the body as a string.
+
+    Plain urllib (same TLS-context fallback + gzip handling as fetch()); no curl_cffi
+    fallback — the list APIs that need this (intertid /info_open/search on the 无锡
+    district portals, govcms dialect AC) answer an unimpersonated POST with no cookie.
+    """
+    data = urllib.parse.urlencode(form).encode("utf-8")
+    hdrs = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "X-Requested-With": "XMLHttpRequest"}
+    if headers:
+        hdrs.update(headers)
+    return _fetch_urllib(url, timeout, retries, hdrs, data=data)
 
 
 # --- Storage ---

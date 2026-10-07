@@ -16,6 +16,12 @@ attempts `index_N` and stops the moment a page yields no new articles.
 Each site config gives `sections`: either leaf list pages (t-date anchors) or a
 landing page that links to sub-sections. `--discover` reports, per section root,
 which sub-paths actually carry t-date lists (so configs stay light + verifiable).
+Optional per-site paging keys (2026-10-07, 无锡 build-out): `page_ext` (".shtml"
+when page 0 has no t-date link to auto-detect from), `page_start` (first index_N to
+try — the intertid CMS 404s index_1 and serves page 2 as index_2), `max_pages`
+(overrides the 30-page cap; 无锡 部门文件 is 100+ pages). A site may instead (or
+also) carry `api_search` = list mode AD: rows come from `POST /info_open/search`
+(siteId + channelIds, paged by data.totalPages) — the 无锡 district portals.
 
 Bodies vary by template, so `_extract_body` tries the common containers
 (TRS_Editor / #zoom / .content / .article / #UCAP-CONTENT). The 政府信息公开
@@ -29,6 +35,7 @@ Usage:
 """
 import argparse
 import html as H
+import json
 import re
 import sys
 import threading
@@ -38,7 +45,7 @@ from contextlib import nullcontext
 from urllib.parse import urljoin, urlparse
 
 from crawlers.base import (
-    REQUEST_DELAY, fetch, init_db, log, next_id, save_raw_html,
+    REQUEST_DELAY, fetch, fetch_post, init_db, log, next_id, save_raw_html,
     show_stats, store_document, store_site,
 )
 from crawlers.gov import _extract_metadata_table
@@ -548,10 +555,27 @@ SITES = {
                      "/zdgk/214/394/396/index_17989.html", "/zdgk/214/394/397/index_17989.html",
                      "/zdgk/214/225/index_17647.html", "/zdgk/214/2617/index_17647.html",
                      "/zdgk/214/418/420/index_17647.html"]},
-    "wuxi": {"name": "无锡市", "base_url": "https://www.wuxi.gov.cn", "admin_level": "municipal", "group": "city3",
-        "sections": ["/zfxxgk/szfxxgkml/fgwjjjd/zfwj/index.shtml",       # docymd /doc/YYYY/MM/DD/<id>.shtml
-                     "/zfxxgk/szfxxgkml/fgwjjjd/dfxfg/index.shtml",
-                     "/zfxxgk/szfxxgkml/fgwjjjd/zfwj/gfxwj/index.shtml"]},
+    # 无锡市 — docymd (X) /doc/YYYY/MM/DD/<id>.shtml, static 24-row lists, index_N.shtml.
+    # Probed 2026-10-07 (docs/working/jiangsu-second-prefecture.md §2): ~4,600 rows to 1993,
+    # the second Jiangsu prefecture at Suzhou depth. page_ext is pinned to .shtml (page 0 has
+    # no t-date link and no server-rendered pager, so the old auto-detect chose index_N.html
+    # → 548 B 404 → --deep stopped at page 0 = the 130 rows previously held). bmgfxwj is
+    # 100 pages (a CMS cap — the archive may be deeper); the others ≤25. dfxfg/ is a 16-byte
+    # stub (dropped). page_start=2: index.shtml IS page 1 and index_1.shtml 404s (verified
+    # 2026-10-07; same on 宜兴), so Scheme B starts at index_2.shtml. url_date: the path date
+    # IS the publish date (meta_date agrees).
+    # group="city" (page-0 nightly sync); run `--site wuxi --deep` once for the backfill (§8).
+    "wuxi": {"name": "无锡市", "base_url": "https://www.wuxi.gov.cn", "admin_level": "municipal",
+        "group": "city", "page_ext": ".shtml", "page_start": 2, "max_pages": 110, "url_date": True,
+        "sections": ["/zfxxgk/szfxxgkml/fgwjjjd/zfwj/szfwj/index.shtml",      # 市政府文件 (21p, 1998–)
+                     "/zfxxgk/szfxxgkml/fgwjjjd/zfwj/szfbgswj/index.shtml",   # 市政府办公室文件 (25p, 2005–)
+                     "/zfxxgk/szfxxgkml/fgwjjjd/zfwj/gfxwj/index.shtml",      # 行政规范性文件 (14p, 1993–)
+                     "/zfxxgk/szfxxgkml/fgwjjjd/zfwj/zfgz/index.shtml",       # 政府规章 (4p, 1995–)
+                     "/zfxxgk/szfxxgkml/fgwjjjd/zfwj/bmgfxwj/index.shtml",    # 部门文件 (100p, 2015–)
+                     "/zfxxgk/szfxxgkml/fgwjjjd/zfwj/zcjd/index.shtml",       # 政策解读 (21p, 2010–)
+                     "/zfxxgk/szfxxgkml/fgwjjjd/zfwj/wjxgfz/index.shtml",     # 文件修改废止 (3p)
+                     "/zfxxgk/szfxxgkml/fgwjjjd/zfwj/xdcyzc/index.shtml",     # 现代产业政策 (7p, 2009–)
+                     "/zfxxgk/szfxxgkml/fgwjjjd/dwwj/swwj/index.shtml"]},     # 市委文件 (3p)
     "cj": {"name": "昌吉回族自治州", "base_url": "https://www.cj.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "changdu": {"name": "昌都市", "base_url": "https://www.changdu.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
     "jcgov": {"name": "晋城市", "base_url": "https://www.jcgov.gov.cn", "admin_level": "municipal", "group": "city2", "sections": ["/"]},
@@ -1120,6 +1144,54 @@ SITES = {
         "admin_level": "district", "group": "dept", "sections": ["/zwgk_229/zcwj/qtwj/", "/zwgk_229/zcjd/mtsj/"]},
     "cqd_jiulongpo": {"name": "Chongqing Jiulongpo District (重庆九龙坡区)", "base_url": "http://www.cqjlp.gov.cn",
         "admin_level": "district", "group": "dept", "sections": ["/zwgk_251/zfxxgkml_1/gggs/", "/zwgk_251/zfxxgkml_1/hygq/", "/zwgk_251/zcwj/gfxwj/"]},
+    # 无锡 districts + county-level cities — the city's intertid CMS. The five districts serve
+    # index.shtml as an empty JS shell backed by POST /info_open/search (list mode AD, no
+    # cookie/gate); articles are docymd /doc/YYYY/MM/DD/<id>.shtml. Probed 2026-10-07 from the
+    # droplet (jiangsu-second-prefecture.md §3). http:// hosts: https times out on wnd and is
+    # unneeded elsewhere; the obvious hostnames (liangxi/xishan/binhu.gov.cn) fail DNS — these
+    # come from the city's 市（县）区信息公开目录 page. Channel order per site: 区政府文件 /
+    # 区政府办文件 / 规范性文件 / 政策解读. 新吴区's 672 规范性 + 388 解读 are mostly bureau-level
+    # and include 市政府 mirrors (doc_identity pools them). url_date: path date = publish date.
+    "wxd_liangxi": {"name": "Wuxi Liangxi District (无锡梁溪区)", "base_url": "http://www.wxlx.gov.cn",
+        "admin_level": "district", "group": "dept", "url_date": True,
+        "api_search": {"path": "/info_open/search", "siteId": 184,
+                       "channelIds": [37764, 37765, 37767, 37770]}},               # 209 rows, 2016–
+    "wxd_xishan": {"name": "Wuxi Xishan District (无锡锡山区)", "base_url": "http://www.jsxishan.gov.cn",
+        "admin_level": "district", "group": "dept", "url_date": True,
+        "api_search": {"path": "/info_open/search", "siteId": 182,
+                       "channelIds": [36714, 36715, 36717, 36721]}},               # 450 rows, 2012– (36717 = 政务公开工作文件)
+    "wxd_huishan": {"name": "Wuxi Huishan District (无锡惠山区)", "base_url": "https://www.huishan.gov.cn",
+        "admin_level": "district", "group": "dept", "url_date": True,
+        "api_search": {"path": "/info_open/search", "siteId": 183,
+                       "channelIds": [37178, 37179, 37177, 37184]}},               # 47 rows, 2011–
+    "wxd_binhu": {"name": "Wuxi Binhu District (无锡滨湖区)", "base_url": "http://www.wxbh.gov.cn",
+        "admin_level": "district", "group": "dept", "url_date": True,
+        "api_search": {"path": "/info_open/search", "siteId": 174,
+                       "channelIds": [34086, 34087, 34092]}},                      # 83 rows, 2017– (no 规范性 channel)
+    "wxd_xinwu": {"name": "Wuxi Xinwu District / High-tech Zone (无锡新吴区)", "base_url": "http://www.wnd.gov.cn",
+        "admin_level": "district", "group": "dept", "url_date": True, "max_pages": 60,  # 35407 = 34 pages × 20
+        "api_search": {"path": "/info_open/search", "siteId": 181,
+                       "channelIds": [35404, 35405, 35407, 35410]}},               # 1,095 rows, 2015–
+    # 江阴市 — same CMS, hybrid: index.shtml is a JS shell (getSearchList(1,20,4,allchildid,
+    # '1','openTime',…)) but index_2.shtml … index_20.shtml are STATIC 20-row pages and
+    # index_1.shtml 404s. Sections are the index_2 roots with page_start=3 (Scheme B starts
+    # there), so only the newest ~20 per section are missed. NO api_search: probed 2026-10-07,
+    # POST /info_open/search with siteId 4 returns totalElements 0 for the parent channel
+    # (19068/19082/…) AND for the page's full `allchildid` list (19068..19081), with both
+    # openTime and writeTime — its JS must post elsewhere; left for a browser network read.
+    "wxd_jiangyin": {"name": "Jiangyin (无锡江阴市)", "base_url": "https://www.jiangyin.gov.cn",
+        "admin_level": "district", "group": "dept", "url_date": True,
+        "page_ext": ".shtml", "page_start": 3, "max_pages": 25,
+        "sections": ["/xxgk/zfxxgkml_17a82c54pe6vn_arjk73731zj4/fgwjjjd_17a82c54pe6vn_1sasuptbh4wxw/szfwj_17a82c54pe6vn_15kfqfh1hwj5d/index_2.shtml",      # 市政府文件 (20p, 2012–)
+                     "/xxgk/zfxxgkml_17a82c54pe6vn_arjk73731zj4/fgwjjjd_17a82c54pe6vn_1sasuptbh4wxw/szfbgswj_17a82c54pe6vn_1febak8zsqyd0/index_2.shtml",   # 市政府办公室文件 (20p)
+                     "/xxgk/zfxxgkml_17a82c54pe6vn_arjk73731zj4/fgwjjjd_17a82c54pe6vn_1sasuptbh4wxw/zfgfxwj_17a82c54pe6vn_1e49jf7z1bvda/index_2.shtml",    # 政府规范性文件 (2p)
+                     "/xxgk/zfxxgkml_17a82c54pe6vn_arjk73731zj4/fgwjjjd_17a82c54pe6vn_1sasuptbh4wxw/zcjd_17a82c54pe6vn_1dt3k1x3yugp3/index_2.shtml"]},     # 政策解读 (2p)
+    # 宜兴市 — only 规范性文件 is a static list (2 pages); 市政府文件/办公室/解读 use the same API
+    # with the channel string built in JS (ids not read). Static part only.
+    "wxd_yixing": {"name": "Yixing (无锡宜兴市)", "base_url": "https://www.yixing.gov.cn",
+        "admin_level": "district", "group": "dept", "url_date": True, "page_ext": ".shtml",
+        "page_start": 2,                                                          # index_1 404s (as 无锡)
+        "sections": ["/zgyx/zfxxgk/szfxxgkml/fgwjjjd/gfxwj/index.shtml"]},       # 36 rows, 2018–
 }
 
 # article link dialects:
@@ -1641,8 +1713,43 @@ def _discover_sections(base: str, root: str, max_sub: int = 15) -> list:
     return hits
 
 
-def _pages(base: str, section: str, deep: bool, max_pages: int):
-    """Yield (url, html) for a section: page 0, then index_N if --deep."""
+_PAGER_HREF = re.compile(r'href="[^"]*?index_\d+(\.s?html?)"')
+
+
+def _page_ext(first_html: str, first_url: str, cfg: dict = None) -> str:
+    """Extension for Scheme-B `index_N.<ext>` pagination, in priority order:
+      1. per-site `page_ext` override;
+      2. a t-date `.shtml` article link on page 0 (the original rule — jsrd/cass);
+      3. an explicit `index_N.<ext>` pager href on page 0;
+      4. the extension of page 0's own article links (any dialect) when they all agree;
+      5. `.html` (the central-ministry default).
+    Rules 3–4 widen the original test: 无锡's docymd lists (/doc/YYYY/MM/DD/<id>.shtml)
+    have no t-date link, so the old rule chose index_N.html → 548 B 404 → --deep stopped at
+    page 0 (jiangsu-second-prefecture.md §2). They only run when rule 2 would have said
+    `.html`, so every t-date site keeps its exact behaviour."""
+    if cfg and cfg.get("page_ext"):
+        return cfg["page_ext"]
+    first_html = first_html or ""
+    if re.search(r't\d{8}_\d+\.shtml', first_html):
+        return ".shtml"
+    pm = _PAGER_HREF.search(first_html)
+    if pm:
+        return pm.group(1)
+    exts = {m.group(1).lower() for m in
+            (re.search(r'(\.s?html?)$', a["url"]) for a in _list_articles(first_html, first_url))
+            if m}
+    if len(exts) == 1:
+        return exts.pop()
+    return ".html"
+
+
+def _pages(base: str, section: str, deep: bool, max_pages: int, cfg: dict = None):
+    """Yield (url, html) for a section: page 0, then index_N if --deep.
+    Per-site keys (all optional): `page_ext` (".shtml"), `max_pages` (overrides the
+    caller's cap — 无锡 bmgfxwj is 100 pages), `page_start` (first N for Scheme B;
+    江阴's section roots are the static index_2.shtml pages, so the walk starts at 3)."""
+    cfg = cfg or {}
+    max_pages = int(cfg.get("max_pages", max_pages))
     first = urljoin(base, section)
     try:
         first_html = fetch(first, headers=UA)
@@ -1652,9 +1759,7 @@ def _pages(base: str, section: str, deep: bool, max_pages: int):
         return
     if not deep:
         return
-    # Sites whose article URLs are .shtml (jsrd.gov.cn, cass.cn) paginate as
-    # index_N.shtml; index_N.html 404s there. Pick the extension from page 0.
-    page_ext = ".shtml" if re.search(r't\d{8}_\d+\.shtml', first_html or "") else ".html"
+    page_ext = _page_ext(first_html, first, cfg)
     # Scheme A — section ends in /<int>.html (西安-style bare page files, e.g.
     # …/xaszfwj/1.html): paginate by incrementing that integer (2.html, 3.html…).
     pm = re.search(r'^(.*/)(\d+)(\.s?html?)$', section)
@@ -1672,7 +1777,8 @@ def _pages(base: str, section: str, deep: bool, max_pages: int):
             time.sleep(REQUEST_DELAY)
         return
     # Scheme B — append index_N.html to the section dir (central-ministry default).
-    for n in range(1, max_pages + 1):
+    start = int(cfg.get("page_start", 1))
+    for n in range(start, start + max_pages):
         u = urljoin(first, f"index_{n}{page_ext}")
         try:
             html = fetch(u, headers=UA)
@@ -1684,82 +1790,167 @@ def _pages(base: str, section: str, deep: bool, max_pages: int):
         time.sleep(REQUEST_DELAY)
 
 
+# (AD) intertid search — a LIST MODE, not a link dialect. The 无锡 district portals
+# (梁溪/锡山/惠山/滨湖/新吴, and page 1 of 江阴) serve index.shtml as an empty shell whose rows
+# come from `POST /info_open/search` (form: pageIndex, pageSize, siteId, channelIds,
+# searchType, order → {"data": {"totalElements", "totalPages", "data": [{title,
+# writeTimeString, url}]}}). No cookie, no referer check, no challenge (probed 2026-10-07,
+# jiangsu-second-prefecture.md §3). Rows carry docymd (X) URLs, so the body/date path is
+# the city's. Site config: "api_search": {"path", "siteId", "channelIds": [int|"a,b,c"…],
+# optional "order" (default writeTime; 江阴 sorts by openTime), "page_size" (20)}.
+_API_DATE = re.compile(r'^(\d{4})-(\d{2})-(\d{2})')
+
+
+def _api_rows(payload, base: str, section: str) -> tuple:
+    """Parse one /info_open/search response → (total_pages, [{url,title,date}]).
+    Pure (no network) so it can be unit-tested. Rows off-host or without a URL/title are
+    dropped; the date is writeTimeString, else the docymd path date."""
+    data = (payload or {}).get("data") or {}
+    rows = data.get("data") or []
+    try:
+        total_pages = int(data.get("totalPages") or 0)
+    except (TypeError, ValueError):
+        total_pages = 0
+    host = urlparse(base).netloc
+    out = []
+    for r in rows:
+        href = (r.get("url") or "").strip()
+        title = _clean(H.unescape(r.get("title") or ""))
+        if not href or not title:
+            continue
+        url = urljoin(base + "/", href)
+        if urlparse(url).netloc != host:
+            continue
+        dm = _API_DATE.match(str(r.get("writeTimeString") or r.get("writeTime") or ""))
+        date = f"{dm.group(1)}-{dm.group(2)}-{dm.group(3)}" if dm else ""
+        if not date:
+            pm = re.search(r'/(\d{4})/(\d{2})/(\d{2})/\d+\.s?html?$', url)
+            date = f"{pm.group(1)}-{pm.group(2)}-{pm.group(3)}" if pm else ""
+        out.append({"url": url, "title": title, "date": date})
+    return total_pages, out
+
+
+def _api_search_pages(base: str, api: dict, deep: bool, max_pages: int):
+    """Yield (section_label, page_label, rows) per channel of an `api_search` site.
+    Page 1 only unless --deep; --deep walks pageIndex to data.totalPages (capped)."""
+    path = api.get("path", "/info_open/search")
+    url = urljoin(base + "/", path)
+    size = int(api.get("page_size", 20))
+    for chan in api["channelIds"]:
+        section = f"{path}?channelIds={chan}"
+        page, total_pages = 1, 1
+        while page <= total_pages and page <= max_pages:
+            form = {"pageIndex": page, "pageSize": size, "siteId": api["siteId"],
+                    "channelIds": chan, "searchType": api.get("search_type", 1),
+                    "order": api.get("order", "writeTime")}
+            try:
+                payload = json.loads(fetch_post(url, form, headers=UA))
+            except Exception as e:
+                log.warning(f"  {section} p{page}: {e}")
+                break
+            tp, rows = _api_rows(payload, base, section)
+            if not rows:
+                break
+            yield section, f"p{page}/{tp}", rows
+            if not deep:
+                break
+            total_pages = tp
+            page += 1
+            time.sleep(REQUEST_DELAY)
+
+
+def _site_pages(base: str, cfg: dict, deep: bool, max_pages: int):
+    """Unified list source: yields (section, page_label, rows) from the static
+    `sections` walk (_pages + _list_articles) and/or the `api_search` channels (AD)."""
+    sections = []
+    for root in cfg.get("sections", []):
+        leaves = _discover_sections(base, root)
+        sections.extend(leaves or [root])
+    sections = list(dict.fromkeys(sections))
+    for section in sections:
+        for page_url, html in _pages(base, section, deep, max_pages, cfg):
+            yield section, page_url.split("/")[-1], _list_articles(html, page_url)
+    if cfg.get("api_search"):
+        yield from _api_search_pages(base, cfg["api_search"], deep,
+                                     int(cfg.get("max_pages", max_pages)))
+
+
 def crawl_site(conn, site_key, cfg, fetch_bodies=True, deep=False, max_pages=30,
-               write_lock=None):
+               write_lock=None, limit=0):
     # write_lock: optional threading.Lock shared across parallel --group workers.
     # It guards ONLY the quick id-allocate + insert + commit critical section, so
     # the slow body fetches stay parallel while next_id()/store_document() are
     # serialized — preventing both "database is locked" AND the next_id() race
     # (MAX(id)+1 collisions that ON CONFLICT(id) would silently merge = data loss).
+    # limit: stop after storing this many NEW docs (0 = unbounded) — a bounded
+    # body-quality probe for a new site without crawling it whole.
     wlock = write_lock if write_lock is not None else nullcontext()
     base = cfg["base_url"].rstrip("/")
     with wlock:
         store_site(conn, site_key, cfg)
         conn.commit()
-    # expand landing sections into leaf list pages
-    sections = []
-    for root in cfg["sections"]:
-        leaves = _discover_sections(base, root)
-        sections.extend(leaves or [root])
-    sections = list(dict.fromkeys(sections))
-    log.info(f"[{site_key}] {len(sections)} leaf sections")
+    log.info(f"[{site_key}] {len(cfg.get('sections', []))} section roots"
+             + (f" + api_search {len(cfg['api_search']['channelIds'])} channels" if cfg.get("api_search") else ""))
     stored = 0
-    for section in sections:
-        for page_url, html in _pages(base, section, deep, max_pages):
-            arts = _list_articles(html, page_url)
-            if cfg.get("url_date"):
-                # Site-scoped: the Nanjing municipal/district CMS lists `<a>` then a
-                # 有效期 span (.d3, e.g. 2031-09-12) BEFORE the 发布日期 span (.d2), so the
-                # generic row-date lookback grabs a validity date or the previous row's
-                # date. The t-date URL (tYYYYMMDD_ID) IS the publish date there → use it.
-                for it in arts:
-                    um = re.search(r'/t(\d{4})(\d{2})(\d{2})_\d+\.s?html?$', it["url"])
-                    if um:
-                        it["date"] = f"{um.group(1)}-{um.group(2)}-{um.group(3)}"
-            new = 0
+    for section, page_label, arts in _site_pages(base, cfg, deep, max_pages):
+        if limit and stored >= limit:
+            break
+        if cfg.get("url_date"):
+            # Site-scoped: the Nanjing municipal/district CMS lists `<a>` then a
+            # 有效期 span (.d3, e.g. 2031-09-12) BEFORE the 发布日期 span (.d2), so the
+            # generic row-date lookback grabs a validity date or the previous row's
+            # date. The t-date URL (tYYYYMMDD_ID) IS the publish date there → use it.
+            # Same for the docymd (X) /doc/YYYY/MM/DD/ path on the 无锡 intertid CMS
+            # (meta_date agrees with the path; no crawl-stamping — memo §2).
             for it in arts:
-                if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''",
-                                (it["url"],)).fetchone():
-                    continue
-                new += 1
-                # SLOW body fetch happens OUTSIDE the write lock (raw HTML is saved
-                # under a temp name keyed by url hash, renamed to the real doc_id
-                # inside the lock once the id is known).
-                body, dh, meta = "", None, {}
-                if fetch_bodies:
-                    try:
-                        dh = fetch(it["url"], headers=UA)
-                        body = _extract_body(dh)
-                        meta = _extract_metadata_table(dh)
-                        # The article's own CMS stamp (<meta PubDate>) beats the list-row
-                        # heuristic: the 240-char _DATE_NEAR lookback bleeds the adjacent
-                        # row's date on some Hanweb lists (江苏民政厅: 98/417 stored a day late).
-                        # Only when the page has no stamp does the row date stand, and only
-                        # a dateless row falls through to the label-anchored body scan.
-                        it["date"] = _meta_date(dh) or it["date"] or _body_date(dh)
-                    except Exception as e:
-                        log.warning(f"    body {it['url']}: {e}")
-                    time.sleep(REQUEST_DELAY)
-                # SHORT critical section: allocate id, persist raw, insert, commit.
-                with wlock:
-                    doc_id = next_id(conn)
-                    raw = save_raw_html(site_key, doc_id, dh) if dh is not None else ""
-                    store_document(conn, site_key, {
-                        "id": doc_id, "title": meta.get("title") or it["title"],
-                        "document_number": meta.get("document_number", ""),
-                        "publisher": meta.get("publisher", ""),
-                        "date_published": it["date"],
-                        "identifier": meta.get("identifier", ""),
-                        "classify_theme_name": meta.get("classify_theme_name", ""),
-                        "body_text_cn": body, "url": it["url"],
-                        "classify_main_name": section, "raw_html_path": raw,
-                        "admin_level": cfg["admin_level"],
-                    })
-                    conn.commit()  # commit inside the lock: no txn stays open across
-                    stored += 1    # the next fetch, so a second worker never blocks
-            log.info(f"  {section} [{page_url.split('/')[-1]}]: +{new}")
-            if not deep:
+                um = (re.search(r'/t(\d{4})(\d{2})(\d{2})_\d+\.s?html?$', it["url"])
+                      or re.search(r'/(\d{4})/(\d{2})/(\d{2})/\d+\.s?html?$', it["url"]))
+                if um:
+                    it["date"] = f"{um.group(1)}-{um.group(2)}-{um.group(3)}"
+        new = 0
+        for it in arts:
+            if limit and stored >= limit:
                 break
+            if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''",
+                            (it["url"],)).fetchone():
+                continue
+            new += 1
+            # SLOW body fetch happens OUTSIDE the write lock (raw HTML is saved
+            # under a temp name keyed by url hash, renamed to the real doc_id
+            # inside the lock once the id is known).
+            body, dh, meta = "", None, {}
+            if fetch_bodies:
+                try:
+                    dh = fetch(it["url"], headers=UA)
+                    body = _extract_body(dh)
+                    meta = _extract_metadata_table(dh)
+                    # The article's own CMS stamp (<meta PubDate>) beats the list-row
+                    # heuristic: the 240-char _DATE_NEAR lookback bleeds the adjacent
+                    # row's date on some Hanweb lists (江苏民政厅: 98/417 stored a day late).
+                    # Only when the page has no stamp does the row date stand, and only
+                    # a dateless row falls through to the label-anchored body scan.
+                    it["date"] = _meta_date(dh) or it["date"] or _body_date(dh)
+                except Exception as e:
+                    log.warning(f"    body {it['url']}: {e}")
+                time.sleep(REQUEST_DELAY)
+            # SHORT critical section: allocate id, persist raw, insert, commit.
+            with wlock:
+                doc_id = next_id(conn)
+                raw = save_raw_html(site_key, doc_id, dh) if dh is not None else ""
+                store_document(conn, site_key, {
+                    "id": doc_id, "title": meta.get("title") or it["title"],
+                    "document_number": meta.get("document_number", ""),
+                    "publisher": meta.get("publisher", ""),
+                    "date_published": it["date"],
+                    "identifier": meta.get("identifier", ""),
+                    "classify_theme_name": meta.get("classify_theme_name", ""),
+                    "body_text_cn": body, "url": it["url"],
+                    "classify_main_name": section, "raw_html_path": raw,
+                    "admin_level": cfg["admin_level"],
+                })
+                conn.commit()  # commit inside the lock: no txn stays open across
+                stored += 1    # the next fetch, so a second worker never blocks
+        log.info(f"  {section} [{page_label}]: +{new}")
     log.info(f"[{site_key}] done: {stored} new docs")
     return stored
 
@@ -1773,6 +1964,8 @@ def main():
     ap.add_argument("--discover", action="store_true", help="map sub-sections, don't crawl")
     ap.add_argument("--list-only", action="store_true", help="metadata only, skip bodies")
     ap.add_argument("--deep", action="store_true", help="attempt index_N pagination")
+    ap.add_argument("--limit", type=int, default=0,
+                    help="stop after storing N new docs (per site; 0 = unbounded) — body-quality probe")
     ap.add_argument("--db")
     ap.add_argument("--self-test-dates", action="store_true",
                     help="run the article publish-date extraction cases (_DATE_TESTS) and exit")
@@ -1803,7 +1996,7 @@ def main():
             conn.execute("PRAGMA busy_timeout=60000")
             try:
                 crawl_site(conn, k, SITES[k], fetch_bodies=not args.list_only,
-                           deep=args.deep, write_lock=write_lock)
+                           deep=args.deep, write_lock=write_lock, limit=args.limit)
                 return (k, "ok")
             except Exception as e:  # one dept failing must not abort the group
                 return (k, f"FAILED {type(e).__name__}: {e}")
@@ -1825,11 +2018,15 @@ def main():
     cfg = SITES[args.site]
     base = cfg["base_url"].rstrip("/")
     if args.discover:
-        for root in cfg["sections"]:
+        for root in cfg.get("sections", []):
             print(f"{root} ->", _discover_sections(base, root))
+        if cfg.get("api_search"):
+            for section, label, rows in _api_search_pages(base, cfg["api_search"], False, 1):
+                print(f"{section} -> {label} {len(rows)} rows, first: {rows[0]['date']} {rows[0]['title'][:40]}")
         return
     conn = init_db(args.db) if args.db else init_db()
-    crawl_site(conn, args.site, cfg, fetch_bodies=not args.list_only, deep=args.deep)
+    crawl_site(conn, args.site, cfg, fetch_bodies=not args.list_only, deep=args.deep,
+               limit=args.limit)
     show_stats(conn)
 
 

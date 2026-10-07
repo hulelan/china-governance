@@ -134,11 +134,12 @@ tree:
       - id: local_district
         label_en: Districts & Counties
         label_zh: 区县
-        # Shenzhen districts by explicit key; Beijing/Nanjing/Wuhan/Chongqing
-        # districts by prefix (bjd_/njd_/whd_/cqd_). cqd_ is distinct from cq_
-        # (Chongqing bureaus). Fallback target for admin_level='district'.
+        # Shenzhen districts by explicit key; Beijing/Nanjing/Wuhan/Chongqing/Wuxi
+        # districts by prefix (bjd_/njd_/whd_/cqd_/wxd_). cqd_ is distinct from cq_
+        # (Chongqing bureaus). wxd_ includes the county-level cities 江阴/宜兴 (like
+        # szd_zjg/szd_changshu). Fallback target for admin_level='district'.
         site_keys: [szdp, szlhq, szlg, szpsq, szgm, szlh, szns, szft, szyantian]
-        prefixes: [bjd_, njd_, whd_, cqd_]
+        prefixes: [bjd_, njd_, whd_, cqd_, wxd_]
 
   # ── NEWS & MEDIA (EXPLICIT ONLY — never reached by fallback) ─────────
   - id: media
