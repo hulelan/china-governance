@@ -52,8 +52,7 @@ A1  admin_level_doc — first rule that fires wins, recorded in `level_source`:
         Shenzhen site is the local 公安局, not 公安部), mirroring the parser.
     (3) `npc_publisher`: the national-laws site (`npc`) hosts ~28k local 人大
         instruments under a blanket 'central' site level. A doc whose
-        classify_main_name is in build_diffusion_events.NPC_NATIONAL_CATEGORIES is
-        central; otherwise its `publisher` (X省人大常委会 -> provincial, X市人大
+        classify_main_name is in NPC_NATIONAL_CATEGORIES (below) is central; otherwise its `publisher` (X省人大常委会 -> provincial, X市人大
         -> municipal) through level_of_name().
     (4) `title_cue`: the title HEAD (before 关于/印发/the first 《) through
         level_of_name(): 中华人民共和国…/国务院…/中共中央… -> central, 广东省人民
@@ -89,8 +88,8 @@ A2  instrument_id — mirrors of one text share one id.
     canonical = promulgation genre > highest admin_level_doc > earliest date
                 (first publication is the authoritative copy) > lowest id.
     `unique` docs carry their own id as instrument_id, so GROUP BY instrument_id
-    works unconditionally. This subsumes build_diffusion_events' pool_key /
-    _is_explainer representative selection.
+    works unconditionally. build_diffusion_events pools anchors by this id and uses
+    the canonical member as the anchor representative.
 
 A3  genre — title shape first, stored algo_doc_type second:
     explainer    解读 / 答记者问 / 一图读懂 / 图解 / 政策问答 / 解答 / 划重点 …
@@ -99,7 +98,7 @@ A3  genre — title shape first, stored algo_doc_type second:
                  (build_diffusion_events.NONISSUE_RE is the ancestor of this rule)
     implementing SUB-NATIONAL level and 实施方案 / 实施意见 / 实施细则 / 实施办法 /
                  实施《X法》办法 / 变通规定 / 贯彻落实 / 转发…的通知 / 若干措施 in an
-                 issuance frame (or algo_doc_type in the diffusion IMPLEMENTING_GENRES)
+                 issuance frame (or algo_doc_type in IMPLEMENTING_GENRES, below)
     promulgation an issuance frame (印发/发布/公布《X》 with an institutional masthead,
                  关于…的通知/意见/办法/规定/…, X令, central 关于…的公告), a bare
                  法/条例/办法/规定 title, or algo_doc_type in {regulation, law, decree,
@@ -137,7 +136,8 @@ USAGE (repo root; the DB is the droplet's documents.db)
 
 WRITE DISCIPLINE: busy_timeout=30s, one transaction, only touches `doc_identity`.
 Refuses to write while the nightly lock (/tmp/china-governance-daily-sync.lock.d)
-exists unless --force. NOT yet wired into daily_sync.sh (follow-up).
+exists unless --force. daily_sync.sh Phase 2b runs it with --force (it holds the
+lock itself) after issuer_parser / compute_scores and before build_diffusion_events.
 """
 import argparse
 import os
@@ -160,9 +160,30 @@ from extract_citations import (  # noqa: E402
     _norm_title, _title_cores_of_title, _WRAP_QUOTED, _WRAP_PLAIN, _MASTHEAD_PRE,
     _INST_SUFFIX)
 from issuer_parser import REGISTRY, DOCNUM_SUBNATIONAL, DOCNUM_CENTRAL  # noqa: E402
-from build_diffusion_events import (  # noqa: E402
-    NPC_NATIONAL_CATEGORIES, NONISSUE_RE, IMPLEMENTING_GENRES)
+from build_diffusion_events import NONISSUE_RE  # noqa: E402
 from genre_typer import clean_title, _TRAILING_ANNOT_RE  # noqa: E402
+
+# The `npc` site (国家法律法规数据库, crawlers/npc.py) is tagged admin_level=central
+# as a whole, but ~28k of its rows are provincial/municipal 人大 instruments
+# (地方法规 + their amendment/repeal decisions + 法规性决定, which are ALL local
+# 人大常委会 decisions — none starts with 全国人民代表大会). Only these categories
+# (classify_main_name) are genuinely national-level instruments. (Moved here from
+# build_diffusion_events, which now reads admin_level_doc instead.)
+NPC_NATIONAL_CATEGORIES = frozenset({
+    "宪法", "法律", "修正案", "法律解释", "行政法规", "监察法规",
+    "有关法律问题和重大问题的决定",
+    "修改、废止的决定（法律）", "修改、废止的决定（行政法规）",
+    "高法司法解释", "高检司法解释", "联合发布司法解释", "修改、废止的决定（司法解释）",
+})
+# algo_doc_type labels that mark a sub-national doc as an implementing INSTRUMENT
+# (diffusion-fidelity.md's implementing-instrument subset + the framework labels
+# the typer also emits). NOT: explainer, announcement, report, publicity,
+# commentary, interview, reply, circular, administrative, budget, procurement,
+# personnel, consultation, application_guide, standard, review, request, other.
+IMPLEMENTING_GENRES = frozenset({
+    "action_plan", "work_plan", "policy_issuance", "opinion", "notice",
+    "regulation", "decision", "strategy", "subsidy", "law", "decree", "plan",
+})
 
 try:  # web.services.documents pulls in the jieba segmenter; fall back to a copy
     from web.services.documents import ADMIN_LEVEL_PREFIXES  # noqa: E402

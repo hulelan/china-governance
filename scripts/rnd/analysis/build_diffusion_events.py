@@ -24,43 +24,42 @@ Reuses `TitleMatcher` + the `_norm_title` normalization from
     python3 scripts/rnd/analysis/build_diffusion_events.py --write    # build the table
     python3 scripts/rnd/analysis/build_diffusion_events.py --validate # + print validation
 
-Anchor-identity gotcha (from both memos): the resolver scores near-duplicate
-promulgations (Xinhua 受权发布, 答记者问, list-chrome mirrors, longer-titled local
-lookalikes) above the canonical central text. We POOL promulgations by their EXACT
-normalized 《》-core so mirrors share one anchor identity, pick the central member as
-the representative (dodging the media/provincial lookalike), and attribute core-named
-citation refs to the anchor even when the resolver mis-sent target_id elsewhere.
-
-Anchor hygiene (2026-10, diffusion-atlas.md §1/§7/§9): `npc` local 人大 rows are not
-central (`_is_true_central`), explainers can't represent/qualify a pool
-(`_is_explainer`), and bare 五年规划 period mentions are never attributed
-(`GENERIC_FYP_RE`).
+DOCUMENT IDENTITY comes from the `doc_identity` side table (scripts/build_doc_identity.py,
+corpus-lessons.md A1–A5), rebuilt nightly just before this script. The matcher no
+longer derives any of it:
+  * level     = `admin_level_doc` (the ISSUER's level, per document — a State Council
+                text reposted on a bureau site is central; an npc 地方法规 is provincial).
+                Anchors: central / provincial. Sources: provincial/municipal/district
+                (/department) for central anchors, sub-provincial for provincial ones.
+  * pooling   = `instrument_id`: all mirrors of one text (Xinhua 受权发布, list-chrome
+                copies, departmental reposts) share one id; the `canonical` member is
+                the anchor representative and the mirrors inherit the anchor, so a
+                citation the resolver sent to a mirror still reaches the anchor.
+  * genre     = `genre` (promulgation|implementing|explainer|readout|news|other):
+                explainer/readout/news members never qualify a pool as an anchor, and
+                `source_implementing` = 1 iff the source genre is promulgation or
+                implementing (title_reissue rows are implementing by construction).
+`algo_doc_type` is still read for the FRAMEWORK test (regulation/opinion/action_plan/…
++ title cues) and the CAMPAIGN gate of topic_genre — those are instrument-kind
+labels, not identity.
 
 Second anchor class — PROVINCIAL framework instruments (2026-10, fidelity-provincial.md):
 in 92.8% of full center→province→city chains the city's text descends from the
 PROVINCE (cities relay their province 10.8% vs provinces relaying the center 3.3%),
 so the province→city hop is the one that carries policy text. `anchor_level`
 ('central' | 'provincial') marks which class a row belongs to. Provincial anchors
-are province-tier framework docs (sites.admin_level='provincial' plus the
-province-tier units tagged municipal: `cq`, `bjb_*`, `shb_*`), pooled by the same
-normalized title key, skipping pools already anchored centrally (a provincial
-mirror of a central text is the central cascade, not a provincial one). They match
-ONLY sub-provincial implementers (municipal/district/department) in the SAME
-province (`province_of`); the memo's cross-province edges were resolver noise.
-Same three match types and lag rules. Central-anchor behaviour is untouched.
+are province-level instruments (admin_level_doc='provincial' — which already folds
+the Chongqing portal and Beijing/Shanghai bureaus to their government's level),
+pooled by instrument_id and split per province, skipping pools already anchored
+centrally (a provincial mirror of a central text is the central cascade, not a
+provincial one). They match ONLY sub-provincial implementers in the SAME province
+(`province_of`, a site→province map); the memo's cross-province edges were
+resolver noise. Same three match types and lag rules.
 
-`source_implementing` (2026-10, diffusion-fidelity.md "implementing-instrument subset"):
-a resolved citation admits ANY citing document — Politburo-meeting reposts, 党组会议
-readouts, 解读, a mayor meeting a company — as a "diffusion event", and these are
-references, not implementations (the AI+ anchor's citation events went 33→103 after
-the resolver's wrapper-core fix, mostly readouts). Each row now carries a 0/1 flag:
-1 when the SOURCE doc's genre is a policy instrument (IMPLEMENTING_GENRES, derived
-from the memo's subset + the live algo_doc_type labels; `other`-typed docs qualify
-only when the title itself reads as an issuance), 0 for explainers / news / reports /
-readouts / announcements and media or research sources. `title_reissue` rows are
-implementing by construction. Every event stays in the table — the mention signal
-is still informative — the rollup and /tracker just count implementing-only by
-default and show mentions as a secondary number.
+Bare 五年规划 period mentions are never attributed (`GENERIC_FYP_RE`, atlas §7).
+Every event stays in the table — the mention signal is still informative — the
+rollup and /tracker just count implementing-only by default and show mentions as a
+secondary number.
 """
 import argparse
 import re
@@ -106,51 +105,30 @@ STEM_MIN = 6
 
 # Candidate (sub-national) filters for title_reissue / topic_genre.
 SUBNATIONAL = {"provincial", "municipal", "district", "department"}
+SUBPROVINCIAL = {"municipal", "district", "department"}
 ISSUANCE_RE = re.compile(r"(印发|发布|的通知|的决定|的意见|行动方案|实施方案|"
                          r"行动计划|实施意见|若干措施|工作方案|办法|规定)")
 # Explainers, readouts, meeting notices, scraped list-chrome — NOT re-issuances.
+# (Title-shape gate for title_reissue CANDIDATES; also the ancestor of
+# build_doc_identity's readout/news genre rule, which imports it.)
 NONISSUE_RE = re.compile(r"(解读|读懂|答记者问|新闻发布|发布会|新华鲜报|点击数|"
                          r"标题[:：]|主持|讲话|调研|座谈|电视电话会议|常务会议|"
                          r"党组会议|常委会|访谈|专家|引发|热议|侧记|综述)")
 # Quoted "X+" cue inside “”/‘’/「」/《》 (highly distinctive, e.g. 人工智能+, 互联网+).
 CUE_QUOTE_RE = re.compile(r"[“‘「『《]([^”’」』》]{2,20}\+[^”’」』》]{0,20})[”’」』》]")
-# --- source_implementing ----------------------------------------------------
-# Source genres (algo_doc_type) that make a citing doc an IMPLEMENTING instrument:
-# diffusion-fidelity.md's implementing-instrument subset (action_plan, work_plan,
-# policy_issuance, opinion, notice, regulation, decision, strategy, subsidy) plus
-# the framework labels the typer also emits (law, decree, plan=方案). NOT in the
-# set: explainer, announcement, report, publicity, commentary, interview, reply,
-# circular (通报), administrative (纪要), budget, procurement, personnel,
-# consultation, application_guide, standard, review, request — and `other`, the
-# ~37%-of-corpus residual where the readouts live (党组会议, 调研, speech reposts).
-IMPLEMENTING_GENRES = {
-    "action_plan", "work_plan", "policy_issuance", "opinion", "notice",
-    "regulation", "decision", "strategy", "subsidy", "law", "decree", "plan",
-}
-# An `other`/untyped source still counts as implementing when its TITLE is an
-# issuance (印发…的通知, 关于…的意见/办法/方案) and carries no readout cue
-# (NONISSUE_RE below). Deliberately tighter than ISSUANCE_RE, which admits bare
-# 发布 ("…典型案例正式发布" is news, not an instrument).
-IMPL_TITLE_RE = re.compile(
-    r"(印发|关于.{2,60}的(通知|意见|决定|办法|规定|细则|方案|计划)|"
-    r"实施方案|行动方案|行动计划|工作方案|若干措施|实施意见)")
-NON_IMPLEMENTING_LEVELS = {"media", "research"}
+
+# --- doc_identity genres -----------------------------------------------------
+# A doc ABOUT an instrument (解读 / 党组会议 readout / 新闻) may stay a pool member
+# (so citations mis-resolved onto it still reach the pool) but can neither
+# represent nor qualify a pool as an anchor (atlas §7).
+ABOUT_GENRES = {"explainer", "readout", "news"}
+# A source whose own text is a policy instrument → the event is an implementation,
+# not a mention (diffusion-fidelity.md "implementing-instrument subset").
+IMPLEMENTING_IDENTITY_GENRES = {"promulgation", "implementing"}
+
 TOPIC_WINDOW = 365  # days: topic_genre recency gate
 TOPIC_ANCHOR_CR = 10.0  # only major campaigns propose topic_genre implementations
 
-# --- Anchor hygiene (diffusion-atlas.md §1/§7/§9) ---------------------------
-# The `npc` site (国家法律法规数据库, crawlers/npc.py) is tagged admin_level=central
-# as a whole, but ~28k of its rows are provincial/municipal 人大 instruments
-# (地方法规 + their amendment/repeal decisions + 法规性决定, which are ALL local
-# 人大常委会 decisions — none starts with 全国人民代表大会). The atlas found 819
-# such anchors (~17% of events) polluting the central tracker. Only these
-# categories (classify_main_name) are genuinely national-level instruments.
-NPC_NATIONAL_CATEGORIES = {
-    "宪法", "法律", "修正案", "法律解释", "行政法规", "监察法规",
-    "有关法律问题和重大问题的决定",
-    "修改、废止的决定（法律）", "修改、废止的决定（行政法规）",
-    "高法司法解释", "高检司法解释", "联合发布司法解释", "修改、废止的决定（司法解释）",
-}
 # Bare five-year-plan mentions ("十五五"规划, 十四五规划纲要) name a planning period,
 # not an instrument; the resolver nonetheless pins them to whichever sectoral
 # 十X五 plan it finds first (atlas §7: a 十五五 电子信息 plan 解读 with 303 such
@@ -162,6 +140,7 @@ GENERIC_FYP_RE = re.compile(r"^十[一二三四五六]五(规划|规划纲要|�
 # site_key -> province code, for every site that has a province-tier unit in the
 # corpus (a sub-provincial site whose province is uncrawled can never match a
 # provincial anchor, so it needs no entry). Exact keys first, then prefixes.
+# (A SITE attribute — where a doc was crawled — not document identity.)
 _PROV_EXACT = {
     # Guangdong: portal + depts, Guangzhou, Shenzhen portals/bureaus/districts, gkmlpt cities
     "gz": "gd", "sz": "gd", "sz_invest": "gd",
@@ -210,10 +189,6 @@ _PROV_PREFIX = [
     ("cq_", "cq"), ("cqd_", "cq"), ("fj_", "fj"), ("hn_", "hn"), ("jl_", "jl"),
     ("ln_", "ln"), ("nx_", "nx"), ("sd_", "sd"), ("xz_", "xz"),
 ]
-# Province-tier units the sites table tags 'municipal' (fidelity memo §1).
-_PROV_TIER_SITES = {"cq"}
-_PROV_TIER_PREFIX = ("bjb_", "shb_")
-SUBPROVINCIAL = {"municipal", "district", "department"}
 # Leading place name stripped off a provincial core before stemming, so the stem
 # is the topic (推动消费品以旧换新) that a city re-issuance (惠州市推动消费品以旧换新行动方案)
 # carries. 8-char floor (memo §1).
@@ -233,17 +208,6 @@ def province_of(site):
     return None
 
 
-def _is_prov_tier(d):
-    """Province-tier issuer: admin_level provincial, or a province-tier
-    municipality unit tagged municipal (Chongqing portal, Beijing/Shanghai bureaus)."""
-    return (d["level"] == "provincial" or d["site"] in _PROV_TIER_SITES
-            or d["site"].startswith(_PROV_TIER_PREFIX))
-
-
-def _is_subprovincial(d):
-    return d["level"] in SUBPROVINCIAL and not _is_prov_tier(d)
-
-
 def prov_core(title):
     """Instrument core of a provincial title: the 《》 inner, else the 印发X的通知 X."""
     c = inner_core(title)
@@ -251,23 +215,6 @@ def prov_core(title):
         return c
     m = ISSUE_CORE_RE.search(title or "")
     return m.group(1) if m else None
-
-
-def _is_true_central(d):
-    """Central-level issuer, correcting the npc site's blanket admin_level tag."""
-    if d["level"] != "central":
-        return False
-    if d["site"] == "npc":
-        return d["cat"] in NPC_NATIONAL_CATEGORIES
-    return True
-
-
-def _is_explainer(d):
-    """解读 / 一图读懂 / 答记者问 etc. — ABOUT an instrument, not one. May stay a
-    pool member (so citations mis-resolved onto it still reach the pool) but may
-    not represent or qualify a pool (atlas §7: ~9% of anchors were labelled by a
-    pool member naming another instrument, several of them explainers)."""
-    return d["genre"] == "explainer" or bool(NONISSUE_RE.search(d["title"]))
 
 
 def _d10(s):
@@ -289,6 +236,19 @@ def inner_core(title):
     return m.group(1) if m else None
 
 
+def named_cores(members):
+    """Normalized 《》-cores (>= STEM_MIN chars) carried by a pool's member titles.
+    Non-empty = the pool is a NAMED instrument (authority not required)."""
+    cores = set()
+    for m in members:
+        c = inner_core(m["title"])
+        if c:
+            nc = _norm_title(c)
+            if len(nc) >= STEM_MIN:
+                cores.add(nc)
+    return cores
+
+
 def genre_stem(norm_core):
     """Strip trailing genre suffixes off a normalized core to the topic stem,
     never dropping below STEM_MIN chars. 提振消费专项行动方案 -> 提振消费专项;
@@ -305,171 +265,168 @@ def genre_stem(norm_core):
     return s
 
 
-def pool_key(title):
-    """Anchor-identity key: the EXACT normalized 《》-core when present (mirrors of
-    one instrument share it; localized lookalikes differ), else the full norm title."""
-    c = inner_core(title)
-    if c:
-        nc = _norm_title(c)
-        if len(nc) >= STEM_MIN:
-            return ("core", nc)
-    return ("title", _norm_title(title))
-
-
 def is_framework(genre, title):
     return genre in FW_GENRES or bool(FW_TITLE_RE.search(title or ""))
 
 
+def can_anchor(d):
+    """May this doc represent / qualify an anchor pool: a framework instrument that
+    is not merely ABOUT one (explainer / readout / news per doc_identity)."""
+    return is_framework(d["genre"], d["title"]) and d["igenre"] not in ABOUT_GENRES
+
+
 def is_implementing(source, match_type):
     """0/1: is this (source doc, match_type) an implementing event rather than a
-    mention? `source` is a docs-dict entry (keys: genre, title, level).
+    mention? `source` is a docs-dict entry (key: igenre = doc_identity.genre).
     title_reissue is implementing by construction (the title IS a re-issuance)."""
     if match_type == "title_reissue":
         return 1
-    if source["level"] in NON_IMPLEMENTING_LEVELS:
-        return 0
-    title = source["title"] or ""
-    if NONISSUE_RE.search(title):
-        return 0  # 解读 / 党组会议 / 调研 / 讲话 … always a mention, whatever the genre
-    genre = source["genre"]
-    if genre in IMPLEMENTING_GENRES:
-        return 1
-    if genre in ("other", "") and IMPL_TITLE_RE.search(title):
-        return 1
-    return 0
+    return 1 if source["igenre"] in IMPLEMENTING_IDENTITY_GENRES else 0
 
 
 # --------------------------------------------------------------------------- #
 # Load corpus                                                                  #
 # --------------------------------------------------------------------------- #
 def load(conn):
-    site_level = dict(conn.execute("SELECT site_key, COALESCE(admin_level,'unknown') FROM sites"))
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='doc_identity'"
+                        ).fetchone():
+        sys.exit("ERROR: doc_identity table missing — run scripts/build_doc_identity.py first")
     indeg = Counter()
     for tid, n in conn.execute(
             "SELECT target_id, COUNT(*) FROM citations WHERE target_id IS NOT NULL GROUP BY target_id"):
         indeg[tid] = n
     docs = {}
+    n_noid = 0
     for row in conn.execute(
-            f"""SELECT id, site_key, title, date_published, algo_doc_type,
-                       citation_rank, topics_algo, classify_main_name
-                FROM documents
-                WHERE date_published BETWEEN '{DATE_LO}' AND '{DATE_HI}'"""):
-        did, sk, title, dp, genre, cr, topics, cat = row
+            f"""SELECT d.id, d.site_key, d.title, d.date_published, d.algo_doc_type,
+                       d.citation_rank, d.topics_algo,
+                       i.admin_level_doc, i.instrument_id, i.genre
+                FROM documents d LEFT JOIN doc_identity i ON i.doc_id = d.id
+                WHERE d.date_published BETWEEN '{DATE_LO}' AND '{DATE_HI}'"""):
+        did, sk, title, dp, genre, cr, topics, lvl, iid, igenre = row
+        if lvl is None:
+            n_noid += 1  # crawled after the identity build: no level → never anchor/source
         docs[did] = {
             "id": did, "site": sk, "title": title or "",
             "date": _d10(dp), "genre": genre or "", "cr": cr or 0.0,
-            "cat": cat or "",
             "topics": [t for t in (topics or "").split(",") if t],
-            "level": site_level.get(sk, "unknown"),
+            "level": lvl or "unknown",
+            "inst": iid if iid is not None else did,
+            "igenre": igenre or "",
             "indeg": indeg.get(did, 0),
             "ntitle": _norm_title(title or ""),
         }
-    return docs, site_level
+    if n_noid:
+        print(f"  ({n_noid} docs have no doc_identity row — excluded as anchors/sources)")
+    return docs
 
 
 # --------------------------------------------------------------------------- #
-# Build anchors (pooled central framework instruments)                         #
+# Build anchors (central framework instruments, pooled by instrument_id)       #
 # --------------------------------------------------------------------------- #
+def _anchor_record(rep, members, base, prov=None):
+    stem = genre_stem(base) if base else ""
+    cues = [_norm_title(c) for c in CUE_QUOTE_RE.findall(rep["title"])]
+    rec = {
+        "id": rep["id"], "date": rep["date"], "title": rep["title"],
+        "ntitle": rep["ntitle"], "genre": rep["genre"], "cr": rep["cr"],
+        "topics": rep["topics"], "stem": stem if len(stem) >= STEM_MIN else None,
+        "cues": [c for c in cues if "+" in c],
+        "members": [m["id"] for m in members],
+    }
+    if prov is not None:
+        rec["prov"] = prov
+    return rec
+
+
 def build_anchors(docs):
     pools = defaultdict(list)
     for d in docs.values():
-        pools[pool_key(d["title"])].append(d)
+        pools[d["inst"]].append(d)
 
-    anchors = {}            # anchor_id (representative) -> anchor dict
+    anchors = {}            # anchor_id (canonical doc) -> anchor dict
     member_to_anchor = {}   # any member doc id -> anchor_id
     core_exact = {}         # normalized 《》-core -> anchor_id (for ref attribution)
 
-    n_explainer_only = 0
-    for key, members in pools.items():
-        # True-central (npc local 人大 rows excluded), framework, and NOT an explainer:
-        # a pool whose only central members are 解读/一图读懂 of an instrument the
-        # corpus lacks is not anchored on the instrument itself.
-        central_fw = [m for m in members
-                      if _is_true_central(m) and is_framework(m["genre"], m["title"])
-                      and not _is_explainer(m)]
-        if not central_fw:
-            if any(_is_true_central(m) and is_framework(m["genre"], m["title"]) for m in members):
-                n_explainer_only += 1
+    n_rep_ineligible = n_rep_unloaded = 0
+    for iid, members in pools.items():
+        rep = docs.get(iid)
+        if rep is None:
+            # canonical outside the date window (undated / pre-2000); its dated
+            # mirrors cannot stand in for it
+            if any(m["level"] == "central" and can_anchor(m) for m in members):
+                n_rep_unloaded += 1
             continue
-        named = key[0] == "core"
+        if not (rep["level"] == "central" and can_anchor(rep)):
+            if any(m["level"] == "central" and can_anchor(m) for m in members):
+                n_rep_ineligible += 1
+            continue
+        cores = named_cores(members)
         has_auth = any(m["cr"] >= CR_T or m["indeg"] >= DEG_T for m in members)
-        if not (named or has_auth):
+        if not (cores or has_auth):
             continue
-        # Representative = central framework member, max citation_rank, earliest date.
-        rep = sorted(central_fw, key=lambda m: (-m["cr"], m["date"], m["id"]))[0]
         if not rep["date"]:
             continue
-        aid = rep["id"]
-        # Stem for title_reissue (from the core when named, else the full title).
-        base = key[1] if named else rep["ntitle"]
-        stem = genre_stem(base)
-        cues = [_norm_title(c) for c in CUE_QUOTE_RE.findall(rep["title"])]
-        anchors[aid] = {
-            "id": aid, "date": rep["date"], "title": rep["title"],
-            "ntitle": rep["ntitle"], "genre": rep["genre"], "cr": rep["cr"],
-            "topics": rep["topics"], "stem": stem if len(stem) >= STEM_MIN else None,
-            "cues": [c for c in cues if "+" in c],
-            "members": [m["id"] for m in members],
-        }
+        # Stem for title_reissue: the canonical's own 《》-core, else any member's,
+        # else the canonical's full title.
+        rc = inner_core(rep["title"])
+        rc = _norm_title(rc) if rc else None
+        base = rc if rc and rc in cores else (sorted(cores)[0] if cores else rep["ntitle"])
+        anchors[iid] = _anchor_record(rep, members, base)
         for m in members:
-            member_to_anchor.setdefault(m["id"], aid)
-        if named:
-            core_exact.setdefault(key[1], aid)
-    if n_explainer_only:
-        print(f"  (skipped {n_explainer_only} pools whose only central members are explainers)")
+            member_to_anchor.setdefault(m["id"], iid)
+        for c in cores:
+            core_exact.setdefault(c, iid)
+    if n_rep_ineligible or n_rep_unloaded:
+        print(f"  (skipped {n_rep_ineligible} pools whose canonical is not a central framework "
+              f"instrument though a member is; {n_rep_unloaded} whose canonical is outside "
+              f"the date window)")
     return anchors, member_to_anchor, core_exact
 
 
 def build_prov_anchors(docs, central_members):
-    """Provincial framework instruments, pooled like the central anchors but one
-    anchor per (pool, province). Pools with a central anchor are skipped (their
-    provincial members are mirrors of the central text and already attributed).
+    """Provincial framework instruments, pooled by instrument_id like the central
+    anchors but one anchor per (pool, province). Pools with a central anchor are
+    skipped (their provincial members are mirrors of the central text and already
+    attributed). The representative is the pool's canonical when it sits in that
+    province, else the province's earliest eligible member (first publication).
     Returns (anchors, member_to_anchor, core_exact) where core_exact is keyed by
     (province, normalized core)."""
     pools = defaultdict(list)
     for d in docs.values():
-        if _is_prov_tier(d) and province_of(d["site"]):
-            pools[pool_key(d["title"])].append(d)
+        if d["level"] == "provincial" and province_of(d["site"]):
+            pools[d["inst"]].append(d)
 
     anchors, member_to_anchor, core_exact = {}, {}, {}
     n_central_pool = 0
-    for key, members in pools.items():
-        if any(m["id"] in central_members for m in members):
+    for iid, members in pools.items():
+        if iid in central_members:
             n_central_pool += 1
             continue
         by_prov = defaultdict(list)
         for m in members:
             by_prov[province_of(m["site"])].append(m)
         for prov, pm in by_prov.items():
-            fw = [m for m in pm if is_framework(m["genre"], m["title"]) and not _is_explainer(m)]
-            if not fw:
+            eligible = [m for m in pm if can_anchor(m) and m["date"]]
+            if not eligible:
                 continue
-            named = key[0] == "core"
+            cores = named_cores(pm)
             has_auth = any(m["cr"] >= CR_T or m["indeg"] >= DEG_T for m in pm)
-            if not (named or has_auth):
+            if not (cores or has_auth):
                 continue
-            rep = sorted(fw, key=lambda m: (-m["cr"], m["date"], m["id"]))[0]
-            if not rep["date"]:
-                continue
+            canon = [m for m in eligible if m["id"] == iid]
+            rep = canon[0] if canon else sorted(eligible, key=lambda m: (m["date"], m["id"]))[0]
             aid = rep["id"]
             core = prov_core(rep["title"])
-            stem = None
-            if core:
-                stem = genre_stem(_norm_title(PLACE_RE.sub("", core)))
-                if len(stem) < PROV_STEM_MIN:
-                    stem = None
-            cues = [_norm_title(c) for c in CUE_QUOTE_RE.findall(rep["title"])]
-            anchors[aid] = {
-                "id": aid, "date": rep["date"], "title": rep["title"],
-                "ntitle": rep["ntitle"], "genre": rep["genre"], "cr": rep["cr"],
-                "topics": rep["topics"], "stem": stem,
-                "cues": [c for c in cues if "+" in c],
-                "members": [m["id"] for m in pm], "prov": prov,
-            }
+            base = _norm_title(PLACE_RE.sub("", core)) if core else None
+            rec = _anchor_record(rep, pm, base, prov=prov)
+            if rec["stem"] and len(rec["stem"]) < PROV_STEM_MIN:
+                rec["stem"] = None
+            anchors[aid] = rec
             for m in pm:
                 member_to_anchor.setdefault(m["id"], aid)
-            if named:
-                core_exact.setdefault((prov, key[1]), aid)
+            for c in cores:
+                core_exact.setdefault((prov, c), aid)
     if n_central_pool:
         print(f"  (skipped {n_central_pool} provincial pools already anchored centrally)")
     return anchors, member_to_anchor, core_exact
@@ -586,7 +543,7 @@ def match_citation_prov(conn, docs, anchors, member_to_anchor, core_exact):
     for src, tid, ref in conn.execute(
             "SELECT source_id, target_id, target_ref FROM citations"):
         s = docs.get(src)
-        if not s or not _is_subprovincial(s):
+        if not s or s["level"] not in SUBPROVINCIAL:
             continue
         prov = province_of(s["site"])
         if not prov:
@@ -635,7 +592,7 @@ def match_title_and_topic_prov(docs, anchors, cited_pairs):
 
     title_pairs, topic_pairs = {}, {}
     for s in docs.values():
-        if not _is_subprovincial(s):
+        if s["level"] not in SUBPROVINCIAL:
             continue
         prov = province_of(s["site"])
         if not prov or (prov not in stem_anchors and prov not in cue_anchors
@@ -811,15 +768,16 @@ def report(rows, anchors, docs, label="central"):
               f"{a['date']} | {a.get('prov', '')} | {a['title'][:52]}")
 
 
-def validate(rows, anchors, prov_rows=None, prov_anchors=None):
+def validate(docs, rows, anchors, prov_rows=None, prov_anchors=None):
     by_anchor = defaultdict(list)
     for r in rows:
         by_anchor[r[1]].append(r)
 
-    def cascade(label, aids):
-        aids = [aid for aid in aids if aid in anchors]
+    def cascade(label, doc_ids):
+        # the named docs may be mirrors — resolve each to its pool's anchor id
+        aids = sorted({docs[i]["inst"] for i in doc_ids if i in docs} & set(anchors))
         evs = [r for aid in aids for r in by_anchor.get(aid, [])]
-        print(f"\n[{label}] anchors={aids}")
+        print(f"\n[{label}] docs={doc_ids} -> anchors={aids}")
         if not evs:
             print("  (no events)")
             return
@@ -850,8 +808,7 @@ def validate(rows, anchors, prov_rows=None, prov_anchors=None):
             by_anchor[r[1]].append(r)
         anchors = prov_anchors
         # Guangdong's 2024 trade-in instruments (fidelity-provincial.md §5): the
-        # 省政府 实施方案, the two 办公厅 行动方案, the 超长期特别国债 实施方案.
-        # (4518476 is the pool representative of the 超长期特别国债 实施方案; 4485000 is its member)
+        # 省政府 实施方案, the two 办公厅 行动方案, the 超长期特别国债 实施方案 (+ its mirror).
         cascade("PROVINCIAL 广东 以旧换新 (2024-04-13)", [4406243, 4406240, 4406241, 4518476, 4485000])
 
 
@@ -867,7 +824,7 @@ def main():
         sys.exit(f"DB not found: {dbpath}")
     t0 = time.time()
     conn = sqlite3.connect(f"file:{dbpath}?mode=ro", uri=True)
-    docs, _ = load(conn)
+    docs = load(conn)
     print(f"Loaded {len(docs)} docs in {time.time()-t0:.1f}s")
 
     anchors, member_to_anchor, core_exact = build_anchors(docs)
@@ -894,7 +851,7 @@ def main():
     report(p_rows, p_anchors, docs, label="provincial")
 
     if args.validate:
-        validate(rows, anchors, p_rows, p_anchors)
+        validate(docs, rows, anchors, p_rows, p_anchors)
     print(f"\nElapsed {time.time()-t0:.1f}s")
 
     if args.write:

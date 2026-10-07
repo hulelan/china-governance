@@ -297,6 +297,15 @@ timeout 900 python3 scripts/compute_topics.py >> "$LOG" 2>&1 || log "  compute_t
 log "Phase 2b: Rebuilding doc_issuers (issuer_parser)..."
 timeout 900 nice -n 19 python3 scripts/rnd/classification/issuer_parser.py >> "$LOG" 2>&1 || log "  issuer_parser had errors"
 
+# Per-document identity side table (corpus-lessons.md A1–A5: admin_level_doc,
+# instrument_id, genre, date_quality, lead_issuer). Reads `doc_issuers` (above) and
+# `algo_doc_type` (compute_scores), so it runs LAST in Phase 2b; build_diffusion_events
+# (Phase 2c) joins it. Full rebuild, one transaction; measured 37s for ~321k docs.
+# --force: the script refuses to write while the nightly lock exists, and this run
+# IS the lock holder.
+log "Phase 2b: Rebuilding doc_identity (per-document level / instrument / genre)..."
+timeout 600 nice -n 19 python3 scripts/build_doc_identity.py --force >> "$LOG" 2>&1 || log "  build_doc_identity had errors"
+
 # --- Phase 2c: Refresh the BM25 (word-segmented) search index -----------------
 # doc_search (trigram) is trigger-maintained, but doc_search_seg (jieba words, the
 # BM25 relevance path) segments in Python so it CAN'T be a SQL trigger — it needs a
@@ -317,7 +326,8 @@ timeout 600 python3 scripts/build_site_stats.py >> "$LOG" 2>&1 || log "  build_s
 # precomputed tables, rebuilt from scratch each night (both idempotent DELETE+INSERT):
 #   1. diffusion_events — the auto-matcher: each sub-national doc → the central
 #      instrument it implements (citation / title_reissue / topic_genre) + lag. MUST
-#      run after Phase 2b: it reads the fresh `citations` table and `topics_algo`.
+#      run after Phase 2b: it reads the fresh `citations` table, `topics_algo` and
+#      `doc_identity` (level / instrument pooling / genre).
 #      Full rebuild measured 30s wall / 350MB RSS on the droplet (2026-10-01,
 #      ~320k docs, 28,880 events) — timeout is ~30x headroom.
 #   2. tracker_weekly — per (topic, ISO week, admin_level) new-doc + cascade counts

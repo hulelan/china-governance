@@ -67,6 +67,9 @@ CXGH_INBOUND_MAX = 2400
 # reposts. The source_implementing gate (1a08989) separates them. Catches: the gate
 # being bypassed (mention-only collapses toward 0 and implementing balloons), or
 # the cue match breaking (implementing collapses).
+# The anchor is identified by its doc_identity INSTRUMENT pool (the matcher's
+# anchor_id is the pool's canonical copy, which need not be this gov.cn id — the
+# same text sits on gov.cn twice plus mee/cac/zj mirrors).
 AIPLUS_ID = 900039770
 AIPLUS_IMPL_MIN = 20
 AIPLUS_IMPL_MAX = 60
@@ -183,14 +186,16 @@ def check_cxgh_inbound(conn: sqlite3.Connection, r: Result) -> None:
 
 # --- 3 -----------------------------------------------------------------------
 def check_aiplus_gate(conn: sqlite3.Connection, r: Result) -> None:
+    pool_sql = ("anchor_id IN (SELECT doc_id FROM doc_identity WHERE instrument_id = "
+                "(SELECT instrument_id FROM doc_identity WHERE doc_id=?))")
     impl = _one(
         conn,
-        "SELECT COUNT(*) FROM diffusion_events WHERE anchor_id=? AND source_implementing=1",
+        f"SELECT COUNT(*) FROM diffusion_events WHERE {pool_sql} AND source_implementing=1",
         AIPLUS_ID,
     )
     mention = _one(
         conn,
-        "SELECT COUNT(*) FROM diffusion_events WHERE anchor_id=? AND source_implementing=0",
+        f"SELECT COUNT(*) FROM diffusion_events WHERE {pool_sql} AND source_implementing=0",
         AIPLUS_ID,
     )
     r.record(
