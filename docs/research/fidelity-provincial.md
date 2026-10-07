@@ -488,7 +488,8 @@ center. "Tight cascade" and "elaboration" were both right; they described differ
 ## 7. Honesty
 
 - **Guangdong is 95% of the data.** The all-province figures are Guangdong figures. Jiangsu (200
-  pairs) agrees in level and shape; Beijing (56, districts only) agrees with the district row.
+  pairs *(473 / 426 scored, relay 3.3%, on the Suzhou-redated DB, §2.2 caveat 2026-10-07; the 14
+  relays are the same, the denominator gained long-lag Suzhou pairs)*) agrees in level and shape; Beijing (56, districts only) agrees with the district row.
   Fujian, Chongqing, Heilongjiang, Ningxia, Tibet contribute under 25 pairs each. No other
   province has the portal + cities + districts + bureaus coverage that produces nested pairs.
   Whether the eastern/western Guangdong prefectures' re-issuance habit is general to Chinese
@@ -498,7 +499,9 @@ center. "Tight cascade" and "elaboration" were both right; they described differ
   lacks is invisible. The absolute pair count is a floor. Nothing here suggests the missing pairs
   differ in fidelity, but it is not tested.
 - **Body coverage.** 87.1% of pairs were scored. The department tier (Shenzhen bureaus) is again
-  the gap at 73%. Attachment-only documents (cover note in `body_text_cn`, plan in a PDF) pass
+  the gap at 73% *(the over-500-character share; 88.8% of bureau documents have some body, and
+  the A7 backfill found the gap is attachments and short notices, `corpus-lessons.md` A7
+  correction 2026-10-07)*. Attachment-only documents (cover note in `body_text_cn`, plan in a PDF) pass
   the 500-character floor in some cases and score as elaboration when they should not score.
 - **Boilerplate upper bound.** Shared notice chrome inflates overlap. The 2%-frequency strip moves
   the median from 0.087 to 0.078 and the bands by under half a point. Rarer formulaic passages

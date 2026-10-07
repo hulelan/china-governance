@@ -350,6 +350,9 @@ diplomacy, energy and emergency instruments are rewritten from scratch.
 - **Coverage.** 74.7% of confirmed pairs could be scored. The department tier is the gap: only 60%
   of department-level sources have a body over 500 characters (1,599 of 2,672), against 90 to 96%
   for the other tiers. Department fidelity (median 0.031) rests on the better-crawled 60%.
+  *(2026-10-07: 88.8% of department-site documents have SOME body; the 60% is the over-500-
+  character share. The A7 backfill found the gap is short notices and attachments, not
+  extraction, `corpus-lessons.md` A7 correction.)*
 - **Attachments.** Many implementation plans are PDF or DOC attachments under a short cover notice.
   Where only the cover note is in `body_text_cn` the overlap is meaningless in either direction. The
   500-character floor removes the worst cases, not all of them.

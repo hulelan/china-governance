@@ -39,7 +39,9 @@ disproportionately from the top: central documents are 1.3-1.6 times over-repres
 pilot titles, municipal documents 0.4-0.7 times. The upward-absorption mechanism is nearly
 invisible in the resolved graph. Of 609 locally originated provincial pilot documents, 9 are
 ever cited by a central document (1.5%), against 1.0% for non-pilot provincial documents. Of 572
-municipal ones, 1. What the graph does show, strongly, is the reverse flow: central pilot
+municipal ones, 1. What the graph does show, strongly, is the reverse flow *(terminology note
+2026-10-07: "reverse flow" here means the downward direction, the reverse of absorption; the
+synthesis and `bottom-up-channel.md` use "reverse flow" for the UPWARD channel)*: central pilot
 designations cited downward by dozens to hundreds of local implementing documents. The
 mechanism the corpus can see is designation, not absorption.
 

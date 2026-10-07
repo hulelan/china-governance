@@ -211,7 +211,11 @@ success rate. The clean cases are real and recognizable: 县级公立医院综�
 试点办法 → the de-piloted 《电信普遍服务补助资金管理办法》 (1,173 days). The
 **median pilot-to-national lag is 1,070 days (~2.9 years)** on the settled-instrument
 proxy, 738 days (~2.0 years) on the loose one. Both are inside their 2.25-year average
-duration, which is reassuring on the lag even as the *level* is unrecoverable.
+duration, which is reassuring on the lag even as the *level* is unrecoverable. *(2026-10-06,
+`successor-detector.md`: a scored detector on `doc_identity` finds successors for 75 of 1,271
+pilot instruments, 5.9% / 6.9% ex-mid-flight, median lag 564 d, precision 76-87%; the 0.4-1.2%
+here was a detection floor of the title-family method by about an order of magnitude, and the
+hand sample says most of the remaining gap is renaming, not failure to scale.)*
 
 **Why the level is a floor, not a finding.** Three reasons the corpus cannot see
 most generalizations: (a) a national instrument routinely **renames** the policy and
@@ -336,7 +340,9 @@ the hard part: **51%** of tightly-linked pilots show multi-year widening local u
 but only **0.4-1.2%** reach a *visible, theme-preserving national instrument* (a
 floor, far under their 53.9%), at a **median ~1,070-day (≈2.9-year) pilot-to-national
 lag** that sits inside their 2.25-year average duration. The corpus sees designation
-flowing down far better than generalization flowing up. We can speak to the
+flowing down far better than generalization flowing up *(2026-10-06: 5.9% / 6.9% with the
+successor detector, and positive site selection replicated descriptively at province grain in
+`site-selection-gdp.md`; the three causal findings remain out of reach)*. We can speak to the
 **document record and the central→local cascade**; we **cannot** speak to their three
 causal findings: positive site selection (needs locality GDP), strategic fiscal
 effort (needs fiscal panels), or under-correction in policy learning (needs both plus

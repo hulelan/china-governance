@@ -120,8 +120,10 @@ and held 32,825 rows (26,565 central from 3,138 anchors, plus 6,260 provincial) 
 a further resolver regression fix in progress will change it again. The sector event table in
 §5 and its "all anchors 24,599" row are on this build; shares and orderings held on spot
 checks, raw counts are not current. See `consistency-review.md` H2. Universe note: npc rows are
-kept here while the 74 date-stamped sites are removed; other memos exclude or re-level npc, so
-the "universe central %" figures are within-memo only, review M7.)*
+kept here while the 74 date-stamped sites *(sic: shallow-archive sites, A4 correction above; 77
+sites / 28,940 docs on the 2026-10-07 re-run)* are removed; other memos exclude or re-level npc, so
+the "universe central %" figures are within-memo only, review M7. The level tables in §4 are
+re-based on `doc_identity` in the L1-L6 section appended 2026-10-07.)*
 
 ---
 
@@ -353,6 +355,15 @@ sector). Future industries are a provincial phenomenon (tilt 1.88). Equipment an
 are municipal (1.49). AI is the only sector with tilt near 1.0 at every tier above
 department: it is evenly spread. `[measured]`
 
+*(Re-based 2026-10-07, sections R4-R5 and L1-L6 below. The 1.5 and 0.75 lines do not survive
+the identity layer: at document level the average sector-tagged document sits at tilt 1.55-1.59,
+so 1.5 selects the typical sector. The rule is now z >= +3 / z <= −3 against a sector-size-matched
+pool null. Survive: ships, telecom, heavy industry, data, platforms, NEV central; real estate and
+low-altitude local; low-altitude as a district phenomenon. Flip: agriculture (its "central"
+documents were npc-filed local regulations), "AI is evenly spread" (central z +8 / +16),
+"equipment and robotics are municipal (1.49)" (a department-tier denominator). Every department
+tilt, including real estate 3.35, is a site-type statistic with no document-level counterpart.)*
+
 ### 4.1 The sub-national pile-on: central share by period
 
 Central share of each sector's documents (%) and tilt against the period's universe.
@@ -385,7 +396,10 @@ depth grew. The tilt separates the two. Tilt falls materially only for low-altit
 0.51), new energy (1.35 to 0.95), new materials (1.57 to 0.94) and biopharma (1.28 to 0.98).
 These are the sectors where sub-national tiers overtook the center's own attention. Tilt
 rises for data (to 2.04), telecom (to 2.72), platforms (to 1.85) and carbon (to 1.52). These
-are sectors where the center kept or increased its relative lead. `[measured]`
+are sectors where the center kept or increased its relative lead. `[measured]` *(Document level,
+L5, 2026-10-07: 14 of 16 fall, carbon rises; the universe central share is 30 to 19 (a) or 30
+to 21 (b) rather than 45 to 26; software also falls materially; the four tilt falls and four
+tilt rises hold with larger spreads.)*
 
 **Reading.** "Local governments pile onto central priorities" holds, but it is not uniform.
 It is strongest for sectors with a physical, place-based project pipeline (airfields and
@@ -480,6 +494,9 @@ in some specifications the named firms. They identify a 2013 recentralization tu
    municipal departments, which is where the subsidy genre concentrates and where
    low-altitude and biopharma park policy originates. The district tilt of 2.65 for
    low-altitude and 3.35 department tilt for housing are not observable at city resolution.
+   *(2026-10-07, L4: the district tilt survives on `doc_identity` (2.55 / 2.56; pool z +13);
+   the department tilt is a site-type statistic with no document-level counterpart and reads
+   as "municipal 1.64, 72% of housing documents in the municipal tier from bureau sites".)*
 3. *An explicit cascade.* They infer central-local linkage from text similarity and
    co-occurrence. `diffusion_events` carries the directed edge from a central instrument to
    the sub-national documents that cite or re-issue it, with lag in days. The sector ranking
@@ -516,7 +533,10 @@ in some specifications the named firms. They identify a 2013 recentralization tu
 
 - *Date stamps.* 74 sites with crawl-date stamping were removed (section 1). Any site with
   partial stamping below the 70% threshold still leaks some 2026 mass into the series. The
-  2026 column should be read as partial and least reliable.
+  2026 column should be read as partial and least reliable. *(Corrected 2026-10-07: these sites
+  carry real dates and shallow archives, `corpus-lessons.md` A4; the threat is archive depth, not
+  stamping, and the robustness section below shows the 2026 bar doubles with them in while every
+  other year holds.)*
 - *Corpus growth.* The universe grows from 2,590 (2008) to 30,552 (2025) documents. All
   series are shares; HHI is computed on shares. Raw counts are never compared across years.
 - *Composition.* The level mix of the universe changes by period as crawl depth grows. The
@@ -876,7 +896,8 @@ site type. Any future version of section 4 should join `doc_identity`. `[inferre
 ### R6. Cascades (section 5)
 
 `diffusion_events` never carried the exclusion (A7 has no universe filter). 1,505 of 35,475
-events (4.2%) have a source document in the 77 sites and 110 have an anchor there. Section 5
+events (4.2%) *(the 2026-10-06 nightly build; 36,116 after the Suzhou redate later on
+2026-10-07, `policy-tempo.md`)* have a source document in the 77 sites and 110 have an anchor there. Section 5
 is unaffected by this check. `[measured]`
 
 ### R7. Verdict

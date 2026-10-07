@@ -36,12 +36,22 @@ to 84.8), its city median sits at 0.109 (0.082 to 0.141) and its chain share at 
 picture and extends it: in both provinces 80 to 82% of renamed sub-provincial re-issuances are
 renamed from a provincial text, their text overlap with that text is in the mid-to-relay band
 (median 0.41 to 0.58), and the citation graph sees fewer than half of them (46% Guangdong, 44%
-Jiangsu). The citation-based relay counts in the provincial memo are floors. [measured]
+Jiangsu). The citation-based relay counts in the provincial memo are floors. [measured] *(Re-based
+2026-10-07, §7 and `pair-channels.md` §3: "fewer than half" counts metadata-only sources; among
+sources with a body the citation path sees three in four (invisible 25.5% Guangdong, 23.1%
+Jiangsu), so the floor is body coverage, about 5% of relays.)*
 
 **One corpus finding.** Suzhou's `date_published` is crawl-stamped in two batches (2023-02-09,
 1,989 documents; 2025-02-11, 1,727) and `date_quality` rates it `good`, because neither batch
 crosses the stamping rule's threshold. The real month is in the URL path. All Jiangsu lags here
-use the repaired dates. See §7.
+use the repaired dates. See §7. *(Superseded 2026-10-07, `5465b8e`/`247c5f7`: the piles are the
+source CMS's page-regeneration stamps (`<meta PubDate>` = 页面生成时间), not our crawl day; the
+1,989 / 1,727 are YEAR counts from the Appendix A query (`substr(date_published,1,4)`), the
+day-pile counts were 1,860 / 1,499; the DB was redated from the article header, then 发文日期,
+then URL month (3,354 rows), and the `/YYYYMM/` folder is a 2021 migration artefact for ~250
+historical 规范性文件 (1991-2011 文号 years under /202105/), so the URL-only repair used here
+mis-dates that subset. Live 2026-10-07: 1 and 7 Suzhou docs remain on the two dates; 1,406
+Suzhou-sourced `diffusion_events`. See §9.)*
 
 ---
 
@@ -79,7 +89,11 @@ with body > 500: ovlp(M,P), ovlp(M,C), ovlp(P,C) and the four-way partition of M
 **Date repair.** Suzhou documents are re-dated from the `/YYYYMM/` segment of their CMS URL
 (day set to 15). 4,918 re-dated, 3,661 moved by more than 60 days. Event lags for 171
 Suzhou-sourced events recomputed from the anchor date; 7 events whose repaired lag was below
-−30 days (mis-resolved edges) dropped. Every Guangdong figure is unaffected.
+−30 days (mis-resolved edges) dropped. Every Guangdong figure is unaffected. *(2026-10-07: the
+URL month is a migration artefact for ~250 historical Suzhou documents, see §0; the DB redate
+preferred the article header and 发文日期 and used the URL month only as a last fallback. On the
+redated DB the Jiangsu citation basis is 473 pairs / 426 scored, relay 3.3%, with the same 14
+relays, `fidelity-provincial.md` §2.2; the shares in §4 are on this memo's URL repair.)*
 
 **Subsample.** 40 draws of 5 Guangdong city portals (from the 13 with ≥ 100 city-level
 documents), then a random 5,514 of their documents (the Jiangsu city count). Pairs, chains and
@@ -444,7 +458,8 @@ points to a different practice.
 
 **6. The renaming layer corroborates and extends.** 80 to 82% of renamed sub-provincial
 re-issuances are renamed from the province; their text overlap is mid-to-relay; the citation
-graph sees fewer than half of them. The provincial memo's relay figures are floors.
+graph sees fewer than half of them *(three in four of those with a body, §7 re-base 2026-10-07)*.
+The provincial memo's relay figures are floors *(by about 5% of relays, +0.2 points)*.
 
 **7. B1 is partly discharged.** The three nested findings now rest on two provinces. They still
 rest on one city in the second province. The next deepening should be a Jiangsu prefecture that
@@ -466,7 +481,13 @@ size-predicts-relay question in §4.3 can be asked.
   days (40% and 35%). `diffusion_events.lag_days` is wrong for Suzhou-sourced events (171 of them)
   and `validate_cascades.py`'s "JS 82d" should be checked for Suzhou dependence. [measured for
   the stamping; inferred for the validator] Fix: a `crawl_stamped` test that sums the top two
-  crawl-day shares, and a URL-path date fallback in the Suzhou crawler.
+  crawl-day shares, and a URL-path date fallback in the Suzhou crawler. *(Done 2026-10-07 with
+  two corrections to this bullet: the stamps are the source CMS's regeneration dates, not crawl
+  stamps, and the 1,989 / 1,727 are year counts (day piles 1,860 / 1,499); the A4 rule now sums
+  bulk date-days; `crawlers/suzhou.py` reads the article header first and the URL month last
+  because the folder is a migration artefact for ~250 historical documents; 3,354 rows redated;
+  the validator's JS 82d anchor is a `js` provincial document and was unaffected; 685 Suzhou
+  docs now sit on a month-precision day 01 and still read `good`.)*
 - **The repair is a month, not a day.** URL dates are year-month with the day set to 15. Lags are
   accurate to ±15 days; the ≤ 30 day band (7 pairs) is unreliable at the edges. No Guangdong
   figure uses a repaired date.

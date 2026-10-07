@@ -45,7 +45,8 @@ feedback institutions (人大, 政协, research offices) that formally route loc
 
 **What this means for the through-line.** The upward channel *is* visible when you look for it,
 but it is thin, late and asymmetric. The center's generalization language grew sharply after
-2014, but 92% of it is generic instruction. The named-recognition instrument exists (79 titles,
+2014, but 92% of it is generic instruction *(92% = lexicon docs that name no locality within the
+window; the explicitly forward-looking "exhort" share is about half, §2)*. The named-recognition instrument exists (79 titles,
 ~300 named windows) and it rewards the same high-income coastal places the pilot machinery
 selects. Nothing in the promulgation record connects a central acknowledgment to the local
 document it absorbed. The finding "reverse flow nearly invisible" therefore hardens for the
@@ -59,7 +60,9 @@ document-level upward link could still appear.
 **Population.** `doc_identity.admin_level_doc='central'` and `genre IN ('promulgation',
 'implementing')`: 37,022 docs, 33,733 with body text (91%). Note that `genre='implementing'` is
 assigned only at provincial/municipal/district level (9,224 / 7,487 / 628), so the central set
-is all `promulgation`. Years from `date_published[:4]`; 338 docs undated, 1,838 pre-2005.
+is all `promulgation`. *(Live 2026-10-07: 37,036 central; implementing 9,162 / 6,755 / 644 after
+the `localized_of` flip rule was tightened to in-chain parents, `docs/working/qa-genre-flip.md`;
+the central set is unchanged in kind.)* Years from `date_published[:4]`; 338 docs undated, 1,838 pre-2005.
 
 **Lexicon tiers** (regex over title + body, see appendix A).
 

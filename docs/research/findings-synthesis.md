@@ -27,7 +27,10 @@ cannot see.
 
 *(Update 2026-10-06, `bottom-up-channel.md`: we then hunted the upward channel deliberately.
 The center's acknowledgment lexicon (典型经验 / 复制推广 / 向全国推广) rose from 2-3% of central
-promulgations in 2008-13 to a 17-19% peak in 2021-22, but 92% of it is exhortation; only 296 docs
+promulgations in 2008-13 to a 17-19% peak in 2021-22, but 92% of it is exhortation *(precisely:
+92% of lexicon docs name no locality near the phrase; the explicitly forward-looking "exhort"
+share is about half of hits, `bottom-up-channel.md` §2; wording tightened 2026-10-07,
+`consistency-review.md` round 2)*; only 296 docs
 (0.8%) name a locality near the phrase and only 79 carry recognition in the title. Lexicon docs
 cite downward no more than other central docs (0.31% vs 0.24%). The center absorbs a local model
 by restating it in prose and naming the place, never by citing the local document, so the
@@ -49,7 +52,10 @@ implementing instruments and 10,352 are mention-only references, now separated b
 `source_implementing` flag because a locality's news repost is a reference, not an
 implementation; the tracker and both leaderboards default to implementing-only. Resolved
 citations 269,685, down from 287,607, because containment proxies to news and 解答 pages are
-now left unresolved rather than credited to a wrong target.)* The memos quote three earlier builds (28,880;
+now left unresolved rather than credited to a wrong target.)* *(Build trail since, 2026-10-07:
+35,465 / 35,475 on the 2026-10-06 nightly, 35,498 after the province resolver `b7162c8`, **36,116**
+after the Suzhou redate `5465b8e`, the figure `policy-tempo.md` and the live table carry;
+`industrial-policy-targeting.md` R6 quotes 35,475 from the earlier build of the same day.)* The memos quote three earlier builds (28,880;
 24,599; 26,565 central) and a further resolver regression fix in progress will move it again;
 see `consistency-review.md` H2 for which build each memo used. That is the volume's
 methodological contribution.
@@ -139,11 +145,24 @@ subsamples, so the differences are coverage: Jiangsu's sub-provincial tier is 1/
 in documents, 1/29 in pairs, and is one city (Suzhou is 92% of its pairs). The renaming layer
 (`localized_of`) corroborates from titles alone: 80 to 82% of renamed sub-provincial re-issuances
 in both provinces are renamed from a provincial text, at mid-to-relay overlap, and the citation
-graph sees fewer than half of them, so the provincial memo's relay counts are floors. Verdict:
+graph sees fewer than half of them *(2026-10-07 re-base, `pair-channels.md` §3: the "fewer than
+half" counts metadata-only sources that cannot cite; conditioned on a source body the citation
+path sees three in four, invisible 25.5% Guangdong / 23.1% Jiangsu, so the floor is body
+coverage, about 5% of relays, +0.2 relay points)*, so the provincial memo's relay counts are floors. Verdict:
 hardens, on one city; B1 is discharged only when a second Jiangsu prefecture is crawled to
 Suzhou's depth. Corpus finding on the way: Suzhou's `date_published` is crawl-stamped in two
 batches (2023-02-09, 2025-02-11) that the A4 rule does not catch; the memo re-dates from the URL
-path and flags the 171 affected `diffusion_events` lags.)*
+path and flags the 171 affected `diffusion_events` lags.)* *(Superseded 2026-10-07, commits
+`5465b8e`/`247c5f7`: the two piles were the source CMS's page-regeneration stamps, not our crawl
+day; the DB was redated from the article header / 发文日期 / URL month (3,354 rows, median shift
+−1,886 d; live 2026-10-07: 1 and 7 Suzhou docs remain on those two dates, 685 sit on a
+month-precision day 01), the A4 rule now sums bulk date-days, and the `/YYYYMM/` folder is a 2021
+migration artefact for ~250 historical 规范性文件, so the memo's URL-path repair mis-dates that
+subset. On the redated DB the Jiangsu province-to-city CITATION basis is 473 pairs / 426 scored
+with relay 3.3%, not the 191-200 / 8.0-8.4% quoted above; the 14 relays are the same on both
+bases, so the share moved because the repair pulled hundreds of long-lag Suzhou pairs into range
+(`fidelity-provincial.md` §2.2, logged not resolved; re-read queued). Suzhou-sourced events are
+1,406 on the live table, up from 788.)*
 
 ### Part III. Central-local dynamics
 - **Recentralization and experimentation** (`recentralization-experimentation.md`;
@@ -222,7 +241,8 @@ path and flags the 171 affected `diffusion_events` lags.)*
   more than half); money is a narrow instrument concentrated in chips, new energy, NEV and
   biopharma while legacy sectors get rules; place-based sectors see real sub-national pile-on,
   network-rule sectors (data, telecom, platforms) stay central. A 2026-10-07 robustness check
-  that restores the 74 shallow-archive sites (incl. MIIT) leaves the HHI, rise-fall and
+  that restores the 74 shallow-archive sites (incl. MIIT; the same rule re-run on 2026-10-07
+  selects 77 sites / 28,940 docs, the memo's universe (b)) leaves the HHI, rise-fall and
   instrument-mix findings within 2 points but moves the level composition of MIIT's own sectors
   by 5-19 points central, so "future industries are local from the start" is withdrawn.
   Re-basing the level analysis on `doc_identity.admin_level_doc` (same date) replaces the 1.5
@@ -250,8 +270,29 @@ and nightly-refreshed. Open: the containment-proxy class of the resolver bug (H1
 re-leveling in `sites`. *(Corrected 2026-10-01 per `consistency-review.md` M5; the earlier text
 listed Parts I-III as "in progress".)*
 
+*(Status 2026-10-07, `consistency-review.md` round 2. Of the four open items above: the
+提振消费 regression and the containment class were closed by the resolver regression fix and the
+containment gate (the 33,992-event build; wrong proxies are now left unresolved, resolution
+50.5%); npc re-leveling landed as `doc_identity.admin_level_doc` (2026-10-06), not in `sites`,
+which still carries the site level; the jurisdiction-level breadth recount is still open. Landed
+since: the identity layer A1-A5 (`doc_identity`: per-document level, `instrument_id`, genre,
+`date_quality`, `lead_issuer`, `localized_of`; `instrument_succession`), the A4 correction
+(`crawl_stamped` 29k → 0), the Suzhou redate, the province resolver, `doc_inbound` (B6),
+`validate_cascades.py` nightly (B5), and the B-series memos: `fidelity-jiangsu.md` (B1, on one
+city), `bottom-up-channel.md` (B2, + four feedback sources), `successor-detector.md` (B3),
+`site-selection-gdp.md` (B4), `policy-tempo.md` (B7), plus `pair-channels.md` and the
+industrial-policy robustness and level re-basing. Open now: a second Jiangsu prefecture at
+Suzhou's depth; the date-ordered `localized_of` (1,958) and `province` / `instrument_kind`
+columns, committed but not yet in the droplet's identity build (live 2026-10-07 06:52 UTC: 2,592
+rows, no such columns); the framework-gate widening that `instrument_kind` carries; the §2.1
+Jiangsu row re-read on the redated DB; MIIT bodies (anti-bot stubs, residential fetch); the A6
+head crawl.)*
+
 Standing caveats that apply to every chapter: coverage bias (proxy-blocked provinces invisible,
 Guangdong over-represented at district depth), ~52-54% citation resolution depending on date
+*(50.5% live 2026-10-07, 270,211 of 534,722, after the containment gate un-resolved wrong proxies;
+the lower rate is the more honest one and every "~52%" in the memos is now a ceiling on the rate
+and a floor on the counts)*
 (all counts are floors), publication date is not adoption date, title-lexicon recall is a
 fraction of body mention, and the selection boundary above. Mechanism-level throughout, no
 regime-type labels. Two cross-memo comparability notes (added 2026-10-01, `consistency-review.md`

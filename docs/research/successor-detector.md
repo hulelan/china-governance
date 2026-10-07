@@ -42,7 +42,11 @@ inference rests on 12 hand-read cases and is stated as a range, not a point.
 示范区. Mirrors collapse on `instrument_id` (the gov republish of a ministry notice is
 one instrument).
 
-- Central promulgations: **35,027 docs → 30,198 instruments**.
+- Central promulgations: **35,027 docs → 30,198 instruments**. *(Build note 2026-10-07: this
+  ran before the A4 correction (`12453df`), when `date_quality='crawl_stamped'` still excluded
+  ~29k docs on 76 shallow-archive sites, MIIT among them. Live 2026-10-07 the same filter admits
+  36,902 central promulgations (+1,875), almost all dated 2026 and so mid-flight; the pilot
+  universe and the 5.9% are on the smaller set and were not re-run.)*
 - Pilot-cued: **1,490 docs → 1,271 instruments** (the memo's title-family set was 1,592
   docs / 1,296 themes on `sites.admin_level` and a regex genre; `doc_identity` re-levels
   ~28k npc local 人大 rows and drops explainers/readouts, hence the lower doc count).

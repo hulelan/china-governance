@@ -494,3 +494,191 @@ Table 1 per-site split for the 2017 plan was not re-pulled (would need a DB read
   `crawl_stamped` is now 0 docs; the industrial exclusion is kept under its corrected label
   (archive depth). Lesson for the review method: a flag derived from a date DISTRIBUTION needs
   one hand-check against the page before it becomes a filter.
+
+## Round 2 (2026-10-07)
+
+*Same method as round 1, run over the six memos added or revised on 2026-10-06/07
+(`fidelity-jiangsu.md`, `bottom-up-channel.md`, `pair-channels.md`, `policy-tempo.md`,
+`site-selection-gdp.md`, `successor-detector.md`), the appended sections of
+`industrial-policy-targeting.md` (R1-R7, L1-L6) and `fidelity-provincial.md` §2.2, the dated
+updates in `findings-synthesis.md`, and the `corpus-lessons.md` A4 correction. Read-only; the
+droplet DB was opened `?mode=ro` under `nice -n 19` while the nightly held the lock. Nothing was
+recomputed and no number was deleted; fixes are dated parentheticals.*
+
+### 0. Which identity build the live DB holds (2026-10-07 06:52 UTC)
+
+Droplet HEAD `0210c2e` (the date-ordered `localized_of` + `province` code `80be9c1` is pulled
+but Phase 2b has not run today; `instrument_kind` `890a25a` was pushed after the pull).
+`doc_identity` columns: `doc_id admin_level_doc level_source instrument_id instrument_role genre
+date_quality lead_issuer localized_of`, **no `province`, no `instrument_kind`**.
+`SELECT COUNT(*) FROM doc_identity WHERE localized_of IS NOT NULL` = **2,592** (the 2026-10-06
+build; the date-ordered 1,958 is not live yet). `date_quality`: good 313,981 / missing 9,548 /
+crawl_stamped absent. So every memo that says "measured on the 2026-10-06 build, 2,592 rows,
+pre-A6 schema" is describing the build that is still live.
+
+Spot checks (10), live vs memo:
+
+| quantity | live | memo | status |
+|---|---|---|---|
+| documents | 323,529 | 323,529 (policy-tempo); 321,230 (bottom-up, 10-06) | ok, dated |
+| `diffusion_events` rows | 36,116 | 36,116 (policy-tempo); 35,475 (industrial R6); 33,992 (synthesis "final 10-01") | ok with scope notes (M1) |
+| strict implementing central subset | 13,081 | 13,081 (policy-tempo) | ok |
+| `tracker_weekly` rows | 45,151 | 45,151 | ok |
+| citations total / resolved | 534,722 / 270,211 = 50.5% | 269,685 (synthesis); "~52%" in 3 new memos; "52-54%" synthesis caveat | **stale (M3)** |
+| bottom-up central population | 37,036 | 37,022 | ok (+14 nightly drift) |
+| `genre='implementing'` by level | 9,162 / 6,755 / 644 | 9,224 / 7,487 / 628 (bottom-up §1) | build drift, annotated (L4) |
+| successor universe, central promulgation good-dated | 36,902 | 35,027 | **pre-A4-correction build (M6)** |
+| Suzhou docs on 2023-02-09 / 2025-02-11; on day 01 | 1 / 7; 685 | 1,989 / 1,727 (jiangsu, as day counts); 685 (run log) | redate landed; memo's counts are year counts (M2) |
+| Suzhou-sourced events | 1,406 | 1,406 (run log it. 23); 171 affected lags (jiangsu, pre-redate) | ok |
+
+### 1. Findings
+
+**HIGH**
+
+**H1. `findings-synthesis.md` "Status and what remains" was two days stale.** It still listed the
+提振消费 regression as "fix in progress" (closed by the 33,992-event build the same memo describes
+two sections earlier), npc re-leveling in `sites` as open (landed as `doc_identity.admin_level_doc`,
+not in `sites`), and none of the identity layer, A4 correction, Suzhou redate, B1-B7 memos,
+`pair-channels.md`, or the industrial re-basing. **Corrected** with a dated status paragraph that
+also records what is committed but not yet in the live identity build.
+
+**H2. The Suzhou date story is told three ways and the synthesis carries the first.**
+`fidelity-jiangsu.md` §0/§9 and the synthesis Part II update: "crawl-stamped in two batches that
+the A4 rule does not catch; re-dated from the URL path; 171 affected lags". What landed
+(`5465b8e`/`247c5f7`, run log it. 23): the piles are the source CMS's page-regeneration stamps,
+not our crawl day; the A4 rule now sums bulk date-days; the DB was redated article-header →
+发文日期 → URL month (3,354 rows); and the `/YYYYMM/` folder is a 2021 migration artefact for ~250
+historical 规范性文件, so the memo's URL-only repair mis-dates that subset. Downstream, the Jiangsu
+province-to-city citation basis on the redated DB is **473 pairs / 426 scored, relay 3.3%**
+(`fidelity-provincial.md` §2.2) against the **191-200 / 8.0-8.4%** the synthesis quotes from
+`fidelity-jiangsu.md` §4 and `fidelity-provincial.md` §2.1. The 14 relays are identical on both
+bases, so the share fell because the repair pulled hundreds of long-lag Suzhou pairs into range
+(456 of 473 are Suzhou, median lag 777 d), a denominator effect, not a different Suzhou practice.
+**Annotated** in the synthesis, `fidelity-jiangsu.md` §0/§1/§9 and `fidelity-provincial.md` §7;
+the §2.1 Jiangsu row re-read stays queued (needs a run, not an edit).
+
+**MEDIUM**
+
+**M1. `diffusion_events` now has five quoted sizes.** 32,825 (10-01 annotations), 33,992
+(synthesis "final 10-01"), 35,475 (industrial R6, "2026-10-07"), 36,116 (policy-tempo,
+"2026-10-07"), 35,465 / 35,498 (run log). R6 and policy-tempo are both dated 10-07 but are
+different builds (the 10-06 nightly vs after the Suzhou redate). **Annotated** the trail in the
+synthesis and R6.
+
+**M2. `fidelity-jiangsu.md` labels year counts as day counts.** "1,989 documents carry
+2023-02-09 and 1,727 carry 2025-02-11" come from the Appendix A query, which groups by
+`substr(date_published,1,4)`; the day piles were 1,860 / 1,499 (run log it. 18). Also "3,661
+moved by more than 60 days" (memo, URL repair) vs 3,354 redated (DB). **Annotated** in §0 and §9.
+
+**M3. Resolution rate.** Synthesis standing caveat "~52-54%" and `fidelity-jiangsu.md`,
+`policy-tempo.md`, `successor-detector.md` "~52%"; the synthesis's own update paragraph gives
+269,685 resolved (50.6%) and live is 50.5%. The containment gate lowered the rate by un-resolving
+wrong proxies, so the lower figure is the honest one. **Annotated** the synthesis caveat; the three
+new memos' "~52%" left in place (direction unaffected, the synthesis note covers them).
+
+**M4. "The citation graph sees fewer than half" survived in three places without the body
+caveat** (synthesis Part II update, `fidelity-jiangsu.md` §0 and §8 finding 6) after
+`pair-channels.md` §3 and the §7 re-base showed it counts metadata-only sources; conditioned on a
+body the invisible share is 25.5% / 23.1%. **Annotated** all three.
+
+**M5. "92% of it is exhortation" (synthesis) is stronger than the memo's measurement.**
+`bottom-up-channel.md` §2 measures the forward-looking "exhort" window at about half of hits;
+92% is the share that names no locality. The memo's own §0 summary ("92% generic instruction")
+invited the slip. **Annotated** both.
+
+**M6. `successor-detector.md` ran on the pre-A4-correction identity build.** Its universe
+(35,027 central promulgations with `date_quality='good'`) excluded the ~29k docs then flagged
+`crawl_stamped`; live the same filter admits 36,902 (+1,875, almost all 2026 and so mid-flight).
+Not re-run. **Annotated** §1.
+
+**M7. "Department tier is the weak tier" is a conflation.** `corpus-lessons.md` A7 ("department
+tier at 60% vs 84%"), `diffusion-fidelity.md` §6, `fidelity-provincial.md` §7 (73%), and
+`fidelity-jiangsu.md` Table 2a (37.5%) all measure the share with a body OVER 500 characters;
+the A7 backfill measured 88.8% of bureau documents with SOME body and found "its gap is not
+selectors" (short notices, attachments). The recoverable-body gap is MIIT (anti-bot stubs).
+**Annotated** A7 and both fidelity bullets.
+
+**M8. The 1.5 tilt reading and the department tilts survive in `industrial-policy-targeting.md`
+§4, §4.1, §6 and §7 without a pointer** to R4-R5 / L1-L6, which replace the 1.5 line with a pool
+z-rule, flip agriculture / "AI evenly spread" / "equipment municipal 1.49", and declare every
+department tilt undecidable at document level. The §7 "Date stamps" bullet still says
+"crawl-date stamping", and the §1 build note still says "74 date-stamped sites" (the 10-07 re-run
+selects 77 / 28,940). **Annotated** each in place.
+
+**M9. `related-literature.md` Outcomes rows for Wang/Yang, Fang/Li/Lu and fidelity predate the
+B-series memos** (no 5.9% / 6.9%, no site selection, no Jiangsu, no level re-basing); and
+`experimentation-wang-yang.md` §3b and bottom line still present 0.4-1.2% with no pointer to the
+successor detector. **Annotated** both.
+
+**M10. `corpus-lessons.md` Part B reads as seven open asks** though each now has a memo, and its
+B2 line repeats "reverse flow nearly invisible" without the prose/citation split. **Annotated**
+with a dated status paragraph.
+
+**LOW**
+
+**L1. Jiangsu province-to-city pair counts.** 200 (provincial §2.1), 199 / 191 (jiangsu §4,
+all tiers / city), 174 / 177 scored (pair-channels §5, citation / union), 473 / 426 (provincial
+§2.2 re-base). Each is labelled with its layer and date; the 473 is H2's case. No edit beyond H2.
+
+**L2. Guangdong renamed re-issuances 381 → 377 → 398** (provincial §2.2 original / citation
+basis on `pairs.py` / union), quoted as 381 in `pair-channels.md` §5 and `fidelity-jiangsu.md` §7
+point 3, 377 → 398 in §7's re-base. All three state the basis. No edit.
+
+**L3. Central-share figures under site vs document level.** 31.7 / 31.8 (site, §4 / R4), 22.3
+(document, R5 / L1), 39 / 45 / 26 by period (site, §4.1), 27 / 30 / 19 (document, L5). All in one
+memo and labelled; the synthesis quotes none. Covered by M8's pointers.
+
+**L4. Build drift in `bottom-up-channel.md` §1** (implementing 9,224 / 7,487 / 628 → live 9,162
+/ 6,755 / 644 after the genre-flip tightening). Annotated.
+
+**L5. Three pilot universes:** 1,592 docs / 1,296 themes (experimentation, `sites.admin_level`),
+1,539 rows / 1,261 titles (site-selection, npc excluded), 1,490 docs / 1,271 instruments
+(successor, `doc_identity`). Each memo states its rule. No edit.
+
+**L6. "Reverse flow" means downward in `recentralization-experimentation.md` §1 and upward in
+the synthesis and `bottom-up-channel.md`.** Annotated the recentralization sentence.
+
+**L7. Round 1's own §4 note "industrial excludes 74 date-stamped sites" and the M7 universe
+line are now stale wording**; left as the record of round 1, superseded by the A4 Applied entry
+and this round.
+
+**L8. `localized_of` 2,592 vs 1,958** is consistently scoped everywhere it appears (provincial
+§2.2, jiangsu §7, pair-channels §1, CLAUDE.md) and the live DB confirms 2,592. No edit.
+
+### 2. Synthesis traceability, new claims only
+
+| synthesis claim | memo | traces? |
+|---|---|---|
+| lexicon 2-3% → 17-19% peak; 296 (0.8%); 79 titles; 0.31% vs 0.24%; Spearman 0.664; 62.5%; 1,427 feedback docs | bottom-up §0-§4 | yes; "92% exhortation" overstated (M5) |
+| 458 weeks; 67% province-first; 3.4x / 1.9x; 9% at 12 weeks, 41% at a year; 1 of 90 pairs | policy-tempo §0, §4-§5 | yes (8.8% rounded; "1 of 90" is the memo's reading of 6 at p<.05 vs 4.5 expected) |
+| Jiangsu 82.1% of 39; GD 65.1% / 78.5%; 0.125 / 8.4% / 26.2%; rho −0.51 / −0.49; 14 of 16 at 160 d; 89.9% / 94.0%; 1.4%; 1/15, 1/29; 80-82% | fidelity-jiangsu §0, §3-§8 | yes; "fewer than half" (M4) and the Suzhou story (H2) annotated |
+| 77.6% of 737; random 41%; 0.705; 0.625; 55% on 38%; 批复 0.60 vs 0.73 | site-selection §3-§4 | yes |
+| 5.9% / 6.9%; 8-9.5% trials; 564 d; 76-87%; 40 / 23 / 20 / 7%; 9 of 12 | successor §0-§4 | yes |
+| 74 shallow-archive sites; HHI within 2 pts; MIIT sectors +5-19 central; agriculture flips; AI withdrawn | industrial R1-R7, L3-L6 | yes; 77 sites on the re-run, new materials +4 (annotated) |
+
+No new synthesis claim is unsupported. One is overstated (M5), one is stale (H1), one carries a
+superseded corpus story (H2).
+
+### Applied (2026-10-07, docs-only)
+
+- `findings-synthesis.md`: "92% exhortation" tightened (M5); `diffusion_events` build trail to
+  36,116 (M1); "fewer than half" body caveat (M4); Suzhou story superseded + Jiangsu 473 / 3.3%
+  caveat (H2); 74 → 77 sites note (M8); resolution 50.5% live (M3); dated status paragraph (H1).
+- `fidelity-jiangsu.md`: §0 body caveat (M4); §0 and §9 Suzhou correction incl. year-vs-day counts
+  and the URL-folder artefact (H2, M2); §1 date-repair note with the 473 / 3.3% basis (H2); §8
+  finding 6 (M4).
+- `corpus-lessons.md`: "date-stamped site drops" sic note; A7 correction (M7); Part B status
+  paragraph incl. the B2 prose/citation split (M10).
+- `industrial-policy-targeting.md`: §1 build note (77 sites, L1-L6 pointer); §4 re-basing pointer;
+  §4.1 L5 pointer; §6 department-tilt note; §7 date-stamps correction; R6 build scope (M1, M8).
+- `diffusion-fidelity.md` §6 and `fidelity-provincial.md` §7: body-coverage conflation (M7);
+  `fidelity-provincial.md` §7 Jiangsu 200 → 473 pointer (H2).
+- `related-literature.md`: Wang/Yang, fidelity and Fang/Li/Lu rows carry the B-series results (M9).
+- `experimentation-wang-yang.md` §3b and bottom line: successor / site-selection pointers (M9).
+- `recentralization-experimentation.md` §1: "reverse flow" terminology note (L6).
+- `successor-detector.md` §1: pre-A4-correction build note (M6).
+- `bottom-up-channel.md`: §0 "92%" clarified (M5); §1 live counts (L4).
+
+Not applied: no re-run of the Jiangsu §2.1 row or the successor universe (both need a compute
+pass, queued); the three new memos' "~52%" left as is; round 1's stale wording (L7) left as the
+record; `docs/working/*` (untracked) untouched; CLAUDE.md, `daily_sync.sh` and code untouched.

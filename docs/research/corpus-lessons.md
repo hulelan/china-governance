@@ -13,7 +13,8 @@ disagreed). Items are queued in `docs/working/backlog-2026-09.md`.*
 The corpus's **content** is strong and its **identity fields** are weak. Level, instrument,
 genre, date, and issuer are each inferred or per-site rather than per-document, and every
 analytic workaround this session (the anchor pooling, the implementing flag, the npc exclusion,
-the hand-built genre subsets, the date-stamped site drops) was patching one of those five. Fixing
+the hand-built genre subsets, the date-stamped site drops *(sic; shallow-archive drops, see the A4
+correction below)*) was patching one of those five. Fixing
 them is a smaller job than any single replication and would make the next nine cleaner.
 
 ---
@@ -93,6 +94,16 @@ raises resolution; matching improvements are exhausted.
 60% vs 84% overall).
 **Fix:** a targeted body backfill for department sites (the GD-dept container fix pattern).
 
+*(Correction 2026-10-07. The department tier is not the weak tier for body EXTRACTION. Measured
+before the A7 backfill: 88.8% of department-site documents have a body (central 58.9% because
+npc is metadata-only by design; other tiers 93-97%). The 60% / 73% in the fidelity memos and the
+37.5% in `fidelity-jiangsu.md` Table 2a are the share with a body OVER 500 CHARACTERS among pair
+sources or tier documents: bureau notices are short or carry the plan as an attachment. The
+backfill recovered ~126 real bodies corpus-wide and left the department tier at 88.8%, "its gap
+is not selectors". The weak tier for recoverable bodies is MIIT (5,383 bodiless, 3,790 of them
+anti-bot stubs needing a residential re-fetch). A7 as written is closed; the attachment problem
+remains and is a different fix (PDF text, `extract_pdf_text.py`).)*
+
 ---
 
 ## Part B. Additions the replications call for
@@ -137,6 +148,19 @@ ranking). Both should be visible wherever rank is used.
 months of it is a dataset in its own right.
 
 ---
+
+*(Status 2026-10-07. Each B item now has a memo; the asks above are kept as written. B1:
+`fidelity-jiangsu.md`, hardens on one city (Suzhou is 92% of Jiangsu pairs), discharged only when
+a second prefecture reaches Suzhou's depth. B2: `bottom-up-channel.md`, the through-line hardens
+for the citation record (lexicon docs cite downward 0.31% vs 0.24%) and softens for the prose
+record (296 named windows, 79 title instruments, GDP-selected); four feedback sources crawled. B3:
+`successor-detector.md`, 5.9% / 6.9% ex-mid-flight, most of the remaining gap to 53.9% is
+renaming. B4: `site-selection-gdp.md`, 0.705 percentile, Spearman 0.625. B5:
+`scripts/validate_cascades.py`, nightly Phase 2d. B6: `doc_inbound`, shown beside `citation_rank`.
+B7: `policy-tempo.md`, an instrument for burstiness and level timing, not yet for cross-area
+tempo. The A-series landed as `doc_identity` (A1-A3, A5), the A4 correction above, and the
+resolver alias / short-title fix for A6; `pair-channels.md` measured the citation floor the
+identity layer exposed.)*
 
 ## Sequencing
 
