@@ -38,15 +38,60 @@ LEVEL_WEIGHTS = {
     "unknown": 0.5,
 }
 
+# The citing document's level decides how much its citation is worth, so it must be
+# the level of the DOCUMENT, not of the site that hosts it (docs/research/corpus-lessons.md
+# A1: the two differ for 21% of docs — most visibly the 28.6k `npc` 地方法规, which are
+# provincial/municipal 人大 regulations hosted on a site labelled central). Yet
+# `citations.source_level` is written at citation-extraction time by
+# extract_citations.get_source_level(), which falls back to `sites.admin_level`, so the
+# stored value carries exactly that per-site error into the headline authority score.
+#
+# A1 prescribed "drop or nightly-recompute the citation level columns". We neither drop
+# them (the web app reads source_level/target_level in half a dozen places, and for an
+# UNRESOLVED edge there is no document to look a level up on) nor reorder the pipeline:
+# the resolver runs in Phase 2b *before* `doc_identity` exists, and moving identity ahead
+# of it would make the resolver's own output an input to its inputs (the circularity
+# commit b1aff31 declined). Instead the SCORER — the only consumer for which the level is
+# a weight — prefers `doc_identity.admin_level_doc` and keeps the stored `source_level`
+# as the fallback. Consequences, all deliberate:
+#   * a document crawled today has no identity row yet, so its citations are weighted by
+#     the crawl-time guess (today's behaviour, no regression) and self-correct tomorrow;
+#   * an absent, empty or partial `doc_identity` reproduces the old numbers exactly
+#     rather than collapsing to the 0.5 'unknown' weight;
+#   * levels are a stable property of a document (issuer / 文号 / title), so reading
+#     yesterday's identity row for an existing document is not a staleness risk.
+IDENTITY_LEVEL_SQL = """
+    SELECT c.target_id,
+           COALESCE(NULLIF(i.admin_level_doc, ''), c.source_level) AS lvl,
+           COUNT(*) AS cnt
+    FROM citations c
+    LEFT JOIN doc_identity i ON i.doc_id = c.source_id
+    WHERE c.target_id IS NOT NULL
+    GROUP BY c.target_id, lvl
+"""
+
+STORED_LEVEL_SQL = """
+    SELECT c.target_id, c.source_level AS lvl, COUNT(*) AS cnt
+    FROM citations c
+    WHERE c.target_id IS NOT NULL
+    GROUP BY c.target_id, lvl
+"""
+
+
+def _has_table(conn, name: str) -> bool:
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)
+    ).fetchone() is not None
+
 
 def compute_citation_ranks(conn) -> dict[int, float]:
-    """Compute weighted inbound citation count for every document."""
-    rows = conn.execute("""
-        SELECT c.target_id, c.source_level, COUNT(*) as cnt
-        FROM citations c
-        WHERE c.target_id IS NOT NULL
-        GROUP BY c.target_id, c.source_level
-    """).fetchall()
+    """Weighted inbound citation count for every document.
+
+    Each citing document contributes LEVEL_WEIGHTS[its own admin level]; see
+    IDENTITY_LEVEL_SQL for why that level comes from `doc_identity` when available.
+    """
+    sql = IDENTITY_LEVEL_SQL if _has_table(conn, "doc_identity") else STORED_LEVEL_SQL
+    rows = conn.execute(sql).fetchall()
 
     ranks = defaultdict(float)
     for target_id, source_level, cnt in rows:

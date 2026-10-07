@@ -32,6 +32,23 @@ and bureau sites blur provincial and municipal.
 already yields the lead issuer), kept alongside the site level. Drop or nightly-recompute the
 citation level columns from it. Every level-share series in the memos becomes comparable.
 
+**Status (2026-10-07): done.** `doc_identity.admin_level_doc` + `level_source` ship the
+per-document level (`scripts/build_doc_identity.py`, nightly Phase 2b). The citation level
+columns were neither dropped nor recomputed — `citations.source_level`/`target_level` are
+written by the resolver, which runs *before* `doc_identity` exists, and an UNRESOLVED edge
+has no document whose level could be looked up, so the columns stay the crawl-time best
+guess and the web app keeps reading them for display. Instead the one consumer that treats
+the level as a *weight* — `compute_scores.compute_citation_ranks`, i.e. `citation_rank` —
+now prefers `doc_identity.admin_level_doc` via a LEFT JOIN, falling back to the stored
+`source_level` for a document with no identity row yet (a doc crawled today) and
+reproducing the old numbers exactly if the table is absent. Measured effect on the live
+corpus: 13,846 of 310,136 rank-bearing edges (4.46%) were mis-weighted, moving 5,930 of
+47,309 ranked documents (12.5%, median |change| 21%); the top-30 set and the top 13
+positions are unchanged, six documents swap at ranks 14-27. The largest single corrections
+are national laws cited mostly by `npc` 地方法规 (工会法 248.0 → 175.0, 村民委员会组织法
+250.0 → 184.0): they had been paid the 3.0 central weight by provincial 人大 regulations.
+Pinned by `tests/test_citation_rank_level.py`.
+
 ### A2. No canonical instrument identity
 **Exposed by:** every diffusion study (the anchor-identity gotcha: Xinhua 受权发布 vs gov.cn vs
 ministry copies; 政府信息公开条例 on 18 sites in 20 copies), the resolver fixes (mirrors
