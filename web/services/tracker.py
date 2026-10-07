@@ -55,6 +55,58 @@ ACTIVE_LIMIT = 12       # anchors shown in "active cascades" — PER anchor_leve
 NEWEST_PER_ANCHOR = 4   # newest implementing docs listed per anchor
 LEADERBOARD_LIMIT = 15
 
+# Site-diversity gate on a week's confirmed cascade count (policy-tempo.md §3: the
+# pooled bursts were single-portal archive batches — Guangzhou 51/83 in 2023-W01,
+# Shenzhen 57/66 in 2020-W11, lvliang+npc on 生态环境法典 in 2026-W33 — so a raw
+# burst can be one site's upload, not tempo). A week is `diverse` when it has at
+# least DIVERSE_MIN_EVENTS cascade events (the memo's burst floor; below that the
+# question is moot and the flag is None) spread over >= DIVERSE_MIN_SITES source
+# sites with no single site supplying more than DIVERSE_MAX_SHARE of them.
+# Thresholds from the live distribution (build_tracker_rollup.py --dry-run,
+# 2026-10-07, topic='all', 449 weeks with >= 3 events): modal-site share is
+# < 0.3 in 287 weeks, <= 0.5 in 408 (91%); above 0.5 are 41 weeks (9%), and the
+# two known single-portal batches sit at 0.61 (Guangzhou 51/83) and 0.86
+# (Shenzhen 57/66). 0.5 is a majority rule — "no one portal supplied more than
+# half" — and keeps a 0.11 margin on the Guangzhou week that a 0.6 cut would pass
+# by 0.014. n_sites >= 3 adds the two-portal 50/50 case (4 pooled weeks have
+# exactly 2 sites). The third memo week (2026-W33, lvliang 15 + npc 14 of 75
+# from 26 sites, share 0.20) is a one-ANCHOR concentration, not a site batch,
+# and is deliberately NOT caught by this gate.
+DIVERSE_MIN_EVENTS = 3
+DIVERSE_MIN_SITES = 3
+DIVERSE_MAX_SHARE = 0.5
+
+
+def is_diverse(cascade_events, n_sites, top_site_share):
+    """The gate. None when the week has too few events to judge (< DIVERSE_MIN_EVENTS),
+    else True (multi-source week) / False (single-source batch)."""
+    if not cascade_events or cascade_events < DIVERSE_MIN_EVENTS:
+        return None
+    return bool(n_sites >= DIVERSE_MIN_SITES and top_site_share <= DIVERSE_MAX_SHARE)
+
+
+def row_diversity(cells):
+    """Merge per-level cells ({cas, n_sites, top_site_share, top_site}) into one
+    pooled week: n_sites summed over levels (exact unless a site's docs straddle
+    levels — doc_identity gives per-DOCUMENT levels, so a few do; then this
+    over-counts by at most the number of straddling sites) and the modal share
+    from the per-level modal sites merged by key (the exact share can only be
+    higher when the true modal site is not modal in every level, which makes
+    this a slightly LENIENT approximation; --dry-run reports the disagreement
+    rate against the exact pooled counter — 1 of 1,250 weeks on 2026-10-07).
+    Returns {n_sites, top_site_share, top_site, diverse}."""
+    cas = sum(c.get("cas", 0) for c in cells)
+    n_sites = sum(c.get("n_sites", 0) for c in cells)
+    per_site = defaultdict(int)
+    for c in cells:
+        if c.get("cas") and c.get("top_site"):
+            per_site[c["top_site"]] += int(round(c["top_site_share"] * c["cas"]))
+    top_site, top_n = (max(per_site.items(), key=lambda kv: (kv[1], kv[0]))
+                       if per_site else ("", 0))
+    share = round(top_n / cas, 4) if cas else 0.0
+    return {"n_sites": n_sites, "top_site_share": share, "top_site": top_site,
+            "diverse": is_diverse(cas, n_sites, share)}
+
 
 _TAG_RE = re.compile(r"<[^>]+>")
 
@@ -152,43 +204,67 @@ def _anchor_in_topic(anchor_id, ev_topic, topic, amap) -> bool:
     return ev_topic == topic  # anchor not in documents (shouldn't happen) — fall back
 
 
+async def _has_diversity_cols(db) -> bool:
+    """True once the rollup has been rebuilt with the n_sites/top_site_share/top_site
+    columns (2026-10-07). Before that, get_weekly reads the old column set and
+    every week's `diverse` is None (no tag) — the app never fails on an old table."""
+    hit = _cached("tw_diversity_cols")
+    if hit is not None:
+        return hit
+    rows = await db.fetch("PRAGMA table_info(tracker_weekly)")
+    cols = {r["name"] for r in rows}
+    return _store("tw_diversity_cols", {"n_sites", "top_site_share", "top_site"} <= cols)
+
+
 async def get_weekly(db, topic: str, weeks: int):
     """The last ``weeks`` ISO weeks × admin_level matrix for ``topic``.
 
     Returns {"weeks": [row...], "levels": [level...], "totals": {...}} where each
-    row is {iso_week, week_start, is_current, cells: {level: {new, cas, low, prov, men}},
-    new, cas, low, prov, men}. Levels with no activity in the window are dropped so
-    the table stays compact; order follows LEVEL_ORDER. ``cas`` is implementing-only;
-    ``men`` is the confirmed-but-mention count.
+    row is {iso_week, week_start, is_current, cells: {level: {new, cas, low, prov, men,
+    n_sites, top_site_share, top_site, diverse}}, new, cas, low, prov, men, n_sites,
+    top_site_share, top_site, diverse}. Levels with no activity in the window are
+    dropped so the table stays compact; order follows LEVEL_ORDER. ``cas`` is
+    implementing-only; ``men`` is the confirmed-but-mention count. ``diverse`` is the
+    site-diversity gate (is_diverse): None = too few events to judge, False = a
+    single-source batch week (the template tags it; counts are NOT changed).
     """
     wk = recent_weeks(weeks)
     lo, hi = wk[-1][0], wk[0][0]
+    div = await _has_diversity_cols(db)
+    div_cols = ", n_sites, top_site_share, top_site" if div else ""
     rows = await db.fetch(
-        """SELECT iso_week, admin_level, week_start, new_docs,
+        f"""SELECT iso_week, admin_level, week_start, new_docs,
                   cascade_events, cascade_events_lowconf, cascade_events_prov,
-                  cascade_events_mentions
+                  cascade_events_mentions{div_cols}
            FROM tracker_weekly
            WHERE topic = $1 AND iso_week BETWEEN $2 AND $3""", topic, lo, hi)
     cells = defaultdict(dict)
     seen_levels = set()
     KEYS = ("new", "cas", "low", "prov", "men")
+    DIV = {"n_sites": 0, "top_site_share": 0.0, "top_site": "", "diverse": None}
     for r in rows:
         if (r["new_docs"] or r["cascade_events"] or r["cascade_events_lowconf"]
                 or r["cascade_events_prov"] or r["cascade_events_mentions"]):
             seen_levels.add(r["admin_level"])
-        cells[r["iso_week"]][r["admin_level"]] = {
-            "new": r["new_docs"], "cas": r["cascade_events"],
-            "low": r["cascade_events_lowconf"], "prov": r["cascade_events_prov"],
-            "men": r["cascade_events_mentions"]}
+        cell = {"new": r["new_docs"], "cas": r["cascade_events"],
+                "low": r["cascade_events_lowconf"], "prov": r["cascade_events_prov"],
+                "men": r["cascade_events_mentions"], **DIV}
+        if div:
+            cell.update(n_sites=r["n_sites"] or 0, top_site_share=r["top_site_share"] or 0.0,
+                        top_site=r["top_site"] or "",
+                        diverse=is_diverse(cell["cas"], r["n_sites"] or 0,
+                                           r["top_site_share"] or 0.0))
+        cells[r["iso_week"]][r["admin_level"]] = cell
     levels = [l for l in LEVEL_ORDER if l in seen_levels]
     levels += sorted(l for l in seen_levels if l not in LEVEL_ORDER)
 
     out_rows, totals = [], dict.fromkeys(KEYS, 0)
     level_totals = {l: dict.fromkeys(KEYS, 0) for l in levels}
+    empty = {**dict.fromkeys(KEYS, 0), **DIV}
     for i, (iw, monday) in enumerate(wk):
         c = cells.get(iw, {})
         row = {"iso_week": iw, "week_start": monday, "is_current": i == 0,
-               "cells": {l: c.get(l, dict.fromkeys(KEYS, 0)) for l in levels}}
+               "cells": {l: c.get(l, dict(empty)) for l in levels}}
         row.update(dict.fromkeys(KEYS, 0))
         for l in levels:
             for k in KEYS:
@@ -196,6 +272,7 @@ async def get_weekly(db, topic: str, weeks: int):
                 level_totals[l][k] += row["cells"][l][k]
         for k in KEYS:
             totals[k] += row[k]
+        row.update(row_diversity(list(row["cells"].values())) if div else DIV)
         out_rows.append(row)
     return {"weeks": out_rows, "levels": levels, "totals": totals,
             "level_totals": level_totals,

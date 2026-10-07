@@ -20,6 +20,7 @@
     .floor { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
     .tag { display: inline-block; font-size: 10px; letter-spacing: .04em; padding: 0 5px;
            border: 1px solid var(--rule); color: var(--muted); border-radius: 2px; margin-right: 3px; }
+    .tag-single { border-color: #c9a98f; color: #7a2e2e; background: #f3ebe4; cursor: help; margin-left: 4px; }
     .topic-tabs a { display: inline-block; padding: 3px 8px; margin: 0 4px 4px 0; font-size: 12px;
            border: 1px solid var(--rule); background: #fdfcf9; color: var(--ink); }
     .topic-tabs a.on { background: var(--teal); color: #fff; border-color: var(--teal); }
@@ -86,6 +87,8 @@
             with <span class="cell-low">probable-but-unconfirmed</span> matches in grey and <span class="cell-prov">+N<sub>p</sub></span> confirmed
             implementations of a <em>provincial</em> instrument by its own cities (the province→city hop). Readouts, explainers and news items that merely
             <em>mention</em> an instrument are not cascades; they are totalled separately as <span class="cell-low">+N<sub>m</sub></span>. The current week is partial — crawls land with a lag.
+            A week tagged <span class="tag tag-single">single-source</span> has its cascade events supplied mostly by one portal
+            (fewer than 3 source sites, or one site above half) — a publication batch, not a tempo signal; the count is left as is.
         </p>
         <div class="card table-scroll">
         <table class="data-table">
@@ -98,7 +101,7 @@
             <tbody>
             {% for r in W.weeks %}
                 <tr class="{{ 'wk-current' if r.is_current }}">
-                    <td class="mono">{{ r.iso_week }}{% if r.is_current %} <span class="text-[10px] text-brand uppercase tracking-wider">now</span>{% endif %}</td>
+                    <td class="mono">{{ r.iso_week }}{% if r.is_current %} <span class="text-[10px] text-brand uppercase tracking-wider">now</span>{% endif %}{% if r.diverse is sameas false %} <span class="tag tag-single" title="{{ r.cas }} cascade events from {{ r.n_sites }} site{{ '' if r.n_sites == 1 else 's' }}; {{ r.top_site }} supplied {{ (100 * r.top_site_share)|round|int }}% — one portal's batch, not tempo">single-source</span>{% endif %}</td>
                     <td class="mono text-muted text-xs hidden sm:table-cell">{{ r.week_start }}</td>
                     {% for l in W.levels %}{% set c = r.cells[l] %}
                     <td class="text-right">
