@@ -525,7 +525,21 @@ same as before. A one-off `--retry-failed` backfill of the ~1,864 unclassified d
 
 - **WAL mode** is enabled. Multiple readers + 1 writer works fine.
 - **`busy_timeout=30000`** (30s) is set in `crawlers/base.py`.
-- **2 parallel writers** is the safe max. 4+ writers will hit `database is locked`.
+- **Writer count is not the limit — transaction HOLD TIME is.** Two writers are
+  fine only if both commit quickly. A crawler that commits every 20–50 docs with
+  multi-second HTTP fetches between rows holds the write lock for minutes, and
+  `busy_timeout=30000` is then just a 30-second delay before `database is locked`
+  (measured 2026-10-07: 9/13 `gkmlpt --backfill-bodies` runs died on their UPDATE
+  while `crawlers.gov --library --deep` was writing — after paying for the fetch).
+  So: **do not start a second writer against `documents.db` while a long-running
+  deep crawl or the nightly is in flight** — use the `--db documents_new.db` +
+  `merge_db.py` workflow instead. Any loop that writes rows it paid network time
+  to obtain MUST use `base.write_with_retry` / `commit_with_retry` (bounded
+  backoff → log → skip the row), commit incrementally, and exit non-zero when
+  anything was skipped, so a wrapper `for` loop cannot swallow the failure.
+  `busy_timeout` itself was audited on every connection in `crawlers/` and
+  `scripts/` and was never the gap; `tests/test_write_contention.py` now has a
+  static scan that fails if a new `sqlite3.connect` appears without it.
 - Web app opens DB read-only (`?mode=ro`) — never blocks crawlers.
 - **Partial index gotcha**: `idx_documents_url` is defined as `WHERE url != ''`. SQLite will NOT use this index for queries that omit that predicate. Always include `AND url != ''` in WHERE clauses that filter by URL, or expect a full table scan.
 
