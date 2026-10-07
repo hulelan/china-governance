@@ -254,13 +254,26 @@ async def get_documents(db, site_key=None, category=None, year=None,
         #   run 2: uncited docs (inbound 0) by rowid DESC via an anti-join — no sort.
         # Uncited docs sort after every cited one, so a FULL page from run 1 is the
         # page; a short one is topped up from run 2. `total` is unchanged (all docs).
-        join_kw = "JOIN" if (site_key or category or include_sites) else "CROSS JOIN"
+        unfiltered = where_sql == "1=1" and not join_sites
+        if unfiltered:
+            # No predicate touches documents, so page doc_inbound FIRST (index-only,
+            # 0.002s at any offset) and join only the page's 50 ids. The CROSS JOIN
+            # form below probes documents for every skipped row (0.18s at offset 33k).
+            inner_from = f"""(SELECT doc_id, inbound FROM doc_inbound
+                              ORDER BY inbound DESC, doc_id DESC
+                              LIMIT ${limit_idx} OFFSET ${offset_idx}) di
+                             JOIN documents d ON d.id = di.doc_id"""
+            inner_limit = ""
+        else:
+            join_kw = "JOIN" if (site_key or category or include_sites) else "CROSS JOIN"
+            inner_from = f"doc_inbound di {join_kw} documents d ON d.id = di.doc_id {join_sites}"
+            inner_limit = f"LIMIT ${limit_idx} OFFSET ${offset_idx}"
         rows = await db.fetch(
             f"""SELECT {select_cols}
-                FROM doc_inbound di {join_kw} documents d ON d.id = di.doc_id {join_sites}
+                FROM {inner_from}
                 WHERE {where_sql}
                 ORDER BY di.inbound DESC, d.id DESC
-                LIMIT ${limit_idx} OFFSET ${offset_idx}""",
+                {inner_limit}""",
             *params, per_page, offset
         )
         if len(rows) == per_page:
@@ -268,10 +281,13 @@ async def get_documents(db, site_key=None, category=None, year=None,
         if rows:
             un_offset = 0           # boundary page: run 2 starts at its top
         else:                       # beyond the cited set: skip what run 1 covered
-            n_cited = await db.fetchval(
-                f"""SELECT COUNT(*) FROM doc_inbound di
-                    JOIN documents d ON d.id = di.doc_id {join_sites}
-                    WHERE {where_sql}""", *params)
+            if unfiltered:
+                n_cited = await db.fetchval("SELECT COUNT(*) FROM doc_inbound")
+            else:
+                n_cited = await db.fetchval(
+                    f"""SELECT COUNT(*) FROM doc_inbound di
+                        JOIN documents d ON d.id = di.doc_id {join_sites}
+                        WHERE {where_sql}""", *params)
             un_offset = max(offset - (n_cited or 0), 0)
         un_rows = await db.fetch(
             f"""SELECT {select_cols}
