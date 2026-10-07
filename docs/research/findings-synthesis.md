@@ -119,6 +119,11 @@ methodological contribution.
 - **The live tracker** (`daily-tracker-concept.md`; shipped at `/tracker`). The retrospective
   diffusion method turned into a nightly instrument: per implementation area, this week's new
   documents by level and the active cascades, sub-second because it reads two precomputed tables.
+  *(2026-10-07, `policy-tempo.md`: the weekly series now holds 458 weeks and is an instrument
+  for burstiness and level timing (provinces move first for 67% of instruments; 以旧换新 lifts
+  Commerce cascades 3.4x, AI+ lifts Tech 1.9x) but not yet for cross-area tempo or lead-lag, since
+  cascade yield per central instrument is 9% visible at 12 weeks and 41% at a year, the pooled
+  bursts are single-portal batches, and only 1 of 90 topic pairs beats a permutation null.)*
 
 *(Update 2026-10-07, `fidelity-jiangsu.md`: the three nested findings above were replicated on
 Jiangsu after its deepening (13 provincial departments, 9 Nanjing and Suzhou districts), with
