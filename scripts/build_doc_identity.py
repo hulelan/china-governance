@@ -30,9 +30,11 @@ SCHEMA
         lead_issuer TEXT,       -- from doc_issuers.lead_issuer (NULL if none)
         localized_of INTEGER,   -- id of the IN-CHAIN higher text whose stem this doc
                                 -- localizes (the genre flip's trigger); NULL otherwise
-        province TEXT           -- A6: 2-letter province code of the ISSUING locality
+        province TEXT,          -- A6: 2-letter province code of the ISSUING locality
                                 -- (geo.PROVINCE_CODE); NULL for central/media/research
                                 -- docs and when no header field names a locality
+        instrument_kind TEXT    -- A7: framework | housekeeping | other — WHAT KIND of
+                                -- text this is (the matcher's anchor gate); see A7
     ) + indexes on admin_level_doc, instrument_id, genre.
     The table is DROPPED and recreated on every build (schema changes need no migration).
 
@@ -201,12 +203,55 @@ A6  province (2026-10-07) — the 2-letter code (scripts/rnd/analysis/geo.PROVIN
     field names a locality; consumers fall back to province_of(site) on NULL, so a doc
     whose site already carries a province behaves exactly as before.
 
+A7  instrument_kind (2026-10-07, docs/working/qa-framework-gate.md) — the kind of text,
+    orthogonal to `genre` (genre says whether the doc IS the text or is ABOUT it; kind
+    says what the text is). It replaces the matcher's own gate (`is_framework` =
+    FW_GENRES on algo_doc_type + FW_TITLE_RE), whose exclusions were right 23% of the
+    time: it dropped 印发-wrapped 应急预案 / 若干措施 / 工作要点 / 重点工作任务 / 方案
+    that cities implement (85% of the dropped pairs were real). Rules, first hit wins,
+    on the KIND CORE = the printed text under an issuance wrapper (印发/发布/公布/颁布
+    《X》 or 关于印发X的通知, trailing （试行）/（2014年本） groups stripped), else the
+    title core:
+    framework    (1) a statute: core ends in 法 / 条例 / 法典 (not 办法), or algo law;
+                 (3) the matcher's OLD gate (FW_GENRES on algo_doc_type / FW_TITLE_RE on
+                     the title) — so no anchor the old gate admitted is lost except
+                     through rule (2), exactly the memo's "R1 OR the current test";
+                 (5) R1 ADMIT: an issuance WRAPPER whose core names an 应急预案 / 预案 /
+                     若干措施 / 政策措施 / 强化措施 / 便利化措施 / 工作要点 / 重点工作 /
+                     重点任务 / 任务分工 / 工作安排 / 方案 — the wrapper is required
+                     (a bare 应急预案 title scores 0.033 in the memo).
+    housekeeping (2) BEFORE the old gate — the exclusions the memo names explicitly and
+                     the old gate mislabels: 整改方案 / 组建方案 / 考评 / 考核 anywhere in
+                     the core, 立法…计划 / 规章…计划. DECISION: a 考核办法 / 考评办法 is
+                     housekeeping although 办法 is in FW_TITLE_RE — the memo reads 考评 /
+                     考核 as the issuer's own management rules; this is the ONE place the
+                     new gate is narrower than the old one (--dry-run-kind prints the
+                     removed set; 2026-10-07 live run: +1,781 added / -291 removed, every
+                     removal a 考核/考评 text — some of which DO cascade (食品安全工作
+                     评议考核办法, 菜篮子市长负责制考核办法); dropping 考评|考核 from
+                     KIND_HK_STRONG_RE is the one-line reversal if that cost is too high).
+                 (4) AFTER the old gate — the memo's remaining exclusions / keep-excluding
+                     shapes: 申报 in its CALL shape only (关于组织申报…的通知; 经营者集中
+                     申报标准的规定 is an instrument and stays with rule 3), 评选 / 名单 /
+                     遴选; a core ending in 名单 / 目录 / 清单 / 指南 / 指引 / 标准 / 规范 /
+                     规程 / 制度 / 规则 / 章程 / 准则 (an 议事规则 typed `regulation` is
+                     kept by rule 3; an untyped one is housekeeping).
+    other        everything else — including a bare 通知 with no printed core, which the
+                 hand-check found MIXED (6 instruments / 4 administrative / 1 unclear):
+                 its instrument status comes from the 文号, not the title, so it is left
+                 undecided rather than labelled housekeeping.
+    Consumers: build_diffusion_events.is_framework / can_anchor and pairs.parent_is_framework
+    read `instrument_kind == 'framework'` when the row carries it and fall back to the old
+    gate on NULL (a half-built table never breaks the matcher).
+
 USAGE (repo root; the DB is the droplet's documents.db)
 -------------------------------------------------------
     python3 scripts/build_doc_identity.py --self-test
     python3 scripts/build_doc_identity.py --dry-run          # compute + stats, no write
     python3 scripts/build_doc_identity.py --dry-run-flips    # flip counts (broad / in-chain / date rule), reversed-edge
                                                              # audit, slack evidence, province coverage; read-only
+    python3 scripts/build_doc_identity.py --dry-run-kind     # A7 instrument_kind by level + framework-gate
+                                                             # before/after (old matcher gate vs kind); read-only
     python3 scripts/build_doc_identity.py                    # full rebuild, one transaction
     python3 scripts/build_doc_identity.py --validate         # A1–A4 checks against known truth
     python3 scripts/build_doc_identity.py --sample 60 --seed 7   # stratified hand-check dump
@@ -237,7 +282,9 @@ from extract_citations import (  # noqa: E402
     _norm_title, _title_cores_of_title, _WRAP_QUOTED, _WRAP_PLAIN, _MASTHEAD_PRE,
     _INST_SUFFIX, _STATUS_TAG, _NEWS_LEAD)
 from issuer_parser import REGISTRY, DOCNUM_SUBNATIONAL, DOCNUM_CENTRAL  # noqa: E402
-from build_diffusion_events import NONISSUE_RE, load_site_names, province_of  # noqa: E402
+from build_diffusion_events import (  # noqa: E402
+    NONISSUE_RE, load_site_names, province_of, FW_GENRES, FW_TITLE_RE, ABOUT_GENRES,
+    is_framework as _matcher_is_framework)
 from geo import (  # noqa: E402,F401
     CITY_PROVINCE, DISTRICT_CITY, CITY_PROVINCE_CSV, PROVINCE_CODE, load_city_province,
     province_name_of_place)
@@ -596,6 +643,76 @@ def derive_genre(title, algo_type, level):
         return "promulgation"
     if NEWS_RE.search(full):
         return "news"
+    return "other"
+
+
+# --------------------------------------------------------------------------- #
+# A7. instrument kind (docs/working/qa-framework-gate.md §4)                   #
+# --------------------------------------------------------------------------- #
+# A looser plain wrapper than extract_citations._WRAP_PLAIN: the verb may precede 关于
+# (广东省人民政府印发关于进一步促进科技创新若干政策措施的通知, memo appendix #5).
+_KIND_WRAP_LOOSE = re.compile(
+    r"^[一-鿿\s丨·、]*?(?:关于)?(?:印发|发布|公布|颁布)(?:关于)?(?P<core>[^《》]{4,}?)的(?:通知|函|通告|公告)$")
+_PAREN_TAIL = re.compile(r"(?:\s*[（(][^（()）]{1,20}[)）])+$")
+# (1) statutes — 法 but not 办法/做法/看法/说法/想法
+KIND_STATUTE_RE = re.compile(r"(?<![办做看说想])法$|条例$|法典$")
+# (2) housekeeping the memo names explicitly, which the OLD gate mislabels (a 考核办法
+#     via 办法; a 立法工作计划 typed `plan`; a 党组整改方案 typed action_plan) — the only
+#     rule that overrides the old gate.
+KIND_HK_STRONG_RE = re.compile(r"整改方案|组建方案|考评|考核|立法.{0,4}计划|规章.{0,4}计划")
+# (4) the memo's other exclusions / keep-excluding shapes, AFTER the old gate: 申报 only
+#     in its CALL shape (关于组织申报…的通知), never as a subject (经营者集中申报标准的规定
+#     is a State Council instrument); list / guide / internal-rule tails.
+KIND_HK_RE = re.compile(
+    r"组织.{0,8}申报|开展.{0,12}申报|申报工作|申报.{0,10}的(?:通知|公告|函)$|评选|名单|遴选")
+KIND_HK_TAIL_RE = re.compile(r"(?:名单|目录|清单|指南|指引|标准|规范|规程|制度|规则|章程|准则)$")
+# (5) R1 admit — only under an issuance wrapper
+KIND_ADMIT_RE = re.compile(
+    r"应急预案|预案|若干.{0,6}措施|政策措施|强化措施|便利化措施|工作要点|重点工作|重点任务|任务分工|工作安排|方案")
+INSTRUMENT_KINDS = ("framework", "housekeeping", "other")
+
+
+def issuance_inner(core):
+    """-> (printed text under the issuance wrapper, verb present). A bare 《X》 title
+    yields (X, False); no wrapper yields (None, False)."""
+    m = _WRAP_QUOTED.match(core)
+    if m:
+        pre = m.group("pre").strip()
+        if m.group("verb") is not None:
+            return m.group("core"), True
+        if pre == "":
+            return m.group("core"), False
+    m = _WRAP_PLAIN.match(core) or _KIND_WRAP_LOOSE.match(core)
+    if m:
+        return m.group("core"), True
+    return None, False
+
+
+def kind_core(title):
+    """-> (kind core, wrapped): the text whose kind we judge — the wrapper's inner
+    (印发《X》的通知 -> X), else the title core; trailing （…） groups stripped."""
+    core = title_core(title)
+    inner, wrapped = issuance_inner(core)
+    kc = _PAREN_TAIL.sub("", inner if inner is not None else core).strip()
+    return kc, wrapped
+
+
+def derive_instrument_kind(title, algo_type):
+    """-> framework | housekeeping | other (module docstring A7)."""
+    full = clean_title(title)
+    if not full:
+        return "other"
+    kc, wrapped = kind_core(title)
+    if KIND_STATUTE_RE.search(kc) or algo_type == "law":
+        return "framework"
+    if KIND_HK_STRONG_RE.search(kc):
+        return "housekeeping"
+    if algo_type in FW_GENRES or FW_TITLE_RE.search(full):
+        return "framework"  # the old matcher gate: nothing it admitted is lost beyond (2)
+    if KIND_HK_RE.search(kc) or KIND_HK_TAIL_RE.search(kc):
+        return "housekeeping"
+    if wrapped and KIND_ADMIT_RE.search(kc):
+        return "framework"
     return "other"
 
 
@@ -1093,6 +1210,7 @@ def build(conn):
         d["lead_issuer"] = li
         d["level"], d["level_source"] = derive_level(d, sl, li)
         d["genre"] = derive_genre(d["title"], d["algo"], d["level"])
+        d["instrument_kind"] = derive_instrument_kind(d["title"], d["algo"])
         d["site_level"] = sl
     inst = assign_instruments(docs)
     stamped = crawl_stamped_sites(docs, site_level, crawl_year)
@@ -1121,7 +1239,8 @@ CREATE TABLE doc_identity (
     date_quality TEXT,
     lead_issuer TEXT,
     localized_of INTEGER,
-    province TEXT
+    province TEXT,
+    instrument_kind TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_doc_identity_level ON doc_identity(admin_level_doc);
 CREATE INDEX IF NOT EXISTS idx_doc_identity_instrument ON doc_identity(instrument_id);
@@ -1132,14 +1251,15 @@ CREATE INDEX IF NOT EXISTS idx_doc_identity_genre ON doc_identity(genre);
 def write(conn, docs):
     t0 = time.time()
     rows = [(d["id"], d["level"], d["level_source"], d["instrument_id"], d["instrument_role"],
-             d["genre"], d["date_quality"], d["lead_issuer"], d["localized_of"], d["province"])
+             d["genre"], d["date_quality"], d["lead_issuer"], d["localized_of"], d["province"],
+             d["instrument_kind"])
             for d in docs.values()]
     conn.execute("BEGIN IMMEDIATE")
     try:
         for stmt in DDL.strip().split(";"):
             if stmt.strip():
                 conn.execute(stmt)
-        conn.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?,?)", rows)
+        conn.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?,?,?)", rows)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")
@@ -1151,7 +1271,7 @@ def print_stats(docs, meta, site_level):
     n = len(docs)
     print(f"\ndocs: {n:,}   load {meta['t_load']:.1f}s   compute {meta['t_total']:.1f}s"
           f"   crawl year {meta['crawl_year']}")
-    for field in ("level", "level_source", "genre", "instrument_role", "date_quality"):
+    for field in ("level", "level_source", "genre", "instrument_kind", "instrument_role", "date_quality"):
         c = Counter(d[field] for d in docs.values())
         print(f"\n{field}:")
         for k, v in c.most_common():
@@ -1276,6 +1396,44 @@ def dry_run_flips(docs, meta, n=30, seed=7):
         hits = [d for d in docs.values() if clean_title(d["title"]) == title]
         for d in hits[:2]:
             print(f"   sanity {d['id']} genre={d['genre']:12s} localized_of={d['localized_of']} | {title}")
+
+
+def dry_run_kind(docs, n=12, seed=7):
+    """A7: instrument_kind by level, and the matcher's framework gate BEFORE (old
+    `is_framework` on algo_doc_type + title) vs AFTER (kind == framework) on the docs
+    that could anchor a cascade (central / provincial, genre not ABOUT). Read-only."""
+    print("\n=== A7 instrument_kind by level ===")
+    levels = [lv for lv in LEVELS if any(d["level"] == lv for d in docs.values())]
+    print(f"{'level':12s} " + " ".join(f"{k:>13s}" for k in INSTRUMENT_KINDS) + f" {'docs':>9s}")
+    for lv in levels:
+        c = Counter(d["instrument_kind"] for d in docs.values() if d["level"] == lv)
+        n_lv = sum(c.values())
+        print(f"{lv:12s} " + " ".join(f"{c.get(k, 0):9,} {c.get(k, 0) / n_lv * 100:3.0f}%" for k in INSTRUMENT_KINDS)
+              + f" {n_lv:9,}")
+    print("\n=== framework gate: old matcher gate -> instrument_kind (anchor-eligible docs: "
+          "central/provincial, genre not explainer/readout/news) ===")
+    print(f"{'level':12s} {'before':>8s} {'after':>8s} {'added':>7s} {'removed':>8s} "
+          f"{'insts before':>13s} {'insts after':>12s}")
+    added, removed = [], []
+    for lv in ("central", "provincial"):
+        elig = [d for d in docs.values() if d["level"] == lv and d["genre"] not in ABOUT_GENRES]
+        before = [d for d in elig if _matcher_is_framework(d["algo"], d["title"])]
+        after = [d for d in elig if d["instrument_kind"] == "framework"]
+        b_ids, a_ids = {d["id"] for d in before}, {d["id"] for d in after}
+        added += [d for d in after if d["id"] not in b_ids]
+        removed += [d for d in before if d["id"] not in a_ids]
+        print(f"{lv:12s} {len(before):8,} {len(after):8,} {len(a_ids - b_ids):7,} {len(b_ids - a_ids):8,} "
+              f"{len({d['instrument_id'] for d in before}):13,} {len({d['instrument_id'] for d in after}):12,}")
+    rnd = random.Random(seed)
+    for label, rows in (("ADDED (R1 admit)", added), ("REMOVED (memo housekeeping over the old gate)", removed)):
+        print(f"\n--- {label}: {len(rows):,}; by algo_doc_type: "
+              + ", ".join(f"{k}={v:,}" for k, v in Counter(d["algo"] for d in rows).most_common(6)) + " ---")
+        for d in rnd.sample(rows, min(n, len(rows))):
+            print(f"{d['id']:>10} {d['level']:10s} {d['algo']:15s} {d['genre']:12s} | {d['title'][:60]}")
+    for did in (145311, 141804, 3166422, 2903650, 142604, 4701868, 4016742, 900042244):
+        d = docs.get(did)
+        if d:
+            print(f"   memo #{did}: kind={d['instrument_kind']:12s} genre={d['genre']:12s} | {d['title'][:56]}")
 
 
 _LAG_BINS = ((-10**9, -731, "<= -731"), (-730, -366, "-730..-366"), (-365, -181, "-365..-181"),
@@ -1464,6 +1622,38 @@ _GENRE_TESTS = [
     ("国家税务总局关于契税纳税申报有关问题的公告", "application_guide", "central", "promulgation"),
     ("深圳市民政局关于查处非法社会组织的公告", "announcement", "municipal", "other"),
     ("深圳市应急管理局关于向社会公开征求《救灾物资储备标准指引（公开征求意见稿）》意见的通告", "consultation", "municipal", "other"),
+]
+# derive_instrument_kind(title, algo_doc_type) — the memo's appendix shapes (A7).
+_KIND_TESTS = [
+    # R1 admit: issuance wrapper + 预案 / 措施 / 要点 / 重点任务 / 方案 core
+    ("广东省人民政府关于印发《广东省突发事件总体应急预案》的通知", "notice", "framework"),
+    ("广东省人民政府印发关于进一步促进科技创新若干政策措施的通知", "notice", "framework"),  # verb before 关于
+    ("广东省人民政府办公厅关于印发广东省“数字政府”改革建设2024年工作要点的通知", "policy_issuance", "framework"),
+    ("国务院办公厅关于印发深化医药卫生体制改革2016年重点工作任务的通知", "policy_issuance", "framework"),
+    ("广东省人民政府关于印发广东省“三线一单”生态环境分区管控方案的通知", "policy_issuance", "framework"),
+    # statutes and the old gate still pass
+    ("中华人民共和国政府信息公开条例", "regulation", "framework"),
+    ("中华人民共和国数据安全法", "law", "framework"),
+    ("国务院关于深入实施“人工智能+”行动的意见", "opinion", "framework"),
+    # housekeeping: the memo's exclusions
+    ("广东省人民政府关于印发《广东省人民政府党组党的群众路线教育实践活动整改方案》的通知", "policy_issuance", "housekeeping"),
+    ("揭阳市人民政府办公室关于印发揭阳市粮食安全责任考核办法的通知", "regulation", "housekeeping"),  # 考核 beats 办法 (A7 decision)
+    ("广东省人民政府办公厅关于印发《广东省人民政府2025年度立法工作计划》的通知", "plan", "housekeeping"),
+    ("广东省人民政府办公厅关于印发广东省人民政府2019年制定规章计划的通知", "policy_issuance", "housekeeping"),
+    ("关于公布2024年省级示范企业名单的通知", "notice", "housekeeping"),
+    ("广东省科学技术厅关于组织申报2024年度广东省重点领域研发计划“海洋科技”重大专项旗舰项目的通知", "notice", "housekeeping"),
+    ("国务院关于发布政府核准的投资项目目录（2014年本）的通知", "notice", "housekeeping"),
+    ("广东省人民政府办公厅关于印发《广东省社会保险监督委员会章程（试行）》的通知", "policy_issuance", "housekeeping"),
+    ("政府信息公开指南", "other", "housekeeping"),
+    ("工业和信息化部办公厅关于开展2026年科技型企业孵化器申报工作的通知", "notice", "housekeeping"),
+    ("全国信息技术标准化技术委员会教育技术分技术委员会（CETSC）章程", "other", "housekeeping"),
+    # the old gate is kept: typed instruments stay framework even with a housekeeping-looking word
+    ("国务院关于经营者集中申报标准的规定", "regulation", "framework"),  # 申报 as subject, not a call
+    ("青海省人民代表大会议事规则", "regulation", "framework"),  # typed regulation -> rule 3 keeps it
+    # other: bare 通知 with no printed core (mixed class, left undecided), bare 预案 (no wrapper)
+    ("广东省人民政府办公厅关于做好优化建设工程防雷许可有关工作的通知", "notice", "other"),
+    ("中共中央办公厅 国务院办公厅印发《关于做好2022年元旦春节期间有关工作的通知》", "policy_issuance", "other"),
+    ("《广东省地震应急预案》", "other", "other"),
 ]
 _KEY_TESTS = [
     ("中共中央办公厅 国务院办公厅印发《提振消费专项行动方案》",
@@ -1761,6 +1951,11 @@ def self_test():
         if got != exp:
             fails += 1
             print(f"XX derive_genre({title[:40]!r}, {algo}, {lvl}) = {got!r}, expected {exp!r}")
+    for title, algo, exp in _KIND_TESTS:
+        got = derive_instrument_kind(title, algo)
+        if got != exp:
+            fails += 1
+            print(f"XX derive_instrument_kind({title[:40]!r}, {algo}) = {got!r}, expected {exp!r}")
     for a, b, same in _KEY_TESTS:
         ka, kb = instrument_key(a), instrument_key(b)
         if (ka == kb) != same:
@@ -1802,7 +1997,7 @@ def self_test():
         if got != exp:
             fails += 1
             print(f"XX crawl_stamped_sites[{label}] = {got!r}, expected {exp!r}")
-    total = (len(_LEVEL_TESTS) + len(_TITLE_LEVEL_TESTS) + len(_GENRE_TESTS) + len(_KEY_TESTS)
+    total = (len(_LEVEL_TESTS) + len(_TITLE_LEVEL_TESTS) + len(_GENRE_TESTS) + len(_KIND_TESTS) + len(_KEY_TESTS)
              + len(_LOCALIZE_TESTS) + len(_POOL_TESTS) + len(_CHAIN_TESTS) + len(_GENERIC_STEM_TESTS)
              + len(_STAMP_TESTS) + len(_PROVINCE_TESTS))
     print(f"self-test: {total - fails}/{total} passed")
@@ -1816,9 +2011,11 @@ def main(argv=None):
     ap.add_argument("--dry-run", action="store_true", help="compute + stats, no write")
     ap.add_argument("--dry-run-flips", action="store_true",
                     help="broad vs in-chain genre-flip counts + 30 sample flip-backs; read-only, no write")
+    ap.add_argument("--dry-run-kind", action="store_true",
+                    help="A7 instrument_kind by level + framework-gate before/after; read-only, no write")
     ap.add_argument("--validate", action="store_true", help="run the A1–A4 truth checks")
     ap.add_argument("--sample", type=int, default=0, help="stratified hand-check dump of N docs")
-    ap.add_argument("--sample-field", default="level", choices=["level", "genre"])
+    ap.add_argument("--sample-field", default="level", choices=["level", "genre", "instrument_kind"])
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--force", action="store_true", help="write even if the nightly lock exists")
@@ -1827,7 +2024,8 @@ def main(argv=None):
     if args.self_test:
         return 0 if self_test() else 1
 
-    writing = not (args.dry_run or args.dry_run_flips or args.validate or args.sample)
+    writing = not (args.dry_run or args.dry_run_flips or args.dry_run_kind or args.validate
+                   or args.sample)
     if writing and LOCK_DIR.exists() and not args.force:
         print(f"nightly lock {LOCK_DIR} exists — refusing to write (use --force)")
         return 2
@@ -1841,6 +2039,8 @@ def main(argv=None):
         validate(docs, meta)
     if args.dry_run_flips:
         dry_run_flips(docs, meta, seed=args.seed)
+    if args.dry_run_kind:
+        dry_run_kind(docs, seed=args.seed)
     if args.sample:
         sample(docs, args.sample, args.seed, args.sample_field)
     if writing:

@@ -67,7 +67,7 @@ DEFAULT_DB = ROOT / "documents.db"
 sys.path.insert(0, str(_HERE.parent))
 sys.path.insert(0, str(_HERE.parents[1] / "citations"))
 from build_diffusion_events import (  # noqa: E402
-    ABOUT_GENRES, IMPLEMENTING_IDENTITY_GENRES, NONISSUE_RE, _lag, is_framework,
+    ABOUT_GENRES, IMPLEMENTING_IDENTITY_GENRES, NONISSUE_RE, _lag, is_framework, identity_has_kind,
     load_site_names, province_of,
 )
 
@@ -135,12 +135,14 @@ def load_docs(conn, repair_suzhou_dates=True):
     load_site_names(conn)
     site_level = dict(conn.execute("SELECT site_key, admin_level FROM sites"))
     docs = {}
+    kind_col = "i.instrument_kind" if identity_has_kind(conn) else "NULL"
     for row in conn.execute(
-            """SELECT d.id, d.site_key, d.title, d.date_published, d.algo_doc_type, d.url,
+            f"""SELECT d.id, d.site_key, d.title, d.date_published, d.algo_doc_type, d.url,
                       i.admin_level_doc, i.instrument_id, i.instrument_role, i.genre,
-                      i.date_quality, i.lead_issuer, i.localized_of, i.province
+                      i.date_quality, i.lead_issuer, i.localized_of, i.province, {kind_col}
                FROM documents d JOIN doc_identity i ON i.doc_id = d.id"""):
-        (did, site, title, dp, dtype, url, lvl, inst, role, igenre, dq, issuer, loc, iprov) = row
+        (did, site, title, dp, dtype, url, lvl, inst, role, igenre, dq, issuer, loc, iprov,
+         ikind) = row
         d = _d10(dp)
         if repair_suzhou_dates and site == "suzhou":
             d = _suzhou_date(url, d)
@@ -150,6 +152,7 @@ def load_docs(conn, repair_suzhou_dates=True):
             "level": lvl or "", "inst": inst if inst is not None else did,
             "role": role or "unique", "genre": igenre or "", "date_quality": dq or "",
             "issuer": issuer or "", "localized_of": loc,
+            "kind": ikind,  # doc_identity.instrument_kind (A7); None -> old framework gate
             # per-document province (doc_identity A6) first — npc 地方法规 carry no site
             # province — else the site's
             "prov": iprov or province_of(site),
@@ -167,7 +170,9 @@ def canonical_map(docs):
 
 
 def parent_is_framework(p):
-    return (is_framework(p["doc_type"], p["title"])
+    """Same path as build_diffusion_events.can_anchor: identity `instrument_kind`
+    first (A7), the old algo_doc_type + title gate only when the row has no kind."""
+    return (is_framework(p["doc_type"], p["title"], p.get("kind"))
             and p["genre"] not in ABOUT_GENRES
             and not NONISSUE_RE.search(p["title"]))
 
@@ -511,7 +516,8 @@ def _self_test_db():
                            algo_doc_type TEXT, url TEXT, body_text_cn TEXT);
     CREATE TABLE doc_identity(doc_id INTEGER PRIMARY KEY, admin_level_doc TEXT, level_source TEXT,
                               instrument_id INTEGER, instrument_role TEXT, genre TEXT,
-                              date_quality TEXT, lead_issuer TEXT, localized_of INTEGER, province TEXT);
+                              date_quality TEXT, lead_issuer TEXT, localized_of INTEGER, province TEXT,
+                              instrument_kind TEXT);
     CREATE TABLE citations(id INTEGER PRIMARY KEY, source_id INTEGER, target_ref TEXT, target_id INTEGER,
                            citation_type TEXT, source_level TEXT, target_level TEXT);
     CREATE TABLE diffusion_events(id INTEGER PRIMARY KEY, source_id INTEGER, anchor_id INTEGER,
@@ -555,8 +561,11 @@ def _self_test_db():
          "municipal", 12, "unique", "promulgation", "good", "", None),
     ]
     c.executemany("INSERT INTO documents VALUES (?,?,?,?,?,?,?)", [d[:7] for d in docs])
-    c.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?,?)",
-                  [(d[0], d[7], "test", d[8], d[9], d[10], d[11], d[12], d[13], None) for d in docs])
+    # instrument_kind (A7) mirrors the old gate here so the fixture's expectations hold
+    # through the identity path; a NULL would exercise the fallback instead.
+    c.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                  [(d[0], d[7], "test", d[8], d[9], d[10], d[11], d[12], d[13], None,
+                    "framework" if is_framework(d[4], d[2]) else "other") for d in docs])
     c.executemany("INSERT INTO citations(source_id, target_ref, target_id, citation_type, source_level, target_level) "
                   "VALUES (?,?,?,?,?,?)", [
         (2, "x", 1, "named", "provincial", "central"),     # C→P citation (+ localized_of 2→1)

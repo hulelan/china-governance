@@ -317,14 +317,28 @@ def genre_stem(norm_core):
     return s
 
 
-def is_framework(genre, title):
+def is_framework(genre, title, kind=None):
+    """Is this text a framework instrument (anchor-eligible)? The decision lives in
+    the identity layer — `doc_identity.instrument_kind` (build_doc_identity A7,
+    docs/working/qa-framework-gate.md: the old gate below dropped 印发-wrapped
+    应急预案 / 若干措施 / 工作要点 / 方案 that are real instruments, exclusion precision
+    23%). `kind` is that column; when it is NULL (row predates the column, or a
+    half-built table) fall back to the old algo_doc_type + title-cue gate."""
+    if kind:
+        return kind == "framework"
     return genre in FW_GENRES or bool(FW_TITLE_RE.search(title or ""))
 
 
 def can_anchor(d):
     """May this doc represent / qualify an anchor pool: a framework instrument that
     is not merely ABOUT one (explainer / readout / news per doc_identity)."""
-    return is_framework(d["genre"], d["title"]) and d["igenre"] not in ABOUT_GENRES
+    return (is_framework(d["genre"], d["title"], d.get("ikind"))
+            and d["igenre"] not in ABOUT_GENRES)
+
+
+def identity_has_kind(conn):
+    """Does doc_identity carry the A7 `instrument_kind` column (added 2026-10-07)?"""
+    return any(r[1] == "instrument_kind" for r in conn.execute("PRAGMA table_info(doc_identity)"))
 
 
 def is_implementing(source, match_type):
@@ -349,13 +363,17 @@ def load(conn):
         indeg[tid] = n
     docs = {}
     n_noid = 0
+    kind_col = "i.instrument_kind" if identity_has_kind(conn) else "NULL"
+    if kind_col == "NULL":
+        print("  (doc_identity has no instrument_kind column — framework gate falls back to "
+              "algo_doc_type + title cues)")
     for row in conn.execute(
             f"""SELECT d.id, d.site_key, d.title, d.date_published, d.algo_doc_type,
                        d.citation_rank, d.topics_algo,
-                       i.admin_level_doc, i.instrument_id, i.genre, i.province
+                       i.admin_level_doc, i.instrument_id, i.genre, i.province, {kind_col}
                 FROM documents d LEFT JOIN doc_identity i ON i.doc_id = d.id
                 WHERE d.date_published BETWEEN '{DATE_LO}' AND '{DATE_HI}'"""):
-        did, sk, title, dp, genre, cr, topics, lvl, iid, igenre, iprov = row
+        did, sk, title, dp, genre, cr, topics, lvl, iid, igenre, iprov, ikind = row
         if lvl is None:
             n_noid += 1  # crawled after the identity build: no level → never anchor/source
         docs[did] = {
@@ -365,6 +383,7 @@ def load(conn):
             "level": lvl or "unknown",
             "inst": iid if iid is not None else did,
             "igenre": igenre or "",
+            "ikind": ikind,  # doc_identity.instrument_kind (A7) or None -> old gate
             "indeg": indeg.get(did, 0),
             "ntitle": _norm_title(title or ""),
             # per-DOCUMENT province (doc_identity A6: the issuing locality, so npc 地方法规
