@@ -66,6 +66,12 @@ LIBRARY_API = "https://sousuo.www.gov.cn/search-gov/data"
 LIBRARY_CATEGORIES = {
     "gw": "zhengcelibrary_gw",   # 国务院公文 — State Council formal docs (~6.2k)
     "bm": "zhengcelibrary_bm",   # 部门文件 — central ministry docs (~12.7k)
+    # 中央文件 — 中共中央 / 中办国办 texts (党章, 党内法规, 中发/中办发, 纲要). ~566 docs
+    # (2026-10). Added for citation recovery: the A6 queue head found 21/24 probed
+    # 中央文件 instruments here by exact title and none in the corpus
+    # (docs/working/a6-recoverable-head.md). Same JSON shape as gw/bm; `url` is a
+    # normal /zhengce/<yyyymm>/content_N.htm page (#UCAP-CONTENT body).
+    "zy": "zhengcelibrary_zy",
 }
 
 
@@ -411,8 +417,8 @@ def main():
                         help="Crawl the historical policy-document library (archival backfill) "
                              "instead of the rolling 'latest' feed")
     parser.add_argument("--categories", default="gw",
-                        help="Comma-separated library categories: gw (国务院公文), bm (部门文件). "
-                             "Default: gw")
+                        help="Comma-separated library categories: gw (国务院公文), bm (部门文件), "
+                             "zy (中央文件). Default: gw")
     parser.add_argument("--deep", action="store_true",
                         help="With --library: walk EVERY page (full backfill). Without it, the "
                              "library crawl stops after 2 all-held pages (incremental).")

@@ -240,6 +240,16 @@ SITES = {
         "base_url": "http://www.zs.gov.cn",
         "admin_level": "municipal",
     },
+    # Zhongshan municipal bureaus run their OWN gkmlpt instances under a sub-path
+    # of the city host (/zslyj/gkmlpt/index, SID 760027 — separate from the
+    # city's SID 760001), so the city crawl never sees them. Registered for the
+    # A6 citation-recovery head: 国土空间规划技术标准与准则(2023版), 控规管理实施细则,
+    # 城市设计指引 (~550 citers) live here (docs/working/a6-recoverable-head.md).
+    "zs_lyj": {
+        "name": "Zhongshan Natural Resources Bureau (中山市自然资源局)",
+        "base_url": "http://www.zs.gov.cn/zslyj",
+        "admin_level": "department",
+    },
     "shantou": {  # ⚠ KNOWN_BROKEN (see registry above)
         "name": "Shantou",
         "base_url": "http://www.shantou.gov.cn",
