@@ -489,7 +489,30 @@ Browse page supports filtering by doc type, AI relevance threshold, and sorting 
 
 ### Classification (DeepSeek API)
 
-Documents are classified via DeepSeek API (`scripts/classify_documents.py`) — adds English title, summary, doc_type, policy_significance, references_json. Cost: ~$0.50/1k docs, concurrency 2 max (higher silently rate-limits with empty responses, not 429s). As of June 2026 the droplet's nightly `daily_sync.sh` Phase 2 runs this UNBOUNDED (no `--limit`), so it drains the full backlog (~156k docs, ~$78, ~40h) on the first reliable run, then only touches new docs. The `mkdir` lock keeps the next day's cron from piling a second classifier on top.
+Documents are classified via DeepSeek API (`scripts/classify_documents.py`) — adds English title, summary, doc_type, policy_significance, references_json. Cost: ~$0.50/1k docs, concurrency 2 max (higher silently rate-limits with empty responses, not 429s).
+
+**(2026-10-07) A THIRD of all classification calls were failing silently, and had been since
+the 07-25 `deepseek-v4-flash` migration** (20-37% err in every nightly log back through
+mid-September). Root cause, proven by probe in `docs/working/qa-classification-failures.md`:
+v4-flash is a **reasoning** model and bills reasoning tokens against `max_tokens`, which was
+2,000 — so 19 of 20 sampled calls returned `finish_reason="length"` with
+`reasoning_tokens == completion_tokens == 2000` and **empty content**. It was a coin flip on
+reasoning length, not a document property: documents that succeeded one night failed 9/10 on
+re-send, and body length/site/script do not discriminate (the prompt hard-truncates bodies to
+1,500 chars, so context overflow was never possible). The code then treated empty content as a
+content filter and skipped it silently ("likely content filter. Skip silently."), leaving
+`classified_at = ''` so the document was re-sent every night forever. **Fixed (`1511b81`):**
+`max_tokens` 2,000 → **12,000** with one 24,000 retry on `finish_reason="length"`; every
+failure now carries a reason (`empty_content_length`, `content_risk`, `json_unsalvageable`,
+`http_error`, `timeout`, `rate_limit_exhausted`), logged at WARNING with the doc id and tallied
+in the progress line; failures persist to **`classify_failures(doc_id, reason, attempts,
+first_seen, last_seen)`** (a side table, not a `documents` column — see the compute_scores
+overflow-page lesson below), where `content_risk` is terminal and `attempts >= 3` is skipped
+unless `--retry-failed`. `--init-schema` creates the table; `--dry-run` now opens the DB
+read-only. Validated live: 4 of 5 previously-failing documents classified on the FIRST call at
+12,000. Cost: +$0.0031/doc (~+$225/yr of productive spend, replacing ~$160/yr of pure waste);
+`max_tokens` is a ceiling, so the ~70% of documents that already finish under 2,000 cost the
+same as before. A one-off `--retry-failed` backfill of the ~1,864 unclassified docs is ~$11. As of June 2026 the droplet's nightly `daily_sync.sh` Phase 2 runs this UNBOUNDED (no `--limit`), so it drains the full backlog (~156k docs, ~$78, ~40h) on the first reliable run, then only touches new docs. The `mkdir` lock keeps the next day's cron from piling a second classifier on top.
 
 ## SQLite Concurrency Rules
 
@@ -573,11 +596,29 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   resolved counts" baselines are superseded. NOTE: ~2% of unresolved
   named refs are **character-scrambled inside `body_text_cn`** (anti-scraping
   artifact) — unrecoverable without re-extracting those bodies.
-- **(2026-07) Crawler timeouts.** `CRAWLER_TIMEOUT=1800` (30 min/crawler). Recent
-  runs see ~11 crawlers hit the cap (cac, samr, mofcom, beijing, shanghai,
-  jiangsu, suzhou, heilongjiang, xinhua, miit, most) → ~10h total run. Likely
-  US→China latency from NYC. TODO: confirm each runs incremental/`--sync`, time
-  the worst offenders, raise the cap selectively or optimize.
+- **(RESOLVED 2026-10-07) Crawler timeouts / why Phase 1 takes four hours.** Measured
+  per-crawler over 11 nightlies in `docs/working/nightly-phase1-timing.md`. The 2026-07
+  guess above was wrong on the list: only **4** crawlers hit the 1800s cap, not 11, and 7
+  of the 11 it named now finish in under 70s. The real shape: Phase 1 runs **240-271 min
+  to add ~250 documents**, and **15 crawlers whose MEDIAN new-doc yield is zero account for
+  196 of the 252 median minutes**. Worst: `zhejiang` 1800s capped 7/11 nights for ZERO rows
+  in 11 nights (nothing paginates from a US IP); `govcms --group dept` capped 11/11 while
+  reaching only 160 of 232 sites; `beijing` capped 11/11, killed at 2,640/6,821 items, 17
+  new docs in 10 nights; `gkmlpt --sync` capped 11/11, reaching 4 of 63 sites; `jiangsu`
+  1276s walking 262 pages for 3 new docs. Phase 1 is purely network-bound (load average
+  0.17 on 2 vCPU). Compounding it, these crawlers skip only on "already stored WITH a
+  body", so 1,628 `bj` + 5,388 `miit` + 1,022 `suzhou` rows are re-fetched every night
+  forever (miit's are anti-bot stubs that can never gain a body from NYC).
+  **Shipped (`36fba8a`):** `run_crawler_t <seconds>` per-crawler caps (`run_crawler` is
+  that with the 1800s default), `run_weekly <dow>` for the zero-yield walkers one weekday
+  each (sic, ipc_court, chongqing, wuhan, most, hangzhou), and `zhejiang` off the nightly
+  path to a Monday probe under a 600s cap. Central ministries (gov/ndrc/mof/mee/cac/miit)
+  deliberately stay NIGHTLY: the product is a daily tracker, so their cost belongs to an
+  early-exit fix, not to cadence. **Still open** (each needs its named verification first):
+  skip-on-presence for `beijing`, the `gkmlpt` per-site diff scope, a `jiangsu` early exit
+  gated on confirming listing pages are reverse-chronological, dept-group rotation in 3
+  chunks (which would *increase* coverage), and 2-wide parallelism (bounded by the
+  2-writer SQLite rule). Together those would take Phase 1 to roughly 100 min.
 - **(2026-06) Is DeepSeek `references_json` worth the cost over regex refs?**
   We have regex-extracted `references_source` on ~133k docs (`regex_v1`). A
   sample comparison found ~72% overlap with DeepSeek's refs. Open question
