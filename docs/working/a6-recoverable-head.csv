@@ -1,0 +1,235 @@
+gid,ranks,instrument,docnum,demand,edges,row_demand_sum,source_kind,status,candidate_url,reachable,bytes,fetcher,note
+nondoc-standard,20 53 96 104 112 147 170 195 225 242 250 274 369,"GB/行业 standards (地名标志 GB17733, 环境空气质量标准, 国民体质测定标准, 城市消防站建设标准, 生活饮用水水质标准, 国家体育锻炼标准, 污水排放标准×2, 食品生产通用卫生规范, 绿色建筑评价标准, 居住区规划设计标准, 卓越绩效指南, 电动自行车安全技术规范)",,598,691,619,nondoc,nondoc,,n/a,,,standards live at openstd.samr.gov.cn — out of corpus scope
+hz-zdcq,1 24 42 65 263,惠州市加强建设项目征地拆迁管理规定,惠府令第39/67/86号 (3 editions),513,798,798,blocked,blocked,,no (huizhou.gov.cn: 0 bytes from NYC),0,gkmlpt huizhou — host blackholed from NYC,search.gd.gov.cn SID 2 does not index huizhou; host blackholed — HK/residential vantage only
+nondoc-permit,3 21 191 329 362,建设工程规划许可证 / 建设用地规划许可证 / 建设项目选址意见书 / 用地预审与选址意见书 / 规划验收合格证,,345,465,460,nondoc,nondoc,,n/a,,,"permit NAMES, not documents"
+gd-kgtl,2,广东省控制性详细规划管理条例,省人大 2004,340,392,340,flk,alias-fix,(held) npc: 广东省城市控制性详细规划管理条例,n/a,,npc crawler (metadata) / delisted at origin (CLAUDE.md),"ALREADY IN CORPUS under a longer title (广东省城市控制性详细规划管理条例) — resolver alias, zero crawl; flk search itself is fuzzy/inconclusive"
+tax-gg,36 67 123 182 325 103 124,国家税务总局公告 2011-2 / 2012-24 / 2016-34 / 2018-31 / 2022-14 (印花税法) + 财政部税务总局海关总署公告2019年第39号,,295,350,350,gap,gap,,host-yes (crawled site),,"chinatax crawler --max-docs (政策法规库 backlog, ~9.9k total vs 5,018 held)",origin site is crawled; the document sits in an uncrawled section/archive
+zy-dnfg,54 83 258 270 289 290 338 380 343,"党内法规 (党内监督条例, 机构编制工作条例, 支部工作条例, 党组工作条例, 地方委员会工作条例, 政法工作条例, 农村工作条例, 领导全面依法治国工作条例, 功勋荣誉表彰条例)",中共中央,262,360,293,zy,located,https://www.gov.cn/zhengce/201611/content_6965205.htm,yes,101738 (sample: 章程 page),gov.py --library zy / dangyuan 12371 党内法规库,exact title hit in zhengcelibrary_zy (searchfield=title)
+zs-gtkj2023,4,中山市国土空间规划技术标准与准则（2023版）,,257,273,257,zs,located,http://www.zs.gov.cn/zslyj/gkmlpt/content/2/2222/post_2222431.html,yes,29769,gkmlpt zhongshan --search (search.gd.gov.cn SID 760001),+ 市政府批复 post_2221987; byte-checked
+nondoc-form,154 171 197 62 196 118,"forms / guides / books / noise (反馈意见表×2, 企业在线申请用房操作指南, 习近平法治思想学习纲要, 人工智能能力建设普惠计划, 海行规发〔2018〕9号 footer noise)",,250,256,250,nondoc,nondoc,,n/a,,,
+bm-xg-yq,7 381,关于进一步优化新冠肺炎疫情防控措施科学精准做好防控工作的通知 (二十条),联防联控机制综发〔2022〕101号,241,241,241,bm,probed-miss,,host-yes,,gov.py --library bm,only the 文旅部 sectoral copy in bm; the 联防联控机制综发〔2022〕101号 notice lives under gov.cn/xinwen
+gd-kgzd2021,5,广东省自然资源厅印发关于加强和改进控制性详细规划管理若干指导意见（暂行）的通知,粤自然资发〔2021〕3号,240,240,240,gd,located,https://nr.gd.gov.cn/gkmlpt/content/3/3225/post_3225463.html,yes,55430,gkmlpt gdnr --search (SID 153),粤自然资发〔2021〕3号 — byte-checked; gdnr IS crawled (299 docs) but this 2021 doc was missed
+zs-ztgh,15 207 227 291,中山市城市总体规划（2010-2020）,,231,252,231,zs,probed-miss,,host-yes,,gkmlpt zhongshan --search,search miss — the plan text was likely never posted as a document (only 修编 通知 2004)
+zs-kgxz,6,中山市控制性详细规划管理实施细则（试行）,,225,236,225,zs,located,http://www.zs.gov.cn/zslyj/gkmlpt/content/2/2210/post_2210690.html,yes,,gkmlpt zhongshan --search,full-text search; also zwgk/fggw/bsgfxwj post_2210199 (市属规范性文件)
+bm-gwytj,9 33 177 323 180,"公务员录用体检通用标准（试行） (+特殊标准, 2016 修订通知, 2012 体检工作通知)",国人部发〔2005〕1号 / 人社部发〔2010〕82号 / 人社部发〔2016〕140号 / 人社部发〔2012〕65号,225,406,385,bm,bm-miss,,host-yes,,gov.py --library bm --deep (人社部 mirror; origin blocked),gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zs-ztgh-ssgl,8 10,中山市人民政府办公室关于加强城市总体规划实施管理的通知,中府办〔2013〕41号,192,382,381,zs,probed-miss,,host-yes,,gkmlpt zhongshan --search,title + full-text search miss for 中府办〔2013〕41号 — probably never web-published (2013 府办 通知)
+nondoc-treaty,75 169 319 336 161,"treaties / foreign law (中朝/中吉/中俄 条约, 不扩散核武器条约, GDPR)",,181,182,181,nondoc,nondoc,,n/a,,,foreign / out-of-scope
+gd-sydw-zp,44 81 328 389,广东省事业单位集中公开招聘高校毕业生公告 (2022/2024/2025/2026),,178,200,178,gd,probed-miss,,host-yes,,gkmlpt gd/hrss --search,news copies found; the 公告 itself is on hrss.gd.gov.cn (own SID)
+gd-zdbc2011,11 99,关于印发广东省征地补偿保护标准（2010年修订调整）的通知,粤国土资利用发〔2011〕21号,171,221,221,gd,probed-miss,,host-yes,,gkmlpt gdnr --search,nr.gd.gov.cn index holds only the 2016 第二次征求意见稿 (post_2754786) — the 2006/2011/2016 formal 通知 are from the pre-2018 国土资源厅 site; probably delisted on migration
+sz-czj-xy,13 29,深圳市财政局政府采购供应商信用信息管理办法,深财规〔2023〕3号,167,368,271,sz,located,https://www.sz.gov.cn/zfgb/2023/gb1303/content/post_10832248.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt sz/czj --search (SID 755001),in 政府公报 2023 gb1303 — NOT delisted (CLAUDE.md 2026-08-23 verdict superseded)
+gd-yjya,12,广东省突发事件总体应急预案,粤府 (2006/2012/2023 editions),166,166,166,gd,located,https://www.gd.gov.cn/gdywdt/gdyw/content/post_4956552.html,yes,,gkmlpt gd --search (SID 2),2026-09-17 省委/省政府 new edition (news-page copy); earlier editions in 省政府公报
+zs-cxgh-bz,18 218,中山市城乡规划技术标准与准则,,162,164,162,zs,source-verified,,host-yes,,gkmlpt zhongshan --search (query of zs-gtkj2023 covers),not individually probed; zslyj gkmlpt sub-site is the expected home
+bm-sydw-wj,14,事业单位公开招聘违纪违规行为处理规定,人社部令第35号,157,167,157,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+jggg2009-munis,151 163 215 253 269 335 364,2009 市机构改革方案 (广州/韶关/珠海/阳江/江门),穗字〔2009〕11号 等,148,210,210,nonpublic,nonpublic,,n/a,,,party 机构改革 docs — never published
+bj-ztgh,52 84 324,北京城市总体规划（2016年—2035年）,,146,172,148,gap,gap,,host-yes (crawled site),,beijing crawler — 规自委 (ghzrzyw.beijing.gov.cn) section not crawled,origin site is crawled; the document sits in an uncrawled section/archive
+bm-jdc,59 78 80 256 317,机动车登记规定,公安部令第164号,146,227,227,bm,bm-miss,,host-yes,,gov.py --library bm (公安部 mirror),gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+sz-szeb-cg,49 119 283 330,深圳市教育局机关(自行)采购管理办法,深教〔2015〕436号,142,197,168,sz,probed-miss,,host-yes,,gkmlpt szeb --search,sz.gov.cn search miss (dept-internal 办法 / 市委 doc) — try the dept gkmlpt SID or 公报 index
+sz-misc,282 398 399 400 367 243,"深圳 dept/district misc (水务发展资金办法, 突发事件总体应急预案, 鼓励总部企业发展实施办法, 双区招录公告, 供水水质公报方案, 罗湖民政通知)",,140,147,140,sz,source-verified,,host-yes,,gkmlpt sz dept sites --search,not individually probed; same sz.gov.cn 公报/gkmlpt archive as the 10 located items
+gd-zdbc2006,16 23,关于实施广东省征地补偿保护标准的通知,粤国土资发〔2006〕149号,139,258,258,gd,probed-miss,,host-yes,,gkmlpt gdnr --search (same query as gd-zdbc2011),see gd-zdbc2011
+su-zjj,19 25 45,苏州市住建局 房屋征收 计户/面积认定 文件,苏住建规〔2011〕4号 / 〔2012〕8号 / 〔2012〕9号,139,325,325,delisted,delisted,,n/a,,,CLAUDE.md 2026-08-23: 苏住建规〔2011〕4号 delisted at origin
+zy-dz,17,中国共产党章程,,134,134,134,zy,located,https://www.gov.cn/zhengce/202601/content_7055116.htm,yes,101738 (sample: 章程 page),gov.py --library zy (NEW category) / dangyuan 12371,exact title hit in zhengcelibrary_zy (searchfield=title)
+szdp-rc,108 200 210 231 237 346,大鹏新区 人才奖励补贴操作规程 + 科技创新和产业发展专项资金管理办法,深鹏办规〔2023〕9号,129,204,192,sz,located,https://www.dpxq.gov.cn/ztzl/gfxwjk/content/post_11078026.html,"host-yes (SID page 26,711 B; https content fetch hit TLS BAD_ECPOINT — use http)",,gkmlpt szdp --search (needs dpxq SID),dpxq SID 755038; 规范性文件库 /ztzl/gfxwjk/ (0 held) has the 2023 + 2025 editions
+gw-kjgh,22,国家中长期科学和技术发展规划纲要（2006－2020年）,国发〔2005〕44号,119,124,119,gw,located,https://www.gov.cn/zhengce/zhengceku/2008-03/28/content_5296.htm,yes,58937 (sample),gov.py --library gw --deep,hit is the 配套政策 通知 国发〔2006〕6号 (the 纲要 itself is its attachment)
+sz-ajf,56 97,深圳市安居型商品房轮候与配售办法 / 公共租赁住房轮候与配租暂行办法,,117,141,120,sz,located,https://www.sz.gov.cn/zfgb/2012_1/gb815/content/post_4967582.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt zjj --search,2012 公报
+bj-misc,206 299 355 379 384,"北京/上海 十四五规划纲要, 北京市教委入学意见, 告知承诺审批办法",,114,133,120,gap,gap,,host-yes (crawled site),,bj / sh crawlers (section gap),origin site is crawled; the document sits in an uncrawled section/archive
+gd-zdbc2016,32 88 127,广东省国土资源厅关于印发广东省征地补偿保护标准（2016年修订调整）的通知,粤国土资规字〔2016〕1号,112,196,196,gd,probed-miss,,host-yes,,gkmlpt gdnr --search (same query),see gd-zdbc2011
+law-zagl,26,治安管理处罚条例,1986/1994 (repealed 2006),112,114,112,flk,delisted,,n/a,,npc crawler (metadata; 失效 law),"1986/1994 条例 repealed 2006; flk holds only the successor 治安管理处罚法 (held ×2) — the law name changed, not recoverable as cited"
+sz-xztz,28,深圳市行政听证办法,市政府令,109,132,109,sz,located,http://www.sz.gov.cn/zfgb/2006/gb519/content/post_4952494.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt sz --search,"in 政府公报 2006 gb519 — NOT delisted; byte-checked 66,443 B with body"
+fj-misc,173 285 334 370,"福建 dept misc (消防专家库办法, 运动员等级细则, 工信厅采购规定, 省属事业单位招聘办法)",,109,119,109,gap,gap,,host-yes (crawled site),,govcms fj_* (section gap),origin site is crawled; the document sits in an uncrawled section/archive
+zy-fzzf2021,27,法治政府建设实施纲要（2021—2025年）,2021,109,136,109,zy,located,https://www.gov.cn/zhengce/2021-08/11/content_5630802.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+nondoc-serial,41 350,道路机动车辆生产企业及产品公告 (MIIT serial batches),,103,119,104,nondoc,nondoc,,n/a,,,serial 公告 (400+ batches) — no single instrument
+sd-xxgk,30,山东省政府信息公开办法,省政府令,101,126,101,gap,gap,http://www.shandong.gov.cn/,host-yes,72025,govcms shandong (section discovery),portal reachable; 省政府令 section to discover
+bm-lsnd,31 86,律师事务所年度检查考核办法,司法部令第121号,101,185,155,bm,bm-miss,,host-yes,,gov.py --library bm --deep,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zs-kgbf,34,中山市城市、镇控制性详细规划管理办法,,93,100,93,zs,source-verified,,host-yes,,gkmlpt zhongshan --search,not individually probed; zslyj gkmlpt sub-site is the expected home
+zy-fzzf2015,55 280,法治政府建设实施纲要（2015－2020年）,2015,93,102,95,zy,probed-miss,,host-yes,,gov.py --library zy,only the 2021 纲要 is in zy; the 2015 edition not found
+nondoc-assoc,35 37 89,律师执业年度考核规则 (全国律协) / 广东省律师执业年度考核管理办法（试行）(粤律协﹝2020﹞41号),,93,266,238,nondoc,nondoc,,n/a,,,"bar-association rules, not government documents"
+gd-lsnd,68 85 212 69 214,广东省司法厅关于律师事务所年度检查考核的实施细则,粤司规〔2019〕3号 / 粤司规〔2025〕1号,92,266,238,gd,located,http://www.gd.gov.cn/zwgk/gongbao/2020/1/content/post_3366623.html,yes,170516,gkmlpt gd/sft --search,粤司规〔2019〕3号 in 广东省人民政府公报 2020/1 (+2018 edition post_3366015); corpus holds 1 gongbao URL total
+sz-ghbz,38,深圳市城市规划标准与准则,,92,101,92,sz,located,https://www.sz.gov.cn/zfgb/2004/gb416/content/post_4967670.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt sz/pnr --search,2004 edition (+1997 edition post_10106901)
+zy-zscq,39,知识产权强国建设纲要（2021—2035年）,2021,87,95,87,zy,located,https://www.gov.cn/zhengce/2021-09/22/content_5638714.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+gd-fzzf,76 279,广东省法治政府建设实施纲要（2016-2020年）,,84,99,84,gd,probed-miss,,host-yes,,gkmlpt gd --search,title-search miss on gd.gov.cn (2016 doc)
+sz-zdjc,107 165,深圳市重大行政决策程序实施办法 / 深圳市人民政府重大行政决策程序规定,,83,100,86,sz,located,https://www.sz.gov.cn/gkmlpt/content/10/10393/post_10393470.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt sz --search,2023 实施办法 (gkmlpt + 公报 gb1274) and 2016 规定 (公报 gb959 post_4983623)
+gd-gwy-tj,40,广东省公务员录用体检工作实施细则（试行）,,82,88,82,gd,source-verified,,host-yes,,gkmlpt gd --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+bj-zc,92 229 295 382,北京市职称: 关于深化职称制度改革的实施意见 / 北京市职称评审管理暂行办法 / 关于进一步加强和改进职称工作的通知,京人社事业发〔2020〕12号 等,80,142,127,gap,gap,,host-yes (crawled site),,beijing / bjb_rsj crawler section gap,origin site is crawled; the document sits in an uncrawled section/archive
+bm-clcx,141 167,道路交通安全违法行为处理程序规定,公安部令第157号 / 第105号,80,80,80,bm,located,https://www.gov.cn/zhengce/zhengceku/2020-04/22/content_5505119.htm,yes,,gov.py --library bm,公安部令第157号 修改决定 in bm (the consolidated text is its attachment)
+zy-15wu,115 193,中共中央关于制定国民经济和社会发展第十五个五年规划的建议 / 十五五规划纲要,2025-10 / 2026-03,79,79,79,zy,located,https://www.gov.cn/zhengce/202510/content_7046050.htm,yes,101738 (sample: 章程 page),gov.py --library zy + gw,exact title hit in zhengcelibrary_zy (searchfield=title)
+zy-yfzg,43,中共中央关于全面推进依法治国若干重大问题的决定,2014,77,81,77,zy,located,https://www.gov.cn/zhengce/2014-10/28/content_2771946.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+zy-aqsc,46,中共中央国务院关于推进安全生产领域改革发展的意见,2016,75,92,75,zy,located,https://www.gov.cn/zhengce/2016-12/18/content_5149663.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+bm-xg-9,90 372,新型冠状病毒肺炎防控方案（第九版）,联防联控机制综发〔2022〕71号,75,75,75,bm,located,https://www.gov.cn/zhengce/zhengceku/2020-02/22/content_5482010.htm,yes,38384 (sample),gov.py --library bm,editions 3-5 found in bm; 第九版 (2022) itself not in top hits — same series
+jm-gtkj,47,江门市国土空间总体规划（2021-2035年）,,74,101,74,gd,located,http://www.gd.gov.cn/gkmlpt/content/4/4243/post_4243755.html,yes,,gkmlpt jiangmen --search,省政府批复 of the plan (the plan text is its attachment)
+sz-stic-yf,48 91,深圳市科技创新委员会关于创新型产业用房管理的实施细则,深科技创新规〔2022〕5号,74,167,127,sz,located,https://www.sz.gov.cn/zfgb/2022/gb1263/content/post_10223892.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt stic --search,深科技创新规〔2022〕5号 in 公报 2022 gb1263
+zs-cssj,50,关于加强城市设计和建筑特色管理的若干指引（试行）,,72,103,72,zs,located,http://www.zs.gov.cn/zslyj/gkmlpt/content/1/1076/post_1076032.html,yes,,gkmlpt zhongshan --search,2017 公示 copy
+sz-csgx,150 211,深圳市拆除重建类城市更新单元计划管理规定 (+ pnr 历史遗留违法建筑 通知),,72,90,72,sz,located,https://www.sz.gov.cn/zfgb/2019/gb1095/content/post_4990486.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt sz/pnr --search,2019 公报
+bm-dlwx,185 186,道路危险货物运输管理规定 / 道路运输管理工作规范,交通部,72,77,72,bm,bm-miss,,host-yes,,gov.py --library bm / mot,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-jncp,51 174 205,财政部 国家发展改革委关于开展节能产品惠民工程的通知,财建〔2009〕213号,71,140,140,bm,bm-miss,,host-yes,,gov.py --library bm --deep / mof,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+su-zs,140 265,苏州 房屋征收补偿方案 (虎丘景区 / 解放新村),,69,77,69,gap,gap,,host-yes (crawled site),,suzhou crawler (district 征收 notices),origin site is crawled; the document sits in an uncrawled section/archive
+bm-cgk3,57 394,财库〔2022〕3号 (政府采购 较大数额罚款 认定),财库〔2022〕3号,68,89,89,bm,bm-miss,,host-yes,,gov.py --library bm / mof,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zy-yg,60 131,中共中央国务院关于深化医药卫生体制改革的意见,中发〔2009〕6号,67,110,105,zy,probed-miss,,host-yes,,gov.py --library zy,zy title-search returned only the 2016 转发 doc; 中发〔2009〕6号 not confirmed
+bm-sy,58,兽药注册办法,农业部令,66,66,66,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zy-stwm,179 245,中共中央国务院关于加快推进生态文明建设的意见,2015,64,74,64,zy,located,https://www.gov.cn/zhengce/2015-05/05/content_2857363.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+bm-zcpg,61,资产评估行业财政监督管理办法,财政部令第86号,63,76,63,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zy-gwcl,63,党政机关公文处理工作条例,中办发〔2012〕14号,62,62,62,zy,located,https://www.gov.cn/zhengce/2013-02/22/content_2640088.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+bm-jyks,64,国家教育考试违规处理办法,教育部令第33号,62,69,62,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+fj-zc,74 315,福建省职称评审管理暂行办法,闽人社发〔2021〕1号,61,90,84,gap,gap,https://rst.fujian.gov.cn/,host-yes,120475,govcms fj_rst (add 人社厅 if absent),人社厅 portal reachable; add as fj_rst govcms site
+zy-jsdw,66,中共中央国务院关于全面深化新时代教师队伍建设改革的意见,2018,61,76,61,zy,located,https://www.gov.cn/zhengce/2018-01/31/content_5262659.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+zy-jygh,72,国家中长期教育改革和发展规划纲要（2010-2020年）,2010,60,64,60,zy,probed-miss,,host-yes,,gov.py --library zy,zy title-search miss (2010 doc)
+bm-rfjl,70 71 292,人防工程监理行政许可资质管理办法,国人防〔2013〕227号,60,154,145,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+sz-zxzj,73,深圳市市级财政专项资金管理办法,,59,65,59,sz,located,https://www.sz.gov.cn/gkmlpt/content/7/7786/post_7786857.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt sz --search,解读 pages located (2018/2023); the 办法 sits in the same gkmlpt pile
+bm-xfaq,116 365,机关团体企业事业单位消防安全管理规定 / 消防监督检查规定,公安部令第61号 / 第120号,59,73,67,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+sz-stic-ys,77,深圳市科技计划项目实施过程与验收管理办法（试行）,,58,59,58,sz,source-verified,,host-yes,,gkmlpt stic --search,not individually probed; same sz.gov.cn 公报/gkmlpt archive as the 10 located items
+zy-kjtz,217 246,中共中央国务院关于深化科技体制改革加快国家创新体系建设的意见 (2012) / 深化体制机制改革加快实施创新驱动发展战略的若干意见 (2015),,58,69,58,zy,source-verified,,host-yes,,gov.py --library zy,
+gw-wzjy,79,无照经营查处取缔办法,国务院令第370号 (repealed 2017),57,63,57,gw,located,https://www.gov.cn/zhengce/zhengceku/2008-03/28/content_4305.htm,yes,58937 (sample),gov.py --library gw / npc,国令第370号
+bm-xnyqc,266 376 94,财政部 税务总局 工信部 科技部 关于免征新能源汽车车辆购置税的公告,2017年第172号,55,100,100,bm,located,https://www.gov.cn/zhengce/zhengceku/2022-09/26/content_5712586.htm,yes,,gov.py --library bm / chinatax,8 related 公告 in bm; the exact 2017年第172号 not in top-5 — chinatax crawler is the primary route
+zy-spaq,82,中共中央国务院关于深化改革加强食品安全工作的意见,2019,54,65,54,zy,located,https://www.gov.cn/zhengce/2019-05/20/content_5393212.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+zy-zscqbh,87,关于强化知识产权保护的意见,中办国办 2019,53,56,53,zy,located,https://www.gov.cn/zhengce/2019-11/24/content_5455070.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+zy-spzr,249 303,地方党政领导干部食品安全责任制规定 / 安全生产责任制规定,中办国办 2019/2018,53,54,53,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-csj,267 268,长江三角洲区域一体化发展规划纲要 / 关于进一步加强城市规划建设管理工作的若干意见,2019 / 2016,53,57,53,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-gwy-kc,221 222,公务员录用考察办法（试行） / 公务员录用违规违纪行为处理办法,中组部 等 2021,53,63,60,zy,probed-miss,,host-yes,,gov.py --library zy or bm,zy/bm title-search miss (2021 中组部 docs)
+gz-yjya,93,广州市突发事件总体应急预案,,52,52,52,gd,probed-miss,,host-yes,,gkmlpt gz --search,SID 2 search is gd.gov.cn-only (not province-wide) — needs the gz SID
+bm-spzt,272 286,企业落实食品安全主体责任监督管理规定 / 网络餐饮服务经营者落实食品安全主体责任监督管理规定,市场监管总局令第60号,52,71,52,bm,bm-miss,,host-yes,,gov.py --library bm / samr,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bj-cljz,132 158,关于进一步规范行政裁量权基准制定和管理工作的实施意见,京依法行政办发〔2023〕4号,51,89,81,gap,gap,,host-yes (crawled site),,beijing / bjb_sfj crawler,origin site is crawled; the document sits in an uncrawled section/archive
+zy-tj,95,关于深化统计管理体制改革提高统计数据真实性的意见,中办国办 2016,51,58,51,zy,probed-miss,,host-yes,,gov.py --library zy,zy title-search miss (0 hits) — may use a different title form
+bm-ld,105 363,建设项目使用林地审核审批管理办法/规范,国家林业局令第35号,51,72,71,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zy-ybgg,98,中共中央国务院关于深化医疗保障制度改革的意见,中发〔2020〕5号,50,50,50,zy,located,https://www.gov.cn/zhengce/2020-03/05/content_5487407.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+zy-jggg2018,100,深化党和国家机构改革方案,2018,50,55,50,zy,located,https://www.gov.cn/zhengce/2018-03/21/content_5276191.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+bm-yjya,101,生产安全事故应急预案管理办法,应急部令第2号,50,55,50,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-hbcf,309 314,环境保护违法违纪行为处分暂行规定 / 违反土地管理规定行为处分办法,监察部 令,50,51,50,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zs-rjl,251 392,建设用地容积率调整规范 / 建设用地容积率管理规定 (中山),,49,51,49,zs,source-verified,,host-yes,,gkmlpt zhongshan --search,not individually probed; zslyj gkmlpt sub-site is the expected home
+gdii-misc,152 306,GD 工信厅 internal (人大建议合并交办方案; 专精特新挂牌融资服务方案),,49,65,65,gap,gap,,host-yes (crawled site),,gkmlpt gdii,origin site is crawled; the document sits in an uncrawled section/archive
+zy-zyy,102,中共中央国务院关于促进中医药传承创新发展的意见,2019,49,59,49,zy,located,https://www.gov.cn/zhengce/2019-10/26/content_5445336.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+gw-zsj,106,珠江三角洲地区改革发展规划纲要（2008－2020年）,NDRC 2008,49,54,49,gw,probed-miss,,host-yes,,gov.py --library gw/bm,gw title-search miss (1997/1998/2008 NDRC doc — library gw starts ~2000 and is 国务院-only)
+js-ysd,166 254,省政府办公厅关于加强全省饮用水水源地管理与保护工作的意见 (+2011 达标建设 通知),苏政办发〔2017〕85号 / 苏政办发〔2011〕153号,47,66,66,gap,gap,,host-yes (crawled site),,jiangsu crawler (check 失效/废止 archive),origin site is crawled; the document sits in an uncrawled section/archive
+gw-xxgkf,342 260,政府信息公开信息处理费管理办法 / 政府信息公开工作年度报告格式,国办函〔2020〕109号 / 国办公开办函〔2021〕30号,47,50,50,gw,located,https://www.gov.cn/zhengce/zhengceku/2020-12/01/content_5566168.htm,yes,58937 (sample),gov.py --library gw,国办函〔2020〕109号
+gd-gwy-gg,327 361,广东省考试录用公务员公告/专业参考目录 (2023/2025),,46,46,46,gd,source-verified,,host-yes,,gkmlpt gd --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+jy-bzdnm,113,转发省人力资源和社会保障厅关于进一步做好我省被征地农民养老保障工作意见的通知,,46,46,46,gd,source-verified,,host-yes,,gkmlpt jieyang --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+sz-stkz,111,深圳市基本生态控制线管理规定,市政府令第145号,46,46,46,sz,located,https://www.sz.gov.cn/zfgb/2005/gb461/content/post_4950100.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt sz --search,2005 公报
+zy-xczx,109,中共中央国务院关于实施乡村振兴战略的意见,2018,46,57,46,zy,located,https://www.gov.cn/zhengce/2018-02/04/content_5263807.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+zy-zl,110,中共中央国务院关于开展质量提升行动的指导意见,2017,46,54,46,zy,located,https://www.gov.cn/zhengce/2017-09/12/content_5224580.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+bm-jzlj,326 360,城市建筑垃圾管理规定 / 城市供水水质管理规定,建设部令第139号 / 第156号,46,55,46,bm,bm-miss,,host-yes,,gov.py --library bm (MOHURD mirror),gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-ylzl,114,医疗质量管理办法,卫计委令第10号,45,51,45,bm,bm-miss,,host-yes,,gov.py --library bm (NHC mirror),title-search returned an unrelated 药监局 办法
+bm-mfqy,117,民办非企业单位年度检查办法,民政部令,45,63,45,bm,bm-miss,,host-yes,,gov.py --library bm (MCA mirror),gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zy-wrfz,120,中共中央国务院关于全面加强生态环境保护坚决打好污染防治攻坚战的意见,2018,44,49,44,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-zc,122,关于深化职称制度改革的意见,中办国办 2016,44,44,44,zy,source-verified,,host-yes,,gov.py --library zy,
+bm-gydj,121,全国工业用地出让最低价标准,国土资发〔2009〕56号,44,47,44,bm,bm-miss,,host-yes,,gov.py --library bm (MNR mirror),gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-kjzx,139 190 348,科技型中小企业评价服务工作指引,国科火字〔2022〕67号,44,107,100,bm,bm-miss,,host-yes,,gov.py --library bm / most,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-smjj,371 378,私募投资基金监督管理暂行办法 / 首次公开发行股票注册管理办法,证监会令第105号 / 第205号,44,59,44,gap,gap,,host-yes (crawled site),,csrc crawler (政策法规库 section gap),origin site is crawled; the document sits in an uncrawled section/archive
+js-jggg2009,129 133 142 144,江苏省人民政府机构改革方案/实施意见 2009,厅字〔2009〕21号 / 苏委〔2009〕252号,43,189,167,nonpublic,nonpublic,,n/a,,,中办/省委 机构改革 docs — never published
+nx-zz,126 128,自治区住房和城乡建设厅关于进一步加强建设工程企业资质审批和管理的通知,宁建（建）发〔2024〕28号,43,88,86,gap,gap,,host-yes (crawled site),,govcms nx_jst (section gap),origin site is crawled; the document sits in an uncrawled section/archive
+zy-zwgk,125,关于全面推进政务公开工作的意见,中办发〔2016〕8号,43,43,43,zy,located,https://www.gov.cn/zhengce/2016-02/17/content_5042791.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+bm-jf,130,道路交通安全违法行为记分管理办法,公安部令第163号,43,55,43,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+gd-law-tdgl,135,广东省实施〈中华人民共和国土地管理法〉办法,省人大,42,42,42,flk,alias-fix,(held) npc: 广东省实施《中华人民共和国土地管理法》办法,n/a,,npc crawler (metadata),ALREADY IN CORPUS; cited form carries HTML entities (&lt;…&gt;) — unescape in ref normalization
+zh-zz,137 138 164,珠海市人民政府办公室关于做好重要政策信息转载工作的通知,珠府办函〔2015〕2号,42,122,122,nonpublic,nonpublic,,n/a,,,internal 函 + attached 说明
+sz-pxf,136,深圳市市级机关培训费管理办法,,42,54,42,sz,source-verified,,host-yes,,gkmlpt sz --search,not individually probed; same sz.gov.cn 公报/gkmlpt archive as the 10 located items
+gw-whyc,188 199,国务院关于加强文化遗产保护的通知,国发〔2005〕42号,42,68,68,gw,located,https://www.gov.cn/zhengce/zhengceku/2008-03/28/content_5926.htm,yes,58937 (sample),gov.py --library gw --deep,国发〔2005〕42号
+nondoc-garbled,134,国家税务总局关于发布的公告 (garbled title),,42,43,42,nondoc,nondoc,,n/a,,,
+gd-zjgt,149 156,广东省城乡建设用地增减挂钩节余指标跨省域调剂实施细则,粤自然资规划发〔2018〕15号,41,81,81,gd,probed-miss,,host-yes,,gkmlpt gdnr --search,"search returned a 2020 通知 + 批复s, not the 2018 细则 itself"
+gd-law-gl,148,广东省公路条例,省人大,41,41,41,flk,alias-fix,(held) npc: 广东省公路条例 ×4,n/a,,npc crawler (metadata),ALREADY IN CORPUS ×4 — unresolved despite exact title; resolver anomaly to inspect
+zy-trz,143,中共中央国务院关于深化投融资体制改革的意见,2016,41,49,41,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-dyzr,146,党政主要负责人履行推进法治建设第一责任人职责规定,中办国办 2016,41,49,41,zy,located,https://www.gov.cn/zhengce/2016-12/14/content_5148026.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+zy-jjj,145,京津冀协同发展规划纲要,2015,41,48,41,nonpublic,nonpublic,,n/a,,,only 要点 released
+gd-jggg2009,155,中共广东省委、广东省人民政府关于印发〈广东省人民政府机构改革方案〉的通知,粤发〔2009〕8号,40,40,40,nonpublic,nonpublic,,n/a,,,party 机构改革方案 — never published
+heyuan-rq,153,市管干部任前公示办法 (河源),,40,49,40,nonpublic,nonpublic,,n/a,,,party internal
+zy-dl9,157 187,中共中央国务院关于进一步深化电力体制改革的若干意见,中发〔2015〕9号,40,80,74,nonpublic,nonpublic,,n/a,,,9号文 full text never published on gov.cn
+zy-szxc,159,数字乡村发展战略纲要,中办国办 2019,39,43,39,zy,source-verified,,host-yes,,gov.py --library zy,
+bm-tjcf,160,统计违纪违法责任人处分处理建议办法,统计局 2014,39,42,39,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zy-xqjy,162,中共中央国务院关于学前教育深化改革规范发展的若干意见,2018,38,42,38,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-gtkj,168,中共中央国务院关于建立国土空间规划体系并监督实施的若干意见,2019,37,44,37,zy,located,https://www.gov.cn/zhengce/2019-05/23/content_5394187.htm,yes,101738 (sample: 章程 page),gov.py --library zy,exact title hit in zhengcelibrary_zy (searchfield=title)
+gw-hq,172,横琴总体发展规划,2009,37,39,37,gw,source-verified,,host-yes,,gov.py --library gw/bm,not individually probed; same library as the 7/10 confirmed gw hits
+gd-wsqs,184 176,中共广东省委广东省人民政府关于建设卫生强省的决定,粤发〔2015〕15号,36,72,72,gd,probed-miss,,host-yes,,gkmlpt gd --search,title-search miss
+sz-sydw-zp,236 252,深圳市事业单位公开招聘工作人员办法,深人社规〔2019〕9号,36,58,57,sz,probed-miss,,host-yes,,gkmlpt hrss --search,sz.gov.cn search miss (dept-internal 办法 / 市委 doc) — try the dept gkmlpt SID or 公报 index
+zy-sl,175,中共中央国务院关于加快水利改革发展的决定,2011,36,37,36,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-gmdd,178,公民道德建设实施纲要,中共中央 2001,36,39,36,zy,source-verified,,host-yes,,gov.py --library zy (may predate library),
+gw-zftz,183,政府投资条例,国务院令第712号,36,36,36,gw,located,https://www.gov.cn/zhengce/zhengceku/2019-05/05/content_5388798.htm,yes,58937 (sample),gov.py --library gw / npc,国令第712号
+bm-kj125,181,国家“十二五”科学和技术发展规划,科技部 2011,36,37,36,bm,bm-miss,,host-yes,,gov.py --library bm / most,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+gd-sanjiu,223 241,关于推进“三旧”改造促进节约集约用地的若干意见,粤府〔2009〕78号,35,59,59,gd,probed-miss,,host-yes,,gkmlpt gd --search,"search found the 2016 successor (post_145344), not 粤府〔2009〕78号"
+gw-ylbx,189,国务院关于完善企业职工基本养老保险制度的决定,国发〔2005〕38号,35,35,35,gw,located,https://www.gov.cn/zhengce/zhengceku/2008-03/28/content_7376.htm,yes,58937 (sample),gov.py --library gw --deep,国发〔2005〕38号
+bm-sbjj,192,社会保险基金财务制度,财社〔2017〕144号,35,36,35,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-ymys,194 202,大中型水利水电工程移民安置前期工作管理暂行办法,水规计〔2010〕33号,35,84,67,bm,bm-miss,,host-yes,,gov.py --library bm / mwr,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+zy-85pf,198,关于开展法治宣传教育的第八个五年规划（2021—2025年）,中宣部/司法部,33,33,33,zy,source-verified,,host-yes,,gov.py --library zy,
+bm-sg-xk,201,建筑施工企业安全生产许可证管理规定,建设部令第128号,33,35,33,bm,bm-miss,,host-yes,,gov.py --library bm (MOHURD mirror),gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+tax-ygz,203,营业税改征增值税试点过渡政策的规定,财税〔2016〕36号 附件3,33,39,33,nondoc,nondoc,,n/a,,,attachment of a (likely held) 财税〔2016〕36号
+sz-zbtb,240 383,深圳市人民政府印发关于建设工程招标投标改革若干规定的通知,深府〔2015〕73号,32,53,50,sz,located,https://www.sz.gov.cn/zfgb/2015/gb935/content/post_4950257.html,yes (http; https fails TLS BAD_ECPOINT from Python urllib),66443 (sample 行政听证办法),gkmlpt sz --search,深府〔2015〕73号 in 公报 2015 gb935
+bm-ccc,204,强制性产品认证管理规定,质检总局令第117号,32,44,32,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-cepa,296 340,内地与香港/澳门关于建立更紧密经贸关系的安排 (CEPA),商务部 2003,32,48,48,gap,gap,,host-yes (crawled site),,mofcom crawler (section gap),origin site is crawled; the document sits in an uncrawled section/archive
+zy-tgzg,213,深化国税、地税征管体制改革方案,中办国办 2015,31,38,31,zy,source-verified,,host-yes,,gov.py --library zy,
+gw-zfzd,209,国务院关于进一步深化城镇住房制度改革加快住房建设的通知,国发〔1998〕23号,31,33,31,gw,probed-miss,,host-yes,,gov.py --library gw --deep,gw title-search miss (1997/1998/2008 NDRC doc — library gw starts ~2000 and is 国务院-only)
+bm-hlwgg,208,互联网广告管理办法,市场监管总局令第72号,31,41,31,bm,bm-miss,,host-yes,,gov.py --library bm / samr,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+gd-ggrs-ga,226,粤港澳大湾区（内地）事业单位公开招聘港澳居民管理办法,粤人社规〔2021〕34号,30,30,30,gd,source-verified,,host-yes,,gkmlpt gd/hrss --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+sz-rcyx,307 354,中共深圳市委 深圳市人民政府印发〈关于促进人才优先发展的若干措施〉的通知,深发〔2016〕9号,30,47,47,sz,probed-miss,,host-yes,,gkmlpt sz --search,sz.gov.cn search miss (dept-internal 办法 / 市委 doc) — try the dept gkmlpt SID or 公报 index
+zy-tpgj,216,中共中央国务院关于打赢脱贫攻坚战的决定,2015,30,35,30,zy,source-verified,,host-yes,,gov.py --library zy,
+bm-sydw-cf,219,事业单位工作人员处分暂行规定,人社部令第18号,30,32,30,bm,located,https://www.gov.cn/zhengce/zhengceku/202311/content_6916929.htm,yes,,gov.py --library bm,successor 事业单位工作人员处分规定 (2023) in bm; the cited 2012 暂行规定 is superseded
+bm-bjsp,220,保健食品注册与备案管理办法,CFDA令第22号,30,38,30,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-lwpq,224,劳务派遣行政许可实施办法,人社部令第19号,30,35,30,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+gd-srhj,232,广东省城市市容和环境卫生管理规定,,29,29,29,gd,source-verified,,host-yes,,gkmlpt gd --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+gd-jszg-tj,233,广东省教师资格申请人员体格检查标准（2013年修订）,,29,29,29,gd,source-verified,,host-yes,,gkmlpt gd/edu --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+sz-gyyd,238,深圳市工业及其他产业用地供应管理办法,,29,30,29,sz,source-verified,,host-yes,,gkmlpt sz --search,not individually probed; same sz.gov.cn 公报/gkmlpt archive as the 10 located items
+sz-fwaq,239,深圳市房屋安全管理办法,,29,34,29,sz,source-verified,,host-yes,,gkmlpt sz --search,not individually probed; same sz.gov.cn 公报/gkmlpt archive as the 10 located items
+gw-jncg,244,节能产品政府采购实施意见,国办发〔2004〕51号,29,29,29,gw,source-verified,,host-yes,,gov.py --library gw --deep,not individually probed; same library as the 7/10 confirmed gw hits
+bm-kjs,228,会计师事务所执业许可和监督管理办法,财政部令第89号,29,34,29,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-rfsb,230,人民防空防护设备检验检测管理办法,NDRC/SAMR,29,29,29,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-dcdl,234,新能源汽车废旧动力电池回收和综合利用管理暂行办法,工信部 等,29,35,29,bm,bm-miss,,host-yes,,gov.py --library bm / miit,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-gkzs,235,普通高等学校招生违规行为处理暂行办法,教育部令第36号,29,30,29,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-fwpg,247,国有土地上房屋征收评估办法,建房〔2011〕77号,28,32,28,bm,bm-miss,,host-yes,,gov.py --library bm (MOHURD mirror),gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-zyzf,255,中央对地方专项转移支付绩效目标管理暂行办法,财预〔2015〕163号,28,28,28,bm,bm-miss,,host-yes,,gov.py --library bm / mof,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-qyhx,248,统计上大中小微型企业划分办法（2017）,国统字〔2017〕213号,28,28,28,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+gd-law-xf,262,广东省实施〈中华人民共和国消防法〉办法,省人大,27,29,27,flk,source-verified,,n/a,,npc crawler (metadata),npc likely holds it (地方性法规); not checked
+zy-gq,257,中共中央国务院关于深化国有企业改革的指导意见,2015,27,31,27,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-xqsf,264,深圳建设中国特色社会主义先行示范区综合改革试点实施方案（2020—2025年）,中办国办 2020,27,30,27,zy,source-verified,,host-yes,,gov.py --library zy,
+bm-cpy,259 261,国家发展改革委关于降低国内成品油价格的通知,发改电〔2015〕10号,27,68,54,bm,bm-miss,,host-yes,,gov.py --library bm / ndrc,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+gd-slcf,278,广东省森林采伐管理办法,,26,26,26,gd,source-verified,,host-yes,,gkmlpt gd --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+yj-qm,288,阳江市市辖区征收土地青苗及附着物补偿规定,,26,26,26,blocked,blocked,,no (yangjiang.gov.cn blackholed),0,gkmlpt yangjiang — host blackholed from NYC,
+sz-xxcy,281,深圳市人民政府关于发展壮大战略性新兴产业集群和培育发展未来产业的意见,,26,31,26,sz,source-verified,,host-yes,,gkmlpt sz --search,not individually probed; same sz.gov.cn 公报/gkmlpt archive as the 10 located items
+bm-gzjy,271,企业国有资产交易监督管理办法,国资委/财政部令第32号,26,35,26,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-czqc,273,出租汽车驾驶员从业资格管理规定,交通部令,26,29,26,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-whp,275,危险化学品经营许可证管理办法,安监总局令第55号,26,30,26,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-yyef,277,婴幼儿配方乳粉生产许可审查细则（2013版）,CFDA 2013,26,39,26,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-dqdz,284,电器电子产品有害物质限制使用管理办法,工信部令第32号,26,30,26,bm,bm-miss,,host-yes,,gov.py --library bm / miit,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-jrhx,287,金融业企业划型标准规定,银发〔2015〕309号,26,26,26,bm,bm-miss,,host-yes,,gov.py --library bm / pbc,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+law-fqx,276,反倾销和反补贴条例,国务院令 1997 (repealed),26,39,26,flk,source-verified,,n/a,,npc crawler (metadata),1997 条例 repealed 2001; flk may hold under 失效
+gd-sydw-tj,310,广东省事业单位公开招聘人员体检实施细则（试行）,粤人社发〔2010〕382号,25,25,25,gd,source-verified,,host-yes,,gkmlpt gd/hrss --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+jy-tdgh,305 313,转发市国土资源局揭阳市区土地规划控制和征收工作方案的通知,揭府办〔2012〕104号,25,50,50,gd,source-verified,,host-yes,,gkmlpt jieyang --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+sz-fzzf,308,深圳市法治政府建设实施方案,,25,34,25,sz,source-verified,,host-yes,,gkmlpt sz --search,not individually probed; same sz.gov.cn 公报/gkmlpt archive as the 10 located items
+xz-kj,312 333 374 375,西藏自治区应用技术研究与开发专项资金管理办法 / 科技计划项目管理办法,藏财教〔2018〕76号 / 藏科发〔2024〕322号,25,111,93,gap,gap,,host-yes (crawled site),,govcms xz_sti (section gap),origin site is crawled; the document sits in an uncrawled section/archive
+zy-wz,293,关于实行党政领导干部问责的暂行规定,中办国办 2009,25,30,25,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-xfjy,311,组建国家综合性消防救援队伍框架方案,中办国办 2018,25,31,25,zy,source-verified,,host-yes,,gov.py --library zy (likely unpublished),
+gw-kjjh,294,关于深化中央财政科技计划（专项、基金等）管理改革的方案,国发〔2014〕64号,25,25,25,gw,located,https://www.gov.cn/zhengce/zhengceku/2015-01/12/content_9383.htm,yes,58937 (sample),gov.py --library gw,国发〔2014〕64号
+gw-fwy,300,国务院关于加快发展服务业的若干意见,国发〔2007〕7号,25,25,25,gw,source-verified,,host-yes,,gov.py --library gw --deep,not individually probed; same library as the 7/10 confirmed gw hits
+gw-jksb,301,国务院关于调整进口设备税收政策的通知,国发〔1997〕37号,25,25,25,gw,probed-miss,,host-yes,,gov.py --library gw --deep,gw title-search miss (1997/1998/2008 NDRC doc — library gw starts ~2000 and is 国务院-only)
+gw-gwcl,302,国家行政机关公文处理办法,国发〔2000〕23号,25,29,25,gw,source-verified,,host-yes,,gov.py --library gw --deep,not individually probed; same library as the 7/10 confirmed gw hits
+bm-ncp,297,农产品质量安全检测机构考核办法,农业部令,25,38,25,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-lsdt,298,制造业绿色低碳发展行动方案（2025—2027年）,工信部 等 2025,25,27,25,bm,bm-miss,,host-yes,,gov.py --library bm / miit,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-miit-al,304,工业和信息化部办公厅关于集中组织开展典型案例征集工作的通知,,25,25,25,gap,gap,,host-yes (crawled site),,miit crawler (incremental),origin site is crawled; the document sits in an uncrawled section/archive
+now-resolves,316,食品经营许可和备案管理办法,,25,30,25,resolved,resolved,,n/a,,,resolves to doc 900163952 since the queue snapshot
+zs-czgh,322,中山市村庄规划编制指引,,24,33,24,zs,source-verified,,host-yes,,gkmlpt zhongshan --search,not individually probed; zslyj gkmlpt sub-site is the expected home
+gd-lmgd,321,中共广东省委关于深入推进绿美广东生态建设的决定,,24,24,24,gd,source-verified,,host-yes,,gkmlpt gd --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+sz-xzgc,331,深圳市行政机关工作人员行政过错责任追究暂行办法,,24,24,24,sz,source-verified,,host-yes,,gkmlpt sz --search,not individually probed; same sz.gov.cn 公报/gkmlpt archive as the 10 located items
+zy-jg,320,中共中央国务院关于推进价格机制改革的若干意见,2015,24,30,24,zy,source-verified,,host-yes,,gov.py --library zy,
+bm-xzgz,332,行政单位国有资产管理暂行办法,财政部令第35号,24,25,24,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+sh-32,318,上海市人民政府关于修改〈上海市化学危险物品生产安全监督管理办法〉等32件市政府规章和规范性文件的决定,,24,24,24,gap,gap,,host-yes (crawled site),,shanghai crawler (section gap),origin site is crawled; the document sits in an uncrawled section/archive
+gd-hzfx,344,广东省火灾高风险区域和重大火灾隐患单位整治挂牌督办实施办法(试行),,23,29,23,gd,source-verified,,host-yes,,gkmlpt gd --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+zy-cqzd,337,中共中央关于持之以恒推进全面从严治党若干重大问题的决定,2025?,23,28,23,zy,source-verified,,host-yes,,gov.py --library zy,
+gw-zfzr,341,国务院办公厅关于推行行政执法责任制的若干意见,国办发〔2005〕37号,23,23,23,gw,source-verified,,host-yes,,gov.py --library gw --deep,not individually probed; same library as the 7/10 confirmed gw hits
+gw-jszg,345,教师资格条例,国务院令第188号,23,23,23,gw,source-verified,,host-yes,,gov.py --library gw / npc,not individually probed; same library as the 7/10 confirmed gw hits
+bm-glsc,339,公路建设市场管理办法,交通部令,23,24,23,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-tsyx,347,特殊医学用途配方食品注册管理办法,CFDA令第24号,23,37,23,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+gd-zcps,349,广东省职称评审管理服务实施办法及配套规定,粤人社规〔2020〕33号,23,23,23,gd,source-verified,,host-yes,,gkmlpt gd/hrss --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+sz-aqsc,368,深圳市生产经营单位安全生产主体责任规定,,22,24,22,sz,source-verified,,host-yes,,gkmlpt sz --search,not individually probed; same sz.gov.cn 公报/gkmlpt archive as the 10 located items
+zy-xgzy,351,中共中央国务院关于进一步做好下岗失业人员再就业工作的通知,中发〔2002〕12号,22,22,22,zy,source-verified,,host-yes,,gov.py --library zy (may predate library),
+zy-zxqy,353,关于促进中小企业健康发展的指导意见,中办国办 2019,22,22,22,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-llh,359,国家积极应对人口老龄化中长期规划,2019,22,24,22,zy,source-verified,,host-yes,,gov.py --library zy,
+zy-zfcg,366,深化政府采购制度改革方案,中央深改委 2018,22,27,22,nonpublic,nonpublic,,n/a,,,never published
+gw-tdtk,358,国务院关于加强土地调控有关问题的通知,国发〔2006〕31号,22,22,22,gw,source-verified,,host-yes,,gov.py --library gw --deep,not individually probed; same library as the 7/10 confirmed gw hits
+gw-2030,352,中国落实2030年可持续发展议程国别方案,外交部 2016,22,38,22,gw,source-verified,,host-yes,,gov.py (xinwen),not individually probed; same library as the 7/10 confirmed gw hits
+bm-wxfx,356,危险性较大的分部分项工程安全管理规定,住建部令第37号,22,24,22,bm,bm-miss,,host-yes,,gov.py --library bm (MOHURD mirror),gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-wdfx,357,国家发展改革委重大固定资产投资项目社会稳定风险评估暂行办法,发改投资〔2012〕2492号,22,22,22,bm,bm-miss,,host-yes,,gov.py --library bm / ndrc,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-jzjz,373,经营者集中审查规定,市场监管总局令第67号,22,31,22,bm,bm-miss,,host-yes,,gov.py --library bm / samr,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-spbc,377,食品补充检验方法工作规定,CFDA,22,31,22,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+gd-ldbz,390,广东省用人单位重大劳动保障违法行为社会公布暂行规定,,21,25,21,gd,source-verified,,host-yes,,gkmlpt gd/hrss --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+gz-xxgk,391,广州市政府信息公开规定,,21,21,21,gd,source-verified,,host-yes,,gkmlpt gz --search,not individually probed; gd.gov.cn 公报/gkmlpt or the dept SID
+nx-sydw,387,宁夏回族自治区2026年事业单位公开招聘工作人员公告,,21,23,21,gap,gap,,host-yes (crawled site),,govcms nx_* (section gap),origin site is crawled; the document sits in an uncrawled section/archive
+zy-dcgz,396,法治政府建设与责任落实督察工作规定,中办国办 2018,21,24,21,zy,source-verified,,host-yes,,gov.py --library zy,
+gw-gk,386,国务院关于已开放港口口岸新建码头启用等有关问题的批复,国函〔2002〕120号,21,21,21,gw,source-verified,,host-yes,,gov.py --library gw --deep,not individually probed; same library as the 7/10 confirmed gw hits
+gw-cjr,395,残疾人就业条例,国务院令第488号,21,21,21,gw,source-verified,,host-yes,,gov.py --library gw / npc,not individually probed; same library as the 7/10 confirmed gw hits
+bm-ylgg,385,医疗广告管理办法,工商总局/卫生部令第26号,21,22,21,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-sj,388,审计署关于进一步加大审计力度促进稳增长等政策措施落实的意见,审政研发〔2015〕58号,21,21,21,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-zfcg87,393,政府采购货物和服务招标投标管理办法,财政部令第87号,21,26,21,bm,bm-miss,,host-yes,,gov.py --library bm,gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
+bm-zjgcs,397,注册造价工程师管理办法,建设部令第150号,21,25,21,bm,bm-miss,,host-yes,,gov.py --library bm (MOHURD mirror),gov.cn bm title-search: 0 hits — 部门规章/old ministry docs are not in the library; origin ministry site needed (several blocked from NYC)
