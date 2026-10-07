@@ -70,8 +70,13 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     `date_quality` (good|crawl_stamped|missing; `crawl_stamped` fires only when ≥70% of a site's
     modal-crawl-day docs are dated THAT day, currently 0 docs. The earlier "76 sites / 29k
     crawl-stamped" was a false positive of a ≥70%-in-crawl-year rule that caught shallow
-    archives; hand-checked 2026-10-07, see `corpus-lessons.md` A4. `scripts/redate_from_html.py
-    --site X` re-parses saved HTML for dates without a recrawl),
+    archives; hand-checked 2026-10-07, see `corpus-lessons.md` A4. The rule also sums bulk
+    DATE-days (≥20 docs & ≥10% of a site on one day, day-01 exempt, ≥50% total) to catch a
+    source CMS's page-regeneration stamps, the Suzhou shape: 3,354 docs sat on two 页面生成时间
+    dates and were redated from the article header / 发文日期 / URL month. `scripts/redate_from_html.py
+    --site X [--dry-run]` re-parses saved HTML for dates without a recrawl, routing site_key →
+    the crawler's own dater (`SITE_DATERS`), same pattern as `backfill_from_html.py` for bodies.
+    Month-precision fallbacks land on day 01 and still read `good`; there is no precision column),
     `lead_issuer` (from `doc_issuers`), `localized_of` (the in-chain higher-level doc whose
     stem a sub-national promulgation re-issues; set on the 2,583 docs re-typed `implementing`.
     The flip requires the parent to be CENTRAL or in the doc's own province/city chain via
