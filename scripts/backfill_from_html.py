@@ -107,9 +107,11 @@ def _site_router() -> dict:
 def _generic_extract_body(html: str) -> str:
     """Generic body extractor — tries multiple common CMS patterns."""
     html = re.sub(r"<(script|style)\b.*?</\1\s*>", "", html, flags=re.S | re.I)
+    # NOTE: no bare "article" — it matched wrapper classes (bt-article-y, detail-article)
+    # and returned the whole article box incl. metadata table/footer as "body".
     for class_name in [
         "trs_editor_view", "TRS_Editor", "TRS_UEDITOR",
-        "article", "articleDetailsText", "text wide",
+        "articleDetailsText", "text wide",
         "xxgk-detail-content", "content-article",
     ]:
         m = re.search(rf'class="[^"]*{re.escape(class_name)}[^"]*"', html)
@@ -177,14 +179,18 @@ def _gkmlpt_extract_body(html: str) -> str:
 
 
 def extract_for_site(site_key: str, html: str, router: dict) -> str:
-    """Site extractor → govcms shared containers → local generic (first ≥50 chars wins)."""
+    """Site extractor → govcms shared containers (bounded, tested) → local generic
+    ONLY for sites with no crawler extractor at all. The generic used to run after
+    every site extractor too; on attachment-only pages it then "found" a wrapper
+    div and wrote the page chrome as body (cq_gaj/js_jtyst, 2026-10-07)."""
     chain = []
     if site_key in router:
         chain.append(router[site_key])
     govcms = _mod("crawlers.govcms")
     if govcms and (site_key not in router or router[site_key] is not govcms._extract_body):
         chain.append(govcms._extract_body)
-    chain.append(_generic_extract_body)
+    if site_key not in router:
+        chain.append(_generic_extract_body)
     for fn in chain:
         try:
             body = fn(html)
