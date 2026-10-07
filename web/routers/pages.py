@@ -14,7 +14,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from web.services.documents import (
-    get_documents, get_document, get_document_citations,
+    get_documents, get_document, get_document_citations, count_distinct_citers,
     annotate_body_with_citations,
     get_sites, get_stats, get_categories, search_documents,
     get_citation_neighborhood, date_str_to_timestamp,
@@ -125,6 +125,9 @@ async def document_detail(request: Request, doc_id: int):
     return templates.TemplateResponse("document.html", {
         "request": request, "doc": doc, "cites": cites, "cited_by": cited_by,
         "annotated_body": annotated_body, "mark_count": mark_count,
+        # Raw inbound beside citation_rank (corpus-lessons B6) — derived from the
+        # cited_by rows already fetched, no extra query.
+        "inbound": count_distinct_citers(cited_by, doc_id),
         "stats": await get_stats(db),
     })
 

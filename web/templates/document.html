@@ -65,8 +65,8 @@
                     <div class="font-medium mt-0.5">{{ (doc.algo_doc_type or 'document')|replace('_',' ') }}</div>
                 </div>
                 <div class="px-4 py-2.5">
-                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Cited by</div>
-                    <div class="font-medium mt-0.5 mono">{{ cited_by|length }}</div>
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted" title="Weighted citation rank (central 3× / provincial 2× / municipal 1.5×) · raw count of distinct citing documents">Citation rank · Cited by</div>
+                    <div class="font-medium mt-0.5 mono whitespace-nowrap"><span class="text-teal">{{ "%.1f"|format(doc.citation_rank) if doc.citation_rank else '—' }}</span> <span class="text-muted">·</span> {{ inbound }} <span class="text-muted text-xs font-normal">cited</span></div>
                 </div>
             </div>
 

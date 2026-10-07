@@ -107,6 +107,36 @@ def get_admin_level(doc_number: str) -> str:
     return "unknown"
 
 
+# Precomputed per-document RAW inbound-citation count (scripts/build_site_stats.py →
+# `doc_inbound`, rebuilt nightly in Phase 2c after the citations rebuild). Shown next
+# to `citation_rank` everywhere rank is rendered (corpus-lessons.md B6): the weighted
+# rank's 3x-central term still shapes the top of the table, so readers see both.
+# List pages LEFT JOIN this table — never a correlated COUNT per row (the perf lesson).
+# Guarded: on a DB where the builder hasn't run yet (fresh restore) the join is skipped
+# and `inbound` is 0, so nothing 500s; `?sort=inbound` falls back to citation_rank.
+_table_cache: dict = {}
+
+
+async def table_exists(db, name: str) -> bool:
+    """Cached sqlite_master check (tables appear only via the nightly builder, so a
+    per-process positive/negative cache is fine; a restart clears it)."""
+    hit = _table_cache.get(name)
+    if hit is not None:
+        return hit
+    ok = bool(await db.fetchval(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name = $1", name))
+    _table_cache[name] = ok
+    return ok
+
+
+async def inbound_join(db, alias: str = "d"):
+    """Return (join_sql, select_expr) for attaching doc_inbound to `alias`."""
+    if await table_exists(db, "doc_inbound"):
+        return (f"LEFT JOIN doc_inbound di ON di.doc_id = {alias}.id",
+                "COALESCE(di.inbound, 0)")
+    return "", "0"
+
+
 async def get_documents(db, site_key=None, category=None, year=None,
                         has_docnum=None, page=1, per_page=50,
                         date_start=None, date_end=None,
@@ -200,9 +230,16 @@ async def get_documents(db, site_key=None, category=None, year=None,
     param_idx += 1
     offset_idx = param_idx
 
+    # Raw inbound count rides along on every row (0 when the table is absent).
+    join_inbound, inbound_expr = await inbound_join(db)
+
     # Sort order
     order_clause = "d.date_written DESC"
-    if sort_by == "citation_rank":
+    if sort_by == "inbound" and join_inbound:
+        # Raw (unweighted) inbound. Walks the LEFT JOIN (~0.2s warm over the full
+        # corpus; sub-ms once a site/category filter narrows it). Rank tiebreak.
+        order_clause = f"{inbound_expr} DESC, d.citation_rank DESC"
+    elif sort_by in ("citation_rank", "inbound"):
         order_clause = "d.citation_rank DESC NULLS LAST"
     elif sort_by == "ai_relevance":
         order_clause = "d.ai_relevance DESC NULLS LAST"
@@ -212,14 +249,22 @@ async def get_documents(db, site_key=None, category=None, year=None,
                    d.date_written, d.date_published, d.site_key,
                    d.classify_main_name, (COALESCE(d.body_text_cn, '') != '') as has_body,
                    d.title_en, d.importance, d.category, d.summary_en,
-                   d.citation_rank, d.algo_doc_type, d.ai_relevance
-            FROM documents d {join_sites}
+                   d.citation_rank, d.algo_doc_type, d.ai_relevance,
+                   {inbound_expr} AS inbound
+            FROM documents d {join_sites} {join_inbound}
             WHERE {where_sql}
             ORDER BY {order_clause}
             LIMIT ${limit_idx} OFFSET ${offset_idx}""",
         *params, per_page, offset
     )
     return rows, total
+
+
+def count_distinct_citers(cited_by, self_id) -> int:
+    """Raw inbound for ONE document from rows get_document_citations already fetched
+    (option (b) for /document/<id>: no extra query). Distinct citing docs, self dropped
+    — the same definition scripts/build_site_stats.py uses for doc_inbound.inbound."""
+    return len({cb["id"] for cb in cited_by if cb["id"] != self_id})
 
 
 async def get_document(db, doc_id: int):

@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from . import documents as _docsvc
+
 _YAML_PATH = Path(__file__).parent.parent.parent / "data" / "annotations.yaml"
 _CACHED = None
 NONE = "__none__"   # aiplus_map sentinel for docs that map to no specific item
@@ -89,14 +91,15 @@ async def _breakdown(db, term):
 
 async def _linked_from_map(db, taxonomy_id, limit=12):
     """Linked docs from the DeepSeek AI+ mapping (aiplus_map), by citation-rank."""
+    join_inbound, inbound_expr = await _docsvc.inbound_join(db)
     rows = await db.fetch(
         "SELECT d.id, d.site_key, d.title, substr(COALESCE(d.date_published,''),1,10) dt, "
-        "d.citation_rank FROM aiplus_map m JOIN documents d ON d.id = m.doc_id "
-        "WHERE m.item_id = $1 AND d.title != '' "
+        f"d.citation_rank, {inbound_expr} FROM aiplus_map m JOIN documents d ON d.id = m.doc_id "
+        f"{join_inbound} WHERE m.item_id = $1 AND d.title != '' "
         "ORDER BY d.citation_rank DESC, d.date_published DESC LIMIT $2",
         taxonomy_id, limit)
     return [{"id": r[0], "site_key": r[1], "title": r[2], "date": r[3],
-             "rank": round(r[4] or 0, 1)} for r in rows]
+             "rank": round(r[4] or 0, 1), "inbound": r[5] or 0} for r in rows]
 
 
 async def _map_count(db, taxonomy_id):
@@ -114,12 +117,16 @@ async def _linked(db, spec):
     where = "(" + " OR ".join(ors) + ")" if ors else "1=1"
     where += f" AND citation_rank >= ${i}"; args.append(spec.get("min_rank", 0)); i += 1
     limit = int(spec.get("limit", 12))
+    join_inbound, inbound_expr = await _docsvc.inbound_join(db)
+    # doc_inbound has no title/site_key/date_published column, so the bare names in
+    # `where` stay unambiguous after the join.
     rows = await db.fetch(
         f"SELECT id, site_key, title, substr(COALESCE(date_published,''),1,10) d, "
-        f"citation_rank FROM documents WHERE {where} AND title != '' "
+        f"citation_rank, {inbound_expr} FROM documents d {join_inbound} "
+        f"WHERE {where} AND title != '' "
         f"GROUP BY title ORDER BY citation_rank DESC LIMIT {limit}", *args)
     return [{"id": r[0], "site_key": r[1], "title": r[2], "date": r[3],
-             "rank": round(r[4] or 0, 1)} for r in rows]
+             "rank": round(r[4] or 0, 1), "inbound": r[5] or 0} for r in rows]
 
 
 # site_key → display source name + admin level (for badges). Falls back to key.

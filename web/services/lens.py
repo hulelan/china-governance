@@ -201,11 +201,14 @@ async def get_topic_lens(db, q: str):
     genres = [{"genre": r["g"], "count": r["c"]} for r in genre_rows]
 
     # Citation neighborhood — the most-cited documents on the topic.
+    # `inbound` = raw distinct citing docs (doc_inbound, precomputed) next to the
+    # weighted rank — corpus-lessons B6. 0 if the builder hasn't run yet.
+    join_inbound, inbound_expr = await docsvc.inbound_join(db)
     anchor_rows = await db.fetch(
-        """SELECT d.id, d.title, d.title_en, d.document_number, d.date_published,
-                  d.citation_rank, d.ai_relevance,
+        f"""SELECT d.id, d.title, d.title_en, d.document_number, d.date_published,
+                  d.citation_rank, d.ai_relevance, {inbound_expr} AS inbound,
                   COALESCE(NULLIF(s.admin_level, ''), 'unknown') AS lvl, s.name AS site_name
-           FROM documents d JOIN sites s ON s.site_key = d.site_key
+           FROM documents d JOIN sites s ON s.site_key = d.site_key {join_inbound}
            WHERE d.title LIKE $1 AND d.citation_rank > 0
            ORDER BY d.citation_rank DESC
            LIMIT 15""", pat)
@@ -275,6 +278,9 @@ async def get_doc_lens(db, doc_id: int):
         "doc": doc,
         "cites": _dedupe_cites(cites, doc_id),
         "cited_by": _dedupe_cited_by(cited_by, doc_id),
+        # Raw inbound (distinct citers, self dropped) — one lookup's worth of rows we
+        # already hold; shown beside citation_rank (corpus-lessons B6).
+        "inbound": docsvc.count_distinct_citers(cited_by, doc_id),
     }
     _doc_cache[doc_id] = {"data": data, "ts": now}
     return data

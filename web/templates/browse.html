@@ -96,7 +96,8 @@
                     <label class="text-gray-400 text-xs block mb-1">Sort by</label>
                     <select name="sort" class="w-full text-sm">
                         <option value="" {{ 'selected' if not filters.sort }}>Date (newest)</option>
-                        <option value="citation_rank" {{ 'selected' if filters.sort == 'citation_rank' }}>Most cited</option>
+                        <option value="citation_rank" {{ 'selected' if filters.sort == 'citation_rank' }}>Most cited (weighted rank)</option>
+                        <option value="inbound" {{ 'selected' if filters.sort == 'inbound' }}>Most cited (raw inbound)</option>
                         <option value="ai_relevance" {{ 'selected' if filters.sort == 'ai_relevance' }}>AI relevance</option>
                     </select>
                 </div>
@@ -130,7 +131,7 @@
                         <th class="w-20 hidden sm:table-cell">Type</th>
                         <th class="w-28 hidden sm:table-cell">Site</th>
                         <th class="w-14 text-right">AI</th>
-                        <th class="w-14 text-right hidden sm:table-cell">Cited</th>
+                        <th class="w-24 text-right hidden sm:table-cell" title="Weighted citation rank (central 3× / provincial 2× / municipal 1.5×) · raw count of distinct citing documents">Rank · Cited</th>
                         <th class="w-24">Date</th>
                     </tr>
                 </thead>
@@ -150,7 +151,7 @@
                             {% elif doc.ai_relevance and doc.ai_relevance > 0 %}<span class="text-gray-300">{{ "%.0f"|format(doc.ai_relevance * 100) }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-right mono text-xs text-gray-400 hidden sm:table-cell">{{ "%.0f"|format(doc.citation_rank) if doc.citation_rank else '' }}</td>
+                        <td class="text-right mono text-xs text-gray-400 hidden sm:table-cell whitespace-nowrap">{% if doc.citation_rank or doc.inbound %}{{ "%.0f"|format(doc.citation_rank or 0) }} <span class="text-gray-300">·</span> <span class="text-teal">{{ doc.inbound or 0 }}</span>{% endif %}</td>
                         <td class="mono text-gray-400 text-xs">{{ doc.date_published[:10] if doc.date_published else '' }}</td>
                     </tr>
                 {% endfor %}

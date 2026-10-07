@@ -14,8 +14,19 @@ item 3: the first-click-of-the-morning case). `corpus_stats` is a key/value tabl
 scalar keys plus one `year:<YYYY>` row per publication year (the year is computed with
 the same `strftime('%Y', date_written, 'unixepoch')` the live query uses).
 
+The same pass ALSO writes `doc_inbound` (corpus-lessons.md B6): the RAW resolved
+inbound-citation count per document, shown next to `citation_rank` wherever rank is
+rendered, because the 3x-central weighting in `citation_rank` still shapes the top of
+the ranking (19/30 overlap with the raw corrected top-30, citation-network-structure.md).
+`inbound` = COUNT(DISTINCT source_id) over `citations` with a resolved `target_id`,
+self-cites dropped (the memo's definition); `edges` = the raw resolved edge-row count
+(what `citation_rank` weights). One `GROUP BY target_id` pass, ~1s for ~270k edges.
+List pages LEFT JOIN this table instead of running a correlated COUNT per row.
+
 This script is idempotent: run it once now to populate, and it's wired into
-`daily_sync.sh` Phase 2c (after all writers, before the WAL checkpoint) to stay fresh.
+`daily_sync.sh` Phase 2c (after all writers — in particular AFTER Phase 2b's
+extract_citations + compute_scores, so doc_inbound is as fresh as citation_rank —
+and before the WAL checkpoint) to stay fresh.
 It also ensures `idx_documents_classify_main` (the categories facet + category browse
 filter otherwise full-scan 313k rows — the second finding in perf-diagnosis.md).
 
@@ -40,7 +51,27 @@ CREATE TABLE IF NOT EXISTS corpus_stats (
     key   TEXT PRIMARY KEY,   -- total | with_body | with_docnum | site_count | year:<YYYY>
     value INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS doc_inbound (
+    doc_id  INTEGER PRIMARY KEY,          -- documents.id (only docs with >=1 inbound)
+    inbound INTEGER NOT NULL DEFAULT 0,   -- distinct citing documents, self-cites dropped
+    edges   INTEGER NOT NULL DEFAULT 0    -- raw resolved edge rows (what citation_rank weights)
+);
+CREATE INDEX IF NOT EXISTS idx_doc_inbound_inbound ON doc_inbound(inbound);
 """
+
+
+def build_doc_inbound(conn) -> tuple:
+    """Rebuild doc_inbound from `citations` in one GROUP BY pass (~1s). Returns
+    (rows, max_inbound). Runs inside the caller's connection; commits itself."""
+    conn.execute("DELETE FROM doc_inbound")
+    conn.execute(
+        "INSERT INTO doc_inbound(doc_id, inbound, edges) "
+        "SELECT target_id, COUNT(DISTINCT source_id), COUNT(*) "
+        "FROM citations WHERE target_id IS NOT NULL AND source_id != target_id "
+        "GROUP BY target_id")
+    conn.commit()
+    return conn.execute(
+        "SELECT COUNT(*), COALESCE(MAX(inbound),0) FROM doc_inbound").fetchone()
 
 
 def build(db_path: Path) -> tuple:
@@ -95,6 +126,10 @@ def build(db_path: Path) -> tuple:
              ("with_docnum", totals[2]), ("site_count", site_count)]
             + [(f"year:{y}", n) for y, n in sorted(by_year.items())])
         conn.commit()
+        t_in = time.time()
+        in_rows, in_max = build_doc_inbound(conn)
+        print(f"doc_inbound built: {in_rows:,} docs with inbound, max {in_max:,}, "
+              f"{time.time()-t_in:.1f}s")
         conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         return conn.execute(
             "SELECT COUNT(*), COALESCE(SUM(doc_count),0) FROM site_stats").fetchone()
@@ -120,6 +155,12 @@ def main():
         print("corpus_stats:")
         for r in conn.execute("SELECT key, value FROM corpus_stats ORDER BY key"):
             print(f"  {r[0]:<16}{r[1]:>10,}")
+        try:
+            n, mx = conn.execute(
+                "SELECT COUNT(*), COALESCE(MAX(inbound),0) FROM doc_inbound").fetchone()
+            print(f"doc_inbound: {n:,} docs with inbound citations, max {mx:,}")
+        except sqlite3.OperationalError:
+            print("doc_inbound: (table absent — run without --stats to build)")
         conn.close()
         return
 

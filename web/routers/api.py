@@ -36,14 +36,19 @@ async def api_documents(
     site: str = None, category: str = None, year: int = None,
     has_docnum: bool = None, page: int = 1, per_page: int = 50,
     date_start: str = None, date_end: str = None,
-    importance: str = None,
+    importance: str = None, sort: str = None,
 ):
-    """Paginated document listing with optional filters by site, category, year, date range, importance, and doc-number presence."""
+    """Paginated document listing with optional filters by site, category, year, date range, importance, and doc-number presence.
+
+    sort: citation_rank | inbound (raw distinct citing docs) | ai_relevance; default newest.
+    Every row carries both `citation_rank` (level-weighted) and `inbound` (raw).
+    """
     db = request.app.state.db
     ds = date_str_to_timestamp(date_start) if date_start else None
     de = date_str_to_timestamp(date_end) if date_end else None
     rows, total = await get_documents(db, site, category, year, has_docnum, page, per_page,
-                                      date_start=ds, date_end=de, importance=importance)
+                                      date_start=ds, date_end=de, importance=importance,
+                                      sort_by=sort or None)
     return {"documents": [dict(r) for r in rows], "total": total, "page": page}
 
 

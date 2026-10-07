@@ -53,8 +53,8 @@
                     <div class="font-medium mt-0.5">{{ (d.algo_doc_type or 'document')|replace('_',' ') }}</div>
                 </div>
                 <div class="px-4 py-2.5">
-                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted">Citation rank</div>
-                    <div class="font-medium mt-0.5 mono text-teal">{{ "%.1f"|format(d.citation_rank) if d.citation_rank else '—' }}</div>
+                    <div class="text-[10px] tracking-[0.14em] uppercase text-muted" title="Weighted citation rank (central 3× / provincial 2× / municipal 1.5×) · raw count of distinct citing documents">Citation rank · Cited by</div>
+                    <div class="font-medium mt-0.5 mono whitespace-nowrap"><span class="text-teal">{{ "%.1f"|format(d.citation_rank) if d.citation_rank else '—' }}</span> <span class="text-muted">·</span> {{ doc_view.inbound }} <span class="text-muted text-xs font-normal">cited</span></div>
                 </div>
             </div>
             <div class="mt-4">
@@ -280,7 +280,7 @@
                     <th class="w-12">Level</th>
                     <th>Document</th>
                     <th class="w-24 hidden sm:table-cell">文号</th>
-                    <th class="w-20 text-right">Rank</th>
+                    <th class="w-28 text-right" title="Weighted citation rank · raw distinct citing documents">Rank · Cited</th>
                     <th class="w-24 hidden sm:table-cell">Date</th>
                 </tr>
             </thead>
@@ -293,14 +293,14 @@
                         {% if a.title_en %}<div class="text-xs text-muted truncate">{{ a.title_en }}</div>{% endif %}
                     </td>
                     <td class="mono text-xs level-central hidden sm:table-cell">{{ a.document_number or '' }}</td>
-                    <td class="text-right mono text-teal">{{ "%.1f"|format(a.citation_rank) }}</td>
+                    <td class="text-right mono whitespace-nowrap"><span class="text-teal">{{ "%.1f"|format(a.citation_rank) }}</span> <span class="text-muted">·</span> {{ a.inbound or 0 }}</td>
                     <td class="mono text-muted text-xs hidden sm:table-cell">{{ (a.date_published or '')[:10] }}</td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
         </div>
-        <p class="text-muted text-xs mt-2">Rank = weighted inbound-citation score (central 3× / provincial 2× / municipal 1.5×). Click a title to see its full citation neighborhood.</p>
+        <p class="text-muted text-xs mt-2">Rank = weighted inbound-citation score (central 3× / provincial 2× / municipal 1.5×); Cited = raw count of distinct citing documents (unweighted, self-cites dropped). The weighting still shapes the top of the ranking, so both are shown. Click a title to see its full citation neighborhood.</p>
         {% else %}
         <div class="text-muted italic text-sm py-6 border border-dashed border-rule text-center">No cited documents on this topic yet.</div>
         {% endif %}

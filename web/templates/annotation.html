@@ -133,14 +133,14 @@
     <div class="an-seclab"><span class="an-lab">Linked documents</span><span class="an-lab">by citation-rank</span></div>
     <div style="overflow-x:auto;">
     <table class="an-cat">
-      <thead><tr><th>Source</th><th>Document</th><th>Date</th><th class="r">Rank</th></tr></thead>
+      <thead><tr><th>Source</th><th>Document</th><th>Date</th><th class="r" title="Weighted citation rank · raw distinct citing documents">Rank · Cited</th></tr></thead>
       <tbody>
         {% for d in it.linked %}
         <tr>
           <td><span class="badge badge-{{ d.src.level }}">{{ d.src.name }}</span></td>
           <td class="ti"><a href="/document/{{ d.id }}">{{ d.title }}</a></td>
           <td class="dt">{{ d.date }}</td>
-          <td class="rk">{{ d.rank }}</td>
+          <td class="rk" style="white-space:nowrap">{{ d.rank }} · {{ d.inbound }}</td>
         </tr>
         {% endfor %}
       </tbody>
