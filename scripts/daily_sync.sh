@@ -329,6 +329,28 @@ timeout 900 nice -n 19 python3 scripts/rnd/analysis/build_diffusion_events.py --
 log "Phase 2c: Rebuilding tracker_weekly (per-topic weekly rollup)..."
 timeout 300 nice -n 19 python3 scripts/build_tracker_rollup.py >> "$LOG" 2>&1 || log "  build_tracker_rollup had errors"
 
+# --- Phase 2d: Validate the rebuilt analytical tables (corpus-lessons.md B5) ---
+# Read-only regression test of the corpus's known-good facts (boost-consumption
+# cascade lags, 城乡规划法 inbound band, AI+ source gate, proxy-target guards, table
+# sizes, top-of-rank genre). Runs AFTER every Phase 2b/2c writer and BEFORE Phase 3
+# so a regression is caught on the night it lands. A FAIL does NOT abort the
+# publish (fresh data with one bad fact still beats stale data) — it is logged
+# line-by-line and flagged in the Telegram report. Indexed queries, <1s.
+log "Phase 2d: Validating cascades / analytical tables..."
+VALIDATION_OK=true
+VALIDATION_FAILS=""
+VALIDATION_OUT=$(timeout 120 python3 scripts/validate_cascades.py 2>&1)
+VALIDATION_RC=$?
+echo "$VALIDATION_OUT" >> "$LOG"
+if [ "$VALIDATION_RC" -ne 0 ]; then
+    VALIDATION_OK=false
+    VALIDATION_FAILS=$(echo "$VALIDATION_OUT" | grep '^FAIL' | sed 's/^FAIL  //; s/:.*//' | paste -sd ',' -)
+    echo "$VALIDATION_OUT" | grep '^FAIL\|^VALIDATION' | while IFS= read -r line; do log "  $line"; done
+    [ -z "$VALIDATION_FAILS" ] && VALIDATION_FAILS="validate_cascades exited $VALIDATION_RC"
+else
+    log "  $(echo "$VALIDATION_OUT" | grep '^VALIDATION' || echo 'validation passed')"
+fi
+
 # --- Phase 3: Publish the DB to the live web app ---
 # Two modes:
 #   (a) Production droplet (marker file present): the web app reads THIS very
@@ -459,6 +481,8 @@ $(echo -e "$CRAWL_RESULTS")
 • Droplet: ${REMOTE_COUNT:-?} docs (published: $PUBLISH_OK)
 • Backup → Spaces: $BACKUP_OK
 • 🔴 High: $HIGH | 🟡 Medium: $MEDIUM | ⚪ Low: $LOW
+
+🧪 *Validation:* $([ "$VALIDATION_OK" = "true" ] && echo "PASS" || echo "FAIL ($(echo "$VALIDATION_FAILS" | tr ',' '\n' | grep -c .)) — $VALIDATION_FAILS")
 $([ -n "$TOP_SITES" ] && echo "
 📍 *Top sites today:*
 $TOP_SITES")$([ -n "$SAMPLE_LINES" ] && echo "
