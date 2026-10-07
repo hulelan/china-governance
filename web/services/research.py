@@ -49,7 +49,7 @@ CURATED: list[tuple[str, list[str]]] = [
     ]),
     ("Foundations", ["consumption-diffusion", "research-agenda", "related-literature"]),
     ("Method & QA", [
-        "consistency-review", "access-vantage-brief", "residential-proxy-options",
+        "consistency-review", "corpus-lessons", "access-vantage-brief", "residential-proxy-options",
         "us-china-2026-readout-iran",
     ]),
 ]
