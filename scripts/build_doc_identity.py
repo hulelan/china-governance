@@ -27,8 +27,11 @@ SCHEMA
         instrument_role TEXT,   -- canonical|mirror|unique
         genre TEXT,             -- promulgation|implementing|explainer|readout|news|other
         date_quality TEXT,      -- good|crawl_stamped|body_scanned|missing
-        lead_issuer TEXT        -- from doc_issuers.lead_issuer (NULL if none)
+        lead_issuer TEXT,       -- from doc_issuers.lead_issuer (NULL if none)
+        localized_of INTEGER    -- id of the IN-CHAIN higher text whose stem this doc
+                                -- localizes (the genre flip's trigger); NULL otherwise
     ) + indexes on admin_level_doc, instrument_id, genre.
+    The table is DROPPED and recreated on every build (schema changes need no migration).
 
 DERIVATION RULES (rule-based, no LLM; header fields only — no body reads)
 --------------------------------------------------------------------------
@@ -101,6 +104,19 @@ A2  instrument_id — mirrors of one text share one id.
             on Xinhua, or 国务院…《X》 re-posted by a ministry. Locality names come from
             issuer_parser.DOCNUM_SUBNATIONAL (the 文号 registry's agency names) plus the
             doc's own masthead; province-shaped names (X省 / X自治区) are always accepted.
+    IN-CHAIN GENRE FLIP (2026-10-06, docs/working/qa-genre-flip.md): the `localized`
+            flag above (which only keeps a doc OUT of the higher text's pool) fires on
+            ANY higher-ranked same-stem member. The genre flip promulgation ->
+            `implementing` is stricter: it fires only when a same-stem text exists in
+            the doc's OWN jurisdictional chain — central, or its own province
+            (data/city_province.csv), or for a district its own city / province — and
+            the stem is not a self-government housekeeping genre every government
+            writes for itself (GENERIC_STEM_RE: 议事规则, 制定地方性法规条例, 三定规定,
+            政府工作规则 …). The QA hand-check put the broad rule at 80% precision with
+            all 12 wrong flips out-of-chain or housekeeping (苏州市养犬管理条例 <- 天津市;
+            深圳市人大常委会议事规则 <- 福建省); the in-chain rule scores 44/45. The
+            trigger's id is persisted as `localized_of`. A locality the map does not
+            know (false detections such as 转发市) never flips; the count is reported.
     canonical = promulgation genre > highest admin_level_doc > earliest date
                 (first publication is the authoritative copy) > lowest id.
     `unique` docs carry their own id as instrument_id, so GROUP BY instrument_id
@@ -146,6 +162,7 @@ USAGE (repo root; the DB is the droplet's documents.db)
 -------------------------------------------------------
     python3 scripts/build_doc_identity.py --self-test
     python3 scripts/build_doc_identity.py --dry-run          # compute + stats, no write
+    python3 scripts/build_doc_identity.py --dry-run-flips    # broad vs in-chain flip counts + 30 flip-backs, read-only
     python3 scripts/build_doc_identity.py                    # full rebuild, one transaction
     python3 scripts/build_doc_identity.py --validate         # A1–A4 checks against known truth
     python3 scripts/build_doc_identity.py --sample 60 --seed 7   # stratified hand-check dump
@@ -599,6 +616,88 @@ def localize(title, site):
     return stem, loc, locality_rank(loc)
 
 
+# --- jurisdictional chain (for the genre flip) --------------------------------
+CITY_PROVINCE_CSV = ROOT / "data" / "city_province.csv"
+
+
+def load_city_province(path=CITY_PROVINCE_CSV):
+    """city -> province for every prefecture-level division (地级市/自治州/地区/盟);
+    the four 直辖市 map to themselves (they ARE their province)."""
+    import csv
+    out = {}
+    with open(path, encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            out[row["city"].strip()] = row["province"].strip()
+    return out
+
+
+CITY_PROVINCE = load_city_province()
+# Bare district names the corpus emits WITHOUT a city prefix (Shenzhen district sites
+# write 龙华区X / 坪山区X; Wuhan / Nanjing / Qingdao / Chongqing bureaus likewise).
+# A '<city><district>' locality (深圳市龙华区, 北京市密云区) is parsed by prefix instead.
+DISTRICT_CITY = {
+    "福田区": "深圳市", "罗湖区": "深圳市", "南山区": "深圳市", "盐田区": "深圳市",
+    "宝安区": "深圳市", "龙岗区": "深圳市", "龙华区": "深圳市", "坪山区": "深圳市",
+    "光明区": "深圳市", "光明新区": "深圳市", "大鹏新区": "深圳市", "前海合作区": "深圳市",
+    "硚口区": "武汉市", "洪山区": "武汉市", "江汉区": "武汉市", "东湖高新区": "武汉市",
+    "江宁区": "南京市", "崂山区": "青岛市", "福山区": "烟台市", "仲恺高新区": "惠州市",
+    "龙门县": "惠州市", "周矶管理区": "潜江市", "后湖管理区": "潜江市",
+    "重庆高新区": "重庆市", "重庆经开区": "重庆市", "万盛经开区": "重庆市",
+}
+_BJ_DISTRICTS = ("东城区 西城区 朝阳区 丰台区 石景山区 海淀区 门头沟区 房山区 通州区 顺义区 "
+                 "昌平区 大兴区 怀柔区 平谷区 密云区 延庆区 北京经济技术开发区").split()
+DISTRICT_CITY.update({d: "北京市" for d in _BJ_DISTRICTS})
+
+# Stems every government writes for ITSELF (self-government housekeeping): a same-stem
+# text above the doc is not its parent, so these never flip to `implementing`.
+GENERIC_STEM_RE = re.compile(
+    r"议事规则|"                                    # 人大常委会/政府 议事规则
+    r"制定地方性法规条例|立法条例|"                  # how the local 人大 legislates
+    r"讨论.?决定重大事项|"                          # 人大常委会 讨论、决定重大事项的规定
+    r"(?:修改|废止)(?:部分|一批|有关)?(?:地方性)?(?:法规|规章|规范性文件|文件|决定)|"  # omnibus amend/repeal decisions
+    r"宣布失效|"                                    # 宣布失效一批文件的决定
+    r"主要职责内设机构和人员编制|"                   # 三定规定
+    r"政府工作规则|"                                # 政府工作规则
+    r"(?:政府网站|依法行政|法治政府建设)(?:绩效)?考评|"  # self-assessment schemes
+    r"重大行政决策事项目录|"                         # annual decision catalogues
+    r"(?:预算|国有资产|规范性文件|计划).{0,4}(?:审查)?监督(?:条例|办法|规定)")  # 人大 oversight regs
+
+
+def jurisdiction_chain(loc):
+    """Ancestor localities of a locality string from localize(): () for a province /
+    直辖市 (central is the only superior), ('广东省',) for a city, ('深圳市', '广东省')
+    for a district; None when the locality is unknown / unqualified ('<municipal>@sz',
+    a false detection such as '转发市')."""
+    if not loc or loc.startswith("<"):
+        return None
+    if loc in _PROV_MUNI or (loc.endswith(("省", "自治区")) and _PROV_HEAD.match(loc)):
+        return ()
+    if loc in CITY_PROVINCE:
+        prov = CITY_PROVINCE[loc]
+        return () if prov == loc else (prov,)
+    city = DISTRICT_CITY.get(loc)
+    if city is None:  # '深圳市龙华区' / '北京市密云区' / '广东省X县': strip the parent prefix
+        m = _LOC_FIRST.match(loc)
+        if m and len(loc) > len(m.group(1)):
+            city = m.group(1)
+    if city is None:
+        return None
+    if city in _PROV_MUNI:
+        return (city,)
+    prov = CITY_PROVINCE.get(city)
+    if prov is None:
+        return None if city.endswith("市") else (city,)  # X省X县: province only
+    return (city, prov)
+
+
+def in_chain(m, o):
+    """Is higher-ranked same-stem member `o` in doc `m`'s own jurisdictional chain?"""
+    if o["level"] == "central":
+        return True
+    chain = jurisdiction_chain(m["_loc"])
+    return bool(chain) and o["_loc"] in chain
+
+
 _DATE_RE = re.compile(r"^\s*(\d{4})-(\d{1,2})-(\d{1,2})")
 
 
@@ -627,7 +726,7 @@ def assign_instruments(docs):
     stems = defaultdict(list)
     for d in docs.values():
         d["instrument_id"], d["instrument_role"] = d["id"], "unique"
-        d["localized"] = False
+        d["localized"], d["localized_of"], d["_broad_trigger"] = False, None, None
         cls = POOL_CLASS.get(d["genre"])
         if not cls:
             continue
@@ -639,19 +738,42 @@ def assign_instruments(docs):
         d["_rank"] = rank if loc else LEVEL_RANK.get(d["level"], 5)
         stems[(cls, stem)].append(d)
     groups = defaultdict(list)
-    n_localized = 0
+    n_localized = n_flipped = n_flipped_broad = n_unknown_loc = 0
     for (cls, stem), members in stems.items():
         if len(members) > 1:
+            generic = bool(GENERIC_STEM_RE.search(stem))
             for m in members:
-                if m["_loc"] and any(
-                        o["_rank"] < m["_rank"] and o["_loc"] != m["_loc"] for o in members):
-                    m["localized"] = True
-                    n_localized += 1
-                    if m["genre"] == "promulgation" and m["level"] in SUBNATIONAL:
-                        m["genre"] = "implementing"
+                if not m["_loc"]:
+                    continue
+                higher = [o for o in members if o["_rank"] < m["_rank"] and o["_loc"] != m["_loc"]]
+                if not higher:
+                    continue
+                # pooling isolation: ANY higher same-stem member keeps this doc out of
+                # the higher text's pool (a 苏州 条例 must not become a 天津 mirror either)
+                m["localized"] = True
+                n_localized += 1
+                if not (m["genre"] == "promulgation" and m["level"] in SUBNATIONAL):
+                    continue
+                # genre flip: only an IN-CHAIN parent (qa-genre-flip.md option D + denylist)
+                higher.sort(key=lambda o: (o["_rank"], o["date"] or date.max, o["id"]))
+                m["_broad_trigger"] = higher[0]["id"]  # what the pre-QA rule would have used
+                n_flipped_broad += 1
+                if generic:
+                    continue
+                if jurisdiction_chain(m["_loc"]) is None:
+                    n_unknown_loc += 1  # unknown / unqualified locality: cannot place it, no flip
+                    continue
+                trig = next((o for o in higher if in_chain(m, o)), None)
+                if trig is None:
+                    continue
+                m["genre"] = "implementing"
+                m["localized_of"] = trig["id"]
+                n_flipped += 1
         for m in members:
             key = (cls, stem, m["_loc"]) if m["localized"] else (cls, m["_key"])
             groups[key].append(m)
+    stats = {"n_localized": n_localized, "n_flipped": n_flipped,
+             "n_flipped_broad": n_flipped_broad, "n_unknown_loc": n_unknown_loc}
     n_pooled = 0
     for members in groups.values():
         if len(members) < 2 or len({m["site"] for m in members}) < 2:
@@ -685,7 +807,8 @@ def assign_instruments(docs):
                 m["instrument_id"] = canon["id"]
                 m["instrument_role"] = "canonical" if m is canon else "mirror"
                 n_pooled += 1
-    return n_pooled, n_localized
+    stats["n_pooled"] = n_pooled
+    return stats
 
 
 # --------------------------------------------------------------------------- #
@@ -756,7 +879,7 @@ def build(conn):
         d["level"], d["level_source"] = derive_level(d, sl, li)
         d["genre"] = derive_genre(d["title"], d["algo"], d["level"])
         d["site_level"] = sl
-    n_pooled, n_localized = assign_instruments(docs)
+    inst = assign_instruments(docs)
     stamped = crawl_stamped_sites(docs, site_level, crawl_year)
     for d in docs.values():
         if not d["has_date"]:
@@ -765,13 +888,14 @@ def build(conn):
             d["date_quality"] = "crawl_stamped"
         else:
             d["date_quality"] = "good"
-    meta = {"t_load": t_load, "t_total": time.time() - t0, "n_pooled": n_pooled,
-            "n_localized": n_localized, "stamped": stamped, "crawl_year": crawl_year}
+    meta = {"t_load": t_load, "t_total": time.time() - t0, "stamped": stamped,
+            "crawl_year": crawl_year, **inst}
     return docs, meta
 
 
 DDL = """
-CREATE TABLE IF NOT EXISTS doc_identity (
+DROP TABLE IF EXISTS doc_identity;
+CREATE TABLE doc_identity (
     doc_id INTEGER PRIMARY KEY,
     admin_level_doc TEXT,
     level_source TEXT,
@@ -779,7 +903,8 @@ CREATE TABLE IF NOT EXISTS doc_identity (
     instrument_role TEXT,
     genre TEXT,
     date_quality TEXT,
-    lead_issuer TEXT
+    lead_issuer TEXT,
+    localized_of INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_doc_identity_level ON doc_identity(admin_level_doc);
 CREATE INDEX IF NOT EXISTS idx_doc_identity_instrument ON doc_identity(instrument_id);
@@ -790,14 +915,14 @@ CREATE INDEX IF NOT EXISTS idx_doc_identity_genre ON doc_identity(genre);
 def write(conn, docs):
     t0 = time.time()
     rows = [(d["id"], d["level"], d["level_source"], d["instrument_id"], d["instrument_role"],
-             d["genre"], d["date_quality"], d["lead_issuer"]) for d in docs.values()]
+             d["genre"], d["date_quality"], d["lead_issuer"], d["localized_of"])
+            for d in docs.values()]
     conn.execute("BEGIN IMMEDIATE")
     try:
         for stmt in DDL.strip().split(";"):
             if stmt.strip():
                 conn.execute(stmt)
-        conn.execute("DELETE FROM doc_identity")
-        conn.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?)", rows)
+        conn.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?)", rows)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")
@@ -822,6 +947,9 @@ def print_stats(docs, meta, site_level):
     n_inst = len({d["instrument_id"] for d in docs.values()})
     print(f"\ninstruments: {n_inst:,} for {n:,} docs ({meta['n_pooled']:,} docs in pools; "
           f"{meta['n_localized']:,} localized re-issuances kept out of higher-level pools)")
+    print(f"genre flips promulgation->implementing: {meta['n_flipped']:,} in-chain "
+          f"(broad any-higher rule would flip {meta['n_flipped_broad']:,}; "
+          f"{meta['n_unknown_loc']:,} skipped for an unknown locality)")
     print(f"crawl-stamped sites: {len(meta['stamped'])}  "
           f"({sum(1 for d in docs.values() if d['date_quality'] == 'crawl_stamped'):,} docs)")
 
@@ -894,6 +1022,36 @@ def validate(docs, meta):
           f"{sum(1 for d in docs.values() if d['date_quality'] == 'crawl_stamped'):,}")
     for s, (n, k) in sorted(st.items(), key=lambda kv: -kv[1][0])[:12]:
         print(f"   {s:14s} n={n:6,} in-year={k / n:.2f}")
+
+
+def dry_run_flips(docs, meta, n=30, seed=7):
+    """Broad-rule vs in-chain flip counts and a sample of FLIP-BACKS (docs the pre-QA
+    rule flipped to `implementing` that now stay `promulgation`). Read-only."""
+    backs = [d for d in docs.values() if d["_broad_trigger"] is not None and d["localized_of"] is None]
+    print("\n=== genre flip: broad (any higher same-stem member) vs in-chain + denylist ===")
+    print(f"flips before (broad rule): {meta['n_flipped_broad']:,}")
+    print(f"flips after  (in-chain):   {meta['n_flipped']:,}")
+    print(f"flip-backs:                {len(backs):,}  "
+          f"(unknown-locality skips: {meta['n_unknown_loc']:,}; "
+          f"generic-stem skips: {sum(1 for d in backs if GENERIC_STEM_RE.search(d['_stem'])):,})")
+    lv = Counter(d["level"] for d in backs)
+    print("flip-backs by level: " + ", ".join(f"{k}={v:,}" for k, v in lv.most_common()))
+    kept = Counter(docs[d["localized_of"]]["level"] for d in docs.values() if d["localized_of"])
+    print("kept flips by trigger level: " + ", ".join(f"{k}={v:,}" for k, v in kept.most_common()))
+    rnd = random.Random(seed)
+    print(f"\n--- {min(n, len(backs))} flip-backs (title | locality | trigger title) ---")
+    for d in rnd.sample(backs, min(n, len(backs))):
+        t = docs[d["_broad_trigger"]]
+        why = "generic" if GENERIC_STEM_RE.search(d["_stem"]) else (
+            "unknown-loc" if jurisdiction_chain(d["_loc"]) is None else "out-of-chain")
+        print(f"{d['id']:>10} {d['level']:10s} {why:12s} {d['title'][:46]} | {d['_loc']} | "
+              f"[{t['level']} {t['_loc'] or '-'} {t['date'] or 'n.d.'}] {t['title'][:46]}")
+    for title in ("深圳市人民代表大会常务委员会议事规则", "苏州市客运出租汽车管理条例",
+                  "揭阳市人民政府办公室关于印发揭阳市粮食安全责任考核办法的通知",
+                  "宁夏回族自治区宗教事务条例"):
+        hits = [d for d in docs.values() if clean_title(d["title"]) == title]
+        for d in hits[:2]:
+            print(f"   sanity {d['id']} genre={d['genre']:12s} localized_of={d['localized_of']} | {title}")
 
 
 def sample(docs, n, seed, field):
@@ -1032,6 +1190,67 @@ _POOL_TESTS = [
       dict(id=3, site="swj", level="provincial", site_level="provincial", genre="promulgation",
            date=_D(2024, 4, 25), title="广东省推动消费品以旧换新行动方案")],
      {2: (2, "canonical", "promulgation"), 3: (2, "mirror", "promulgation")}),
+    # --- qa-genre-flip.md cases: the flip needs an IN-CHAIN parent + a non-generic stem ---
+    # denylist: every 人大 writes its own 议事规则 — a 福建省 copy is not Shenzhen's parent
+    ([dict(id=10, site="npc", level="provincial", site_level="central", genre="promulgation",
+           date=_D(2005, 1, 1), title="福建省人民代表大会常务委员会议事规则"),
+      dict(id=11, site="sz", level="municipal", site_level="municipal", genre="promulgation",
+           date=_D(2019, 1, 1), title="深圳市人民代表大会常务委员会议事规则")],
+     {10: (10, "unique", "promulgation"), 11: (11, "unique", "promulgation")}),
+    # out of chain: a 贵州省 条例 is not 茂名市's superior -> stays promulgation
+    ([dict(id=20, site="npc", site_level="central", level="provincial", genre="promulgation",
+           date=_D(2017, 1, 1), title="贵州省文明行为促进条例"),
+      dict(id=21, site="npc", site_level="central", level="municipal", genre="promulgation",
+           date=_D(2022, 1, 1), title="茂名市文明行为促进条例")],
+     {20: (20, "unique", "promulgation"), 21: (21, "unique", "promulgation")}),
+    # in chain: 广东省 IS 广州市's province -> implementing, localized_of = the GD text
+    ([dict(id=30, site="npc", site_level="central", level="provincial", genre="promulgation",
+           date=_D(2017, 1, 1), title="广东省文明行为促进条例"),
+      dict(id=31, site="npc", site_level="central", level="municipal", genre="promulgation",
+           date=_D(2022, 1, 1), title="广州市文明行为促进条例")],
+     {30: (30, "unique", "promulgation"), 31: (31, "unique", "implementing")}),
+    # central in chain for a province: 宁夏 宗教事务条例 under the State Council 条例
+    # (memo case 1); 西藏 实施《草原法》办法 is typed implementing by IMPL_RE upstream
+    # (see _GENRE_TESTS) and the pool pass leaves it so (no shared stem, no trigger)
+    ([dict(id=40, site="gov", site_level="central", level="central", genre="promulgation",
+           date=_D(2008, 1, 1), title="宗教事务条例"),
+      dict(id=41, site="npc", site_level="central", level="provincial", genre="promulgation",
+           date=_D(2023, 1, 1), title="宁夏回族自治区宗教事务条例"),
+      dict(id=42, site="npc", site_level="central", level="central", genre="promulgation",
+           date=_D(2013, 1, 1), title="中华人民共和国草原法"),
+      dict(id=43, site="npc", site_level="central", level="provincial",
+           genre=derive_genre("西藏自治区实施《中华人民共和国草原法》办法", "regulation", "provincial"),
+           date=_D(2020, 1, 1), title="西藏自治区实施《中华人民共和国草原法》办法")],
+     {40: (40, "unique", "promulgation"), 41: (41, "unique", "implementing"),
+      42: (42, "unique", "promulgation"), 43: (43, "unique", "implementing")}),
+    # district: own city is in chain (大鹏新区 <- 深圳市); an unrelated province is not
+    ([dict(id=50, site="sz", site_level="municipal", level="municipal", genre="promulgation",
+           date=_D(2023, 1, 1), title="深圳市民政局关于进一步规范社会组织举办研讨会论坛活动的通知"),
+      dict(id=51, site="dp", site_level="district", level="district", genre="promulgation",
+           date=_D(2023, 3, 1), title="大鹏新区统战和社会建设局关于进一步规范社会组织举办研讨会论坛活动的通知"),
+      dict(id=52, site="npc", site_level="central", level="provincial", genre="promulgation",
+           date=_D(2025, 1, 1), title="湖南省建设工程造价管理办法"),
+      dict(id=53, site="lh", site_level="district", level="district", genre="promulgation",
+           date=_D(2023, 1, 1), title="深圳市罗湖区人民政府办公室关于印发《罗湖区建设工程造价管理办法》的通知")],
+     {50: (50, "unique", "promulgation"), 51: (51, "unique", "implementing"),
+      52: (52, "unique", "promulgation"), 53: (53, "unique", "promulgation")}),
+]
+# localized_of expectations, one dict per _POOL_TESTS entry (id -> trigger id; unlisted = NULL).
+# In test 3 the bare GD copy (id 3) is also a provincial-level localization of the SC text.
+_LOCALIZED_OF = [{11271152: 900039931}, {}, {2: 1, 3: 1}, {}, {}, {}, {31: 30}, {41: 40}, {51: 50}]
+_CHAIN_TESTS = [
+    ("广东省", ()), ("北京市", ()), ("宁夏回族自治区", ()), ("广州市", ("广东省",)),
+    ("苏州市", ("江苏省",)), ("深圳市龙华区", ("深圳市", "广东省")), ("大鹏新区", ("深圳市", "广东省")),
+    ("北京市密云区", ("北京市",)), ("硚口区", ("武汉市", "湖北省")), ("转发市", None),
+    ("<municipal>@huizhou", None), (None, None), ("延边朝鲜族自治州", ("吉林省",)),
+]
+_GENERIC_STEM_TESTS = [
+    ("人民代表大会常务委员会议事规则", True), ("制定地方性法规条例", True),
+    ("人民代表大会常务委员会讨论决定重大事项的规定", True), ("人民政府关于修改部分规章的决定", True),
+    ("人民政府关于宣布失效一批市政府文件的决定", True), ("食品药品监督管理局主要职责内设机构和人员编制规定", True),
+    ("人民政府工作规则", True), ("人民政府2022年度重大行政决策事项目录", True),
+    ("文明行为促进条例", False), ("粮食安全责任考核办法", False), ("养犬管理条例", False),
+    ("推动大规模设备更新和消费品以旧换新行动方案", False),
 ]
 
 
@@ -1062,15 +1281,29 @@ def self_test():
         if (stem, loc) != (exp_stem, exp_loc):
             fails += 1
             print(f"XX localize({title[:40]!r}) = {(stem, loc)!r}, expected {(exp_stem, exp_loc)!r}")
-    for members, expected in _POOL_TESTS:
+    for (members, expected), exp_trig in zip(_POOL_TESTS, _LOCALIZED_OF):
         docs = {m["id"]: dict(m) for m in members}
         assign_instruments(docs)
         got = {i: (d["instrument_id"], d["instrument_role"], d["genre"]) for i, d in docs.items()}
         if got != expected:
             fails += 1
             print(f"XX assign_instruments: {got!r}\n   expected {expected!r}")
+        lo = {i: d["localized_of"] for i, d in docs.items()}
+        exp_lo = {i: exp_trig.get(i) for i in docs}
+        if lo != exp_lo:
+            fails += 1
+            print(f"XX localized_of: {lo!r}\n   expected {exp_lo!r}")
+    for loc, exp in _CHAIN_TESTS:
+        got = jurisdiction_chain(loc)
+        if got != exp:
+            fails += 1
+            print(f"XX jurisdiction_chain({loc!r}) = {got!r}, expected {exp!r}")
+    for stem, exp in _GENERIC_STEM_TESTS:
+        if bool(GENERIC_STEM_RE.search(stem)) != exp:
+            fails += 1
+            print(f"XX GENERIC_STEM_RE({stem!r}) expected {exp}")
     total = (len(_LEVEL_TESTS) + len(_TITLE_LEVEL_TESTS) + len(_GENRE_TESTS) + len(_KEY_TESTS)
-             + len(_LOCALIZE_TESTS) + len(_POOL_TESTS))
+             + len(_LOCALIZE_TESTS) + len(_POOL_TESTS) + len(_CHAIN_TESTS) + len(_GENERIC_STEM_TESTS))
     print(f"self-test: {total - fails}/{total} passed")
     return fails == 0
 
@@ -1080,6 +1313,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--db", default=str(DB_PATH))
     ap.add_argument("--dry-run", action="store_true", help="compute + stats, no write")
+    ap.add_argument("--dry-run-flips", action="store_true",
+                    help="broad vs in-chain genre-flip counts + 30 sample flip-backs; read-only, no write")
     ap.add_argument("--validate", action="store_true", help="run the A1–A4 truth checks")
     ap.add_argument("--sample", type=int, default=0, help="stratified hand-check dump of N docs")
     ap.add_argument("--sample-field", default="level", choices=["level", "genre"])
@@ -1091,7 +1326,7 @@ def main(argv=None):
     if args.self_test:
         return 0 if self_test() else 1
 
-    writing = not (args.dry_run or args.validate or args.sample)
+    writing = not (args.dry_run or args.dry_run_flips or args.validate or args.sample)
     if writing and LOCK_DIR.exists() and not args.force:
         print(f"nightly lock {LOCK_DIR} exists — refusing to write (use --force)")
         return 2
@@ -1102,6 +1337,8 @@ def main(argv=None):
     print_stats(docs, meta, site_level)
     if args.validate:
         validate(docs, meta)
+    if args.dry_run_flips:
+        dry_run_flips(docs, meta, seed=args.seed)
     if args.sample:
         sample(docs, args.sample, args.seed, args.sample_field)
     if writing:
