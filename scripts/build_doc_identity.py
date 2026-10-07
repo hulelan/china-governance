@@ -81,6 +81,30 @@ A2  instrument_id — mirrors of one text share one id.
             X and do not key to X. Cores shorter than 6 chars never pool — the floor is
             measured BEFORE the 中华人民共和国 fold (2026-10-07), so a national law whose
             name folds short (城乡规划法, 5) still keys and still pools (`_key_len`).
+    RECURRING INSTRUMENTS (2026-10-07): a title a government RE-ISSUES — 政府工作报告,
+            国务院关于落实《政府工作报告》重点工作分工的意见 (a new 国发 number every spring),
+            国务院关于修改和废止部分行政法规的决定 (a new 国令), 惠州市…防空警报试鸣的通告,
+            深圳市森林火险黄色预警信号 — names a DIFFERENT text each time, yet a year's gap
+            is under EDITION_GAP_DAYS so the whole run chained into one instrument (505
+            pools flagged by a72a341's canonical audit). Span cannot discriminate: the
+            WIDEST pools are healthy late-mirror sets (户口登记条例, npc 1958 + a 公安局
+            repost 2008). Two intrinsic tests do, applied in this order:
+            R1 `split_by_docnum` — INSIDE each edition, partition by the copy's OWN 文号
+              (`document_number`, else the title's trailing 文号 group, which is where a
+              第N号 recurrence hides because the keying strips that tail). Un-numbered
+              copies attach to the nearest numbered text within EDITION_GAP_DAYS. Two
+              numbers whose dates are within DOCNUM_SPLIT_MIN_DAYS (30) are NOT split —
+              that close, the difference is a mis-stored number on a mirror (chinatax
+              keeps the referenced instrument's 文号) — unless they name different
+              LOCALITIES (惠府办 vs 江府办), which no mirror pair ever does.
+            R2 `is_series` — per sub-pool, when EVERY member is the untyped `other`
+              residual and one site holds two copies more than SERIES_REPEAT_DAYS (60)
+              apart, the title names a SERIES, not a text: nothing in it pools. The genre
+              gate is the discriminator — a `promulgation` or `implementing` member means
+              the title does name a text (城市民族工作条例 re-posted by 福建省民宗厅 in 2015
+              AND 2021 is one 条例).
+            Live: 386 groups split by 文号 into 944 sub-pools, 48 series dissolved;
+            instruments 327,634 -> 328,678; no title blocklist needed.
     who   = promulgation + the untyped `other` residual pool together; implementing
             instruments (转发 / 实施方案 at a lower level — distinct acts) pool only
             with their own copies; explainer / readout / news are ABOUT an
@@ -287,7 +311,8 @@ sys.path.insert(0, str(ROOT / "scripts" / "rnd" / "analysis"))
 
 from extract_citations import (  # noqa: E402
     _norm_title, _title_cores_of_title, _WRAP_QUOTED, _WRAP_PLAIN, _MASTHEAD_PRE,
-    _INST_SUFFIX, _STATUS_TAG, _NEWS_LEAD, _TITLE_STRIP, _clean_ref)
+    _INST_SUFFIX, _STATUS_TAG, _NEWS_LEAD, _TITLE_STRIP, _clean_ref,
+    _CORE_DOCNUM, _DOCNUM_TAIL, _FULLWIDTH_DIGITS)
 from issuer_parser import REGISTRY, DOCNUM_SUBNATIONAL, DOCNUM_CENTRAL  # noqa: E402
 from build_diffusion_events import (  # noqa: E402
     NONISSUE_RE, load_site_names, province_of, FW_GENRES, FW_TITLE_RE, ABOUT_GENRES,
@@ -1008,6 +1033,244 @@ def pick_trigger(m, higher):
     return max(valid, key=lambda o: (o["date"], o["_rank"], -o["id"]))
 
 
+# --- recurring instruments: one title, many texts ---------------------------
+# (2026-10-07, surfaced by a72a341's canonical audit) A key group is pooled into
+# EDITIONS by date gaps, and the gap is 400 days — so a title a government re-issues
+# EVERY YEAR chains its whole run into ONE instrument: 政府工作报告 (a different text
+# per year per government), 国务院关于落实《政府工作报告》重点工作分工的意见 (国发〔2014〕
+# 15号 … 国发〔2022〕9号, 10 docs, one instrument), 国务院关于修改和废止部分行政法规的决定
+# (14 docs across 国令 764/777/797), 惠州市人民政府关于防空警报试鸣的通告 (15 docs,
+# 2014–2025), 深圳市森林火险黄色预警信号 (13 docs in 2.5 years). The pool's date range,
+# its canonical, its citation_rank and any time series on it are then a merged phantom.
+#
+# The widest-span pools, by contrast, are genuine LATE-MIRROR sets that must STAY
+# pooled: 中华人民共和国户口登记条例 (npc 1958 + a 公安局 repost 2008), 城市民族工作条例
+# (npc 1993 + 福建/西藏 民委 reposts 2015–2021), 中华人民共和国宪法 (5 sites, 2018–2022).
+# Span alone therefore cannot discriminate — a 50-year span is the HEALTHY case. Two
+# tests intrinsic to the documents do:
+#
+#   R1 DISTINCT 文号 (the strong one). Copies of one text carry one 文号 or none;
+#      an annual re-issuance carries its OWN. 546 pools hold >= 2 CONFLICTING 文号.
+#      The number is taken from `document_number`, else from the title's own trailing
+#      文号 group (_DOCNUM_TAIL) — which is where a 第N号 recurrence shows up, since
+#      _title_cores_of_title strips that tail before keying (国务院关于修改和废止部分
+#      行政法规的决定（…令 第843号） keys identically to the bare title).
+#   R2 SAME-SITE REPEAT (for the un-numbered series: 预警信号 / 招聘公告 / 听证公告 /
+#      政府工作报告 carry no 文号 at all). One site holds ONE copy of one text; a site
+#      holding two copies months apart is re-issuing a SERIES. Gated on EVERY member
+#      being the untyped `other` residual, because that gate is exactly what separates
+#      the two sides on the data: of the 54 same-site-repeat pools spanning >= 1 year,
+#      the 23 holding a promulgation are real statutes re-posted late (城市民族工作条例,
+#      退役士兵安置条例, 深圳经济特区道路交通安全管理条例) and the 31 all-`other` ones are
+#      series. A series title does not name a text, so its members pool with nothing.
+#
+# No title blocklist is needed: 台风/森林火险预警 fall to R2 as 'other'-genre series.
+_DN_LING = re.compile(r'(?:令|第)\s*0*(\d+)\s*号')
+SERIES_REPEAT_DAYS = 60  # a repost trickles in over weeks; a series re-issues monthly+
+# A 文号 conflict is evidence of a different TEXT only when the copies are also
+# temporally separated. `document_number` is not reliably the document's own (the
+# a72a341 finding: chinatax stores the SUPERSEDING or merely REFERENCED instrument's
+# number — 财库〔2020〕46号 on 国家税务总局关于落实《政府采购…办法》的通知, whose own number
+# is 税总函〔2021〕67号; samr stores 市场监管总局令第60号 on a 通知 numbered 市监食协发
+# 〔2024〕35号). Both of those pairs are 8-9 days apart: a mirror. Nothing a government
+# re-issues comes round again inside a month, so requiring the two numbers' date ranges
+# to be more than DOCNUM_SPLIT_MIN_DAYS apart keeps those pairs pooled while every
+# recurrence this rule targets (>= a reporting period apart) still splits.
+DOCNUM_SPLIT_MIN_DAYS = 30
+
+
+# A digit-free bracket group inside a 文号 qualifies the AGENCY (深公交（规）〔2024〕3号,
+# 深教规（试行）…) and breaks _CORE_DOCNUM, whose opening-bracket class matches the
+# qualifier's '（' and then fails to find a year. Dropping such groups first is what lets
+# 深公交（规）〔2024〕3号 and 深公交规〔2024〕3号 — the gazette's and the bureau's copy of ONE
+# 通告 — key alike; without it the pair reads as un-numbered and R2 unpooled it.
+_DN_QUALIFIER = re.compile(r'[（(【\[]\s*[^0-9（()）【】\[\]]{1,6}\s*[）)】\]]')
+
+
+def _dn_keys(s):
+    """(year|None, serial) keys of every 文号 in a string, year-form preferred."""
+    s = _DN_QUALIFIER.sub("", (s or "").translate(_FULLWIDTH_DIGITS))
+    out = [(m.group(2), m.group(3).lstrip("0") or "0") for m in _CORE_DOCNUM.finditer(s)]
+    if not out:
+        out = [(None, m.group(1).lstrip("0") or "0") for m in _DN_LING.finditer(s)]
+    return out
+
+
+def own_docnum_key(d):
+    """This document's OWN 文号 identity as (year|None, serial), or None.
+
+    `document_number` first; failing that the title's trailing own-文号 group
+    (_DOCNUM_TAIL — '（中华人民共和国国务院令 第843号）'), never a mid-title mention of
+    some other document's number. The agency string is deliberately NOT part of the key:
+    folding 国令第473号 / 中华人民共和国国务院令第473号 / 第473号 to one key means a
+    bracket-style difference can never SPLIT a mirror set, only a different number can."""
+    k = _dn_keys(d.get("docnum"))
+    if not k:
+        m = _DOCNUM_TAIL.search(d["title"] or "")
+        k = _dn_keys(m.group(0)) if m else []
+    return k[-1] if k else None
+
+
+def _canon_docnum_keys(keys):
+    """Fold each year-less key onto the year-ful key with the same serial when that is
+    unambiguous (a copy storing '第711号' is the same instrument as one storing
+    '国令〔2019〕711号'); ambiguous or unmatched year-less keys stay on their own."""
+    by_serial = defaultdict(set)
+    for y, s in keys:
+        if y:
+            by_serial[s].add(y)
+    out = {}
+    for k in keys:
+        y, s = k
+        if y is None and len(by_serial.get(s, ())) == 1:
+            out[k] = (next(iter(by_serial[s])), s)
+        else:
+            out[k] = k
+    return out
+
+
+def is_series(members):
+    """R2: does this key name a recurring SERIES rather than one text? True when EVERY
+    member is the untyped `other` residual and some single site holds two copies more
+    than SERIES_REPEAT_DAYS apart (one site holds one copy of one text).
+
+    The genre gate is what separates the two sides on the data. Of the 54 same-site-repeat
+    pools spanning >= 1 year, the ones holding a `promulgation` are statutes re-posted
+    late (城市民族工作条例 by 福建/西藏 民委 2015–2021, 退役士兵安置条例, 深圳经济特区道路交通
+    安全管理条例) and the ones holding an `implementing` are a bureau's own re-postings of
+    its 实施意见 (深圳市初中学业水平考试体育与健康科目考试实施意见, 3 szeb copies over 187
+    days, all under 深教规〔2024〕2号) — both must stay pooled. `other` is the untyped
+    residual that pools only because it shares the promulgation pool class, and that is
+    where the series live: 政府工作报告, 预警信号, 招聘公告, 听证公告, 执法证遗失公告."""
+    if any(m["genre"] != "other" for m in members):
+        return False
+    bysite = defaultdict(list)
+    for m in members:
+        if m["date"]:
+            bysite[m["site"]].append(m["date"])
+    return any((max(ds) - min(ds)).days > SERIES_REPEAT_DAYS
+               for ds in bysite.values() if len(ds) > 1)
+
+
+def _docnum_locality(d):
+    """The locality the doc's own 文号 prefix names (惠府办 -> 惠州市), else None."""
+    agency = docnum_agency(d.get("docnum"))
+    loc = locality_of_head(agency) if agency else None
+    return loc if loc and not loc.startswith("<") else None
+
+
+def _own_locality(d):
+    """The locality this copy itself claims — its 文号's, else its title masthead's
+    (`_loc`, set in pass 1). An unqualified '<provincial>@site' self-reference names no
+    locality and returns None."""
+    loc = _docnum_locality(d)
+    if loc:
+        return loc
+    loc = d.get("_loc")
+    return loc if loc and not loc.startswith("<") else None
+
+
+def _merge_close_keys(members, keys):
+    """Fold together 文号 keys whose dated members sit within DOCNUM_SPLIT_MIN_DAYS of
+    each other: that close in time, the difference is a mis-stored number on a mirror,
+    not a re-issuance. A key with no dated member is merged with its nearest key (it
+    carries no temporal evidence of its own).
+
+    EXCEPT when the two numbers were issued by different LOCALITIES (惠府办函〔2016〕35号
+    vs 江府办函〔2016〕52号 — Huizhou's and Jiangmen's own 应急管理工作计划, five days
+    apart): one locality's document is never a copy of another's, whatever the dates, so
+    the date guard must not re-merge those. The guard protects against a mis-stored
+    number on a mirror, and the numbers it protects (chinatax's 财库 vs 税总函) are
+    central, where no locality is named."""
+    dates = defaultdict(list)
+    locs = defaultdict(set)
+    for m in members:
+        k = keys[m["id"]]
+        if not k:
+            continue
+        if m["date"]:
+            dates[k].append(m["date"])
+        agency = docnum_agency(m.get("docnum"))
+        loc = locality_of_head(agency) if agency else None
+        if loc and not loc.startswith("<"):
+            locs[k].add(loc)
+    ks = [k for k in {k for k in keys.values() if k}]
+    parent = {k: k for k in ks}
+
+    def find(k):
+        while parent[k] != k:
+            parent[k] = parent[parent[k]]
+            k = parent[k]
+        return k
+
+    for i, a in enumerate(ks):
+        for b in ks[i + 1:]:
+            la, lb = locs.get(a), locs.get(b)
+            if la and lb and not (la & lb):
+                continue  # different issuing localities: never one text
+            da, db = dates.get(a), dates.get(b)
+            if not da or not db:
+                gap = 0  # no date evidence either side -> not separable
+            else:
+                gap = max(min(da) - max(db), min(db) - max(da)).days
+            if gap <= DOCNUM_SPLIT_MIN_DAYS:
+                ra, rb = find(a), find(b)
+                if ra != rb:
+                    parent[rb] = ra
+    return {did: (find(k) if k else None) for did, k in keys.items()}
+
+
+def split_by_docnum(members):
+    """R1: -> list of member lists, one per distinct own-文号, or [members] when the
+    group carries fewer than two distinct numbers.
+
+    Applied INSIDE an edition, never across editions: the edition walk is what encodes
+    revisions (政府信息公开条例 2008 vs 2019) and it already keeps an un-numbered late
+    repost with its own edition — partitioning the whole key group first would strand
+    those reposts (the fj_wjw 2014 and bjb_tjj 2024 copies of 政府信息公开条例 are more
+    than EDITION_GAP_DAYS from any numbered copy and became a third instrument). The
+    annual recurrence this rule exists for is a WITHIN-edition pile, by construction:
+    one year's gap is under EDITION_GAP_DAYS."""
+    keys = {}
+    for m in members:
+        keys[m["id"]] = own_docnum_key(m)
+    canon = _canon_docnum_keys([k for k in keys.values() if k])
+    for m in members:  # fold the year-less variants onto their year-ful twin
+        if keys[m["id"]]:
+            keys[m["id"]] = canon[keys[m["id"]]]
+    keys = _merge_close_keys(members, keys)
+    distinct = {k for k in keys.values() if k}
+    if len(distinct) < 2:
+        return [members]
+    parts = defaultdict(list)
+    unnumbered = []
+    for m in members:
+        k = keys[m["id"]]
+        (parts[k] if k else unnumbered).append(m)
+    numbered = list(parts.items())  # snapshot: the leftover bucket is added below
+    plocs = {k: {loc for loc in (_docnum_locality(o) for o in ms) if loc} for k, ms in numbered}
+    for m in unnumbered:
+        best, dist = None, None
+        mloc = _own_locality(m)
+        if m["date"]:
+            for k, ms in numbered:
+                # same locality rule as the date guard: a Chongqing copy is not a
+                # repost of 江苏's numbered text however close the dates are
+                if mloc and plocs[k] and mloc not in plocs[k]:
+                    continue
+                for o in ms:
+                    if not o["date"]:
+                        continue
+                    g = abs((m["date"] - o["date"]).days)
+                    if dist is None or g < dist:
+                        best, dist = k, g
+        if best is not None and dist <= EDITION_GAP_DAYS:
+            parts[best].append(m)
+        else:
+            parts[("_none",)].append(m)
+    return list(parts.values())
+
+
 def _hosted_below_text(d):
     """1 when this copy sits on a site BELOW the level of the text it carries — i.e. it
     is a REPOST, not the issuing institution's own publication.
@@ -1115,6 +1378,7 @@ def assign_instruments(docs):
              "n_flipped_broad": n_flipped_broad, "n_unknown_loc": n_unknown_loc,
              "n_flipped_chain": n_flipped_chain}
     n_pooled = 0
+    n_series = n_docnum_split = n_subpools = 0
     for members in groups.values():
         if len(members) < 2 or len({m["site"] for m in members}) < 2:
             continue
@@ -1148,13 +1412,27 @@ def assign_instruments(docs):
         if len(editions) == 1 and undated:
             editions[0].extend(undated)
         for ed in editions:
-            if len(ed) < 2 or len({m["site"] for m in ed}) < 2:
-                continue
-            canon = min(ed, key=_canon_sort_key)
-            for m in ed:
-                m["instrument_id"] = canon["id"]
-                m["instrument_role"] = "canonical" if m is canon else "mirror"
-                n_pooled += 1
+            # R1 inside the edition: an annual re-issuance piles into ONE edition
+            # (a year's gap is under EDITION_GAP_DAYS) and each year carries its own 文号.
+            parts = split_by_docnum(ed) if len(ed) > 1 else [ed]
+            if len(parts) > 1:
+                n_docnum_split += 1
+                n_subpools += len(parts)
+            for part in parts:
+                if len(part) < 2 or len({m["site"] for m in part}) < 2:
+                    continue
+                # R2 LAST, per sub-pool: a SERIES title does not name a text, so nothing
+                # in it pools. After R1 so that a numbered series still pools each
+                # issue's own mirrors (深公交（规）〔2024〕3号 on sz_gazette + ga is one
+                # text even though the 通告 comes round every year).
+                if is_series(part):
+                    n_series += 1
+                    continue
+                canon = min(part, key=_canon_sort_key)
+                for m in part:
+                    m["instrument_id"] = canon["id"]
+                    m["instrument_role"] = "canonical" if m is canon else "mirror"
+                    n_pooled += 1
     # The nearest dated parent may be a MIRROR of the triggering text (the mee repost of
     # the SC 以旧换新 plan, 5 days after gov): persist the instrument's canonical copy when
     # it is itself date-valid. (2026-10-07) The canonical is no longer necessarily the
@@ -1172,6 +1450,9 @@ def assign_instruments(docs):
             n_trigger_moved += 1
     stats["n_trigger_moved"] = n_trigger_moved
     stats["n_pooled"] = n_pooled
+    stats["n_series_groups"] = n_series
+    stats["n_docnum_split_groups"] = n_docnum_split
+    stats["n_docnum_subpools"] = n_subpools
     return stats
 
 
@@ -1373,6 +1654,10 @@ def print_stats(docs, meta, site_level):
     n_inst = len({d["instrument_id"] for d in docs.values()})
     print(f"\ninstruments: {n_inst:,} for {n:,} docs ({meta['n_pooled']:,} docs in pools; "
           f"{meta['n_localized']:,} localized re-issuances kept out of higher-level pools)")
+    print(f"recurring-instrument split: {meta['n_series_groups']:,} key groups are SERIES "
+          f"(an all-`other` title one site re-issues) and pool with nothing; "
+          f"{meta['n_docnum_split_groups']:,} split by distinct 文号 into "
+          f"{meta['n_docnum_subpools']:,} sub-pools")
     print(f"genre flips promulgation->implementing: {meta['n_flipped']:,} in-chain + date-ordered "
           f"(in-chain alone {meta['n_flipped_chain']:,}; broad any-higher rule {meta['n_flipped_broad']:,}; "
           f"{meta['n_unknown_loc']:,} skipped for an unknown locality; "
@@ -2033,12 +2318,148 @@ _POOL_TESTS = [
      {900056231: (900056231, "canonical", "promulgation"),
       12694184: (900056231, "mirror", "promulgation"),
       900081900: (900056231, "mirror", "promulgation")}),
+    # --- the recurring-instrument split (2026-10-07) ---------------------------
+    # ANNUAL RE-ISSUANCE: 国务院关于落实《政府工作报告》重点工作分工的意见 is a different text
+    # every year, and one edition of the pool (a year's gap is under EDITION_GAP_DAYS)
+    # held all of them. Each year's own 国发 number splits them; each year's own mirrors
+    # still pool.
+    ([dict(id=301, site="gov", site_level="central", level="central", genre="promulgation",
+           docnum="国发〔2021〕6号", date=_D(2021, 3, 25),
+           title="国务院关于落实《政府工作报告》重点工作分工的意见"),
+      dict(id=302, site="mee", site_level="central", level="central", genre="promulgation",
+           docnum="国发〔2021〕6号", date=_D(2021, 3, 29),
+           title="国务院关于落实《政府工作报告》重点工作分工的意见"),
+      dict(id=303, site="gov", site_level="central", level="central", genre="promulgation",
+           docnum="国发〔2022〕9号", date=_D(2022, 3, 25),
+           title="国务院关于落实《政府工作报告》重点工作分工的意见"),
+      dict(id=304, site="mee", site_level="central", level="central", genre="promulgation",
+           docnum="国发〔2022〕9号", date=_D(2022, 3, 25),
+           title="国务院关于落实《政府工作报告》重点工作分工的意见")],
+     {301: (301, "canonical", "promulgation"), 302: (301, "mirror", "promulgation"),
+      303: (303, "canonical", "promulgation"), 304: (303, "mirror", "promulgation")}),
+    # TRUE LATE-MIRROR SET, 28 years wide, must STAY pooled: one 条例 and its 民委 reposts,
+    # no 文号 anywhere — and 福建省民宗厅 holds TWO copies six years apart, which is exactly
+    # the same-site repeat R2 keys on. The promulgation genre is what keeps R2 off it.
+    ([dict(id=311, site="npc", site_level="central", level="central", genre="promulgation",
+           docnum="", date=_D(1993, 9, 15), title="城市民族工作条例"),
+      dict(id=312, site="fj_mzzjt", site_level="provincial", level="central",
+           genre="promulgation", docnum="", date=_D(2015, 3, 19), title="城市民族工作条例"),
+      dict(id=313, site="xz_mw", site_level="provincial", level="central",
+           genre="promulgation", docnum="", date=_D(2019, 3, 15), title="城市民族工作条例"),
+      dict(id=314, site="fj_mzzjt", site_level="provincial", level="central",
+           genre="promulgation", docnum="", date=_D(2021, 10, 9), title="城市民族工作条例")],
+     {311: (311, "canonical", "promulgation"), 312: (311, "mirror", "promulgation"),
+      313: (311, "mirror", "promulgation"), 314: (311, "mirror", "promulgation")}),
+    # 第N号 RECURRENCE: 国务院关于修改和废止部分行政法规的决定 comes round under a new 国令
+    # number. The number lives in `document_number` on the gov copies and in the mee
+    # copy's TITLE TAIL — which _title_cores_of_title strips before keying, so without
+    # reading the tail the mee copy looks un-numbered. The un-numbered npc copies attach
+    # to the nearest numbered text, each on its own side of the split.
+    ([dict(id=321, site="npc", site_level="central", level="central", genre="promulgation",
+           docnum="", date=_D(2026, 1, 30), title="国务院关于修改和废止部分行政法规的决定"),
+      dict(id=322, site="gov", site_level="central", level="central", genre="promulgation",
+           docnum="国令第829号", date=_D(2026, 2, 5), title="国务院关于修改和废止部分行政法规的决定"),
+      dict(id=323, site="npc", site_level="central", level="central", genre="promulgation",
+           docnum="", date=_D(2026, 8, 8), title="国务院关于修改和废止部分行政法规的决定"),
+      dict(id=324, site="gov", site_level="central", level="central", genre="promulgation",
+           docnum="国令第843号", date=_D(2026, 8, 13), title="国务院关于修改和废止部分行政法规的决定"),
+      dict(id=325, site="mee", site_level="central", level="central", genre="promulgation",
+           docnum="", date=_D(2026, 8, 14),
+           title="国务院关于修改和废止部分行政法规的决定（中华人民共和国国务院令 第843号）")],
+     {321: (321, "canonical", "promulgation"), 322: (321, "mirror", "promulgation"),
+      323: (323, "canonical", "promulgation"), 324: (323, "mirror", "promulgation"),
+      325: (323, "mirror", "promulgation")}),
+    # INVARIANT 1: 政府信息公开条例 stays exactly 2 instruments (2008 and the 2019 revision).
+    # This is the regression that moved R1 inside the edition walk: the un-numbered 2014
+    # and 2024 reposts are more than EDITION_GAP_DAYS from any numbered copy, so
+    # partitioning the whole key group first stranded them as a third instrument.
+    ([dict(id=331, site="gov", site_level="central", level="central", genre="promulgation",
+           docnum="国令第492号", date=_D(2008, 3, 28), title="中华人民共和国政府信息公开条例"),
+      dict(id=332, site="fj_wjw", site_level="provincial", level="central",
+           genre="promulgation", docnum="", date=_D(2014, 8, 2), title="中华人民共和国政府信息公开条例"),
+      dict(id=333, site="mzj", site_level="department", level="central", genre="promulgation",
+           docnum="中华人民共和国国务院令第492号", date=_D(2017, 8, 24),
+           title="中华人民共和国政府信息公开条例"),
+      dict(id=334, site="npc", site_level="central", level="central", genre="promulgation",
+           docnum="", date=_D(2019, 4, 3), title="中华人民共和国政府信息公开条例"),
+      dict(id=335, site="gov", site_level="central", level="central", genre="promulgation",
+           docnum="国令第711号", date=_D(2019, 4, 15), title="中华人民共和国政府信息公开条例"),
+      dict(id=336, site="bjb_tjj", site_level="municipal", level="central",
+           genre="promulgation", docnum="", date=_D(2024, 5, 27),
+           title="中华人民共和国政府信息公开条例")],
+     {331: (331, "canonical", "promulgation"), 332: (331, "mirror", "promulgation"),
+      333: (331, "mirror", "promulgation"), 334: (334, "canonical", "promulgation"),
+      335: (334, "mirror", "promulgation"), 336: (334, "mirror", "promulgation")}),
+    # INVARIANT 2: the 城乡规划法 trio — the 2019 pair pools with the mee copy canonical
+    # (lowest id of the two central-hosted same-date copies) and the 2015 text stays apart.
+    ([dict(id=12747143, site="npc", site_level="central", level="central",
+           genre="promulgation", docnum="", date=_D(2015, 4, 24), title="中华人民共和国城乡规划法"),
+      dict(id=12685270, site="mee", site_level="central", level="central",
+           genre="promulgation", docnum="", date=_D(2019, 4, 23), title="中华人民共和国城乡规划法"),
+      dict(id=12742122, site="npc", site_level="central", level="central",
+           genre="promulgation", docnum="", date=_D(2019, 4, 23), title="中华人民共和国城乡规划法")],
+     {12747143: (12747143, "unique", "promulgation"),
+      12685270: (12685270, "canonical", "promulgation"),
+      12742122: (12685270, "mirror", "promulgation")}),
+    # A SERIES dissolves: 政府工作报告 names no text — a different report every year for
+    # every government that writes one. sz_gazette's own run is the evidence.
+    ([dict(id=341, site="sz_gazette", site_level="municipal", level="municipal",
+           genre="other", docnum="", date=_D(2015, 6, 25), title="政府工作报告"),
+      dict(id=342, site="sz_gazette", site_level="municipal", level="municipal",
+           genre="other", docnum="", date=_D(2016, 3, 9), title="政府工作报告"),
+      dict(id=343, site="heyuan", site_level="municipal", level="municipal",
+           genre="other", docnum="", date=_D(2018, 7, 25), title="政府工作报告")],
+     {341: (341, "unique", "other"), 342: (342, "unique", "other"),
+      343: (343, "unique", "other")}),
+    # R2 MUST NOT fire on an `implementing` set: 深圳市教育局 re-posts its own 实施意见 three
+    # times over 187 days, all under 深教规〔2024〕2号 — one text, and the gazette's copy is
+    # its mirror. (A `promulgation` or `implementing` member is a text; `other` is not.)
+    ([dict(id=351, site="szeb", site_level="department", level="municipal",
+           genre="implementing", docnum="深教规〔2024〕2号", date=_D(2024, 3, 27),
+           title="深圳市教育局关于印发《深圳市初中学业水平考试体育与健康科目考试实施意见》的通知"),
+      dict(id=352, site="sz_gazette", site_level="municipal", level="municipal",
+           genre="implementing", docnum="深教规〔2024〕2号", date=_D(2024, 4, 8),
+           title="深圳市教育局关于印发《深圳市初中学业水平考试体育与健康科目考试实施意见》的通知"),
+      dict(id=353, site="szeb", site_level="department", level="municipal",
+           genre="implementing", docnum="深教规〔2024〕2号", date=_D(2024, 9, 30),
+           title="深圳市教育局关于印发《深圳市初中学业水平考试体育与健康科目考试实施意见》的通知")],
+     {351: (351, "canonical", "implementing"), 352: (351, "mirror", "implementing"),
+      353: (351, "mirror", "implementing")}),
+    # A MIS-STORED 文号 must not split a mirror pair: chinatax keeps the REFERENCED
+    # instrument's number (财库〔2020〕46号) on a text whose own number is 税总函〔2021〕67号.
+    # Nine days apart is a mirror, not a re-issuance — DOCNUM_SPLIT_MIN_DAYS keeps them.
+    ([dict(id=361, site="chinatax", site_level="central", level="central",
+           genre="promulgation", docnum="财库〔2020〕46号", date=_D(2021, 4, 16),
+           title="国家税务总局关于落实《政府采购促进中小企业发展管理办法》的通知"),
+      dict(id=362, site="gov", site_level="central", level="central", genre="promulgation",
+           docnum="税总函〔2021〕67号", date=_D(2021, 4, 25),
+           title="国家税务总局关于落实《政府采购促进中小企业发展管理办法》的通知")],
+     {361: (361, "canonical", "promulgation"), 362: (361, "mirror", "promulgation")}),
+    # …but the date guard must not re-merge two LOCALITIES' own documents: Huizhou's and
+    # Jiangmen's 2016 应急管理工作计划, five days apart under their own 文号. Zhongshan's
+    # un-numbered copy names its own city and joins neither.
+    ([dict(id=371, site="jiangmen", site_level="municipal", level="municipal",
+           genre="promulgation", docnum="江府办函〔2016〕52号", date=_D(2016, 4, 1),
+           title="江门市人民政府办公室关于印发2016年全市应急管理工作计划的通知"),
+      dict(id=372, site="huizhou", site_level="municipal", level="municipal",
+           genre="promulgation", docnum="惠府办函〔2016〕35号", date=_D(2016, 4, 6),
+           title="惠州市人民政府办公室关于印发2016年全市应急管理工作计划的通知"),
+      dict(id=373, site="huizhou2", site_level="municipal", level="municipal",
+           genre="promulgation", docnum="惠府办函〔2016〕35号", date=_D(2016, 4, 6),
+           title="惠州市人民政府办公室关于印发2016年全市应急管理工作计划的通知"),
+      dict(id=374, site="zhongshan", site_level="municipal", level="municipal",
+           genre="promulgation", docnum="", date=_D(2016, 4, 26),
+           title="中山市人民政府办公室关于印发2016年全市应急管理工作计划的通知")],
+     {371: (371, "unique", "promulgation"), 372: (372, "canonical", "promulgation"),
+      373: (372, "mirror", "promulgation"), 374: (374, "unique", "promulgation")}),
 ]
 # localized_of expectations, one dict per _POOL_TESTS entry (id -> trigger id; unlisted = NULL).
 # In test 3 the bare GD copy (id 3) is also a provincial-level localization of the SC text.
 _LOCALIZED_OF = [{11271152: 900039931}, {}, {2: 1, 3: 1}, {}, {}, {}, {31: 30}, {41: 40}, {51: 50},
                  {}, {71: 70, 72: 71}, {82: 81}, {91: 90}, {},
-                 {}, {}, {}, {222: 223}, {}, {}, {}]
+                 {}, {}, {}, {222: 223}, {}, {}, {},
+                 # the recurring-instrument split cases: no localization in any of them
+                 {}, {}, {}, {}, {}, {}, {}, {}, {}]
 # A6 province: (doc fields, level, lead_issuer) -> 2-letter code. Central docs are tested
 # through derive_province's caller (build() passes only SUBNATIONAL levels) — here a
 # central NAME must resolve to None.
