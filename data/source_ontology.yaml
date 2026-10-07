@@ -2,30 +2,48 @@
 #
 # This is a hierarchical tree of SOURCE TYPES (what KIND of body published a
 # document) — NOT a jurisdiction/geography tree. Every site_key in the corpus
-# maps to exactly one leaf. It powers the "exclude a whole branch" filters
+# resolves to exactly one leaf. It powers the "exclude a whole branch" filters
 # (e.g. "exclude news") on the search + browse pages.
 #
-# HOW IT WORKS
-#   - Each leaf lists `site_keys` (exact) and/or `prefixes` (site_key.startswith).
-#   - Prefixes exist only for the department FAMILIES that use an underscore
-#     separator (fj_, nx_, xz_, cq_, js_), so a NEW provincial department crawler
-#     auto-classifies with zero edits here. Everything else is listed explicitly.
-#   - `web/services/ontology.py` loads this file and validates that every DB
-#     site_key resolves to exactly one leaf (scripts/validate_ontology.py on the
-#     droplet checks live coverage). Anything unmapped falls into `other`.
+# HOW IT WORKS — TWO LAYERS
+#   1. EXPLICIT (this file). Each leaf lists `site_keys` (exact) and/or
+#      `prefixes` (site_key.startswith). This is the OVERRIDE layer: anything
+#      listed here wins, full stop.
+#   2. FALLBACK (web/services/ontology.py). A site_key NOT listed here resolves
+#      deterministically from the `sites` table's `admin_level` (and, when the
+#      crawler is a govcms site, its SITES `group`):
+#          central      -> central_ministry
+#          provincial   -> local_province   (or local_provincial_dept when the
+#                                            key has a `<prov>_<dept>` underscore)
+#          department   -> local_city_dept
+#          municipal    -> local_municipality
+#          district     -> local_district
+#          research     -> research
+#          govcms group assoc    -> research
+#          govcms group feedback -> central_legislative_judicial / local_legislative
+#          media        -> NEVER by fallback (see below)
+#      So the ~150 prefecture-city portals, new department families and new
+#      central agencies classify correctly with ZERO edits here. The fallback
+#      exists because the hand-listed version of this file rotted to 231/510
+#      unmapped keys (21k docs in "Other") within two months of crawler growth.
 #
-# MAINTENANCE
-#   - New central ministry/agency  -> add its site_key to the right central_* leaf.
-#   - New whole-province portal     -> add to local_province.
-#   - New <prov>_<dept> crawler with an existing prefix -> nothing to do.
-#   - New media/research source     -> add to the media_* / research leaf.
-#   - Guangdong departments have NO underscore (gddrc, gdedu, ...), so they are
-#     listed explicitly under local_provincial_dept.
+# WHAT STILL NEEDS A HAND EDIT (the validator FAILS on these)
+#   - A new NEWS / MEDIA source. Media is explicit-only on purpose: the "exclude
+#     news" filter must never silently swallow a government site (or miss a
+#     newspaper that carries admin_level='central', like stdaily), so a site
+#     with admin_level='media' that is not listed under media_* is UNRESOLVED.
+#   - A site whose admin_level is NULL or unknown.
+#   - Anything whose true type differs from its admin_level (e.g. cas/nsfc carry
+#     admin_level='central' but are research bodies; cq carries 'municipal' but
+#     is a province-level 直辖市). List it explicitly to override.
+#
+# VALIDATE on the droplet: python3 scripts/validate_ontology.py
+#   It reports explicit / fallback / unresolved separately; only unresolved fails.
 #
 # NOTE: `stdaily` (科技日报) has admin_level='central' in the DB but is a
 # newspaper, so it lives under News & Media, per the corpus owner's intent.
 
-version: 1
+version: 2
 
 tree:
   # ── CENTRAL GOVERNMENT ────────────────────────────────────────────────
@@ -36,23 +54,34 @@ tree:
       - id: central_state_council
         label_en: State Council
         label_zh: 国务院
-        site_keys: [gov]
+        site_keys: [gov, gov_yaowen]
       - id: central_ministry
         label_en: Ministries
         label_zh: 部委
-        site_keys: [ndrc, miit, mof, mee, mofcom, most, moe, mot, mwr, mara, mva, mct, mfa]
+        # 国务院组成部门 (部/委). Also the fallback target for any
+        # admin_level='central' key not listed elsewhere.
+        site_keys:
+          [ndrc, miit, mof, mee, mofcom, most, moe, mot, mwr, mara, mva, mct, mfa,
+           mca, mem, mnr, mod, mohurd, moj, nhc]
       - id: central_agency
         label_en: Agencies, Administrations & Bureaus
         label_zh: 直属机构与总局
-        site_keys: [samr, chinatax, cac, nda, nbs, nrta, nhsa, csrc, sic, pbc]
+        # 直属机构 / 国家局 / 部管局 / 事业单位. ccg = 中国海警局 (Coast Guard, per
+        # sites.name — NOT the CCG think tank). tc260 = 网安标委.
+        site_keys:
+          [samr, chinatax, cac, nda, nbs, nrta, nhsa, csrc, sic, pbc,
+           caac, ccg, cma, cnao, cnipa, cnsa, natcm, ncha, nea, neac, nfsra, nia,
+           saac, safe, sasac, sastind, sfa, spb, tc260]
       - id: central_cpc
         label_en: CPC Central Organs
         label_zh: 党中央机关
-        site_keys: [chinapeace]
+        # dangyuan = 共产党员网 (12371, Central Organization Department's portal).
+        site_keys: [chinapeace, dangyuan]
       - id: central_legislative_judicial
         label_en: Legislative, Advisory & Judicial
         label_zh: 立法·协商·司法机关
-        site_keys: [npc, cppcc, ipc_court, spp]
+        # npc_dbgz = 全国人大 代表工作 (议案建议/报告); spc = 最高人民法院.
+        site_keys: [npc, npc_dbgz, cppcc, ipc_court, spc, spp]
 
   # ── LOCAL GOVERNMENT ──────────────────────────────────────────────────
   - id: local
@@ -64,19 +93,34 @@ tree:
         label_zh: 省级政府
         # Whole-province / autonomous-region / direct-municipality portals.
         # (cq = Chongqing, a 直辖市, is province-level despite its DB admin_level.)
-        site_keys: [gd, sh, bj, hlj, js, zj, shandong, fujian, jilin, liaoning, hunan, ningxia, xizang, cq]
+        # Fallback target for admin_level='provincial' keys WITHOUT an underscore.
+        site_keys:
+          [gd, sh, bj, hlj, js, zj, shandong, fujian, jilin, liaoning, hunan,
+           ningxia, xizang, qinghai, xinjiang, cq]
       - id: local_provincial_dept
         label_en: Provincial Departments
         label_zh: 省级部门
-        # Guangdong depts have no underscore, so listed explicitly; the fj_/nx_/
-        # xz_/cq_/js_ families are captured by prefix (cq_ = Chongqing 直辖市 bureaus).
-        prefixes: [fj_, nx_, xz_, cq_, js_]
+        # Guangdong depts have no underscore, so listed explicitly. The
+        # <prov>_<dept> families are captured by prefix: fj_ 福建, nx_ 宁夏, xz_ 西藏,
+        # js_ 江苏, hn_ 湖南, jl_ 吉林, ln_ 辽宁, sd_ 山东; cq_ 重庆 / bjb_ 北京 /
+        # shb_ 上海 are bureaus of 直辖市 (province-level), so they belong here even
+        # though bjb_/shb_ carry admin_level='municipal' in the DB.
+        prefixes: [fj_, nx_, xz_, cq_, js_, hn_, jl_, ln_, sd_, bjb_, shb_]
         site_keys:
           [gdstats, gdhsa, gdedu, gdjt, gdwjw, gddrc, gdcom, gdct, gdee, gdmz,
            gdstc, gdczt, gdnr, gdzjst, gdii, gdny, gdlyj, gdga, gdyjt, gdhrss]
+      - id: local_legislative
+        label_en: Local People's Congresses & CPPCCs
+        label_zh: 地方人大·政协
+        # Sub-national legislatures / advisory bodies (the B2 bottom-up channel).
+        # Also the fallback target for a non-central govcms `feedback` site.
+        site_keys: [jsrd, bjrd]
       - id: local_municipality
         label_en: Municipalities & Prefecture Cities
         label_zh: 地市政府
+        # Only the long-standing keys are listed; the ~150 prefecture-city portals
+        # from the govcms city/city2/city3 groups resolve by fallback
+        # (admin_level='municipal'). Do NOT hand-list them.
         site_keys:
           [suzhou, wuhan, hangzhou, qingdao, jinan, shenyang, jieyang, zhongshan,
            jiangmen, huizhou, heyuan, gz, shanwei, zhuhai, yangjiang, shaoguan,
@@ -84,18 +128,19 @@ tree:
       - id: local_city_dept
         label_en: City Departments
         label_zh: 市级部门
-        # Shenzhen municipal bureaus (DB admin_level='department').
+        # Shenzhen municipal bureaus (DB admin_level='department'); fallback
+        # target for admin_level='department'.
         site_keys: [ga, mzj, hrss, swj, jtys, zjj, stic, sf, yjgl, szeb, fgw, wjw, audit]
       - id: local_district
         label_en: Districts & Counties
         label_zh: 区县
         # Shenzhen districts by explicit key; Beijing/Nanjing/Wuhan/Chongqing
-        # districts by prefix (bjd_/njd_/whd_/cqd_) so new district crawlers
-        # auto-classify. cqd_ is distinct from cq_ (Chongqing bureaus).
+        # districts by prefix (bjd_/njd_/whd_/cqd_). cqd_ is distinct from cq_
+        # (Chongqing bureaus). Fallback target for admin_level='district'.
         site_keys: [szdp, szlhq, szlg, szpsq, szgm, szlh, szns, szft, szyantian]
         prefixes: [bjd_, njd_, whd_, cqd_]
 
-  # ── NEWS & MEDIA ──────────────────────────────────────────────────────
+  # ── NEWS & MEDIA (EXPLICIT ONLY — never reached by fallback) ─────────
   - id: media
     label_en: News & Media
     label_zh: 新闻媒体
@@ -103,7 +148,9 @@ tree:
       - id: media_state
         label_en: State & Official Media
         label_zh: 官方媒体
-        site_keys: [xinhua, newscn, people, peopleapp, cctv, cnr, stdaily]
+        # qstheory = 求是网, the CPC Central Committee's theory journal: official
+        # media (commentary/articles), not a research body.
+        site_keys: [xinhua, newscn, people, peopleapp, cctv, cnr, stdaily, qstheory]
       - id: media_commercial
         label_en: Commercial & Tech Media
         label_zh: 商业与科技媒体
@@ -113,11 +160,14 @@ tree:
   - id: research
     label_en: Research & Think Tanks
     label_zh: 研究与智库
-    site_keys: [chinalawtranslate, tsinghua_aiig]
+    # cas (中国科学院) and nsfc (国家自然科学基金委) carry admin_level='central' in
+    # the DB — listed here to override the fallback. Fallback target for
+    # admin_level='research' and govcms group 'assoc'.
+    site_keys: [chinalawtranslate, tsinghua_aiig, amr, cass, cast, isc, cas, nsfc]
 
   # ── CATCH-ALL ─────────────────────────────────────────────────────────
-  # Any site_key not matched above resolves here at runtime (keeps the app
-  # correct if a new crawler lands before this file is updated).
+  # Only a site_key that neither layer can place (no explicit rule AND no usable
+  # admin_level / group) resolves here. The validator fails on any such key.
   - id: other
     label_en: Other / Unclassified
     label_zh: 其他

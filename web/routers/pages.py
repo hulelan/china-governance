@@ -76,7 +76,9 @@ async def browse(
     if source_node:
         exclude = source_node.startswith("!")
         node_id = source_node[1:] if exclude else source_node
-        branch = ontology.sites_under(node_id, [s["site_key"] for s in sites])
+        # Pass the full rows (not just keys): admin_level feeds the ontology's
+        # fallback layer for site_keys the yaml does not list explicitly.
+        branch = ontology.sites_under(node_id, sites)
         if branch:
             if exclude:
                 exclude_sites = branch
@@ -160,7 +162,7 @@ async def search_page(request: Request, q: str = "", page: int = 1,
     exclude_sites = None
     if exclude_news:
         sites = await get_sites(db)
-        exclude_sites = ontology.sites_under("media", [s["site_key"] for s in sites])
+        exclude_sites = ontology.sites_under("media", sites)
 
     results, total = [], 0
     if q:
