@@ -24,6 +24,7 @@ from analyze import (
     REF_PATTERN, get_admin_level,
     NAMED_REF_PATTERN, is_policy_document, classify_named_ref_level,
     build_known_abbrevs, canonicalize_formal_ref,
+    looks_like_body_run, recover_named_heads,
 )
 
 DB_PATH = Path(__file__).parents[3] / "documents.db"
@@ -500,6 +501,50 @@ class TitleMatcher:
         return None
 
 
+def _nested_nonself(name, title):
+    """Nested 《X》 titles inside a capture, minus any X that is the citing document's
+    OWN instrument core (so 印发《X》的通知 does not cite X, but 关于废止〈省实施《X》办法〉
+    的决定 does cite X)."""
+    own = {_norm_title(c) for c, _ in _title_cores_of_title(title)}
+    own.add(_norm_title(title))
+    return [x for x in _INNER_TITLE.findall(name)
+            if is_policy_document(x) and _norm_title(x) not in own]
+
+
+def named_ref_candidates(body, title):
+    """The 《》 reference strings to resolve for one document, in emission order.
+
+    Three sources, see docs/working/qa-ref-pattern-precision.md:
+      1. NAMED_REF_PATTERN — balanced one level deep, so a capture is either a title
+         or a title quoting a title, never a run of prose spanning a stray 《.
+      2. recover_named_heads — the head of a run whose closing 》 the body genuinely
+         dropped (the only reference the balanced pattern cannot see).
+      3. the nested 《X》 of any capture that quotes another instrument: such a capture
+         cites BOTH documents, and the old truncating pattern reached X only by
+         accident (it cut the capture at X's closing bracket and lost the wrapper).
+    Drops prose captures and self-references. Nested titles carry the PRECISE
+    self-reference test (own title / own instrument core) and are therefore exempt
+    from the loose substring test, which they routinely trip: 关于废止《省实施〈X〉办法》
+    的决定 contains X in its own title and still cites X.
+    """
+    refs = [_clean_ref(n) for n in NAMED_REF_PATTERN.findall(body or "")]
+    refs += list(recover_named_heads(body or ""))
+    nested = {x for n in refs if '《' in n for x in _nested_nonself(n, title or "")}
+    out, seen = [], set()
+    for name in refs + sorted(nested):
+        if not is_policy_document(name):
+            continue
+        if looks_like_body_run(name):  # prose, not an instrument title
+            continue
+        if name not in nested and (name in title or title in name):
+            continue  # self-reference
+        if name in seen:
+            continue
+        seen.add(name)
+        out.append(name)
+    return out
+
+
 def get_source_level(doc_number: str, site_admin_level: str) -> str:
     """Determine admin level for a source document."""
     if doc_number:
@@ -660,19 +705,11 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
             else:
                 missing_formal_refs.add(ref)
 
-        # Named 《》 citations
-        named_refs = NAMED_REF_PATTERN.findall(body)
-        seen_named = set()
-        for name in named_refs:
-            name = _clean_ref(name)  # &lt;X&gt; -> 《X》 before any matching
-            if not is_policy_document(name):
-                continue
-            if name in title or title in name:  # skip self-reference
-                continue
-            if name in seen_named:
-                continue
+        # Named 《》 citations (candidate construction + self-reference / prose
+        # filtering live in named_ref_candidates)
+        seen_named = set()  # also consulted by the LLM-reference tier below
+        for name in named_ref_candidates(body, title):
             seen_named.add(name)
-
             # Try to resolve to corpus (indexed fuzzy title match + title cores)
             target_id = matcher.resolve_ref(name, 8)
 

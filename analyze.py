@@ -248,7 +248,31 @@ def canonicalize_formal_ref(ref: str, known_abbrevs: set) -> str:
 
 
 # Named 《》 references (policy documents cited by name)
-NAMED_REF_PATTERN = re.compile(r"《([^》]{8,100})》")
+#
+# BALANCED, one level deep (2026-10-07, docs/working/qa-ref-pattern-precision.md).
+# The old form was `《([^》]{8,100})》`: the character class excluded only the CLOSING
+# bracket, so whenever a body held an UNCLOSED 《 the match started there and ran
+# through ordinary prose until the next 》 — the close bracket of a *different*,
+# later title. The capture was then a run of body text ending in a fragment of a real
+# title, e.g. (江门 3414348)
+#     《江门市自然资源局关于…的请示（江自然资〔2025〕744号）收悉。经研究，现批复如下：
+#      一、该规划成果符合《中华人民共和国城乡规划法
+# which resolved — by containment — onto the 9-character masthead document
+# 《江门市自然资源局》 instead of the law it actually cites.
+# Allowing ONE nested 《…》 inside the capture fixes both halves at once:
+#   * a title that legitimately quotes another title (《市政府关于修改《X办法》施行时间
+#     的通知》) is now captured WHOLE instead of being truncated at the inner 》; and
+#   * an unclosed 《 can no longer be the start of a match, because the alternation
+#     cannot produce an unbalanced bracket — the engine backtracks out of the stray
+#     《 and matches the INNER title, which is what the text actually cites.
+# The two branches are disjoint on their first character, so there is no ambiguity
+# to backtrack over: matching stays linear. The length bound counts alternation
+# units (a whole nested group counts as one), hence the slightly wider upper bound.
+NAMED_REF_PATTERN = re.compile(r"《((?:[^《》]|《[^《》]{1,120}》){8,120})》")
+
+# The pre-2026-10 greedy form. Kept for ONE purpose: recovering the HEAD of a body
+# run (see recover_named_heads). Never use it to extract references.
+_NAMED_REF_GREEDY = re.compile(r"《([^》]{8,300})》")
 
 POLICY_KEYWORDS = [
     "方案", "措施", "意见", "通知", "规定", "规划", "条例", "办法",
@@ -259,6 +283,56 @@ POLICY_KEYWORDS = [
 EXCLUDE_KEYWORDS = [
     "白皮书", "报告", "讲话", "文章", "演讲", "论文",
 ]
+
+# A full stop can appear in a sentence but never inside an instrument title, so it
+# is a sound marker of "this capture is prose". Deliberately NOT ，；： — measured on
+# the live corpus, those appear in genuine titles (关于降低收费门槛，促进招商引资的决定;
+# 标准化工作导则 第1部分：标准的结构和编写; 惠州市1：500…矢量地形图数据采集标准).
+_BODY_RUN_STOP = re.compile(r"。")
+# A digit alone on a line, twice: the signature of a 绩效表/附件 table that PDF text
+# extraction interleaved into the middle of a 《…》 span.
+_BODY_RUN_TABLE_A = re.compile(r"[0-9]\s*\n")
+_BODY_RUN_TABLE_B = re.compile(r"\n\s*[0-9]")
+
+# Longest prefix of a string that ENDS at a genre word. A real instrument title ends
+# in its genre (…办法 / …的通知 / …规划); body prose that follows one does not.
+_GENRE_END = re.compile(r"^.*(?:" + "|".join(POLICY_KEYWORDS) + r")", re.S)
+
+
+def looks_like_body_run(name: str) -> bool:
+    """True when a 《》 capture is a run of body text rather than an instrument title:
+    it contains a full stop, or a PDF-interleaved numeric table."""
+    if _BODY_RUN_STOP.search(name):
+        return True
+    return bool(_BODY_RUN_TABLE_A.search(name) and _BODY_RUN_TABLE_B.search(name))
+
+
+def recover_named_heads(body: str):
+    """Yield instrument titles that the balanced NAMED_REF_PATTERN cannot see.
+
+    When a body genuinely drops a closing 》 (common in PDF/OCR text), the real
+    reference is the HEAD of the resulting run — everything before the next 《 —
+    and the balanced pattern, which refuses to start at the stray 《, loses it:
+        《关于印发广东省实施技术标准战略“十一五”规划的通知（粤府办〔2007〕16号）精神，
+         制定本实施纲要。 一、… 1989年，《中华人民共和国标准化法》
+    the law is matched, the 通知 is not. This recovers the 通知 by taking the head,
+    cutting it back to its last genre word (dropping the prose tail) and keeping it
+    only if what remains still reads as a title. The same two gates reject the
+    masthead-only heads that produced the false edges (江门市自然资源局关于印发 →
+    no genre word → dropped), so recovery adds titles without re-adding prose.
+    """
+    for m in _NAMED_REF_GREEDY.finditer(body or ""):
+        cap = m.group(1)
+        if "《" not in cap:
+            continue  # balanced pattern already handled this one
+        head = cap.split("《", 1)[0]
+        g = _GENRE_END.match(head)
+        if not g:
+            continue
+        head = g.group(0).strip()
+        if len(head) < 8 or looks_like_body_run(head):
+            continue
+        yield head
 
 
 def is_policy_document(name: str) -> bool:
