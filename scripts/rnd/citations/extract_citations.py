@@ -10,6 +10,8 @@ Usage:
 """
 
 import argparse
+import csv
+import html
 import re
 import sqlite3
 import sys
@@ -36,15 +38,25 @@ _NG = 4  # n-gram size for the title substring index
 # punctuation / brackets / whitespace / the 中华人民共和国 prefix (a ~14% false-missing
 # rate on top-cited refs). Normalizing BOTH sides before matching recovers those.
 _TITLE_STRIP = re.compile(
-    r'[\s《》〈〉「」『』【】〔〕\[\]()（）“”‘’"\'、，,。．\.·・:：;；／/　]')
+    r'[\s《》〈〉「」『』【】〔〕\[\]()（）“”‘’"\'、，,。．\.·・:：;；／/　<>]')
 _PRC_PREFIX = "中华人民共和国"
+
+
+def _clean_ref(s):
+    """HTML-entity fix (2026-10, a6-recoverable-head): some bodies keep the inner
+    title brackets entity-encoded (广东省实施&lt;…土地管理法&gt;办法, 42 citers), so the
+    ref never matched the stored 《》 title. Unescape, and turn the resulting <X> into
+    《X》 so the inner-title core logic sees it. No-op for refs without an '&'."""
+    if not s or '&' not in s:
+        return s
+    return html.unescape(s).replace('<', '《').replace('>', '》')
 
 
 def _norm_title(s):
     """Fold punctuation/bracket/whitespace variants + the PRC prefix so that e.g.
     '城市、镇控制性详细规划编制审批办法' and '城市镇...办法', or '《中华人民共和国网络安全法》'
-    and '网络安全法', normalize to the same key."""
-    s = _TITLE_STRIP.sub('', s or '')
+    and '网络安全法', normalize to the same key. HTML entities are unescaped first."""
+    s = _TITLE_STRIP.sub('', _clean_ref(s) or '')
     if s.startswith(_PRC_PREFIX):
         s = s[len(_PRC_PREFIX):]
     return s
@@ -292,6 +304,33 @@ def _title_cores_of_title(title):
     return out
 
 
+# --- Instrument aliases (2026-10, a6-recoverable-head zero-crawl fixes) ---------
+# A cited instrument can be held under a slightly different official name (广东省
+# 控制性详细规划管理条例, 340 distinct citers, is held as 广东省城市控制性详细规划管理条例):
+# the exact/core tiers miss a one-word difference and containment can't bridge it
+# either (neither normalized string contains the other). Rather than loosen the
+# matcher, a small data-driven table maps `cited_as` -> `canonical_title`; the alias
+# is applied to the NORMALIZED ref right before the exact tier, so it only ever
+# redirects a ref that would otherwise have no exact candidate under its own name.
+ALIASES_PATH = Path(__file__).parents[3] / "data" / "instrument_aliases.csv"
+
+
+def load_aliases(path=ALIASES_PATH):
+    """{norm(cited_as): norm(canonical_title)} from the CSV (cited_as,canonical_title,why).
+    Missing file -> {} so callers (tests, build_diffusion_events) never break."""
+    out = {}
+    try:
+        with open(path, encoding="utf-8", newline="") as f:
+            for row in csv.DictReader(f):
+                a = _norm_title((row.get("cited_as") or "").strip())
+                c = _norm_title((row.get("canonical_title") or "").strip())
+                if a and c and a != c:
+                    out[a] = c
+    except FileNotFoundError:
+        pass
+    return out
+
+
 class TitleMatcher:
     """Indexed fuzzy title resolver — replaces an O(docs x titles) per-ref scan.
 
@@ -306,7 +345,9 @@ class TitleMatcher:
     whose title contains the law's name (see the proxy-target note above).
     """
 
-    def __init__(self, title_to_doc, site_levels=None):
+    def __init__(self, title_to_doc, site_levels=None, aliases=None):
+        # aliases: {norm cited_as -> norm canonical title}; default = data/instrument_aliases.csv
+        self.aliases = load_aliases() if aliases is None else dict(aliases)
         # Index on NORMALIZED titles (punctuation/prefix folded). When two titles
         # normalize identically (mirror copies), keep the promulgation-genre copy,
         # then the highest-level host, then the lowest id (deterministic).
@@ -388,6 +429,7 @@ class TitleMatcher:
         """PRIORITY tier: the doc whose normalized title equals the normalized ref
         (the cited instrument itself), regardless of the containment min_len."""
         name = _norm_title(name)
+        name = self.aliases.get(name, name)  # data-driven alias BEFORE exact matching
         if len(name) >= _EXACT_MIN_LEN:
             return self.core.get(name)
         return None
@@ -504,14 +546,18 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
             return docnum_core_zs.get(zk) or title_docnum_zs.get(zk)
         return None
 
-    # title -> (id, site_key) for named ref resolution (only titles >= 8 chars (was 10 — excluded 9-char provincial 条例))
+    # title -> (id, site_key) for named ref resolution. Floor was 10, then 8 (excluded
+    # 9-char provincial 条例); now 5 (2026-10): 广东省公路条例 (7 chars) was held x4 yet
+    # never indexed, so 41 citers stayed unresolved. Short titles are reachable ONLY
+    # through the exact tier (containment tiers keep their min_len=8 floor on both
+    # sides), so lowering the floor cannot create new fuzzy/proxy matches.
     title_to_doc = {}
     _title_dn_strong = {}  # own-number-position 文号 in a title
     _title_dn_weak = {}    # mid-title mention of a 文号 (fallback only)
     # (algo_doc_type feeds the resolver's genre priority + containment gate; a doc
     #  not yet scored has NULL/'' and is treated as "no information" — ungated)
     for row in conn.execute(
-        "SELECT id, title, site_key, algo_doc_type FROM documents WHERE LENGTH(title) >= 8"
+        "SELECT id, title, site_key, algo_doc_type FROM documents WHERE LENGTH(title) >= 5"
     ).fetchall():
         title_to_doc[row[1]] = (row[0], row[2], row[3])
         for zk, is_own in _title_docnums(row[1]):
@@ -578,6 +624,7 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
         named_refs = NAMED_REF_PATTERN.findall(body)
         seen_named = set()
         for name in named_refs:
+            name = _clean_ref(name)  # &lt;X&gt; -> 《X》 before any matching
             if not is_policy_document(name):
                 continue
             if name in title or title in name:  # skip self-reference
@@ -605,6 +652,7 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
             for ref_name in llm_refs:
                 if not isinstance(ref_name, str) or len(ref_name) < 4:
                     continue
+                ref_name = _clean_ref(ref_name)
                 # Self-reference check: skip only if ref is essentially the same as the title.
                 # Don't skip when the ref is PART of the title (common for explainers:
                 # "一图读懂《X》" references X, which is a substring of the title but NOT self)
