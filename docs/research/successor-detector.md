@@ -286,6 +286,123 @@ external register of rollouts.
 
 ---
 
+## 7a. Re-based on the 2026-10-07 late build (identity + citation rebuild)
+
+*Appended 2026-10-07. Everything above ran on a pre-A4-correction build: 35,027 central
+good-dated promulgations, noted in §1 as 36,902 live at the time of writing. Six fixes then
+landed in one build (deterministic mirror selection, mirror pooling for national statutes, a
+canonical-repost tier, an annual-series split, a balanced-bracket reference pattern), and
+`validate_cascades.py` passes 15/15 on it. Build: citations **585,471** total with **310,136
+resolved (52.97%)**, was 540,166 / 50.99%; `doc_identity` **338,856** rows / **328,678**
+instruments; `instrument_succession` **14,624** rows. Re-run read-only with
+`nice -n 19 .venv/bin/python3 scripts/rnd/analysis/successor_detector.py --out /tmp/succ1007`.
+All comparisons below are stated new (old).*
+
+**The universe grew 12% and the headline rate did not move.** Central good-dated promulgations
+are **39,258 docs → 33,675 instruments** (35,027 → 30,198; the §1 build note's 36,902 figure was
+docs only, and the annual-series split added instruments on top of the A4 date repair). The pilot
+universe is **1,680 docs → 1,411 instruments** (1,490 → 1,271), of which **1,405** carry a usable
+theme core. Candidate pool **29,514** (26,878). Mid-flight cutoff 2023-10-08, **257** of 1,411
+pilots (239 of 1,271).
+
+**Table 2a. Scale rate re-based** [measured]
+
+| universe | pilots | successors | rate | ex-mid-flight | median lag |
+|---|---:|---:|---:|---:|---:|
+| detector, all pilots | 1,411 (1,271) | **80** (75) | **5.7%** (5.9%) | 75 / 1,154 = **6.5%** (6.9%) | **682 d** (564) |
+| strict core-match only | 1,411 | 54 (50) | 3.8% (3.9%) | 49 / 1,154 = 4.2% (4.5%) | 712 d (615) |
+| + citation channel | 1,411 | 92 (85) | 6.5% (6.7%) | 87 / 1,154 = 7.5% (7.8%) | 630 d (564) |
+| **试点-cued trials, no zone names** | 938 (872) | **75** (70) | **8.0%** (8.0%) | 70 / 748 = **9.4%** (9.5%) | 692 d (606) |
+| trials, strict only | 938 | 52 (48) | 5.5% (5.5%) | 47 / 748 = 6.3% (6.3%) | 736 d (712) |
+| trials, + citation channel | 938 | 85 (78) | 9.1% (8.9%) | 80 / 748 = 10.7% (10.6%) | 628 d (534) |
+| long-horizon central sites only | 1,292 (1,168) | 78 (73) | 6.0% (6.2%) | 73 / 1,130 = 6.5% (6.9%) | 653 d (538) |
+
+**Answer to the question the brief asked: the scale rate does not move.** [measured] The raw rate
+goes 5.9% → **5.7%**, ex-mid-flight 6.9% → **6.5%**, and the trials-only rate is **8.0% /
+9.4%** against 8.0% / 9.5% — identical to within a tenth of a point. Five more successors were
+found (75 → 80) on 140 more pilots (1,271 → 1,411), so numerator and denominator grew together.
+**This is a denominator effect with a matching numerator, not a mechanism change.** The two
+mechanism changes that could have moved it did not. The annual-series split raises the pilot
+count (a title re-issued every year is now several instruments, not one), which cuts both ways and
+nets to nothing here because pilot titles are rarely annual. Deterministic mirror selection moved
+85.6k resolved edges to a different copy of the same text, but the detector pools mirrors on
+`instrument_id` before it matches, so which copy holds an edge is invisible to it; only the
+citation channel and the cite bonus see edges at all, and those moved by +7 successors (85 → 92).
+
+**Threshold sensitivity is flat, as before:** 0.55 → 83, 0.60 → 82, 0.62 → 80, 0.70 → 74, 0.75 →
+67 (old 0.55 → 78, 0.75 → 63). **Match anatomy (80 pairs):** containment 42 + 1, exact 11, Dice
+26 (old 39 + 1, 10, 25); 44 carry a generalization cue (42), 13 cite the pilot (14), issuer
+relation same 75 / higher 5 (70 / 5). The strict tier still carries two thirds of the hits.
+
+**Precision is unchanged.** The hand verdicts live in the script, so 75 of the 80 pairs re-score
+automatically: **T 57, P 8, F 10 → 76.0% strict / 86.7% lenient**, exactly the figures above, with
+**5 newly detected pairs unverified**. By kind: exact 90.0% (9/10), containment 64.1% (25 of 39,
+and 1/1 on the candidate-side tier), Dice 88.0% (22/25) — the containment tier is still the weak
+one. The precision-adjusted rate moves only with the base rate: **4.3% strict / 4.9% lenient on
+all pilots** (4.5% / 5.1%), **4.9% / 5.6% ex-mid-flight** (5.2% / 6.0%), still roughly 6-8% on
+trials. §6's "closes about a tenth of the raw gap" stands.
+
+**The lag rose and that is the one real move.** Median pilot → successor lag **682 days** against
+564, p25 302 (294), p75 1,246 (1,306), and **58.8%** inside Wang & Yang's 820-day mean duration
+against 60%. It is still inside their 2.25 years, so the §0 claim survives, but with less margin.
+The driver is cohort composition: the A4 date repair admitted ~4k more good-dated central
+promulgations, concentrated on shallow-archive sites, and the 2010-2015 cohort's median lag rose
+1,891 → **1,827 d** while the 2016-2019 cohort's rose 598 → **692 d**. Cohort rates: 2000-2009
+3/59 = 5.1% (unchanged, median 2,713 d), 2010-2015 14/220 = **6.4%** (13/197 = 6.6%), 2016-2019
+35/444 = **7.9%** (32/373 = 8.6%), 2020-2023 25/460 = **5.4%** (24/432 = 5.6%). 2016-2019 is
+still the most visible cohort and the early cohorts' long lags are still a coverage artifact.
+
+**§5's issuer pattern survives with one denominator correction.** 国务院 is now **338** pilots
+with 3 successors = **0.9%** (255, 1.2%) and 国务院办公厅 **92** with 8 = **8.7%** (66, 7.6%);
+the A4 repair and the annual split landed hardest on these two because 批复 are short, often
+undated-in-body replies. 税务总局 63 / 8 = 12.7% (62 / 8 = 12.9%), 文化和旅游部 29 / 5 = 17.2%
+(unchanged), 交通运输部 19 / 3 = 15.8% (unchanged), 市场监管总局 65 / 1 = 1.5% (unchanged),
+全国人大常委会 30 / 0 = **0.0%** (unchanged, still by construction). The reading holds: these are
+visibility rates of each body's rollouts, and the State Council's near-zero is the zone_wave shape.
+
+**Topic rates hold their ordering.** Government 29 / 6 = **20.7%** (26, 19.2%), Tourism 29 / 5 =
+17.2% (unchanged), Transport 66 / 10 = 15.2% (unchanged), Personnel 28 / 4 = **14.3%** (25,
+12.0%), Culture 51 / 7 = **13.7%** (49, 12.2%), Legal 57 / 6 = **10.5%** (52, 9.6%), Housing 39 /
+4 = **10.3%** (38, 10.5%), Finance 332 / 33 = **9.9%** (321, 10.0%), Infrastructure 56 / 5 =
+**8.9%** (55, 9.1%), Welfare 66 / 5 = 7.6% (63, 7.9%), Health 80 / 6 = **7.5%** (75, 8.0%),
+Commerce 124 / 8 = 6.5% (118, 6.8%), Energy 31 / 2 = 6.5% (30, 6.7%), Education 49 / 3 = 6.1%
+(48, 6.2%), Environment 35 / 2 = **5.7%** (31, 3.2%), Tech 191 / 9 = **4.7%** (163, 4.9%), Trade
+260 / 8 = **3.1%** (239, 3.3%), Agriculture 141 / 3 = **2.1%** (126, 2.4%), no topic 299 / 5 =
+1.7% (246, 2.0%). Trade (自贸区) and Agriculture (示范区 / 创建) are still the zone-shaped lows
+and the no-topic rows are still mostly 批复. Every rate is within 2 points of its old value except
+Environment (+2.5 on n=35) and Personnel (+2.3 on n=28), both small-n.
+
+**The no-successor hand sample is unchanged** (seed 20261006 over the same 30 pilots): zone_wave
+12 (40%), renamed 7 (23%), midflight 6 (20%), never_scaled 2, detector_miss 2, pilot_is_rollout 1;
+**9 of the 12 substantive mature cases have a successor in the corpus (75%)**. The automatic
+triage over all **1,325** no-successor pilots (1,190): mid-flight 252, zone/area designations 416,
+approval replies 299, theme core reappearing in some later central promulgation title 217. §4's
+conclusion — the top reason a pilot shows no successor is a renamed or absorbing instrument —
+rests on the hand sample and is untouched by this build.
+
+**`instrument_succession` as an independent check.** The table now holds 14,624 rows
+(revised_edition 11,635, superseded_by_stated 2,237, renamed 667, **pilot_to_national 85**). Of
+the 1,411 pilot instruments, **151 (10.7%)** carry any succession relation, against **11.3%** on
+the prior build: pilot_to_national 80, superseded_by_stated 43, revised_edition 36, renamed 12
+(an instrument can carry several). The **80** pilot_to_national rows are exactly the detector's 80
+successors, so the side table is not independent evidence, it is this detector persisted. The
+10.7% versus 11.3% is the same denominator effect as the headline: the numerator rose with the
+pilot count but slightly slower, because the annual split and the A4 repair added pilots faster
+than they added successors. [measured]
+
+**Forward-looking note on ranks.** Commit `a494955` re-weights `citation_rank` by the citing
+DOCUMENT's level rather than its host site's level (corpus-lessons A1's other half), taking effect
+at the next nightly `compute_scores`: 5,930 of 47,309 ranked documents change (12.5%), median
+relative move 21.3%, top-5 and top-13 unchanged, ordering shifting at ranks 14-27, and the
+systematic correction is that national laws cited mainly by `npc` 地方法规 were paid the 3.0
+central rate (工会法 248.0 → 175.0, 村民委员会组织法 250.0 → 184.0, 代表法 200.0 → 140.5,
+城市居民委员会组织法 228.0 → 170.0, 人民防空法 550.5 → 497.0, while 政府信息公开条例 gains +65.5).
+**No figure in this memo is rank-based** — the detector reads titles, cores, issuers, topics and
+raw citation edges, never `citation_rank` — so nothing here moves with it. Logged so a later
+reader does not look for the effect. [measured, pending at next nightly]
+
+---
+
 ## 8. Bottom line
 
 Pilots detected: **1,271 instruments** (1,490 docs; memo 1,592 docs). Successors found:

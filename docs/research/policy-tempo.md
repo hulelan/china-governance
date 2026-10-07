@@ -80,6 +80,179 @@ year or two more of weeks at the current crawl cadence.
 
 ---
 
+## 0a. Re-based on the 2026-10-07 late build (identity + citation rebuild)
+
+*Appended 2026-10-07. Everything in §0 to §5 above pins the 2026-10-07 nightly: 323,529
+documents, `diffusion_events` 36,116 rows, `tracker_weekly` 45,151, and a strict subset of
+**13,081** confirmed implementing central events. Six fixes then landed in one later build and
+`validate_cascades.py` passes 15/15 on it: deterministic mirror selection (85.6k resolved edges
+moved to a different copy of the same text, the representative of ~18.8k titles changed), mirror
+pooling for national statutes, a canonical-repost tier, an annual-series split (+1,044
+instruments, so a title re-issued yearly is no longer one instrument), and a balanced-bracket
+reference pattern (~53 false edges removed). Build: documents **338,856** across **472** sites with documents (517 rows in `sites`);
+citations **585,471** with **310,136 resolved (52.97%)**, was 540,166 / 50.99%; `doc_identity`
+338,856 rows / **328,678** instruments; `diffusion_events` **45,524** (31,903 implementing, 13,621
+mentions); `tracker_weekly` **46,178**; `doc_inbound` 41,179 documents with inbound, max 2,149.
+The strict subset is now **17,196** events (16,654 citation + 542 title_reissue), up 31% from
+13,081. Re-run read-only on the droplet at `nice -n 19`, two workers, with the §7 SQL. All
+comparisons below are stated new (old). The old tables are left in place; read them against this
+section.*
+
+**Six of the memo's seven headline findings survive. One flips.** [measured]
+
+**§0 and §1 provenance.** Strict subset **17,196** (13,081). `tracker_weekly` holds 458 ISO weeks
+and the `all` row is non-zero in **455** of them (454). Topic depth: Finance **336** non-zero weeks
+(302), Health 280, Environment 278, Government **246** (242), Tech **237** (232), Credit **64**
+(58), Weather **52** (31), Party **15** (8), Awards 0 (0). Documents with no topic tag at all:
+**37.7%** (~36%). Unresolved citation share, which §2 and §6 quote as "~48%", is now **47.0%**.
+
+**§1 Table 1, the lag CDF, is unchanged.** 4 weeks **0.022** (0.022), 8 weeks **0.054** (0.056),
+12 weeks **0.087** (0.088), 26 weeks **0.218** (0.213), 52 weeks **0.429** (0.414), 104 weeks
+**0.680** (0.670). Median **454 d** (473), IQR **208-864** (212-874). The claim that a central
+instrument's eventual cascade is almost invisible for its first quarter is intact on 31% more
+events; nothing in the censoring correction changes. **§1 Table 2, crawl latency, is unchanged**:
+published 2026-01..09 n=34,385 median 4 d p90 130, within 7 d 0.54 / 28 d 0.69; steady-state
+(published and crawled since 2026-06) n=25,840, median 1 d, p90 37, **within 7 d 0.70, within 28 d
+0.86** — the same 0.70 / 0.86 the memo reports.
+
+**§2 Table 3, pooled tempo by cohort. The 2018 denominator step survives; every level rises.**
+New raw yield, then old: 2015 **0.561** (0.557), 2016 **0.395** (0.339), 2017 **0.556** (0.409),
+2018 **0.162** (0.103), 2019 **0.254** (0.163), 2020 **0.120** (0.105), 2021 **0.253** (0.186),
+2022 **0.161** (0.139), 2023 **0.114** (0.093), 2024 **0.164** (0.168), 2025 **0.267** (0.213),
+2026 **0.135** (0.145). Corrected: 2025 **0.274** (0.218), 2026 **0.351** (0.371) on the same 0.97
+and 0.39 visible shares. Denominators grew with the A4 date repair: 2015 **1,046** (800), 2016
+**2,099** (1,409), 2017 **1,094** (850), 2018 **3,097** (2,690), 2026 2,045 (2,050). **The
+mechanism is unchanged and the shape survives**: 2015-17 yield 0.40-0.56, 2018-2025 yield
+0.11-0.27, and the step at 2018 is still in the denominator (1,046-2,099 → 3,097) and not in the
+numerator (events per year 215-638, flat). Within 2018-2025 the series is still flat-to-rising and
+2024-2026 are still the three highest post-2018 cohorts. 2017 is the one cohort that moved
+materially (0.409 → 0.556) and that is the mirror fix: 2017 anchors gained edges that had been
+sitting on later reposts.
+
+**§2 Table 4, tempo by topic. The ranking's top survives. The bottom flips.** [measured] New
+yield, then old, denominator ≥ 300 in 2018-2025: **Government 0.779** (0.706), Emergency **0.325**
+(0.278), Environment **0.275** (0.225), Commerce **0.218** (0.206), Welfare **0.186** (0.142),
+Personnel **0.174** (0.148), Safety **0.147** (0.084), Health **0.141** (0.102), Legal **0.119**
+(0.099), Trade **0.114** (0.085), Security 0.100 (0.071), Infrastructure 0.100 (0.088), Energy
+0.099 (0.077), Education 0.094 (0.079), Transport 0.093 (0.071), Finance **0.089** (0.071),
+Housing 0.087 (0.070), Agriculture 0.082 (0.067), Tech **0.078** (0.074), Tourism **0.073**
+(0.051), **Culture 0.034** (0.065).
+
+- **SURVIVES: Government is the fastest area, and by a wide margin.** 0.706 → **0.779**, still
+  first, now 2.4x the next area (was 2.5x). Its mechanism is unchanged and is now visible in the
+  anchor list: of 346 Government cascades inside 365 days, 政府信息公开条例 supplies 54,
+  优化营商环境条例 23 and the 告知承诺制 指导意见 19. This is mandatory re-issuance counted, not
+  policy attention, exactly as the memo warns.
+- **SURVIVES: Finance and Tech, the two largest areas, are still among the lowest large yields**
+  (0.089 and 0.078 against a 0.073-0.779 range).
+- **FLIPS: "Tourism 0.05 is the slowest" is no longer true.** Tourism rose to **0.073** and
+  **Culture fell to 0.034**, so Culture is now the slowest area above the floor and Tourism sits
+  mid-pack among the slow group. **This is a mechanism change, not a denominator effect.** Culture's
+  denominator ROSE (743 → 765) while its numerator FELL (48 → **26**); a denominator effect cannot
+  do that. The move is on the anchor side: deterministic mirror selection changed which copy of a
+  text holds a cascade's edges, and the cascade is labelled by that copy's `topics_algo`, so
+  Culture-tagged anchors lost events to copies tagged otherwise. Tourism moved the other way on the
+  same mechanism (numerator 19 → **28**, denominator 376 → 385), and the two areas share anchors
+  (国务院办公厅关于进一步激发文化和旅游消费潜力的意见 is top-3 for both). The ranking's extremes are
+  therefore stable at the top and unstable at the bottom, where n is 20-30 events. Below the floor:
+  Veterans **0.629** (0.65), Diplomacy 0.513 (0.39), Military 0.237 (new above 200 promulgations),
+  Credit 0.138 (0.14), Weather 0.104 (0.11), Party 0.041 (0.03), Sports 0.033 (0.025), Awards 0.000.
+
+**§3 burstiness. SURVIVES in full.** [measured] Every topic is still over-dispersed: Fano
+**1.71-3.71** across substantive topics (1.2-3.8) and **7.81** for `all` (6.70). **Government is
+still the burstiest area with real volume**, detrended CV **2.89** (2.88) on a mean of 1.63/week
+(1.43). Environment still has the single largest spike, **2026-08-10 with 34** cascades of the
+生态环境法典, unchanged. Finance's mean rose most (1.59 → **2.14**, Fano 1.88 → 2.24). Burst-week
+COUNTS move in both directions (Government 20 → **13**, Legal 18 → **31**, Finance 20 → **30**)
+because the mean + 2 SD threshold moves with the higher means; that is a threshold artifact of the
+larger series, not a change in burstiness, and the CVs are the stable statistic.
+
+**§3 Table 6, campaign windows. SURVIVES and sharpens.** Commerce inside 以旧换新 2024-03..12:
+rate ratio **3.52** (3.36), **10 of 15** burst weeks inside (7 of 12), per 1,000 sub-national
+documents **7.91 inside vs 2.51 outside** (4.35 vs 1.65). Tech inside AI+ 2025-08..2026-06: ratio
+**1.88** (1.92), 6 of 21 burst weeks (6 of 26), per 1,000 **4.43 vs 4.20** (3.30 vs 2.75).
+Cross-window controls still null: Commerce in the AI+ window 0.81, Tech in the 以旧换新 window
+0.92, Government 0.17 and 0.02. The pooled `all` series is still LOWER inside both windows (0.89,
+0.86) because sub-national document flow grows faster than cascades. **The two campaigns are still
+visible in their own topic's series and nowhere else, and 以旧换新 is still the sharper of the
+two.**
+
+**§3 the 2013-17 window. The "no 2013 step" finding survives; the level and shape changed.**
+Implementing events per 1,000 sub-national documents by source year, new (old): 2010 **106**,
+2011 **171** (152), 2012 **168** (141), 2013 **145** (108), 2014 **180** (115), 2015 **228**
+(150), 2016 **304** (173), 2017 **302** (144), 2018 **225** (112), then a monotone fall to **33**
+in 2026 (28). **There is still no 2013 step** — 2013 is a local low, below both 2012 and 2014 — so
+§3's verdict is intact. What is new is a clear **2015-2017 plateau at 2 to 3 times the 2011-2014
+level**, where the old series was flat at 141-180 across 2011-2017. That is the mirror fix paying
+mid-decade anchors the edges that had been credited to later reposts. The series is still dominated
+by the growth of the sub-national denominator (2,627 documents in 2011; 35,217 in 2026), so §3's
+caveat and its call for a continuous-coverage panel both stand.
+
+**§3 the site-batch caveat. SURVIVES, larger.** The pooled burst weeks are still single-site
+batches: 2023-01-02 **106** cascades with Guangzhou **62** (83 / 51), 2020-03-09 **97** with
+Shenzhen **85** (66 / 57), 2026-08-10 **77** with `npc` 14 and lvliang 11 (75). A new one enters
+the top five: **2019-04-22, 80 cascades, 58 of them Foshan (`sf`)**. The recommendation to require
+events from k distinct sites is now better supported, not worse.
+
+**§4 lead-lag. THIS IS THE FINDING THAT FLIPS.** [measured] Re-run on the memo's own design (10
+topics with ≥ 150 first-tag cascades: Government, Emergency, Environment, Commerce, Welfare,
+Health, Legal, Safety, Education, Tech; 90 ordered pairs, lags 1-12, 200 circular shifts, seed 7),
+**2 of 90 pairs beat the null at p < 0.05 against 4.5 expected by chance** — below the chance rate,
+where the memo found 6 of 90 at the chance rate. The two are Legal → Environment at lag 7
+(r 0.128, null95 0.113, p 0.000) and Environment → Education at lag 3 (r 0.150, null95 0.147,
+p 0.030), the second of which is a hair above its null. **Tech → Education at 2 weeks does not
+survive: r falls 0.177 → 0.100 against a null 95th percentile of 0.147, p = 0.155.** The lag-0
+correlation is still ~0 (0.015), so the pair was never a shared-anchor artifact; it was a weak
+correlation that 31% more events washed out. **This is a mechanism change, not a denominator
+effect**: the series grew and the correlation shrank, which is the signature of noise, not of a
+diluted signal. On the current ≥ 150 gate the universe is **18 topics and 306 pairs** (the gate now
+admits Agriculture, Culture, Diplomacy, Finance, Infrastructure, Personnel, Trade, Transport), and
+**16 of 306 beat the null against 15.3 expected** — again exactly the chance rate, with no pair
+clearly above its null and Tech → Education at p = 0.230. **Net: §4's main verdict, that the record
+has no general lead-lag structure between policy areas at weekly resolution, SURVIVES and is
+stronger. Its single named exception is withdrawn.** The honest statement is now that zero of 90
+pairs in the memo's design beats the null by a margin, and the memo's own caveat (457 weeks at ~1
+event per week per topic is too sparse; r 0.18 is about the detectable ceiling) was the correct
+reading of that result.
+
+**§5 level decomposition. SURVIVES; the province's margin narrows slightly.** Long-run shares of
+weekly central-anchor cascades 2018-2026: provinces **49.9%** (53.3%), cities **45.5%** (42.1%),
+districts **4.6%** (4.6%) on n=10,931 (5,451 / 4,977 / 503). **First implementer per instrument, the
+memo's 67% claim: for 838 central anchors issued 2018 or later with at least three implementing
+events, the earliest implementing document is provincial for 575 = 68.6%** (66.7%), municipal 240 =
+**28.6%** (30.8%), district 23 = **2.7%** (2.5%). The claim survives and strengthens by two points
+on 29% more anchors (649 → 838). Median lag of all implementing events: provincial **337 d** (415),
+municipal **582** (541), district **673** (670) — the province-to-city gap widened from 126 to 245
+days, which reinforces §5's reading rather than softening it. Burst-week level mix, new (old):
+`all` 0.36 / 0.62 / 0.02 (0.42 / 0.54 / 0.04), so the pooled flip toward cities is sharper and is
+still the site-batch effect. Within topics the pattern partly reshuffles: **Tech still rises** in
+burst weeks (0.72 burst vs 0.59 long-run, was 0.74 vs 0.59), **Finance now rises** (0.72 vs 0.61,
+was flat at 0.62 vs 0.61), **Health is now flat** (0.65 vs 0.63, was 0.72 vs 0.65), and Government
+(0.47 vs 0.50), Commerce (0.52 vs 0.55) and Environment (0.49 vs 0.53) are flat or slightly down.
+So "the province's share rises in burst weeks for the campaign-shaped areas" holds for Tech, has
+transferred from Health to Finance, and should be read as unstable at these n (359-976 events per
+topic). Provincial-anchor events since 2018, the layer §6 names as next: **3,068** (1,797).
+
+**Forward-looking note on ranks.** Commit `a494955` re-weights `citation_rank` by the citing
+DOCUMENT's level rather than its host site's level (corpus-lessons A1's other half) and takes
+effect at the next nightly `compute_scores`, not in the build measured here: 5,930 of 47,309 ranked
+documents change (12.5%), median relative move 21.3%, the top-30 keeps the same set with the
+ordering shifting at ranks 14-27 (top 5 and top 13 unchanged), and the systematic correction is
+that national laws cited mainly by `npc` 地方法规 were being paid the 3.0 central rate (工会法
+248.0 → 175.0, 村民委员会组织法 250.0 → 184.0, 代表法 200.0 → 140.5, 城市居民委员会组织法 228.0 →
+170.0, 人民防空法 550.5 → 497.0, while 政府信息公开条例 gains +65.5). **No figure in this memo is
+rank-based** — every series here is a count of `diffusion_events` rows against a `doc_identity`
+denominator, and `citation_rank` appears nowhere — so nothing above moves with it. Logged so a
+later reader does not look for the effect. [measured, pending at next nightly]
+
+**Verdict on B7, re-stated.** Unchanged. The series is an instrument for burstiness and for level
+timing, and is not yet one for cross-area tempo comparison or for lead-lag. This build strengthens
+the first two (31% more events, the same CVs, the first-implementer share up two points) and
+weakens the case for the third twice over: the topic ranking's slow tail moved by a mechanism, not
+by sampling, and the one lead-lag pair that beat the null no longer does.
+
+---
+
 ## 1. What a cascade event is, and what the weekly series counts
 
 `diffusion_events` (built by `scripts/rnd/analysis/build_diffusion_events.py`) holds one row

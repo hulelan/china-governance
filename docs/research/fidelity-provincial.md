@@ -161,6 +161,32 @@ with Guangdong in level and shape; Beijing agrees with the district row. The all
 (9.1 / 18.8 / 72.2) is within half a point of the Guangdong split because Guangdong is 95% of
 it. [measured, Guangdong-dominated]
 
+**The Jiangsu row, re-based on the 2026-10-07 late build (identity + citation rebuild).** The
+row above reads "Jiangsu 200: median 0.112, relay 8.0%, mid 25.0%, elab 67.0%". `consistency-review.md`
+Round 2 H2 recorded that the then-current layer gave 473 pairs / 426 scored / relay 3.3% instead,
+and called it a denominator effect of the Suzhou date repair without resolving it. Re-run on this
+build (`nice -n 19 python3 scripts/rnd/analysis/pairs.py --report --workers 2`, 190 s, read-only
+on the droplet; citations 585,471 with 310,136 resolved = 52.97%, `doc_identity` 338,856 rows /
+328,678 instruments), Jiangsu province-to-city is **601 pairs, 457 scored, median 0.054, relay
+3.3% (15 relays), mid 12.5%, elaboration 84.2%** on the citation basis, and **700 pairs, 466
+scored, median 0.055, relay 3.9% (18), mid 12.7%, elaboration 83.5%** on the union. **The
+mechanism did not change; the denominator did.** Three facts fix that. (1) The relay SHARE is
+3.3% on the citation basis of both the 473-pair run and this 601-pair run, so the mirror-selection
+and reference-pattern fixes in this build moved the Jiangsu relay rate by zero; the pair count
+grew 473 → 601 and the relay count 15 → 15. (2) Restricting to implementing sources, the gate the
+§2.1 table's Guangdong rows use, recovers the old figure almost exactly: **466 pairs, 242 scored,
+median 0.099, relay 7.4% (18), mid 24.0%, elaboration 68.6%** on the union (citation basis 367 /
+233 / 0.093 / 6.4% / 24.0% / 69.5%) against the row's 0.112 / 8.0% / 25.0% / 67.0%. The 200-pair
+set behind the row was effectively that implementing subset. (3) What the all-pairs denominator
+adds is non-implementing Suzhou sources plus `npc` 54, 无锡 42, 南京 35 and six smaller sites;
+Suzhou supplies 549 of the 700 pairs (78%) at a median lag of 738 days, against 766 days for
+Jiangsu as a whole. All 18 relays are Suzhou (16 renamed re-issuance, 2 转发), up from 14 (12
+renamed, 2 转发) in the `pair-channels.md` run. [measured] **Read the row as: Jiangsu relays a
+provincial instrument in 7.4% of implementing province-to-city pairs and 3.9% of all of them;
+the 8.0% was the implementing figure under an all-pairs label.** Jiangsu still agrees with
+Guangdong in level and shape on the comparable gate (Guangdong implementing union 9,328 pairs /
+5,339 scored / relay 10.8%), and Jiangsu's n is 2% of Guangdong's.
+
 ### 2.2 What the relay band is
 
 506 Guangdong relays. 401 are near-identical both ways (`ovlp_anc` > 0.7). Decomposed by the
