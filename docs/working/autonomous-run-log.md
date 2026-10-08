@@ -2129,3 +2129,20 @@ a freshly rebuilt index on this box, not a regression. Checked by re-running rat
 Wuxi still on step 1 (`wuxi --deep`): **1,555 docs at 100% body** in `documents_wuxi.db` by 02:43.
 Step 1's cap is 03:17; the seven districts follow. Merge into documents.db only if it can finish
 before 06:00 with no other writer; documents.db currently has none.
+
+## P2 Iteration 74 (Wuxi step 1 hit its cap; my own wrapper said rc=0)
+Wuxi step 1 (`wuxi --deep`) ended at 03:17:54 and my chain printed **`rc=0`** — but it had run
+EXACTLY its 7,200s cap (01:17:54 → 03:17:54). The wrapper was `timeout … | tail -5; echo rc=$?`, and
+after a pipe `$?` is the status of `tail`, not of `timeout`, so a 124 was reported as 0. That is the
+failure-hiding pattern I wrote into CLAUDE.md as a rule a few hours ago, this time in my own shell —
+and the **fourth** wrapper of mine tonight to hide a failure (stale `[0-9]+ ok` regex past 999, `| tail
+-1` truncating a traceback, a `for` loop exiting 0 over nine crashes, and now `$?` after a pipe).
+Encoded in memory: use `${PIPESTATUS[0]}` or `set -o pipefail`, and cross-check a step's elapsed time
+against its cap.
+The log confirms what happened: it was actively paging the 部门文件 section (`bmgfxwj`) at
+**page 42 of 100** when killed, with no completion summary; the earlier sections finished (2009-2026
+present). So `wuxi` holds **2,078** in `documents_wuxi.db` against ~3,865 listed in the scratch test,
+and a resumable follow-up must finish `bmgfxwj` pages 43-100 (~1,160 docs; the crawler skips stored
+URLs). The seven districts are now running (`wxd_liangxi` 162 at 03:25). Because the chain writes its
+OWN database it can run straight through the 06:00 nightly with no contention; only the MERGE has to
+avoid the nightly window.
