@@ -177,6 +177,25 @@ Jiangsu cities fall inside that spread near 广州 and 深圳, so relay tracks p
 Wuxi exactly on it) and chain descent (79.3 to 98.0, median 93.5) are stable across it.)*
 
 ### Part III. Central-local dynamics
+- **Devolution is measurable, and the ratchet runs both ways**
+  (`local-legislative-devolution.md`, 2026-10-08). Counting *jurisdictions* rather than documents
+  — the question `doc_identity.province` + `admin_level_doc` made askable — distinct **municipal**
+  legislating bodies were flat at ~43/yr across 2009-15, jumped to **214 in 2016**, and settled
+  near 320, while provincial issuers barely moved. The cause is the 2015 立法法 amendment
+  (effective 2015-03-15), which extended local legislative power from 49 designated cities to all
+  设区的市. Not a collection artifact: the pre-2016 issuer set is the legal roster itself — all 23
+  provincial capitals, all 18 of the 较大的市 list, the 4 SEZ cities, the autonomous prefectures —
+  and suffix-normalized it lands on **79 = 49 + 30**, the roster's own size. The municipal *share*
+  also breaks (≈35% flat 2000-14, then 48 / 54 / 60%), which thin historical coverage cannot
+  produce. The amendment's three-domain confinement (城乡建设与管理 / 环境保护 / 历史文化保护) then
+  shows in the titles: 283 new entrants legislate inside those domains **9-16 pt** more than the
+  79 incumbents in the same period, against an incumbent time-trend of ≈+6.5 pt. **This does not
+  contradict the through-line — the echo direction is unchanged — but it refutes reading it as a
+  one-way ratchet.** The center multiplied the number of bodies holding independent rule-making
+  authority about fivefold on a dated schedule while bounding what they could do with it. Breadth
+  footnote from the same memo: all 31 mainland provincial-level units appear in the corpus, but for
+  21 of them ≥75% of what we hold is this one metadata-only genre, so the panel is a second
+  instrument (titles and dates, 0 of 31,070 rows with a body) and does **not** discharge B1.
 - **Recentralization and experimentation** (`recentralization-experimentation.md`;
   Luo/Wang/Yang recentralization claim and Wang/Yang pilots, NBER w29402). The upward-citation
   share of sub-national edges steps up 7-11 points at exactly 2013, holds through 2017, then

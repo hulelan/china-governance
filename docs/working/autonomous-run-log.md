@@ -2582,3 +2582,58 @@ that expands to empty under zsh (`${pipestatus[1]}`), so a guard built on it sil
 against 20–37% silent failure every night since the 07-25 v4-flash migration. `classify_failures`
 holds exactly `json_unsalvageable=1` and `content_risk=1`. ETA ~10:15 UTC 2026-10-09, so the owed
 write sequence (identity → succession → diffusion → tracker → validate) stays queued behind it.
+
+---
+
+## Iteration 88 — the jurisdiction recount, and the discontinuity the document counts were hiding
+
+The owed item was "a jurisdiction count, not a document count". It paid off twice.
+
+**Breadth first.** `doc_identity.province` resolves **31 distinct provincial-level units** — all
+four municipalities, all five autonomous regions, 22 of 23 provinces; the only absences are Taiwan,
+Hong Kong, Macau. Smallest unit is Tianjin at 475 documents, so none is a token presence. Against
+the coverage audit's "~14 of 34 crawled", that is a much stronger claim — and, once you see *how*
+the other 17 arrive, a much narrower one. The split is bimodal on whether we crawled the province:
+seven sit under 32% `npc`, twenty-one above 75% (hi **98.1%**, ha 97.5%, jx 96.1%, tj 96.0%). And
+`crawlers/npc.py` is metadata-only by design: **0 of 31,070 rows carry a body.** So the corpus is
+two instruments — a 31-jurisdiction title-and-date panel, and a ~7-province full-text apparatus —
+and **B1's "second deep province" belongs entirely to the second, so the panel does not discharge
+it.** The panel is also unbalanced in time: not one province clears 20 regs in every 5-year window
+from 1996, and the corpus-wide series runs 781 → 1,152 → 2,417 → 5,835 → 9,537 per 5 years.
+
+**Then the reason for that curve, which is not legislative appetite.** Documents per year cannot
+separate "more legislators" from "the same legislators writing more"; jurisdictions can. Distinct
+**municipal** legislating bodies: 37, 50, 46, 45, 41, 43, 43 across 2009-2015 — then **214 in
+2016**, 310, 304, 331, settling ~320. Provincial issuers stay flat (31-36 → 43-58). The 2015
+立法法 amendment (effective 2015-03-15) extended local legislative power from 49 designated cities
+to all 设区的市, with provincial designation staggered 2015-17, which is exactly the shape.
+
+**I tried to kill it as a collection artifact and could not.** The discriminator: a database that
+merely *began collecting* municipal regulations in 2016 would hold a subset of a large population,
+whereas the pre-2016 issuer list is **the legal roster** — all 23 provincial capitals, **all 18 of
+the obscure 较大的市 list**, the four SEZ cities, and the autonomous prefectures (whose authority
+came separately under the 民族区域自治法). Suffix-normalized it lands on **79 = 49 authorized cities
++ 30 autonomous prefectures**, the roster's own size; post-2016 lands on 362 against ~330 eligible.
+The corpus recovers a law it never recorded. Second, independent check: the municipal **share** was
+~35% flat for the fifteen years 2000-2014, then 48 / 54 / 60%. Thin history suppresses both levels
+together and leaves a ratio flat; it cannot break one at the year of the legal change.
+
+**The amendment's own scope limit is then a content prediction, testable on titles alone** — which
+is all this panel has. New entrants were confined to 城乡建设与管理 / 环境保护 / 历史文化保护.
+79 incumbents vs 283 newly authorized: incumbents drift +6.2 pt (loose proxy) / +6.8 pt (strict)
+across the 2016 boundary — the time trend — while entrants sit **+15.9 pt loose, +8.8 pt strict**
+above contemporaneous incumbents. I ran the strict proxy *because* the loose one admits bare 保护
+and 文化 (消费者权益保护, 未成年人保护 are not permitted domains); the gap is robust in sign and
+roughly halves, so the memo reports **9-16 pt** rather than picking the flattering number. It binds
+loosely: 55% of entrants' regulations still fall outside the three domains, and with no bodies the
+panel cannot say whether that is scope creep, understating titles, or proxy miss — logged as the
+sharpest open question. Uptake is near-universal: 283 jurisdictions against ~250-270 newly eligible.
+
+**Bearing on the through-line:** the echo direction is unchanged, but reading it as a one-way
+ratchet is wrong. The center multiplied the bodies holding independent rule-making authority ~5×
+on a dated schedule *while* bounding what they could do with it — and the second half is measurable
+only because the first created a treated and an untreated group. The 79 incumbents are a natural
+comparison group for the 283 entrants on any title-observable outcome, needing no bodies.
+
+Shipped `242456c` (`docs/research/local-legislative-devolution.md`, placed in Part III of the
+curated reading order, 38 memos) and the Part III entry in `findings-synthesis.md`.
