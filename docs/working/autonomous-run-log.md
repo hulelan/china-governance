@@ -2209,3 +2209,17 @@ the deep walk also tops up other sections), but it capped again with roughly 380
 the ~3,865 the scratch test listed. Launched a second bounded follow-up into the same separate DB
 (`logs/wuxi_followup2.log`); it runs through the nightly without contention, and the second merge
 waits for the nightly to release the lock.
+
+## P2 Iteration 78 (Wuxi complete; a genuine rc=0, and the reason it can be trusted)
+Second follow-up: **`rc=0 elapsed=2169s cap=5400 wuxi_rows_after=3865 added=380`**. This `rc=0` is
+real, and the elapsed-vs-cap line is why I can say so: 2,169s against a 5,400s cap is a natural
+completion, where the same `rc=0` four hours earlier had been a 7,200s-on-a-7,200s-cap timeout.
+`wuxi` in `documents_wuxi.db` is now **exactly 3,865**, matching the scratch test's listing to the
+document, and the +380 matches my "roughly 380 still to go" exactly. Wuxi municipal is complete.
+(The local launch wrapper reported exit 1; the detached droplet job was unaffected — the fifth time
+tonight `setsid nohup` has separated a wrapper's failure from the real work.)
+**PRE-REGISTERED for the second merge** (after the nightly releases the lock): the first merge took
+2,078 of these wuxi rows, now held in documents.db and therefore skipped by URL, so the second merge
+should add about **1,787** (3,865 − 2,078), all `wuxi`; the seven district sites are fully merged and
+should contribute ~0. Main-DB `wuxi` should go 2,147 → ~3,934, and the corpus by the same ~1,787 on top
+of whatever tonight's crawl adds.
