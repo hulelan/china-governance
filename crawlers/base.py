@@ -432,9 +432,35 @@ BODY_MAX_ATTEMPTS = 3
 
 # No HTTP GET can ever produce a text body for these, from any vantage, so ONE
 # recorded failure is enough: they are skipped immediately and not even
-# `--retry-bodies` re-sends them. Only `body_ledger.py --requeue` does, which is
-# why the classification of `image_only` is anchored and hand-checked below.
-BODY_TERMINAL_REASONS = ("image_only", "pdf_only")
+# `--retry-bodies` re-sends them. Only `body_ledger.py --requeue` does.
+#
+# `pdf_only` qualifies because the verdict comes from the URL's own suffix, not
+# from a guess about the page.
+#
+# `image_only` was here and was REMOVED (2026-10-08), because its verdict comes
+# from a title cue and the cue is ambiguous on the one site where it fires.
+# Measured on the live corpus, bodiless / has-body rows carrying the cue:
+#     bj 1,268 / 107     miit 87 / 2     gov 0 / 0   mof 0 / 2   ndrc 0 / 0
+# So the population the rule governs is Beijing alone, and Beijing is the one
+# site the anchoring was never validated against (it was checked on gov, 10 -> 0,
+# and miit, 15 -> 2 — both sites where the cue barely fires). Beijing's dominant
+# shape is `一图读懂、音频解读：北京市生态环境局关于印发《X》的通知`: one page
+# carrying an infographic AND an audio reading AND the full text. Anchoring cannot
+# help it, because the cue is at the head. 110 of 178 has-body titles sampled
+# across these sites still classify `image_only`.
+#
+# Guillemets do not separate the classes either: 673 of Beijing's 1,190 bodiless
+# cue rows also name an instrument in 《》, so "names an instrument, therefore
+# text-bearing" would de-terminalize 673 genuinely pictorial rows.
+#
+# What terminality actually bought: 1 fetch per row instead of BODY_MAX_ATTEMPTS,
+# i.e. ~2,536 fetches on bj ONCE (~68 min, one time). The recurring saving the
+# ledger exists for (~21 min/night) comes entirely from the attempt CAP, which
+# applies to every reason. So terminality was a one-time hour bought with the
+# permanent, silent abandonment of a text-bearing page on a single transient
+# extraction failure. `image_only` is now an ordinary capped reason; it keeps its
+# own name so `--stats` and `--requeue image_only` stay precise levers.
+BODY_TERMINAL_REASONS = ("pdf_only",)
 
 # Reachable from a different vantage; kept distinct so it can be re-queued.
 BODY_VANTAGE_REASONS = ("anti_bot_stub",)
@@ -449,8 +475,11 @@ BODY_STUB_MAX_BYTES = 512
 
 # Titles whose document body is an image or a video, so no text exists to extract.
 #
-# ANCHORED on purpose, and hand-checked (2026-10-08) rather than taken on faith,
-# because `image_only` is TERMINAL after a single failure. A bare substring test
+# ANCHORED on purpose, and hand-checked (2026-10-08) rather than taken on faith.
+# It is no longer TERMINAL (see BODY_TERMINAL_REASONS), so a false positive now
+# costs recall only after BODY_MAX_ATTEMPTS rather than permanently — but the
+# anchoring is still worth keeping, because it is what stops the cue from
+# charging real regulations three useless fetches. A bare substring test
 # for 视频|音频|直播 matched real regulations — 《互联网直播服务管理规定》,
 # 《网络视听节目音频响度技术要求…》, 司法部…海外远程视频公证 — any of which a
 # transient extraction failure would then have abandoned permanently. Requiring

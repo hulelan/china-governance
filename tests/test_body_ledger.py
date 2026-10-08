@@ -18,7 +18,7 @@ Rules under test:
   1. a first-time bodiless row is NEVER skipped (no ledger row => not blocked),
   2. a row is skipped once `attempts >= BODY_MAX_ATTEMPTS`,
   3. `--retry-bodies` / `set_retry_bodies(True)` overrides (2),
-  4. terminal reasons (image_only / pdf_only) are skipped even under
+  4. terminal reasons (pdf_only) are skipped even under
      `--retry-bodies`; only `body_ledger.py --requeue` reopens them,
   5. a row that finally yields a body has its ledger entry REMOVED,
   6. the table is created idempotently (init_db, ensure_body_ledger, twice),
@@ -227,7 +227,8 @@ def test_skip_path_never_updates_a_documents_row():
     with tempfile.TemporaryDirectory() as td:
         conn = _scratch_db(Path(td))
         doc_id = _add_doc(conn, 140)
-        base.record_body_failure(conn, doc_id, "bj", "image_only")
+        for _ in range(base.BODY_MAX_ATTEMPTS):     # the real route to "blocked"
+            base.record_body_failure(conn, doc_id, "bj", "empty_extraction")
         conn.commit()
 
         before = conn.execute(
@@ -256,7 +257,8 @@ def test_beijing_skip_path_is_wired_and_writes_nothing():
         conn = _scratch_db(Path(td))
         url = "https://www.beijing.gov.cn/zhengce/zcjd/202202/t1.html"
         doc_id = _add_doc(conn, 150, title="一图读懂《某实施方案》", url=url)
-        base.record_body_failure(conn, doc_id, "bj", "image_only")
+        for _ in range(base.BODY_MAX_ATTEMPTS):     # the real route to "blocked"
+            base.record_body_failure(conn, doc_id, "bj", "image_only")
         conn.commit()
 
         fetched = []
@@ -285,7 +287,7 @@ def test_beijing_records_then_skips_across_runs():
 
     (a) a non-terminal failure (`empty_extraction`) builds the attempt counter
         and the row stops being fetched exactly at BODY_MAX_ATTEMPTS;
-    (b) a terminal failure (`image_only`) stops it after ONE attempt;
+    (b) a graphic-cue failure (`image_only`) is capped like any other;
     (c) once the extractor is fixed, the body lands and the ledger entry goes.
 
     The record is gated on `store_document`'s return value, so a ledger entry is
@@ -339,8 +341,42 @@ def test_beijing_records_then_skips_across_runs():
 
     # (a) a real page our extractor cannot parse: 3 attempts, then capped
     run("关于印发某办法的通知", "empty_extraction", base.BODY_MAX_ATTEMPTS)
-    # (b) an infographic: terminal, so one attempt is all it ever costs
-    run("一图读懂《某实施方案》", "image_only", 1)
+    # (b) an infographic: capped like any other reason (it was TERMINAL after one
+    # attempt until 2026-10-08; see BODY_TERMINAL_REASONS for the measurement
+    # that removed it — the cue is ambiguous on the only site where it fires).
+    run("一图读懂《某实施方案》", "image_only", base.BODY_MAX_ATTEMPTS)
+
+
+def test_image_only_is_capped_not_terminal():
+    """A title-cue verdict must never be permanent (measured 2026-10-08).
+
+    `image_only` is decided by a title cue, and on the only site where that cue
+    fires in volume (bj: 1,268 bodiless vs 107 has-body rows carry it) the cue is
+    genuinely ambiguous — Beijing publishes the infographic, the audio reading and
+    the full text of one document on a single page, titled
+    `一图读懂、音频解读：…关于印发《X》的通知`. Terminality bought one fetch
+    instead of three, ONCE; it cost the permanent silent loss of a text-bearing
+    page on a single transient extraction failure. `pdf_only` stays terminal
+    because its verdict comes from the URL suffix, not from a guess.
+    """
+    assert "image_only" not in base.BODY_TERMINAL_REASONS
+    assert "pdf_only" in base.BODY_TERMINAL_REASONS
+    assert "image_only" in base.BODY_REASONS, "it keeps its name as a --requeue lever"
+
+    with tempfile.TemporaryDirectory() as td:
+        conn = _scratch_db(Path(td))
+        doc_id = _add_doc(conn, 777)
+        base.record_body_failure(conn, doc_id, "bj", "image_only")
+        conn.commit()
+        assert base.body_fetch_blocked(conn, doc_id, retry=False) is False, \
+            "one graphic-cue failure must not abandon the row"
+        for _ in range(base.BODY_MAX_ATTEMPTS - 1):
+            base.record_body_failure(conn, doc_id, "bj", "image_only")
+        conn.commit()
+        assert base.body_fetch_blocked(conn, doc_id, retry=False) is True
+        assert base.body_fetch_blocked(conn, doc_id, retry=True) is False, \
+            "--retry-bodies must now re-open it, like any capped reason"
+        conn.close()
 
 
 # --------------------------------------------------------------------------
@@ -368,10 +404,11 @@ def test_reasons_name_the_measured_shapes():
               "《关于X的意见（试行）》政策解读（一图读懂）"):
         assert c(html=big, title=t) == "image_only", t
 
-    # `image_only` is TERMINAL after ONE failure, so the cue MUST NOT fire on a
-    # real regulation that merely contains 视频/音频/直播 in its name — all of
-    # these are genuine documents in the corpus and an unanchored substring test
-    # matched every one of them (measured 2026-10-08).
+    # The cue MUST NOT fire on a real regulation that merely contains
+    # 视频/音频/直播 in its name — all of these are genuine documents in the
+    # corpus and an unanchored substring test matched every one of them
+    # (measured 2026-10-08). `image_only` is no longer terminal, so this now
+    # protects three wasted fetches rather than the document itself.
     for t in ("国家网信办发布《互联网直播服务管理规定》",
               "关于发布《网络视听节目音频响度技术要求和测量方法》等三项标准的通知",
               "司法部办公厅关于进一步推进海外远程视频公证工作的通知",

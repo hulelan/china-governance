@@ -15,12 +15,21 @@ re-queue exactly the affected class in one command.
 
 Reason classes, and which are genuinely terminal:
 
-    image_only       TERMINAL anywhere. The document's body IS an image
-                     (一图读懂 / 图解 / 视频). No HTTP GET will ever return text;
-                     the recovery path is OCR. 86.4% of the 1,636 bodiless `bj`
-                     rows are this.
-    pdf_only         TERMINAL anywhere for this mechanism. The payload is a
+    pdf_only         TERMINAL anywhere for this mechanism, and the only terminal
+                     class, because its verdict comes from the URL's own suffix
+                     rather than from a guess about the page. The payload is a
                      PDF/DOC; `scripts/extract_pdf_text.py` owns it.
+    image_only       CAPPED, not terminal (changed 2026-10-08 — see
+                     `base.BODY_TERMINAL_REASONS` for the measurement). The
+                     document's body is usually an image (一图读懂 / 图解 / 视频)
+                     and the recovery path is OCR, but the verdict rests on a
+                     title cue that Beijing uses ambiguously: it publishes the
+                     infographic, the audio reading and the full text of one
+                     document on a single page. Of the rows carrying the cue,
+                     bj has 1,268 bodiless against 107 that DO have a body, and
+                     bj is ~93% of the whole class. So one failure must not
+                     abandon the row; `--retry-bodies` re-opens it, and
+                     `--requeue image_only` remains the precise lever.
     anti_bot_stub    TERMINAL FROM NYC ONLY — "not yet" from anywhere else. The
                      server answers with a refusal page (MIIT returns 42 bytes
                      of "信息模板页面配置实体不能为空" to the droplet; 3,841 of its
@@ -76,6 +85,11 @@ from crawlers.base import (  # noqa: E402
 DB_PATH = ROOT / "documents.db"
 
 # A re-fetch from this vantage provably cannot help these, so seed them capped.
+# `image_only` belongs here even though it is no longer TERMINAL: the seed reads
+# SAVED HTML, so a row only lands in this class when a page we already hold
+# yields no text AND its title carries the cue. The fetch has in effect already
+# happened and produced nothing, so paying BODY_MAX_ATTEMPTS to rediscover that
+# is waste — while `--retry-bodies` still re-opens it, which terminality did not.
 SEED_CAPPED = ("image_only", "pdf_only", "anti_bot_stub", "empty_extraction")
 
 # Sites that are bodiless BY DESIGN, so a ledger row for them is pure noise.
