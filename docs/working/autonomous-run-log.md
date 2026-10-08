@@ -2845,3 +2845,54 @@ caveated that 李强 is a very common personal name, so the Premier series uses 
 today). 42 memos, 261 tests passing. The never-attempted §10 NBER papers each carry their specific
 blocker, so the remaining NBER work is gated on external data (procurement, protest, trade), not on
 our corpus — except w32701, whose document half `patient-capital-cascade.md` opened yesterday.
+
+---
+
+## Iteration 92 — the trackers half, and a perf lesson that was wrong in a way that nearly cost a feature
+
+**Shipped the two intensity dimensions into the tracker** (`46314ef`), which is the trackers half of
+the standing ask, built on the result that unblocks it: yesterday's independence finding means
+authority and textual intensity can be two weekly series without one shadowing the other, which is
+exactly what `policy-tempo.md` lacked when it called the tracker not-yet-usable for cross-area
+tempo. `tracker_weekly` gains `authority_mean`, `text_median`, `elab_median` per topic × ISO week ×
+level, with `MIGRATE` entries so an existing table upgrades in place. `authority_mean` is a **mean
+and never a sum** — summed it correlates with `cascade_events` itself at +0.957, so it would be a
+second copy of the count.
+
+**The design hinged on a measurement I nearly didn't take.** Textual intensity needs
+`LENGTH(body_text_cn)`, and CLAUDE.md's most-cited perf lesson says of the 74s `get_sites` query
+that "an index can't help; the aggregate must read the body column" — which reads as *touching
+bodies is expensive*, and `build_site_stats`' own in-code comment explains that its scan
+deliberately avoids overflow reads. I almost designed around it. Instead I measured:
+
+| shape | time | plan |
+|---|---|---|
+| `SUM(body_text_cn != '')` (header only) | **2.2s** | `SCAN documents` |
+| `SUM(LENGTH(body_text_cn))`, all 346,955 | **7.3s** | `SCAN documents` |
+| `sites LEFT JOIN documents GROUP BY site_key` | ~74s | **`SEARCH d USING AUTOMATIC COVERING INDEX (site_key=?) LEFT-JOIN`** |
+
+**The 74 seconds was the automatic covering index, not the body read** — ~4GB materialized through
+a 32MB cache. Reading every body sequentially costs 7.3s. So per-document body-derived columns are
+affordable as long as the aggregation stays in Python, which `build_site_stats` already does. New
+`doc_len(doc_id, chars)` is built inside its existing single scan for ~5s, the rollup joins it as
+ints and never touches a body, and `test_length_query_plan_stays_a_bare_scan` asserts the plan so a
+future edit that reintroduces the materialization fails loudly. Corrected in CLAUDE.md (`06551a2`)
+with the explicit note that the old wording nearly cost this feature.
+
+Also pinned: the rollup **degrades cleanly with no `doc_len`** (a document crawled after the last
+`build_site_stats`) — counts and the authority axis never depend on it, text columns report 0 rather
+than dropping the row. 8 new tests, 261 → **269 passed, 1 skipped**. `daily_sync.sh` ordering was
+already right (`build_site_stats` 377 before the rollup 394). Nothing ran against the live DB; the
+classifier holds the lock to ~10:40 UTC (10,400/23,710, still 2 errors) and the nightly git-pulls.
+
+**I broke my own rule twice in this tick and it is now a named shape** (`06551a2`). Commit
+`46314ef`'s message claimed the CLAUDE.md correction — **it was not in that commit.** My edit script
+asserted on a string reconstructed from how the file *looked* in a rendered view, but the file wraps
+the sentence after "an index can't"; the first of three asserts failed, the write at the end of the
+script never ran, and nothing was written while the commit described it as done. Then the
+**verification repeated the shape**: `grep -c "<phrase>"` for a phrase my own replacement text had
+wrapped, which printed `0` and, because grep exits 1 on no match, silently truncated the rest of an
+`&&` chain of checks. Rules recorded: read the anchor out of the file with `repr()` first; verify
+with `grep -cF` on a short single-line substring, each check as its own command; and when a script
+makes several replacements, write nothing unless **all** anchors matched — a partial write is worse
+than none, because the commit message will describe the whole change.
