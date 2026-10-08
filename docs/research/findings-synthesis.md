@@ -261,38 +261,236 @@ bases, so the share moved because the repair pulled hundreds of long-lag Suzhou 
 
 ## Status and what remains
 
-Done: all nine replications (diffusion atlas, recentralization/experimentation, the Wang/Yang
+*(Status 2026-10-08, rewritten against the live droplet DB and the git log rather than from
+memory. Every claim below carries the date it was verified. The 2026-10-01 and 2026-10-07
+versions of this list are in git history and are not reproduced here, because both had gone
+stale in the same way, described at the end of this section.)*
+
+**Done.** All nine replications (diffusion atlas, recentralization/experimentation, the Wang/Yang
 experimentation backbone, AI governance in three memos, industrial-policy targeting,
 attention/campaigns, the citation-network/authority backbone, corpus-wide fidelity, the issuer
-parser + joint-issuance study), plus the tracker and provincial anchors. The tracker is shipped
-and nightly-refreshed. Open: the containment-proxy class of the resolver bug (H1 above), the
-提振消费 anchor regression (fix in progress), a jurisdiction-level breadth recount, and npc
-re-leveling in `sites`. *(Corrected 2026-10-01 per `consistency-review.md` M5; the earlier text
-listed Parts I-III as "in progress".)*
+parser plus joint-issuance study), the tracker (shipped, nightly-refreshed), the provincial anchor
+class, the per-document identity layer A1-A7, and the B-series memos B1 through B7.
 
-*(Status 2026-10-07, `consistency-review.md` round 2. Of the four open items above: the
-提振消费 regression and the containment class were closed by the resolver regression fix and the
-containment gate (the 33,992-event build; wrong proxies are now left unresolved, resolution
-50.5%); npc re-leveling landed as `doc_identity.admin_level_doc` (2026-10-06), not in `sites`,
-which still carries the site level; the jurisdiction-level breadth recount is still open. Landed
-since: the identity layer A1-A5 (`doc_identity`: per-document level, `instrument_id`, genre,
-`date_quality`, `lead_issuer`, `localized_of`; `instrument_succession`), the A4 correction
-(`crawl_stamped` 29k → 0), the Suzhou redate, the province resolver, `doc_inbound` (B6),
-`validate_cascades.py` nightly (B5), and the B-series memos: `fidelity-jiangsu.md` (B1, on one
-city), `bottom-up-channel.md` (B2, + four feedback sources), `successor-detector.md` (B3),
-`site-selection-gdp.md` (B4), `policy-tempo.md` (B7), plus `pair-channels.md` and the
-industrial-policy robustness and level re-basing. Open now: a second Jiangsu prefecture at
-Suzhou's depth; the date-ordered `localized_of` (1,958) and `province` / `instrument_kind`
-columns, committed but not yet in the droplet's identity build (live 2026-10-07 06:52 UTC: 2,592
-rows, no such columns); the framework-gate widening that `instrument_kind` carries; the §2.1
-Jiangsu row re-read on the redated DB; MIIT bodies (anti-bot stubs, residential fetch); the A6
-head crawl.)*
+**Live figures, verified 2026-10-08 on the droplet.** Corpus **346,955** documents across **479**
+sites. Citation resolution **52.97%**, **310,136** resolved of **585,471** edges. `doc_identity`
+**338,856** rows carrying all eleven columns. `instrument_succession` 14,624 rows.
+`diffusion_events` 45,524 rows, `tracker_weekly` 46,178. `validate_cascades.py` passes **15 of 15**
+on this build. Tonight's nightly is in Phase 2 and holds the write lock until roughly 10:00 UTC on
+2026-10-09, so everything that needs a writer is deferred, not forgotten. [measured]
+
+### Two results, not housekeeping
+
+**1. The corpus now holds a 31.4-year single-jurisdiction run.** `crawlers/sz_gazette.py` walks the
+Shenzhen 政府公报 archive and brought in **11,450** documents, 11,204 with body text (97.9%), with
+**continuous issue coverage 1995-04 to 2026-09** (`sz-gazette-scoping.md` §2 corrected an earlier
+38-year claim: the 59 pre-1995 rows sit in retrospective compilation issues printed 2002-03, and the
+platform's earliest real issue folder is `zfgb/1995/gb68`, so issues 1 to 67 were never published).
+This is the deepest run the corpus has for one jurisdiction, and it changes what the volume can
+claim: a within-jurisdiction time series over three decades does not depend on cross-site coverage,
+so it is not vulnerable to the coverage bias that caveats every cross-sectional chapter. It has
+already paid for itself twice, in `instrument-lifespan.md` (median instrument survival is not
+reached in any stratum; at most a quarter of instrument-shaped municipal documents are ever formally
+repealed and the survivor curve plateaus near 0.75 after twelve years, while the 规范性文件 register
+class with a written 3 or 5 year 有效期 term is repealed at three times the rate of ordinary 文件,
+so municipal Shenzhen retires rules by sunset clause and not by repeal notice) and in the
+denominator work below. n=1, and it is a special economic zone. [measured]
+
+**2. The 文号 serial read as a denominator is the volume's first measurement that is not
+coverage-limited.** `wenhao-denominator.md` reads the document serial as a *register count* rather
+than as a document we hold, so the maximum serial observed per series per year estimates total
+numbered issuance whether or not the gazette printed it. That breaks the dependence on what we
+crawled, which is the standing limit on every other chapter here. `wenhao-denominator-wuxi.md`
+(2026-10-08) then ran the same estimators on Wuxi, an ordinary Jiangsu prefecture, and the verdict
+is **replication in proportion but not in path**: over 2010-2025 Wuxi's government register (锡政发
+plus the 锡政呈 请示 register split out of it in 2018, which otherwise reads as a false 84%
+one-year collapse) falls -6.8%/yr against 深府's -6.0%/yr on the same window, and its office series
+-12.6%/yr against 深府办's -14.9%/yr, with 规范性文件 registers appearing in the same window at the
+same scale; but Wuxi held level through 2017 and stepped down in 2019 where Shenzhen fell through
+2012-2017, its office series fell by three quarters rather than collapsing, and the pre-2010
+Shenzhen decline does not appear in Wuxi at all. So the narrowing of the formal-document channel is
+not a Shenzhen artefact, while its timing is local. n=2. [measured]
+
+### Closed since the 2026-10-07 status
+
+- **A second Jiangsu prefecture at Suzhou's depth: in the corpus, with one merge outstanding.**
+  Wuxi was crawled into a separate DB to `wuxi_rows_after=3865` and merged on 2026-10-08 at
+  05:15-05:18 (4,685 rows added, 61 duplicates skipped, 7 new sites; corpus 341,313 to 345,998
+  exactly, against a pre-registered ~4,616). Live 2026-10-08: `wuxi` 2,209 plus seven `wxd_*`
+  district sites 2,668, **4,877** together. **A second merge of about 1,707 remaining `wuxi` rows
+  is still pending**, blocked by the nightly write lock, so this item is closed as "the prefecture
+  is in the corpus" and not as "the merge is finished". B1 itself is discharged only when
+  `fidelity-wuxi.md` reports; that study is in flight. [measured 2026-10-08]
+- **The date-ordered `localized_of` and the `province` / `instrument_kind` columns are in the
+  droplet's identity build.** Verified 2026-10-08: `doc_identity` has all eleven columns;
+  `province` is populated on 177,476 rows; `instrument_kind` splits framework 99,174 /
+  housekeeping 13,876 / other 225,806. One correction to the committing memo: the date-ordered
+  `localized_of` is **2,014** rows on the live build, not the 1,958 the commit message quoted. The
+  droplet build is the authority. [measured 2026-10-08]
+- **The framework-gate widening that `instrument_kind` carries is in force.** This was the one
+  item worth re-checking rather than assuming, because the code and the data landed separately.
+  `build_diffusion_events.is_framework` returns `kind == "framework"` when the column is present
+  and falls back to the old regex only when it is absent (commit `890a25a`, A7); the hand-check in
+  `docs/working/qa-framework-gate.md` had found that old regex 23% precise. The column is present
+  on the droplet, so the fallback is dead and the widened gate is what built the live 45,524-row
+  `diffusion_events`. [measured 2026-10-08]
+- **The §2.1 Jiangsu row re-read on the redated DB** (commit `5c8ecbc`, 2026-10-07). Verdict: the
+  row's 8.0% relay was the implementing figure wearing an all-pairs label. The relay *share* is
+  3.3% on the citation basis of both the old 473-pair run and the new 601-pair one, so the identity
+  and citation fixes moved it by zero; the implementing subset recovers 7.4% against the row's
+  8.0%. Denominator, not mechanism. [measured]
+- **The A6 recoverable head crawl**, with one target reclassified rather than crawled. Landed:
+  the Shenzhen 政府公报 (11,450, above), the gov.cn 中央文件 library (`zhengcelibrary_zy`, 566
+  listed, 432 new) and the gov historical tail, and 大鹏新区's 规范性文件库 under `szdp` (8,628 on
+  that site key). Two of the four "delisted" head items were recovered with zero new crawling of
+  their own: 深圳市行政听证办法 (id 4952494) and 深财规〔2023〕3号 (id 10832248) both sit in the
+  gazette, and 广东省控规条例 was already held under its full title and is resolved by a row in
+  `data/instrument_aliases.csv`. Only 苏住建规〔2011〕4号 is genuinely gone. **Not closed as
+  planned: 中山 `zs_lyj`.** Commit `f3e1073` records that zs.gov.cn is Tier C from the NYC vantage
+  and that the A6 listing had been measured from the Mac; the site holds 113 documents from that
+  Mac run and the rest is user-gated on a residential vantage. [measured 2026-10-08]
+
+### Open now
+
+Each item was re-verified on 2026-10-08 unless noted.
+
+- **MIIT bodies.** 5,607 of 7,864 `miit` documents have no usable body on the live DB (the memos
+  quote 5,383 bodiless, of which 3,790 are 14-byte anti-bot stubs and 1,527 are missing files; the
+  live count is higher because the nightly keeps re-fetching them). Needs a residential or HK fetch
+  vantage, not a selector fix, and they can never gain a body from NYC.
+- **The jurisdiction-level breadth recount.** Open since 2026-10-01 and still not done. The
+  per-document level distribution is available (`doc_identity`: municipal 122,625, provincial
+  68,300, central 67,439, media 50,985, district 27,800, research 1,707), but the recount asked for
+  is of *jurisdictions covered*, not documents, and no one has run it.
+- **The 部门规章 wall and the other datacenter-blocked tiers.** About 16% of the top-400 unresolved
+  citation head is ministerial 令 that is not in gov.cn's library and whose ministries block the
+  droplet; `huizhou` and `yangjiang` remain hard-blocked from the DigitalOcean IP. Reaching these
+  needs HK or 北大法宝, which is a vantage decision and not a crawler one.
+- **The Hanweb-datacall JS portals**, roughly 52 prefecture portals including 济南 and 郑州. Needs
+  browser network inspection to find the data call, as 海淀 did.
+- **The body-tail trim.** 33,105 bodies carry share, print and navigation chrome that the
+  never-shorten guard froze in place. The trim is scripted and verified on `gov` (commit
+  `5a8c4cb`) and deliberately ordered trim-then-BM25-once, but it is a writer, so it waits for the
+  lock. Deferred, not blocked on knowledge.
+- **Two deferred resolver-precision patterns**: generic short titles (政府信息公开指南,
+  涉企收费目录清单) attracting containment, and documents *about* an instrument (延长 / 贯彻 /
+  废止) winning containment over the instrument itself. Held back on purpose. Two simultaneous
+  resolver changes would confound the measurement of each, so these follow once the org-stub gate's
+  pre-registered effect below is read.
+- **The org-stub gate's effect: PRE-REGISTERED, NOT YET OBSERVED.** See the next section.
+- **`sites.admin_level` still carries the site level.** npc re-leveling landed as
+  `doc_identity.admin_level_doc` only, so any new analysis must join the identity table rather than
+  `sites`.
+- **`diffusion_events.topic` stores only the anchor's first topic tag.** The tracker service
+  compensates with a cached anchor-to-topics map, and the consequence measured 2026-10-07 is that
+  every topic-labelled aggregate shifts by relabelling when anchor selection changes. Treat any
+  topic-level series as sensitive to anchor selection.
+
+### Landed since the 2026-10-07 status and missing from it
+
+**Seven correctness fixes to the identity and citation layer.** [measured]
+
+1. **Mirror determinism** (`b1aff31`). Mirror selection is deterministic (lowest id on a date tie)
+   instead of "the last row scanned wins". 85.6k resolved edges moved to a different copy of the
+   same text and the representative of about 18.8k titles changed. This changes *which* document
+   holds an edge, not how many an instrument receives, so it relabels aggregates without moving
+   denominators.
+2. **Statute mirror pooling** (`64529f3`). `_best_core`'s `KEY_MIN = 6` floor was measured on the
+   *folded* core, so every national statute was refused an `instrument_key` and no copies pooled.
+   This is the fourth instance of the folded-string length-floor bug shape, and it was found by
+   looking for it on purpose.
+3. **The canonical-repost tier** (`a72a341`). A repost cannot be an instrument's canonical copy;
+   the date tier had been deciding alone.
+4. **The annual-series split** (`6e0ccb5`). A title a government re-issues every year is not one
+   instrument. 15 of 15 on new splits, 10 of 10 on an adversarial sample of pools left merged.
+5. **The balanced-bracket reference pattern** (`03263eb`). A 《》 capture must not cross an
+   unclosed bracket.
+6. **The write-contention retry layer** (`bc8517d`). A busy write lock must cost one row, not the
+   whole run. Nine of thirteen `--backfill-bodies` runs had been dying on their UPDATE *after*
+   paying for the fetch; the lesson recorded alongside it is that the SQLite limit is transaction
+   hold time, not writer count.
+7. **A1's per-document citation weighting** (`a494955`). A citation is worth the citing
+   *document's* level, not its host site's. 23,214 of 585,471 edges disagree (3.97%) and 13,846 of
+   the 310,136 rank-bearing edges (4.46%), but the rank effect is not small: 5,930 of 47,309 ranked
+   documents move (12.5%), median relative move 21.3%. The direction is systematically the bug:
+   national laws cited mainly by npc 地方法规 had been paid the 3.0 central rate. This is in the
+   stored `citation_rank` now.
+
+**The cross-site body-clobbering bug and its repair.** `5d872b2` closed the hole (both stores now
+guard `DO UPDATE` on `site_key`) and `4a59e97` repaired the damage. 261 rows had their saved HTML
+sitting in another site's directory, which the `raw_html/<site_key>/<id>.html` invariant makes proof
+of a clobber. 21 of the 261 were *not* corrupt, because `crawlers/gov.py` resolves a doc id by url
+before minting one and so legitimately adopts a row's id when a Shenzhen district row points at a
+www.gov.cn article; clearing those would have destroyed correct content. **240 rows repaired, 21
+kept and recorded.** [measured]
+
+**The silent classifier failure, and its fix measured in production.** A third of all DeepSeek
+classification calls had been failing since the 2026-07-25 `deepseek-v4-flash` migration, in every
+nightly log back through mid-September, because v4-flash is a reasoning model that bills reasoning
+tokens against `max_tokens` and the budget was 2,000. The code read empty content as a content
+filter and skipped it silently, leaving `classified_at = ''` so the document was re-sent every
+night forever. `1511b81` raises the budget to 12,000 with one 24,000 retry on
+`finish_reason="length"`, names every failure reason, and persists failures to a
+`classify_failures` side table. **Measured in tonight's production run: 4,400 consecutive documents
+classified with 0 errors**, against the roughly 34% failure rate it replaced. [measured 2026-10-08]
+
+**Phase 1 timing.** `36fba8a` adds per-crawler timeouts and moves the measured zero-yield walkers
+to a weekly cadence, after a measurement found Phase 1 spending 240-271 minutes to add ~250
+documents with 15 zero-yield crawlers accounting for 196 of 252 median minutes. Phase 1 now
+finishes about **41 minutes earlier** than the mean of the previous four nights, and the gate is
+confirmed live in the nightly. [measured]
+
+**The org-stub containment gate, with a pre-registered prediction that is NOT yet observed.**
+`4b890aa` makes organization-name-only titles exact-match-only targets, because the containment
+tier let any reference that merely *embeds* an agency name land on a masthead stub when the real
+instrument is not held (`广东省自然资源厅` had reached #20 by `citation_rank`). Where the 4,789
+displaced edges go was measured against all live titles: **4,567 become honest-unresolved, 134 are
+gains** (they now reach the right instrument through its 印发 or decree wrapper or a 【已废止】
+copy), 64 land on a 转发 transmittal (better than a stub, still a proxy), and 24 are wrong-to-wrong
+and were already wrong. **Zero correct edges lost.** **PRE-REGISTERED:** when tonight's Phase 2b
+citation rebuild runs, resolved edges should **fall by about 4,570 net, taking resolution from
+52.97% to roughly 52.2%**, and 广东省自然资源厅 should leave the top 20. That fall *is* the
+improvement: false edges become honest unresolved ones, which is the August backfill's "the
+absolute resolved count, not the %, is the honest metric" lesson read in the other direction. If
+resolution instead rises, or falls by much more than ~4,600, something else moved and must be
+investigated. **This has not happened yet.** The classifier has not reached Phase 2b, so the
+52.97% above is the pre-gate number and the prediction is still a prediction. [pre-registered]
+
+**The validator is now 15 checks**, and both splits exist for the same reason. `9dd6bf3` split the
+城乡规划法 check into `cxgh_edges` (edge rows, what `citation_rank` weights) and `cxgh_citers`
+(distinct citing documents, self-cites dropped), because the single check printed "inbound
+citations" while counting edges and that ambiguity produced a false alarm. `07f3541` split the AI+
+check the same way into `aiplus_implementing` (the confirmed citation and title_reissue tiers) and
+`aiplus_topic_genre` (the probable-but-unconfirmed ceiling), after a 131-event "failure" on a build
+where the cascade had not changed. The general lesson, now three times over: **when a nightly check
+fails, first ask whether its metric conflates two things.** [measured]
+
+**New memos.** `wenhao-denominator.md` and `wenhao-denominator-wuxi.md` (the denominator result
+above), `instrument-lifespan.md` (repeal and sunset over thirty years of the Shenzhen gazette), and
+`docs/working/sz-gazette-scoping.md` (the scoping that corrected the 38-year claim to 31.4 years and
+withdrew its own §3.2 函 rise). `pair-channels.md` was already named in the 2026-10-07 status and is
+listed here only so the set is complete.
+
+### How this section goes stale
+
+This section is edited by whoever finishes a piece of work, so it drifts within a day of heavy
+change: nobody who closes an item is the person who wrote its entry. The previous version was
+committed 2026-10-07 at 03:00 and was accurate then; five of the six items on its "Open now" list
+closed over the next twenty-four hours, and two days of work landed that it never mentioned. It has
+now gone stale that way twice in two days. The fix is a format change, not more diligence. **Any
+claim of the form "open" or "landed" carries the date it was verified**, as every line above does,
+so a reader can see how old a claim is instead of having to trust it. And the section is
+**re-checked against the git log and the live DB rather than from memory**, which is how five
+"open" items were found closed in minutes here.
 
 Standing caveats that apply to every chapter: coverage bias (proxy-blocked provinces invisible,
 Guangdong over-represented at district depth), ~52-54% citation resolution depending on date
 *(50.5% live 2026-10-07, 270,211 of 534,722, after the containment gate un-resolved wrong proxies;
 the lower rate is the more honest one and every "~52%" in the memos is now a ceiling on the rate
 and a floor on the counts)*
+*(Corrected 2026-10-08: 52.97% live, 310,136 of 585,471. The 50.5% was measured before the
+Wuxi merge and the 2026-10-07 identity and citation rebuild; the org-stub gate's pre-registered
+fall to about 52.2% has not run yet, so neither number is the settled one.)*
 (all counts are floors), publication date is not adoption date, title-lexicon recall is a
 fraction of body mention, and the selection boundary above. Mechanism-level throughout, no
 regime-type labels. Two cross-memo comparability notes (added 2026-10-01, `consistency-review.md`
