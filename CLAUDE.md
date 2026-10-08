@@ -542,8 +542,8 @@ same as before. A one-off `--retry-failed` backfill of the ~1,864 unclassified d
 
 ## A recurring bug shape: length floors measured on a NORMALIZED string
 
-Three separate bugs this project has shipped are the same mistake, and a fourth is likely
-waiting somewhere: **a minimum-length guard applied to a string AFTER normalization stripped
+Four separate bugs this project has shipped are the same mistake (the fourth was predicted
+here before it was found, which is the point of naming a pattern): **a minimum-length guard applied to a string AFTER normalization stripped
 characters from it.** Chinese statute names are the trap, because `中华人民共和国` is 7 characters
 and every normalizer folds it away.
 
@@ -552,6 +552,7 @@ and every normalizer folds it away.
 | `extract_citations.TitleMatcher` exact tier | `len(ref) >= 8` | 城乡规划法 (5 after folding) never got an exact match, so containment won and credited the law's 2,139 citations to a provincial doc that merely embedded its name (the Oct 2026 "proxy target" bug) |
 | `extract_citations` title index | `WHERE LENGTH(title) >= 8` | 1,661 held titles of 5-7 chars were never candidates at all (广东省公路条例 held 0 citers while sitting in the corpus 4 times) |
 | `build_doc_identity._best_core` | `KEY_MIN = 6` on the folded core | every national statute got NO `instrument_key`, so all copies stayed `instrument_role='unique'` and nothing pooled (found 2026-10-07) |
+| `citation-network-structure.md` Appendix pooling (analysis code, not production) | a 5-char floor on the folded title | 民法典 and 预算法 fold to 3 characters once 中华人民共和国 is stripped, so the memo's own pooled authority statistics never pooled them (found 2026-10-08 during the A1 re-base). Note the resolver's title index is safe here because its `LENGTH(title) >= 5` floor reads the RAW title, 10 characters for 中华人民共和国民法典 |
 
 **Rule:** measure a length floor on the string the user wrote, not on the string your
 normalizer produced; or exempt the shapes you know fold short (`法|法典|条例|修正案`) with an
