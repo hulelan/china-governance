@@ -91,6 +91,30 @@ next nightly git-pulls it and will store ~510 new documents in ~10 min, inside `
   (~181/541 with real inline text) and do not read that as a crawler regression. It is the honest
   number replacing a fake one — those 360 previously would have counted as "has a body".
 
+## Prediction 5 — how much of the instrument-pooling gap is staleness
+
+Measured on the live (stale) `doc_identity`, 2026-10-08, before the rebuild
+(`docs/working/qa-resolver-deferred-patterns.md` §3). Families of identically-titled documents:
+
+| | families | documents |
+|---|---|---|
+| pooled to one `instrument_id` | 3,423 | 9,052 |
+| not pooled, copies span > 400 d (by design) | 8,123 | 24,019 |
+| **not pooled, copies within 400 d (should have)** | **11,891** | **28,225** |
+| …of those, containing a doc with NO identity row | 2,180 | — |
+
+Worst cases have a span of **0 days**: 中共中央关于制定…第十五个五年规划的建议 (2 docs, 209 citers),
+国务院关于印发全面推进依法行政实施纲要的通知 (2 docs, 198), 中办印发《通知》… (3 docs, 253).
+
+- **If staleness:** the within-400d figure falls materially, driven by the 2,180 families that
+  currently contain an identity-less document.
+- **If a real pooling defect:** it stays near 11,891 / 28,225, and then it is worth real work —
+  28,225 documents is 8% of the corpus, and `instrument_id` is what `citation_rank`, the diffusion
+  anchors and the tracker's anchor-diversity columns all pool on.
+- **Either way the >400d bucket should barely move**, since edition separation is intended.
+
+Re-run exactly: the `fam` view in `docs/working/qa-resolver-deferred-patterns.md` §3.
+
 ## Open follow-up (logged, not done)
 
 The **31 pre-existing `pbc` rows keep their node-id dates**. The 19-digit node id is the CMS
