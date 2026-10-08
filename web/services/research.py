@@ -47,6 +47,7 @@ CURATED: list[tuple[str, list[str]]] = [
         "local-legislative-devolution", "joint-issuance",
     ]),
     ("Part IV · Sectors and campaigns", [
+        "patient-capital-cascade", "rmb-coverage",
         "ai-governance-diffusion", "ai-regulatory-web", "ai-plus-fidelity",
         "industrial-policy-targeting", "attention-campaigns",
     ]),

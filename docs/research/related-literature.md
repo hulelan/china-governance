@@ -162,3 +162,31 @@ the NBER stuff" question maps directly to results. Full synthesis: `findings-syn
 | Fidelity of diffusion (agenda Q6) | `diffusion-fidelity.md`, `fidelity-provincial.md` | 88% elaboration corpus-wide, not bimodal; and the province is the translation layer: in 92.8% of C→P→M chains the city copies the province, not the center. *(2026-10-07: replicated on Jiangsu, `fidelity-jiangsu.md`, 89.9% of 89 chains, on one city; the citation-only relay figures are floors by ~5% of relays, `pair-channels.md`.)* |
 | Fragmented authority / joint issuance (Q7) | `joint-issuance.md` | Joint issuance rising at the center (17%→43% on the policy-genre, fixed-site robustness set gov/ndrc/mof/mee; pooled 2020-26 = 34%; on an all-central-docs, any-genre denominator the share falls 23%→15% because single-issuer news and explainers exploded after 2020), coalitions growing (2.4→3.9), core shifted from an MOF-tax dyad to an NDRC hub; only 5+ coalitions are echoed more often and sooner. |
 | Sheehan's CAC rules; AI-tocracy line | `ai-governance-diffusion.md`, `ai-regulatory-web.md`, `ai-plus-fidelity.md` | Two faces: AI regulation is a CAC monopoly that self-extends at the center; the promotional AI+ program diffuses and is elaborated into local sector plans. |
+| Beraja/Peng/Yang/Yuchtman, Government as Venture Capitalists in AI (NBER w32701) | `patient-capital-cascade.md` | **Started 2026-10-08, lexical half only.** We hold the authorizing-instrument side they lack: 1,769 docs mention 引导基金, 298 政府引导基金, 1,081 产业投资基金, 267 docs whose TITLE is a fund instrument (1998-2026, ~5/yr → ~18/yr at 2016). The memo's finding is that the *justification* for long-horizon state capital (耐心资本) was built sub-nationally in one city's technology-park finance reforms and ratified centrally 5y5m later — a fund-level panel dates the instrument, only the document record dates the argument. The fund/firm-side causal work still needs data we do not hold. |
+| — (no paper; our own question) | `rmb-coverage.md` | The monetary apparatus is the corpus's biggest institutional hole: PBC 31 docs, SAFE 22, no NFRA, against MOF 3,395 and chinatax 5,018. Reachable from NYC — the PBC crawler walks page 1 only, so this is a dialect fix not a vantage problem. On a fixed 17-site panel the 美元:人民币 ratio halves 2013→2017 and sits flat for eight years; uncontrolled it *rises*, because 2026 holds 3× 2024's documents. RMB internationalization reaches the record as zone-and-plan policy (大湾区纲要 365 citers), not monetary regulation. |
+
+---
+
+## Still unreplicated from the "run now" seven (status 2026-10-08)
+
+Five of the seven above have memos. **Two do not**, and both are directly computable on what we
+already hold:
+
+- **#4 Measuring policy diffusion intensity** (Information Processing & Management, 2025). Their
+  index is hierarchical effectiveness × textual intensity over 9,091 low-carbon documents
+  2007-2022. We have `doc_identity.admin_level_doc` for the first term and `diffusion_events`
+  lag/fidelity for the second, corpus-wide rather than in one domain. No new data needed.
+- **#5 Aligning Agendas in Public-Activity Reports** (Journal of Chinese Political Science, 2026).
+  Topic models over 71,460 activity releases; provincial issue shares track the General Secretary
+  more than the Premier. Our `genre` field isolates readouts and reports, and we reach the
+  municipal and district tiers they did not. The constraint is that our readout coverage is
+  uneven by province, so this one needs a fixed-site panel first (see `rmb-coverage.md` §4 trap 3
+  for why that is not optional).
+
+NBER papers in §10 never attempted, with the blocker for each: **w29466 AI-tocracy** and
+**w27723 Data-intensive Innovation** need procurement contracts and protest data (we hold the
+policy half only — `ai-governance-diffusion.md` is the complement, not the replication);
+**w31676 Exporting the Surveillance State** needs trade data; **w32993 Autocracy 2.0** is a
+framework essay with no single replicable estimate. **w32701** is now started (above) and is the
+only one of the five whose missing half we actually hold.
+
