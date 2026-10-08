@@ -2932,3 +2932,58 @@ describing an edit that did not land.
 
 269 → **273 passed, 1 skipped** (4 new service tests, including one asserting the template parses).
 Nothing ran against the live DB.
+
+---
+
+## Iteration 94 — the un-audited residual contained the memo's best identification check
+
+Audited the 3,406 unprovinced `npc` rows, which `local-legislative-devolution.md` had flagged in its
+own Limits as un-audited. The audit found both a bound and, unexpectedly, the strongest causal
+evidence the memo now has (`5285ea9`).
+
+**The bound.** 2,475 of the 3,406 are **correctly** unprovinced central instruments — 中华人民共和国
+statutes, State Council 条例, 最高人民法院 interpretations, NPC decisions; 20 of 20 sampled were
+unambiguously national. The remaining **931 are systematic, not noise**: 848 自治县 + 73 自治旗 + 10
+other. The cause is that `CITY_PROVINCE` holds **prefecture-level divisions only** — deliberate, and
+exactly why 东方市 is correctly absent — so an autonomous **county** resolves only if its title
+carries a province prefix. The split is total:
+
+| tier | provinced | unprovinced |
+|---|---|---|
+| 自治州 (prefecture-level) | **1,042** | **0** |
+| 自治县 / 自治旗 (county-level) | 233 | **921** |
+
+Visible in the prefix: `甘肃省肃北蒙古族自治县…` resolves, `宽城满族自治县…` does not. Recorded in
+Limits: every per-province count in §1 is a **floor**, and provinces with many autonomous counties
+(yn, gz, hb, hn, gs, nm) are understated more than others. §2's jurisdiction counts are unaffected,
+being computed from `lead_issuer` rather than `province`.
+
+**Then the tier turned out to be a placebo group.** Autonomous counties legislate — 1,154
+regulations from **136 distinct jurisdictions** — but under the **民族区域自治法 of 1984**, as
+自治条例 and 单行条例, *not* under the 立法法. They were never in the pre-2015 49-city roster and
+gained nothing in 2015. So if the 2016 break is the amendment, this tier must not break:
+
+| year | 设区的市 (treated) | 自治县 (placebo, authority since 1984) |
+|---|---|---|
+| 2010-2015 | 41 36 40 34 37 35 | 14 18 10 12 14 20 |
+| **2016** | **148** | **18** |
+| 2017 | 250 | 17 |
+| 2024 | 285 | 46 |
+
+**The treated tier quadruples in 2016; the placebo tier does not move.** And the argument that
+closes the rival explanation: a database that merely *began collecting* local regulations in 2016
+would have lifted **both** — same site, same table, same crawler. It lifted one.
+
+I recorded both honest readings of the rest rather than only the flattering one. The counties **do**
+rise from 2018 (32 → 47 → 47 → 49), two years late and **without a discontinuity**, which fits
+spillover or diffusing practice but not the amendment, which showed up in 2016-17 for the cities.
+And **自治州 break in 2017, not 2016** — expected, since the amendment revised their provisions too
+and provincial designation was staggered, so a one-year-later break is predicted rather than
+awkward.
+
+The placebo result is now in the memo's short version as well as §2, because a reader who stops at
+the summary should see the identification check and not just the correlation. Memo now 2,726 words.
+
+**Method note worth keeping:** the check existed only because the memo had written its own
+un-audited residual into Limits instead of omitting it. The habit of logging what you have *not*
+verified is what produced the best evidence here, two days later.
