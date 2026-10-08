@@ -2785,3 +2785,63 @@ the following citations rebuild should **raise** resolution — with the named t
 none of those four resolve, the demand list was wrong about what PBC publishes** — the more
 interesting outcome, and recorded so it cannot be glossed. Also registered: `pbc` body coverage will
 look POOR (~181/541 inline) and that is the honest number replacing a fake one, not a regression.
+
+---
+
+## Iteration 91 — NBER #5, and all seven "run now" papers now have memos
+
+`authority-invocation.md` (`a1b7e1e`-ish, see git). The last of the seven, and the one that had to
+be **reframed rather than reproduced** — the reframe is the finding.
+
+**Why their design is unavailable, measured.** "Aligning Agendas" (JCPS 2026) needs leader activity
+releases and a party-secretary-versus-governor split. The Party hierarchy is nearly absent from this
+corpus **as an issuer**: **104** provincial party-committee documents against **19,015** government
+ones (1:183), versus 1:12 at the centre. That is not a crawl gap — `政府信息公开条例` obliges
+*administrative* organs, so 党内文件 never reach disclosure portals, and the sub-national
+party-committee rows we do hold are mostly joint 党委+政府 issuances. **No amount of further
+crawling of government portals fixes this**, so I stated it once, plainly, as a standing limit on
+the volume: any finding about the Party hierarchy's own documents is out of reach, which also rules
+out the cadre-incentive literature in `related-literature.md` §6.
+
+**The answerable form.** The Party cannot be observed issuing but can be observed being **invoked**.
+On a fixed 18-site panel (≥30 bodied docs in every year 2012-2024):
+
+| channel | central | provincial | municipal |
+|---|---|---|---|
+| 习近平 2012 → 2024 | 0.0 → 31.7 | 0.0 → 32.3 | 0.1 → **42.9** |
+| 党中央 2012 → 2024 | 8.2 → 33.0 | 3.8 → 22.0 | 2.4 → 14.6 |
+| 国务院总理, all years | 0.0-1.0 | ≤0.9 | **0.0 in 11 of 14 years** |
+
+So their central claim is **not a ratio but an absence**: 45,308 documents name 习近平 against 936
+for 国务院总理. And personal invocation starts at a hard **0.0%**, not merely low — a measure that
+goes from an exact zero to ~40% is a regime shift, not a drift in register. It diffuses downward
+with a 3-4 year lag (the 20% threshold: centre 2017, province 2018, municipality 2020), matching
+`diffusion-atlas.md`'s province-before-city ordering.
+
+**Two findings that need the level dimension.** (1) **The gradient inverts** — 2016 central 8.0 >
+municipal 7.0; by 2024 municipal **42.9** > central 31.7. A central document can *be* the authority;
+a municipal one must cite one, so once saturated the practice became heaviest where authority has to
+be borrowed. (2) **Institutional invocation runs the opposite way in every year** (2024: 33.0 /
+22.0 / 14.6) — the centre speaks of the Party as an institution, localities name the person. A
+register difference, confirmed by a detail from the same table: at the centre 习近平 and 总书记
+diverge (37.2% vs 12.8% in 2022) while sub-nationally they track closely (42.9 vs 38.4), so **the
+honorific is a local device.**
+
+**The useful disagreement.** `recentralization-experimentation.md` found authority-borrowing rose
+2013-17 on the citation record and **reverted** by 2023-26. The lexical record says borrowing
+**by name did not revert**. Neither record could show that alone, and it is the kind of result that
+only appears when two instruments measure the same construct.
+
+**I held my own new measurement to the rule I had just written.** Raw, the series shows a 2025
+collapse (municipal 25.7 → 18.8) that is **pure composition** — raw municipal counts run 1,257
+(2008) to 11,280 (2025) as newly-crawled sites arrive. The panel shows it flat (42.9 → 38.6). The
+shipped script prints **both** tables so the effect is visible rather than asserted, and prints each
+term's **index**, because 李强 returns a clean 0 from the trigram index (2 chars against a 3-char
+minimum) and 1,614 from the segmented one. **Fourth instance of that trap this session.** I also
+caveated that 李强 is a very common personal name, so the Premier series uses the unambiguous
+*title* and the name count appears only as an order-of-magnitude contrast.
+
+**Status: all seven "run now" papers in `related-literature.md` now have memos** (#4 and #5 closed
+today). 42 memos, 261 tests passing. The never-attempted §10 NBER papers each carry their specific
+blocker, so the remaining NBER work is gated on external data (procurement, protest, trade), not on
+our corpus — except w32701, whose document half `patient-capital-cascade.md` opened yesterday.
