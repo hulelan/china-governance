@@ -402,9 +402,44 @@ def test_attachments_empty_for_an_inline_article():
 # ---------------------------------------------------------------- config shape
 
 def test_sections_shape_is_still_one_entry_per_section():
-    assert [s for s, _label in SECTIONS] == [NORMS, ORDERS]
-    assert all(isinstance(s, str) and isinstance(label, str) for s, label in SECTIONS)
-    assert DEFAULT_MAX_PAGES >= 22      # both live sections fit under the bound
+    """(path, label, per-section page cap or None). The cap was added 2026-10-08
+    with 沟通交流, which is 411 pages against the document sections' <= 22."""
+    assert [s for s, _l, _c in SECTIONS][:2] == [NORMS, ORDERS]
+    assert all(isinstance(s, str) and isinstance(l, str)
+               and (c is None or isinstance(c, int)) for s, l, c in SECTIONS)
+    # the two 条法司 document sections are walked WHOLE — no cap of their own
+    assert [c for s, _l, c in SECTIONS if s in (NORMS, ORDERS)] == [None, None]
+    assert DEFAULT_MAX_PAGES >= 22      # both document sections fit under the bound
+
+
+def test_routine_diplomacy_titles_are_skipped_but_instruments_are_not():
+    """A DENYLIST, not an allowlist: an allowlist would silently drop the next
+    document type nobody anticipated, which is how the 2026-10-08 exchange-rate
+    position statement would have been missed. Measured 81% kept over 4 pages."""
+    from crawlers.pbc import _SKIP_TITLE_RE as R
+    for t in ("中国人民银行行长潘功胜会见欧盟驻华大使范恺珀",
+              "中国人民银行召开外资金融机构座谈会",
+              "中国人民银行副行长宣昌能会见贝宝全球执行副总裁艾伦",
+              "中国人民银行行长潘功胜会见巴西财政部部长杜里甘"):
+        assert R.search(t), t
+    for t in ("中国人民银行关于人民币汇率的政策立场",
+              "中国人民银行货币政策委员会召开2026年第三季度例会",
+              "财政部 中国人民银行 金融监管总局关于实施居民购房贷款贴息政策的通知",
+              "中国人民银行等八部门联合印发《关于金融支持服务业扩能提质的指导意见》",
+              "2026年8月金融统计数据报告",
+              "中国人民银行调整完善若干货币政策工具",
+              "中老跨境数字支付互联互通正式启动",
+              "中国人民银行行长潘功胜在香港货币与固定收益峰会上的致辞"):
+        assert not R.search(t), t
+
+
+def test_communications_section_is_capped():
+    """411 pages of mostly communications: the nightly takes recent material and a
+    historical backfill is a deliberate --max-pages run."""
+    caps = {s: c for s, _l, c in SECTIONS}
+    comm = [s for s in caps if s.startswith("goutongjiaoliu")]
+    assert comm, "the communications section should be configured"
+    assert caps[comm[0]] and caps[comm[0]] <= 60, caps
 
 
 if __name__ == "__main__":

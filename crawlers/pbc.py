@@ -72,10 +72,37 @@ UA = {"User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.
       "Referer": "http://www.pbc.gov.cn/"}
 
 # (section path under the site root, human label)
+# (path under the site root, label, per-section page cap or None).
+#
+# The per-section cap exists because the sections differ by an order of magnitude:
+# the two 条法司 document sections are <= 22 pages, so they are walked whole, while
+# 沟通交流 is **411 pages** (measured 2026-10-08) of mostly communications. Taking
+# all of it would be ~8,200 documents and ~2.75h of body fetches, past
+# `run_crawler_t`'s cap; 40 pages keeps the nightly on current material, and a
+# historical backfill is a deliberate `--max-pages 411` run.
+#
+# WHY 沟通交流 is here at all: the PBC published
+# 《中国人民银行关于人民币汇率的政策立场》 there on 2026-10-08 — a seven-section
+# position statement on the exchange rate, analysed in
+# docs/research/pbc-fx-position-2026.md — and so are the Monetary Policy Committee
+# quarterly readouts, joint-ministry 通知, and the monthly statistical releases.
+# Instruments and policy signals live in this "news" section, not only in 条法司.
 SECTIONS = [
-    ("tiaofasi/144941/3581332", "规范性文件"),
-    ("tiaofasi/144941/144957", "部门规章"),
+    ("tiaofasi/144941/3581332", "规范性文件", None),
+    ("tiaofasi/144941/144957", "部门规章", None),
+    ("goutongjiaoliu/113456/113469", "沟通交流", 40),
 ]
+
+# Routine-diplomacy titles to skip in 沟通交流. A DENYLIST, not an allowlist, on
+# purpose: an allowlist silently drops the next document type nobody anticipated —
+# which is exactly how the 2026-10-08 position statement would have been missed —
+# whereas a denylist fails by taking too much, and `doc_identity.genre` then marks
+# what it took. Measured over 4 sampled pages (1, 5, 40, 120), 60 unique titles:
+# **49 kept (81%), 11 dropped, and every dropped title is a 会见 with a named
+# individual or a 座谈会.** Kept includes the FX position statement, the MPC Q3
+# readout, a joint 财政部/人民银行/金融监管总局 通知, 金融统计数据报告, and the
+# governor's Hong Kong summit address.
+_SKIP_TITLE_RE = re.compile(r"会见|会晤|拜会|座谈会|调研|考察")
 
 # Both sections are < 25 pages; the bound is a runaway guard, not a scope limit.
 DEFAULT_MAX_PAGES = 40
@@ -239,8 +266,13 @@ def crawl(conn, fetch_bodies=True, max_pages=DEFAULT_MAX_PAGES):
     store_site(conn, SITE_KEY, CFG)
     stats = WriteRetryStats()
     stored = 0
-    for section, label in SECTIONS:
-        rows = _walk(section, max_pages)
+    for section, label, cap in SECTIONS:
+        rows = _walk(section, min(max_pages, cap) if cap else max_pages)
+        if _SKIP_TITLE_RE is not None and section.startswith("goutongjiaoliu"):
+            before = len(rows)
+            rows = [r for r in rows if not _SKIP_TITLE_RE.search(r[1] or "")]
+            if before != len(rows):
+                log.info(f"[{SITE_KEY}]   skipped {before - len(rows)} routine-diplomacy titles")
         undated = sum(1 for _n, _t, d in rows if not d)
         log.info(f"[{SITE_KEY}] {label} ({section}): {len(rows)} docs listed"
                  f"{f' ({undated} with no list date)' if undated else ''}")
@@ -301,14 +333,21 @@ def main():
 
     if args.probe:
         total, oldest, newest = 0, "", ""
-        for section, label in SECTIONS:
-            rows = _walk(section, args.max_pages)
+        for section, label, cap in SECTIONS:
+            rows = _walk(section, min(args.max_pages, cap) if cap else args.max_pages)
+            # Probe reports what the crawl would STORE, so apply the same filter.
+            skipped = 0
+            if section.startswith("goutongjiaoliu"):
+                before = len(rows)
+                rows = [r for r in rows if not _SKIP_TITLE_RE.search(r[1] or "")]
+                skipped = before - len(rows)
             dates = sorted(d for d in (_date_for(n, ld) for n, _t, ld in rows) if d)
             total += len(rows)
             if dates:
                 oldest = min(oldest or dates[0], dates[0])
                 newest = max(newest, dates[-1])
-            log.info(f"[{SITE_KEY}] PROBE {label}: {len(rows)} docs, "
+            log.info(f"[{SITE_KEY}] PROBE {label}: {len(rows)} docs"
+                     f"{f' (+{skipped} skipped)' if skipped else ''}, "
                      f"{dates[0] if dates else '?'} .. {dates[-1] if dates else '?'}")
         log.info(f"[{SITE_KEY}] PROBE total: {total} docs, {oldest} .. {newest}")
         return
