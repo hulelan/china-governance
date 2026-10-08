@@ -299,3 +299,53 @@ WHERE s.admin_level_doc = 'provincial' AND t.admin_level_doc = 'central' GROUP B
 -- Non-framework provincial triggers: genre split
 -- policy_issuance 298, notice 30 (应急预案, 若干政策措施, 工作要点, 重点工作任务 cores)
 ```
+
+---
+
+## Correction 2026-10-08: the renaming floor was a floor on a 54-name table
+
+This memo reports its `localized_of` figures as a **coverage floor** and concludes the floor is
+"real and small" (+0.2 points of relay). That conclusion measured one of our own lookup tables.
+
+`build_doc_identity.locality_in_core` accepted a locality found in a title only if that locality
+appeared in `KNOWN_LOCALITIES`, a **54-name set seeded from `_PROV_MUNI` plus the localities that
+happen to have a 文号 registry head**. 苏州市 was in it, via 苏府. **无锡市 was not, because Wuxi has
+no 文号 registry entry at all.** So `localize()` could not place a Wuxi title, and the renaming
+channel fired on 2 Wuxi pairs against 44 Suzhou ones. Seeded instead from `geo.CITY_PROVINCE` (381
+names, prefecture-level divisions only), `localized_of` goes **2,075 → 3,411 (+1,336)** with **0
+edges removed, 0 retargeted and 0 pools split**, and 无锡市 goes **2 → 73** while **苏州市 stays at
+83** — the cities that already worked do not move; only the invisible ones appear. Commit
+`87eec6c`; the measurement is in `docs/working/qa-wenhao-province-ambiguity.md` §8. [measured]
+
+Four things follow, and the first is the one that matters for reading this memo.
+
+1. **The two bounds differ in kind.** A coverage floor rises when documents arrive. This one rose
+   **64% with no new documents**. A number that moves when a hand-maintained list changes is not a
+   bound on the corpus, so "the floor is real and it is small" was a statement about the table.
+2. **No `localized_of` count computed before 2026-10-08 is comparable to one computed after**, and
+   any PER-CITY figure from before that date measures which cities had a 文号 head rather than
+   which cities re-issue. The Wuxi-versus-Suzhou contrast in `fidelity-wuxi.md` is in that class.
+3. **The npc 地方法规 tier entered the channel for the first time**, taking **1,287 of the 1,336**
+   new edges: 28.6k local 人大 instruments titled `<city>X条例` whose titles are their only locality
+   evidence (a 地方法规 carries no masthead, which is exactly why the masthead fallback never
+   rescued them). The sub-national-legislation share of this channel is therefore a **new series**,
+   not a grown one, and should not be compared against earlier runs.
+4. **The citation-basis results are untouched.** `diffusion_events` rebuilt **byte-identical**
+   after the change, because its `IMPLEMENTING_IDENTITY_GENRES` covers promulgation and
+   implementing alike, so the 1,336 genre flips are invisible to the matcher. `validate_cascades`
+   stays 15/15 line for line. The **+0.2 point** relay figure in §2 stands as measured. [measured]
+
+Adversarial check, since a wider list is a wider chance to mistake a mentioned city for the
+issuer's: **zero misplacements** against two independent arbiters (2,149 of 2,149 agree with the
+site's province; 9,873 confirm against the document's own publisher / `lead_issuer` / 文号 evidence,
+0 name another province's city). Three structural reasons, each pinned in a test: the match anchors
+at `^` on the core, so `广东省…关于学习推广无锡市经验的通知` keeps 广东省; a 转发 wrapper keeps the
+wrapper as its core, so a forwarder never acquires the forwarded city; and `CITY_PROVINCE` holds
+prefecture-level divisions ONLY, so the word-collision-prone county-level names are absent —
+`东方市` (Hainan) is not in it, which is why `东方市场建设管理办法` keeps its 市. Hand-check: 30 of 30
+newly-localized documents correct, 29 of 30 added edges correct; the one error
+(`大同市人民代表大会常务委员会人事任免办法`) is self-government housekeeping of the class
+`GENERIC_STEM_RE` already exists to exclude, and is 2 documents corpus-wide. [measured]
+
+*Not yet live: the figures above are from read-only rebuilds. The stored table is 2,014 edges until
+the next identity rebuild, which the nightly write lock is holding.*
