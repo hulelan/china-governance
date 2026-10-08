@@ -3045,3 +3045,74 @@ anchors and the tracker's anchor-diversity columns all pool on.
 editions, `n_docs ≥ 5` caught mirrors, `86% non-pooling` caught intended behaviour. Each time the
 fix was to find the discriminator rather than report the number, and the last one had no available
 discriminator at all, which is what a prediction is for.
+
+---
+
+## Iteration 96 — the PBC published an exchange-rate position today; diffed it, and shipped the denylist
+
+Two user asks in one tick, both done.
+
+**The document exists and the user's hunch was right.** 《中国人民银行关于人民币汇率的政策立场》,
+published **2026-10-08 16:23** (the node id *is* the timestamp), seven sections, ~6,100 characters,
+on the PBC's 沟通交流 section. Not labelled 白皮书 but a standalone *policy position* — a document
+type the bank almost never issues. The audience is external: §5 is a named methodological attack on
+the **IMF's External Balance Assessment**, arguing that treating its output as the "official basis"
+(官方依据) for calling the RMB undervalued is a **曲解和误用**, that its three modules disagree
+"even in direction", and that it assesses the *real effective* rate so cannot be read onto the
+nominal, still less the bilateral dollar rate.
+
+**The diff's headline is an omission with a thirteen-day baseline in the same institution's voice.**
+`保持人民币汇率在合理均衡水平上的基本稳定` appears in **111 documents** we hold, 2008-12 → 2026-09,
+and it was **not retired**. The PBC's own **Monetary Policy Committee Q3 readout, 2026-09-25**:
+
+> 坚持市场在汇率形成中的决定性作用…防范市场"羊群效应"和非理性预期的自我强化，**保持人民币汇率在
+> 合理均衡水平上的基本稳定**。
+
+The 10-08 statement keeps the first clauses — **almost verbatim, including the 羊群效应 /
+非理性预期自我强化 justification for intervening** — and drops the last. A 2026-09-28 CPPCC piece by
+魏革军, a PBC 参事, pairs them the same way. So this is a choice specific to a document whose entire
+subject is the exchange rate, **not** a vocabulary change working through the system.
+
+What the substitution does: the old clause commits to an **outcome** and presupposes an identifiable
+equilibrium; the new framing disclaims **intent** (market decisive, no preset target, routine
+intervention ended 2017) while §5 argues equilibrium rates cannot be reliably estimated **at all**.
+Those two are in tension, and dropping the clause resolves it — while removing a commitment an
+external party could measure compliance against.
+
+**Three formulations are new against the corpus (0 prior occurrences each):** `退出常态化外汇干预`,
+dating the end of routine intervention to 2017; `外部平衡评估` / EBA engaged by name; and a pledge
+to report more FX data to the IMF **from 2027** — a concession on transparency offered in the same
+breath as the refusal on substance. Plus one unusually candid admission: macroprudential tools
+**"乃至在极端情景下直接进行外汇干预"**, naming the pandemic and the **April 2025 tariff war**, with
+2008 emerging-market precedent and the **July 2026 joint yen intervention** cited as comparators.
+
+**Absent, and that is the finding's other half:** 人民币国际化, 跨境人民币, 数字人民币, 去美元化,
+SDR — none appear, though the first three are active elsewhere (237 / 587 / 469 documents). This
+confirms `rmb-coverage.md` from the opposite side: **the bank defends the rate; the zones and plans
+promote the currency.** Also absent: 中间价, 逆周期因子, 外汇风险准备金, 外汇存款准备金 — no
+operational tool is named.
+
+**Honest limit recorded:** "zero prior occurrences" means zero in a corpus holding 31 PBC documents
+and no 货币政策执行报告 series, so a phrase could be established in PBC output we lack. The
+合理均衡水平 finding does **not** share that weakness — it rests on the phrase's *presence* in 111
+documents including the PBC's own readout, which is a positive observation. And an omission is
+evidence about a document, not a policy change; the stronger reading needs the phrase to stop
+appearing in later PBC output, which is a measurement to repeat in a quarter.
+
+**A crawler gap it exposed**, now in CLAUDE.md's Open Questions: the statement sits in
+`goutongjiaoliu/113456/113469` and `crawlers/pbc.py` reads only the two 条法司 sections, so
+`af874c7`'s pagination fix **would not have caught it** — and the two cross-posted rows that fix's
+own audit could not place pointed into exactly this subsection. Reachable, same pager, same
+node-id dating, so it is nearly free; the open question is **scope** (沟通交流 is mostly news) not
+feasibility.
+
+**And the fix, shipped.** The instance-title denylist sized in iteration 95: titles that can never
+be a target now drop from **every** tier rather than only containment as the org gate does, because
+for these an exact match is equally wrong — `政府工作报告` is 25 documents with 25 distinct
+`instrument_id`s and **283 citers** landing on whichever copy sorted first. `决定书` / `通知书` /
+`告知书` are *instance* documents and the sanity check found **no real instrument** with those
+endings, because instruments end 意见/决定/通知 and **the 书 is load-bearing**. `裁决书` / `意见书` /
+`证明书` hold **zero** titles here and were deliberately left **out** rather than added on reasoning
+alone. Registered as **Prediction 6**: ~391 fewer resolved edges, and since it lands in the same
+rebuild as Prediction 1 the two falls **add** to roughly 4,960 — neither should be read alone.
+273 → **281 passed, 1 skipped**.

@@ -796,6 +796,20 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   gated on confirming listing pages are reverse-chronological, dept-group rotation in 3
   chunks (which would *increase* coverage), and 2-wide parallelism (bounded by the
   2-writer SQLite rule). Together those would take Phase 1 to roughly 100 min.
+- **(2026-10-08) Should `crawlers/pbc.py` cover 沟通交流 / 新闻发布 as well as 条法司?** The PBC
+  published 《中国人民银行关于人民币汇率的政策立场》 on 2026-10-08 — a standalone seven-section
+  position statement on the RMB exchange rate, analysed in `docs/research/pbc-fx-position-2026.md` —
+  and it sits in `goutongjiaoliu/113456/113469`, which the crawler does **not** cover. The
+  pagination fix (`af874c7`) takes PBC from 31 to ~541 documents but reads only the two 条法司
+  document sections (规范性文件, 部门规章), so **it would not have caught this.** Suggestive detail:
+  the two cross-posted rows that fix's own audit could not place pointed into exactly this
+  subsection. **What we know:** the section is reachable from NYC (37,867 bytes with `-L`), uses the
+  same easysite pager (`tagname` → `{prefix}-{N}.html`), and the node-id-as-timestamp trick works
+  on it (`2026100816231113295` → 2026-10-08 16:23). So it is nearly free to add. **The open
+  question is scope, not feasibility:** 沟通交流 is a news/readout section, so most of it is
+  `genre='news'` rather than instruments, and the corpus already carries ~50k news documents whose
+  marginal value is low. A statement of this weight living outside the regulation sections argues
+  for adding it; the 新闻 volume argues for a title filter if we do.
 - **(2026-10-08) Why do 55% of newly-authorized cities' regulations fall outside the three
   domains the 2015 立法法 amendment confined them to?** `local-legislative-devolution.md` measures
   the confinement as real but leaky: the 283 cities that gained legislative power in 2015-17 do
