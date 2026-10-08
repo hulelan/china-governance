@@ -2259,3 +2259,13 @@ nightly `--limit` is the owner's, and I have put it in front of them.
 In the window, launched the one research question NOT blocked on the derivations: whether the
 文号-denominator result generalizes from Shenzhen to Wuxi (it needs only `document_number` and dates,
 which the crawl captured directly).
+
+## P2 Iteration 81 (文号 denominator on Wuxi: verdict (a), with a different path)
+`6011dda` adds `wenhao-denominator-wuxi.md`. Over 2010-25 the decline replicates in proportion:
+Wuxi government register −6.8%/yr vs 深府 −6.0%; office series −12.6%/yr vs 深府办 −14.9%. The path
+differs: Wuxi rises through 2017 and steps down in 2019; no pre-2010 decline; no office collapse
+(57-109/yr vs 3-24). Trap found: 锡政发's 2017→2018 drop (351 → 58) is a relabelling of 请示 into
+锡政呈, so the two are combined. Spot-checked live: 31 `js` bodies cite 锡政呈〔…〕 (agent: 32 serials).
+Second-merge prediction revised: documents_wuxi.db holds 1,707 wuxi URLs absent from documents.db, not
+~1,787; all departmental series. Main limit: post-2019 Wuxi rests on citation-only 锡政呈 (±30% band).
+Nightly still classifying: 1,000/23,710, 0 err, ETA ~1,225 min.
