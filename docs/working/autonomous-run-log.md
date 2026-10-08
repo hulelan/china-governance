@@ -2073,3 +2073,46 @@ the resolver would confound the measurement of each; tonight applies only the or
 those two follow once its predicted effect is confirmed.
 Suite **189 passed, 1 skipped**. Running: BM25 rebuild (~50 min in), Wuxi at 959 docs / 100% body,
 the tail-trim script agent.
+
+## P2 Iteration 72 (the tail class is 43x the estimate; trim verified, deliberately deferred)
+**`scripts/trim_body_tails.py` LANDED** (`5a8c4cb`, 11 tests, suite **191 passed**), and its first
+finding corrects a number I had carried in the queue for a day: the class is **33,105 bodies, about
+43 times the "~770"**. That 770 was a correct answer to a narrow query (`分享到：` AND body under 400
+characters) which I then misused as the class SIZE — the same "right number, wrong claim" shape as
+the edges-versus-citers mix-up. The real class is dominated by `扫一扫在手机打开当前页` (22,921, of
+which **12,763 are `gov`**, the State Council), then share-widget JS/CSS 10,852, 分享到 5,992,
+相关解读 3,152. By site: gov 13,210, js 5,231, suzhou 3,740, sz_invest 1,330, most 1,059.
+Split: **32,495 are a suffix on real text** (about 20,000 lose under 5% of the body; 1,221 lose
+more than half, mostly short suzhou appointment notices carrying a 150-char nav block), and **610
+are all-chrome**, of which 39 recover a real body by re-extraction and **571 are flagged in
+`body_tail_flags` and never emptied**. Remedy: re-extract 7,453 (HTML saved and the site's own
+extractor now returns a clean text of comparable length), trim the stored text for 25,081
+(15,963 because the extractor still emits the tail, 8,951 because the HTML file is missing).
+saac and jl_swt are NOT in the class (footer link lists with no share marker), a separate 79-row
+job. Safety properties: the detector walks back from the end and stops at the first line of prose,
+so a mid-body 分享到 is never touched (tested on 我的分享到这里 / 分享到了…成果); it cuts at the earliest
+marker and keeps `body[:cut]` byte-for-byte, so kept + removed equals the old body exactly; 相关附件
+is deliberately NOT a marker because it heads the document's own attachment list; a test caught a
+decree made entirely of short lines (a repeal list) being cut, now fixed. Every change is audited
+in `body_tail_trims(…, removed_tail, old_body, reverted_at)` with `--revert`, and each UPDATE applies
+only if the stored body is still the one scanned.
+**I verified the riskiest group myself before deciding anything.** gov is a marker trim of STORED
+text (re-extraction is unavailable there), on the corpus's most important source. 13,162 trim / 48
+flagged; tail share median **1.3%**, p90 10%, p99 31%. On eight sampled cut boundaries every cut
+lands exactly after the document's natural end — the signature block (国务院办公厅 / 2023年4月9日 /
+（此件公开发布）), the effective-date clause (…施行 / …同时废止), or the 附件 line — and immediately
+before `扫一扫在手机打开当前页 / 解读 / …`. The sample also shows the mechanism behind the **368 false
+citation edges** the agent counted: the removed `解读` block lists TITLES of other documents, which
+the extractor was reading as references.
+**Deferred to tomorrow, deliberately, for three converging reasons.** (1) `doc_search_seg` is
+contentless with no trigger, so trimming AFTER tonight's BM25 rebuild would strand the removed
+tails' tokens in the index until another full one-hour rebuild; tomorrow I can trim FIRST and
+rebuild once. (2) Tonight's nightly then measures the org-stub resolver change alone against its
+pre-registered −4,570, instead of a combined figure. (3) The Wuxi merge also has to fit before
+06:00. The tails have been there for months; a day costs nothing.
+Tomorrow's order: `trim_body_tails.py --dry-run` → `--apply --dump-tsv` (no other writer, outside
+the nightly) → `build_search_index_seg.py --rebuild` → let the nightly re-derive citations, scores,
+stats, diffusion, succession and validation. Predicted effect to pre-register then: about −195
+resolved edges from the tails (84 named + 106 llm + 5 formal), plus small `ai_relevance` and 5-gram
+fidelity moves; `doc_identity` genre unaffected (it reads header fields only).
+BM25 rebuild at 276,000 / 341,313 (81%) at 02:29, finishing about 02:45.
