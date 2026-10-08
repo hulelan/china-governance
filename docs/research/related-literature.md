@@ -172,10 +172,14 @@ the NBER stuff" question maps directly to results. Full synthesis: `findings-syn
 Five of the seven above have memos. **Two do not**, and both are directly computable on what we
 already hold:
 
-- **#4 Measuring policy diffusion intensity** (Information Processing & Management, 2025). Their
-  index is hierarchical effectiveness × textual intensity over 9,091 low-carbon documents
-  2007-2022. We have `doc_identity.admin_level_doc` for the first term and `diffusion_events`
-  lag/fidelity for the second, corpus-wide rather than in one domain. No new data needed.
+- ~~**#4 Measuring policy diffusion intensity**~~ — **DONE 2026-10-08,
+  `diffusion-intensity-index.md`.** 12,211 explicit adoption events, 796 anchors, 20 policy areas.
+  Their two dimensions ARE independent (Spearman −0.085, and the sign flips to +0.128 under a
+  stricter spec, i.e. noise around zero), so the composite earns its second axis — a test their
+  single domain could not run, and it comes out in their favour. But summed over adopters,
+  "hierarchical effectiveness" correlates with the plain adopter COUNT at +0.957: use the
+  per-adopter mean, which points the other way (−0.271). New: breadth costs both authority
+  (2.67 → 2.46) and elaboration (0.99 → **0.81**) across adopter-count quintiles.
 - **#5 Aligning Agendas in Public-Activity Reports** (Journal of Chinese Political Science, 2026).
   Topic models over 71,460 activity releases; provincial issue shares track the General Secretary
   more than the Premier. Our `genre` field isolates readouts and reports, and we reach the
