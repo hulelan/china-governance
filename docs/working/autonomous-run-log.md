@@ -2198,3 +2198,14 @@ Follow-up launched (`logs/wuxi_followup.log`, written with `pipefail` and an ela
 time): `wuxi --deep` into the SAME `documents_wuxi.db`, so it skips stored URLs and only fetches the
 cut-off `bmgfxwj` pages 43-100 (~1,160 docs). It writes its own DB and so runs through the nightly;
 a second merge, which will dedup the 4,685 already merged by URL, follows once it finishes.
+
+## P2 Iteration 77 (the honest wrapper proves itself)
+The rewritten Wuxi follow-up (`set -o pipefail`, `rc=${PIPESTATUS[0]}`, an elapsed-vs-cap line)
+reported **`rc=124 elapsed=5400s cap=5400`** — an honest timeout — in exactly the situation where
+the old wrapper had printed `rc=0` four hours earlier. That is the fix encoded in memory working on
+its first real use. `wuxi` in `documents_wuxi.db` went **2,078 → 3,485 (+1,407)**, more than my
+~1,160 estimate for `bmgfxwj` pages 43-100 (the estimate assumed 20 new docs per page and ignored that
+the deep walk also tops up other sections), but it capped again with roughly 380 still to go against
+the ~3,865 the scratch test listed. Launched a second bounded follow-up into the same separate DB
+(`logs/wuxi_followup2.log`); it runs through the nightly without contention, and the second merge
+waits for the nightly to release the lock.
