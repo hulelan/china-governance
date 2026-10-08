@@ -2167,3 +2167,34 @@ documents then get citations, identity rows and scores tonight instead of sittin
 Merge plan: as soon as WUXI_CRAWL_DONE, if it can finish by ~05:40 with no other writer. The
 `wuxi` municipal follow-up (bmgfxwj pages 43-100, ~1,160 docs) cannot fit before 06:00, but it writes
 its own DB, so it runs through the nightly and gets a second merge later.
+
+## P2 Iteration 76 (Wuxi merged — corpus-lessons B1's second prefecture is in)
+`WUXI_CRAWL_DONE 05:14:25`. Final separate-DB totals: **4,746 docs, 4,653 with body (98.0%)** —
+wuxi 2,078, wxd_xinwu 1,087, wxd_jiangyin 756, wxd_xishan 450, wxd_liangxi 209, wxd_binhu 83,
+wxd_huishan 47, wxd_yixing 36. Cross-checked by elapsed time against the cap, as resolved: `wuxi`
+ran exactly its 7,200s and `wxd_xinwu` and `wxd_jiangyin` exactly their 2,400s, so all three hit
+their caps despite printing `rc=0`; xinwu still reached 1,087 of 1,095 (99.3%), jiangyin 756 of ~803.
+**Read `merge_db.py` before running it**, because tonight's worst bug was an id-collision upsert
+that clobbered another site's body, and a merge bulk-inserts rows whose ids were minted in a
+different database. It is safe: it dedups by URL (`WHERE url != ''`, so the partial index is used)
+and gives every incoming row a FRESH id from `next_id(tgt)` with a plain INSERT, never reusing the
+source ids and never upserting. Separately checked raw HTML: the separate DB's ids run 1-4,746 and
+3 of them coincide with existing main-DB ids, but those belong to other sites and raw HTML is filed
+as `raw_html/<site_key>/<id>.html`, so different directories and nothing was overwritten. Note the
+merged rows keep `raw_html_path` pointing at their source-id filename while carrying a new id; the
+collision-repair predicate reads the site directory, not the id, so it is unaffected.
+**Merged at 05:15-05:18 with an honest exit status** (`set -o pipefail`, `${PIPESTATUS[0]}` = 0):
+**4,685 added, 61 duplicates skipped, 7 new sites**; corpus **341,313 → 345,998** exactly.
+Pre-registered ~4,616; off by 69 because only 61 of the 130 pre-existing Wuxi documents shared a URL
+with the new crawl, not all of them (the other 69 came from sections this run did not revisit).
+`build_site_stats` 479 sites / 345,998 docs, corpus_stats drift **0.00%**; **validate_cascades
+15/15**; app restarted; `/`, `/browse?site=wxd_xinwu`, `/research` all 200 in 0.10-0.27s. Done at
+05:19, 41 minutes inside the nightly window.
+This is the "second, non-Suzhou Jiangsu prefecture to Suzhou's depth" that `fidelity-jiangsu.md`
+said B1 needed: Jiangsu's sub-provincial tier now has two deep cities instead of one. The nightly
+derives the new documents tonight (citations, identity, scores, diffusion), so the replication
+question can be asked tomorrow on derived data.
+Follow-up launched (`logs/wuxi_followup.log`, written with `pipefail` and an elapsed-vs-cap line this
+time): `wuxi --deep` into the SAME `documents_wuxi.db`, so it skips stored URLs and only fetches the
+cut-off `bmgfxwj` pages 43-100 (~1,160 docs). It writes its own DB and so runs through the nightly;
+a second merge, which will dedup the 4,685 already merged by URL, follows once it finishes.
