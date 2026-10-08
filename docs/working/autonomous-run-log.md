@@ -2223,3 +2223,12 @@ tonight `setsid nohup` has separated a wrapper's failure from the real work.)
 should add about **1,787** (3,865 − 2,078), all `wuxi`; the seven district sites are fully merged and
 should contribute ~0. Main-DB `wuxi` should go 2,147 → ~3,934, and the corpus by the same ~1,787 on top
 of whatever tonight's crawl adds.
+
+## P2 Iteration 79 (cadence change confirmed live in production)
+First nightly carrying `36fba8a`: at 06:48:50 the log shows **`Skipping sic (weekly, runs on UTC
+weekday 2)`** and **`Skipping ipc_court (weekly, runs on UTC weekday 3)`** — exactly the lines the
+new `run_weekly` gate emits, on weekday 4, so the code path executed as tested against the GNU-timeout
+stub. The remaining weekly slots (`chongqing` should RUN tonight as weekday 4's slot; `wuhan`, `most`,
+`hangzhou` should skip) and the `zhejiang` Monday probe sit later in the sequence and had not been
+reached at 08:29. Phase 1 still running 2.5h in; the end time is the real test of the prediction that
+it finishes noticeably before the usual ~10:25.
