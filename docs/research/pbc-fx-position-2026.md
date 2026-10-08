@@ -126,13 +126,18 @@ central bank itself, and it does not contain 人民币国际化, 跨境人民币
 three are active elsewhere (237 / 587 / 469 documents). The bank defends the *rate*; the zones and
 plans promote the *currency*.
 
-**A crawler gap this exposed.** The document sits in `goutongjiaoliu/113456/113469` (新闻/沟通交流),
-and `crawlers/pbc.py` covers only the two 条法司 document sections (规范性文件 and 部门规章). The
-pagination fix of 2026-10-08 (`af874c7`) takes PBC from 31 to ~541 documents but **would not have
-caught this statement.** A position statement of this weight living outside the regulation sections
-is an argument for adding that section — and note that the two cross-posted rows the pager audit
-found pointing into `goutongjiaoliu/113456/113469` were pointing at exactly this subsection. Logged
-in CLAUDE.md's Open Questions.
+**A crawler gap this exposed, now closed (`92c1b16`, same day).** The document sits in
+`goutongjiaoliu/113456/113469` (沟通交流), and `crawlers/pbc.py` covered only the two 条法司 document
+sections, so the pagination fix of 2026-10-08 (`af874c7`) — which takes PBC from 31 to ~541
+documents — **would not have caught this statement.** Nor would it have caught the Monetary Policy
+Committee quarterly readouts, including the 2026-09-25 one that supplies §3's baseline. The section
+is now crawled, with a **per-section page cap** (it is 411 pages against the document sections' ≤22,
+so 40 keeps the nightly on current material and a historical backfill is a deliberate run) and a
+**denylist** of routine diplomacy (会见 / 会晤 / 拜会 / 座谈会 / 调研 / 考察) rather than an
+allowlist — because an allowlist silently drops the next document type nobody anticipated, which is
+precisely how this statement was missed. Measured 81% of titles kept over four sampled pages. One
+suggestive detail from the earlier pager audit: the two cross-posted rows it could not place were
+pointing into exactly this subsection.
 
 ---
 

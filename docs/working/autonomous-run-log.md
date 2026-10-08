@@ -3116,3 +3116,45 @@ endings, because instruments end 意见/决定/通知 and **the 书 is load-bear
 alone. Registered as **Prediction 6**: ~391 fewer resolved edges, and since it lands in the same
 rebuild as Prediction 1 the two falls **add** to roughly 4,960 — neither should be read alone.
 273 → **281 passed, 1 skipped**.
+
+---
+
+## Iteration 97 — closed the gap the FX memo exposed, within the hour
+
+`92c1b16`. The 2026-10-08 position statement was published in `goutongjiaoliu/113456/113469`, which
+`crawlers/pbc.py` did not read — so yesterday's pagination fix would not have caught it, and neither
+would it have caught the **Monetary Policy Committee quarterly readouts**, including the 2026-09-25
+one that supplied the thirteen-day baseline for the memo's central finding. Instruments and policy
+signals live in that "news" section, not only in 条法司.
+
+**Verified the dialect before building**, rather than assuming it from the sibling section:
+`tagname` → `/goutongjiaoliu/113456/113469/11040-{N}.html`, `totalpage=411`, `hui12` list dates, and
+the node-id-as-timestamp trick works. Then **live-probed 3 pages with no writes**: 45 rows → 34
+kept, 11 skipped, and the top kept row is today's statement with the right date, followed by the MPC
+readout and the joint 财政部/人民银行/金融监管总局 通知.
+
+**Two design decisions worth recording.**
+
+*A per-section page cap*, because the sections differ by an order of magnitude: the 条法司 document
+sections are ≤22 pages and walk whole, while 沟通交流 is **411**. Taking all of it is ~8,200
+documents and ~2.75h of body fetches, past `run_crawler_t`'s cap — so it is capped at 40, the
+nightly stays on current material, and a historical backfill is a deliberate `--max-pages 411` run
+rather than something the nightly attempts and gets killed doing.
+
+*A denylist, not an allowlist*, and that choice is the whole point. An allowlist of wanted shapes
+(政策立场, 答记者问, 通知…) would **silently drop the next document type nobody anticipated** — which
+is exactly how this statement was missed in the first place. A denylist fails by taking too much,
+and `doc_identity.genre` then marks what it took. Same reasoning as making `image_only` capped
+rather than terminal in iteration 87: prefer the failure mode you can see. Measured over pages
+1/5/40/120, 60 unique titles: **49 kept (81%), 11 dropped, every dropped one a 会见 with a named
+individual or a 座谈会.**
+
+**The existing `test_sections_shape` test caught my tuple change** — exactly its job, and a good
+sign the agent's test from iteration 90 was well chosen. Updated it, and added two tests pinning the
+denylist against real titles from **both** sides (four that must be skipped, eight that must not)
+plus the communications cap. 281 → **283 passed, 1 skipped**.
+
+**Housekeeping done properly:** the Open Question logged an hour earlier is resolved, so its answer
+moved into CLAUDE.md's commands section and the entry was deleted, per the standing practice. And
+the memo's claim that the gap was "logged in Open Questions" was itself updated, since that sentence
+would otherwise have been false the moment the entry was removed.
