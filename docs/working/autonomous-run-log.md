@@ -2346,3 +2346,63 @@ verification the timing memo demanded is that bodiless rows must not be silently
 ledger is the deliverable, not a blanket skip, and the `anti_bot_stub` class must be re-queueable
 in one command the day a residential vantage exists. Brief licensed to recommend NOT shipping if
 the saving is small.
+
+## P2 Iteration 84 (B1 DISCHARGED — and the relay gap was never provincial)
+**`402ede4`: `fidelity-wuxi.md`. Verdict: DISCHARGED**, not Suzhou-specific and not underpowered.
+This closes `corpus-lessons.md` B1, the volume's largest caveat, open since 2026-10-06.
+**Method worth recording, because the obvious approach would have measured the wrong thing.** The
+live derived layers PREDATE the Wuxi merge (8,099 docs have no `doc_identity` row; only **110** of
+the 4,877 Wuxi rows appear in `citations`), so measuring Wuxi off them would have measured the
+merge, not Wuxi. The agent rebuilt `doc_identity`, `citations` and `diffusion_events` **read-only
+into scratch files** using the project's own builders, attached them beside documents.db, and ran
+`pairs.py` against that — then **validated the rebuild** by reproducing Suzhou's published figures:
+507 pairs / 426 scored / relay 3.5% against `fidelity-provincial.md` §2.2's 473 / 426 / 3.3%. Same
+scored n, relay within 0.2 pt. Fresh layers: 625,227 edges / 327,629 resolved; 49,576 events.
+**Wuxi is the LARGER sample on two of three measures despite half the documents** (2,206 vs
+Suzhou's 4,919), because its body coverage is 76.1% vs 53.6% and it yields 0.180 pairs/doc vs
+0.112: 397 province→city pairs (243 scored), **195 nested central-anchor pairs** and **152 full
+C→P→M chains** against Suzhou's 144 and 97. So my worry that the partial merge would leave it
+underpowered was wrong in the useful direction, and the verdict does not depend on the merge.
+Three findings on three city sets, never pooled: province echoes first **68.2%** of 1,046 (GD
+cities) / **69.4%** of 144 (Suzhou) / **83.6%** of 195 (Wuxi, 83.6-85.0 on every cut); city closer
+to province than centre 91.6% / 96.9% / **94.1%**; median overlap, relay on the union 0.097, 9.9%
+/ 0.054, 4.3% / **0.115, 5.3%**. 12 of Wuxi's 13 relays are own-masthead 市政府办公室 re-issuances
+of the 省政府办公厅 text at 185 d median — the same object as Suzhou's 17 of 19 and Guangdong's 79.5%.
+**The correction the second city made possible, and it runs opposite to what the first one
+suggested.** A per-city control, which the earlier memos could not run: **Guangdong's OWN relay
+rate spans 2.2% (广州) to 18.4% (阳江), median 8.9%** over 13 portals with ≥50 scored pairs. Suzhou
+(4.3%) and Wuxi (5.3%) both fall **inside** that spread, beside 广州 and 深圳. So
+`fidelity-jiangsu.md`'s headline "JS 3.3% vs GD 10.8%" is a **composition artefact of pooling 15
+Guangdong cities against one Jiangsu city**, not a provincial difference. The Guangdong ordering is
+large coastal prefectures low (广州 2.2, 深圳 4.5, 中山 5.6) and small ones high (阳江 18.4, 揭阳
+15.9, 汕尾 15.4), which points the open question in `fidelity-jiangsu` §4.3 at city capacity
+[ordering measured; scale inferred, no city-GDP table in the repo]. Province-before-city (per-city
+61.7-90.0, median 83.6 — Wuxi exactly on it) and chain descent (79.3-98.0, median 93.5) are stable
+across that same distribution, so **only that one number moves.**
+**A secondary finding contradicts two existing memos.** `fidelity-provincial`'s "the copying tier
+is the prefecture city alone" and `fidelity-jiangsu` §8's "districts do not copy in either
+province" both rested on n=8. Wuxi city→district: 309 pairs / 227 scored / median 0.112 / **relay
+12.8%**, against Guangdong districts' 2,604 / 1,516 / 0.045 / **1.0%**. The titles split it: urban
+districts 转发 within 6-46 days, while the county-level cities 江阴 and 宜兴 do renamed re-issuance
+at 140-587 days — the prefecture object one tier down. Mechanism marked inferred from 29 relays in
+one prefecture.
+Wuxi's dates are sound and needed no repair, unlike Suzhou's: all 4,877 rows `date_quality='good'`,
+every row carries a `/doc/YYYY/MM/DD/` path, exactly **1** disagrees with `date_published`, 文号-year
+agreement 2,590/2,761 (93.8%), no day pile above 32.
+**I verified its two logged bugs and sharpened one past the memo's description.** The
+`wxd_huishan` province error is NOT in `localize()` — on `惠山区人民政府…` that returns 惠山区 at
+district rank correctly. The cause is that **`惠山区` and every other Wuxi district is absent from
+`DISTRICT_CITY`**, so resolution falls through to the **文号 agency path**, where **惠府 is genuinely
+ambiguous**: 惠州市 (gd) and 无锡市惠山区 (js) both use 惠府发 / 惠府办, and the bare-prefix fallback
+picks Guangdong. Note the live DB cannot show this — `wxd_huishan` has NO identity rows yet (only
+130 of the 4,877 Wuxi rows do), so the error exists in the scratch rebuild and would become live at
+the next identity build. Launched the fix as a CLASS: find every 文号 prefix whose province
+conflicts with its site's, arbitrate at the caller by preferring the site when the prefix is
+ambiguous, add the seven Wuxi divisions to the geo tables, and test whether requiring an exact
+table hit (returning None over a guess) loses any correct resolution — the same shape as the
+length-floor family, a loose match standing in for a missing table entry.
+**And a discrepancy I could not settle, handed over with both numbers.** The memo explains the
+thin `localized_of` coverage (2 Wuxi pairs vs 44 Suzhou) by "26% of Wuxi titles contain no 无锡 vs
+3.7% for Suzhou". My own count over ALL titles gives **43.2%** and **54.1%** — which would refute
+the explanation. Someone has the wrong denominator and I do not know whose, so the agent must find
+what denominator makes each true before either number is propagated.
