@@ -91,6 +91,32 @@ next nightly git-pulls it and will store ~510 new documents in ~10 min, inside `
   (~181/541 with real inline text) and do not read that as a crawler regression. It is the honest
   number replacing a fake one — those 360 previously would have counted as "has a body".
 
+## Prediction 6 — the instance-title denylist removes ~391 citers, in named places
+
+`extract_citations.py` now drops titles that can never be a resolution target from **every** tier
+(`drop_instance_titles=True`), not just from containment as the org gate does — because for these an
+exact match is equally wrong. Measured before the change:
+
+| denylisted shape | held titles | citers today |
+|---|---|---|
+| bare `政府工作报告` | 25 docs / 25 instrument_ids | **283** |
+| `*决定书` | 152 | 107 (房屋征收补偿决定书 alone: 39 docs, 95) |
+| `*告知书` | 40 | 1 |
+| `*通知书` | 101 | 0 |
+
+- resolved edges should **fall by roughly 391**, and `政府工作报告` + `房屋征收补偿决定书` should
+  **disappear from `doc_inbound` entirely**;
+- a **rise** falsifies it — the gate cannot create edges;
+- a fall **far beyond ~400** means the endings caught an instrument, and the named test to look at
+  is `test_real_instruments_are_kept` (国务院…的决定, …的通知, …的意见 must all survive; the `书` is
+  load-bearing);
+- `深圳市政府工作报告` and other jurisdiction-qualified titles must still resolve — only the **bare**
+  generic form is denied.
+
+This lands in the same rebuild as Prediction 1 (the org-stub gate, ~4,570 edges), so **the two
+falls add**: expect resolution to drop by roughly 4,960 edges in total, not 4,570. Do not read
+either number alone.
+
 ## Prediction 5 — how much of the instrument-pooling gap is staleness
 
 Measured on the live (stale) `doc_identity`, 2026-10-08, before the rebuild

@@ -302,6 +302,37 @@ _ORG_ONLY_NOT = re.compile(
     r'|召开|举行|举办|出席|参加|(?:格|新|大|布|开|全)局$')            # an event / headline
 
 
+# Titles that can never be a resolution target at all, in ANY tier — not even
+# exact. Distinct from `_is_org_only_title`, which only bars containment: for
+# these, an exact match is equally wrong, because the SAME title names many
+# different documents, so "resolved" means "resolved to an arbitrary one of 25".
+# A reference to 政府工作报告 with no jurisdiction qualifier is unresolvable in
+# principle, and leaving the edge unresolved is more honest than crediting it to
+# whichever copy sorted first. Same precision-over-recall trade as the org gate.
+#
+# Measured on the live corpus 2026-10-08 (docs/working/qa-resolver-deferred-patterns.md):
+#   政府工作报告    25 documents, 25 distinct instrument_ids, 283 citers on the winner
+#   *决定书         152 held titles, 107 citers   (房屋征收补偿决定书 alone: 39 docs, 95)
+#   *通知书         101 held titles,   0 citers   (中标通知书, 挂牌督办通知书 …)
+#   *告知书          40 held titles,   1 citer
+# Expected effect at the next citations rebuild: ~391 fewer resolved edges.
+#
+# The three endings are *instance* documents — a specific award, a specific
+# expropriation decision — never instrument genres; Chinese instruments end 意见,
+# 决定, 通知, not 意见书 / 决定书 / 通知书. 裁决书 / 意见书 / 证明书 are the same
+# shape but hold ZERO titles here, so they are deliberately left OUT rather than
+# added on reasoning alone — add them when a measurement calls for it.
+_INSTANCE_DOC_RE = re.compile(r'(?:决定书|通知书|告知书)$')
+_GENERIC_INSTANCE_TITLES = frozenset({"政府工作报告"})
+
+
+def _is_unresolvable_instance_title(nt):
+    """True for a NORMALIZED title that names a document INSTANCE or is so
+    generic across jurisdictions that no reference can pick out one copy."""
+    return bool(nt) and (nt in _GENERIC_INSTANCE_TITLES
+                         or bool(_INSTANCE_DOC_RE.search(nt)))
+
+
 def _is_org_only_title(nt):
     """True for a NORMALIZED title that is just an organization name (exact-only)."""
     return (bool(_ORG_NAME.match(nt))
@@ -388,7 +419,8 @@ class TitleMatcher:
     de-duplicating by title upstream hands the decision to insertion order.
     """
 
-    def __init__(self, title_to_doc, site_levels=None, aliases=None, org_only_exact=False):
+    def __init__(self, title_to_doc, site_levels=None, aliases=None, org_only_exact=False,
+                 drop_instance_titles=False):
         # title_to_doc: either {title: value} or an ITERABLE OF (title, value) PAIRS.
         # The pair form exists so callers holding several documents under the SAME
         # title (mirror promulgations) can hand all of them over instead of letting a
@@ -442,9 +474,15 @@ class TitleMatcher:
                 cur = best_core.get(nc)
                 if cur is None or ck < cur:
                     best_core[nc] = ck
+        # Drop instance/generic titles before any tier is built, so they are not
+        # reachable by exact match, by title-core, or by containment.
         for nt, (_, _, did) in best.items():
+            if drop_instance_titles and _is_unresolvable_instance_title(nt):
+                continue
             self.exact[nt] = did
         for nc, (_, _, _, did) in best_core.items():
+            if drop_instance_titles and _is_unresolvable_instance_title(nc):
+                continue
             self.core[nc] = did
         self.titles = list(self.exact.keys())
         # org-name-only titles: exact-tier only, never containment (see _is_org_only_title)
@@ -703,7 +741,8 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
         site_levels[row[0]] = row[1] or "unknown"
 
     # indexed fuzzy title resolver (fast); agency-name-only titles are exact-only targets
-    matcher = TitleMatcher(title_rows, site_levels, org_only_exact=True)
+    matcher = TitleMatcher(title_rows, site_levels, org_only_exact=True,
+                           drop_instance_titles=True)
     print(f"Lookup tables: {len(docnum_to_id)} doc numbers, {len(title_rows)} title rows "
           f"({len(matcher.exact)} distinct normalized titles), {len(site_levels)} sites")
 
