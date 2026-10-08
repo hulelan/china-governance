@@ -24,6 +24,8 @@ cited at all. The figure is stable across every treatment: 61.6% on corpus docum
 The anchors are what the agenda predicted. Of the top 100, 80 are central, 48 are State
 Council or ministerial regulations (条例/办法/规定) and 27 are national laws. The three largest
 are 城乡规划法 (1,841 inbound), 政府信息公开条例 (1,537) and 道路交通安全法 (1,164).
+*(Re-based 2026-10-07, §8: top 1% 55.4%, Gini 0.948, never cited 83.9%, top 100 84 central and
+77 laws or regulations. The claims hold.)*
 
 **Q8. Do genres split into sources and sinks?** Yes, and the split survives an age control.
 **[measured]** In the 2018-2020 issue-year band, with body text present, regulations receive
@@ -194,6 +196,10 @@ The top 100: 80 central, 10 provincial, 10 municipal; 48 regulations, 27 laws, 1
 ### 2.3 Top 30 by corrected inbound
 
 **[measured]** Level, genre and year are those of the representative copy.
+
+*(Label 2026-10-07: this is the 2026-10-01 table, kept as published. The re-based table on the
+341,313-document graph is §8.2. Neither of the two changes re-based there moves this table's
+counts; corpus growth does.)*
 
 | # | Instrument | Level | Genre | Year | Inbound |
 |---|---|---|---|---|---|
@@ -672,5 +678,310 @@ SELECT id, site_key FROM documents WHERE title IN ('中华人民共和国城乡�
 SELECT d.id, substr(d.title,1,50), s.admin_level, d.citation_rank,
        (SELECT COUNT(*) FROM citations c WHERE c.target_id=d.id) indeg
 FROM documents d JOIN sites s ON s.site_key=d.site_key
+ORDER BY d.citation_rank DESC LIMIT 30;
+```
+
+---
+
+## 8. Re-base, 2026-10-07: mirror determinism and per-document weighting
+
+*Read-only pass over the live `documents.db` on the droplet, 2026-10-07 (UTC 2026-10-08 01:30).
+Graph tonight: 341,313 documents, 585,471 citation rows, 310,136 resolved (52.97%). Sections
+0-7 above are the 2026-10-01 state and are kept as published.*
+
+### 8.0 Two changes, and why they separate
+
+Two changes went live since §0-§7 were written.
+
+- **M, mirror determinism** (commit `b1aff31`). The resolver now picks the copy of a
+  multiply-held text by its documented rule (promulgation genre, then highest level, then
+  lowest id). Before, the last row scanned won. M changes WHICH document holds an edge. It does
+  not change how many edges an instrument receives.
+- **W, per-document weighting** (commit `a494955`, `corpus-lessons.md` A1). `citation_rank`
+  now weights a citation by the citing document's `doc_identity.admin_level_doc`, not its host
+  site's level. W changes how much an edge weighs. It does not move any edge.
+
+So the two are separable. **[measured]** Three states, all on tonight's edges:
+
+| State | Edge holders | Weights |
+|---|---|---|
+| PRE | pre-`b1aff31` rule, simulated | `citations.source_level` (the old scorer) |
+| A1OFF | as stored tonight | `citations.source_level` |
+| NEW | as stored tonight | `doc_identity.admin_level_doc` (= stored `citation_rank`) |
+
+PRE to A1OFF is M. A1OFF to NEW is W. Sanity: the NEW recomputation equals the stored
+`citation_rank` on all 341,313 documents and `doc_inbound.inbound` on every row (0
+mismatches). W changes `citation_rank` on 5,930 documents, the figure the deploy reported.
+13,846 of 310,136 resolved edges (4.5%) change weight class under W.
+
+```sql
+-- A1OFF (pre-a494955 scorer)
+SELECT target_id, SUM(CASE source_level WHEN 'central' THEN 3.0 WHEN 'provincial' THEN 2.0
+       WHEN 'municipal' THEN 1.5 WHEN 'district' THEN 1.0 WHEN 'department' THEN 1.0 ELSE 0.5 END)
+FROM citations WHERE target_id IS NOT NULL GROUP BY 1;
+-- edges whose weight class W changes: 13,846 of 310,136
+SELECT COUNT(*), SUM(COALESCE(NULLIF(i.admin_level_doc,''), c.source_level) <> c.source_level)
+FROM citations c LEFT JOIN doc_identity i ON i.doc_id = c.source_id
+WHERE c.target_id IS NOT NULL;
+```
+
+**[caveat]** PRE is a simulation. For each raw title it keeps the highest-id row (the old dict
+semantics), then applies the matcher's ranking, and moves each named/llm edge from its new
+holder to the old one. It moves 119,292 of 261,574 named/llm edges and changes the
+representative of 24,098 normalized titles. The commit measured 85,585 and 18,798 before
+tonight's ingest. Part of the gap is new higher-id mirrors: the simulated old holder of
+政府信息公开条例 is a newer `gov` copy (`900169731`), not the district repost `900154149` the
+commit named. Read PRE as "the old rule on tonight's corpus", an approximation. It does
+reproduce the commit's named old holders of 城乡规划法 (`12747143`) and 道路交通安全法
+(`12749132`).
+
+A third source of movement is neither change: corpus growth (319,208 to 341,313 documents) and
+the resolver fixes since 2026-10-01 (the alias table, entity unescape, the title-index floor
+lowered 8 to 5). It is the whole difference between the 10-01 column and the PRE column below.
+
+### 8.1 The memo's own statistics (pooled, proxy-corrected)
+
+**[measured]** The §1 procedure re-run on tonight's graph. Universe filter, `npc` re-level by
+publisher, title-cue re-level, canon-title pooling, proxy re-keying, organization-name and
+suffix-less virtual nodes dropped, all as in the Appendix.
+
+| Measure | 2026-10-01 (§2.1) | 10-07 PRE | 10-07 NEW |
+|---|---|---|---|
+| Nodes | 239,187 | 249,461 | 249,461 |
+| Edges | 163,814 | 188,085 | 189,416 |
+| Never cited | 84.2% | 84.0% | 83.9% |
+| Gini, all nodes | 0.947 | 0.949 | 0.948 |
+| Gini, cited nodes | 0.666 | 0.680 | 0.679 |
+| Share held by top 0.1% | 24.8% | 25.3% | 25.1% |
+| **Share held by top 1%** | **54.5%** | **55.6%** | **55.4%** |
+| Share held by top 10 | 5.8% | 5.5% | 5.5% |
+| Share held by top 100 | 17.2% | 17.0% | 16.9% |
+| Share held by top 1,000 | 41.6% | 42.3% | 42.0% |
+| Max inbound | 1,841 | 1,895 | 1,895 |
+| Top-1% entry threshold | 11 | 11 | 12 |
+| Top 100: central | 80 | 84 | 84 |
+| Top 100: law + regulation | 75 (27 + 48) | 78 (40 + 38) | 77 (39 + 38) |
+| Central share of all inbound | 61.0% | 60.0% | 59.6% |
+
+**[measured] Attribution.** W cannot move any row of this table. These are edge counts, not
+weights. M moves no row by more than 0.4 points. Pooling by normalized title collapses the
+copies of one text into one node, so which copy holds an edge mostly does not matter. The
+instrument-level top 30 is identical in PRE and NEW, count for count. M does add 1,331 edges to
+the graph **[inferred]**: some old holders sat outside the universe (undated, or on a non-government
+host), so their edges were dropped before and are counted now. Every other move in the table
+is the third source, growth and resolver fixes.
+
+**[caveat]** This is a re-implementation from the Appendix, not the 10-01 script, which is not
+in the repo. Every share row lands within 1.1 points of the 10-01 figure, so implementation drift
+is probably small, but it is not measured separately. The law/regulation split (27/48 to 39/38) moved
+without either change; its cause is not traced. One flaw of the memo's own method surfaced:
+the pool key requires 5 characters after folding, so 预算法 and 民法典 (3 after the
+中华人民共和国 strip) are never pooled. Their node key follows the holder, and M relabels them.
+This is the length-floor-on-a-folded-string shape logged in CLAUDE.md.
+
+### 8.2 Top 30 by corrected inbound, re-based
+
+**[measured]** Same procedure as §2.3. The 10-01 rank and count are from the §2.3 table.
+
+| # | Instrument | Level | Genre | Inbound | 10-01 |
+|---|---|---|---|---|---|
+| 1 | 中华人民共和国城乡规划法 | central | law | 1,895 | 1 (1,841) |
+| 2 | 中华人民共和国政府信息公开条例 | central | regulation | 1,546 | 2 (1,537) |
+| 3 | 中华人民共和国道路交通安全法 | central | law | 1,329 | 3 (1,164) |
+| 4 | 广东省城市控制性详细规划管理条例 | provincial | regulation | 1,014 | 7 (674) |
+| 5 | 广东省城乡规划条例 | provincial | regulation | 970 | 4 (969) |
+| 6 | 城市、镇控制性详细规划编制审批办法 | central | regulation | 913 | 5 (913) |
+| 7 | 财政违法行为处罚处分条例 | central | regulation | 891 | 6 (774) |
+| 8 | 中华人民共和国安全生产法 | central | law | 667 | 8 (663) |
+| 9 | 中华人民共和国行政处罚法 | central | law | 579 | new |
+| 10 | 中华人民共和国政府采购法 | central | law | 571 | new |
+| 11 | 中华人民共和国行政许可法 | central | law | 550 | 10 (522) |
+| 12 | 中华人民共和国突发事件应对法 | central | law | 532 | 9 (531) |
+| 13 | 社会团体登记管理条例 | central | regulation | 529 | 11 (506) |
+| 14 | 中华人民共和国土地管理法 | central | law | 515 | 14 (454) |
+| 15 | 中山市国土空间总体规划（2021-2035年）印发通知 | municipal | strategy | 487 | 12 (487) |
+| 16 | 国有土地上房屋征收与补偿条例 | central | regulation | 479 | 13 (455) |
+| 17 | 中华人民共和国网络安全法 | central | law | 445 | 15 (440) |
+| 18 | 深圳市保障性住房条例 | municipal | regulation | 420 | 18 (364) |
+| 19 | 中华人民共和国食品安全法 | central | law | 409 | 16 (392) |
+| 20 | 中华人民共和国预算法 | central | law | 388 | new |
+| 21 | 建设用地容积率管理办法 | central | regulation | 368 | 17 (368) |
+| 22 | 中华人民共和国土地管理法实施条例 | central | regulation | 364 | 30 (256) |
+| 23 | 机动车驾驶证申领和使用规定 (virtual) | central | regulation | 355 | 19 (351) |
+| 24 | 粤港澳大湾区发展规划纲要 | central | strategy | 338 | 20 (331) |
+| 25 | 中华人民共和国民法典 | central | law | 326 | new |
+| 26 | 广东省突发事件应对条例 | provincial | regulation | 324 | 21 (314) |
+| 27 | 中华人民共和国反倾销条例 | central | regulation | 317 | new |
+| 28 | 建设工程质量管理条例 | central | regulation | 317 | 28 (261) |
+| 29 | 中华人民共和国文物保护法 | central | law | 317 | 22 (311) |
+| 30 | 中共中央印发《中国共产党纪律处分条例》 | central | regulation | 309 | 24 (294, prov. host) |
+
+Out of the top 30: 十四五规划纲要 (10-01 rank 23), 个人信息保护法 (25), 重大行政决策程序暂行条例
+(26), 出境入境管理法 (27), 外国人入境出境管理条例 (29).
+
+**[reading]** The top three are unchanged in identity and order. 广东省控规条例 gained 340 citers
+from the `data/instrument_aliases.csv` row, not from M or W. The five entrants are four national
+laws with short names and one State Council regulation. **[inferred]** They most likely entered
+through the 10-07 short-title resolver changes, which neither M nor W is. The Party discipline
+rule is now central: a `gov` copy (中共中央印发) arrived, so the §2.3 "hosting artifact" note no
+longer applies to it. Twenty-four of thirty are national laws or central regulations (counting the Party rule),
+against twenty-two on 10-01.
+
+### 8.3 The stored `citation_rank`, by state
+
+**[measured]** Top 30 by tonight's stored `citation_rank`. `A1OFF` is the same edges at site
+weights, so `ΔW` is W alone. "Raw" is `doc_inbound.inbound` and its rank. "Pre-M holder" is the
+document that held the edges under the simulated old rule (blank = unchanged). Level is
+`doc_identity.admin_level_doc`.
+
+| # | id | Instrument | Host | Level | `citation_rank` | A1OFF | ΔW | Raw (rank) | Pre-M holder |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 12685154 | 政府信息公开条例 | mee | central | 4,303.5 | 4,238.0 | +65.5 | 1,852 (3) | 900169731 gov |
+| 2 | 12685270 | 城乡规划法 | mee | central | 3,375.5 | 3,377.5 | -2.0 | 1,950 (2) | 12747143 npc |
+| 3 | 12738161 | 道路交通安全法 | npc | central | 3,292.0 | 3,319.5 | -27.5 | 2,149 (1) | 12749132 npc |
+| 4 | 12749213 | 财政违法行为处罚处分条例 | npc | central | 2,230.0 | 2,231.0 | -1.0 | 970 (6) | 900169975 gov |
+| 5 | 12747468 | 广东省城市控制性详细规划管理条例 | npc | provincial | 1,738.0 | 1,738.0 | 0 | 1,022 (4) | |
+| 6 | 12748220 | 广东省城乡规划条例 | npc | provincial | 1,651.5 | 1,651.5 | 0 | 977 (5) | |
+| 7 | 900093336 | 城市、镇控制性详细规划编制审批办法 | gov | central | 1,522.5 | 1,522.5 | 0 | 918 (7) | |
+| 8 | 12694498 | 网络安全法 | cac | central | 1,500.0 | 1,505.5 | -5.5 | 643 (11) | 900078764 nx_gxt |
+| 9 | 12738564 | 行政处罚法 | npc | central | 1,423.0 | 1,420.5 | +2.5 | 761 (8) | 900098634 bjb_tjj |
+| 10 | 12737824 | 安全生产法 | npc | central | 1,401.5 | 1,387.5 | +14.0 | 727 (9) | 900084147 fj_yjt |
+| 11 | 12703730 | 反倾销条例 | mofcom | central | 1,367.0 | 1,365.0 | +2.0 | 338 (38) | 12751744 npc |
+| 12 | 12728109 | 社会团体登记管理条例 | npc | central | 1,306.5 | 1,305.0 | +1.5 | 642 (12) | 12746562 npc |
+| 13 | 12742121 | 行政许可法 | npc | central | 1,222.5 | 1,209.0 | +13.5 | 614 (15) | 900098637 bjb_tjj |
+| 14 | 12752635 | 民办非企业单位登记管理暂行条例 | npc | central | 1,166.0 | 1,152.5 | +13.5 | 530 (18) | |
+| 15 | 12685268 | 土地管理法 | mee | central | 1,124.5 | 1,153.0 | -28.5 | 665 (10) | 900063146 chinatax |
+| 16 | 12749186 | 国有土地上房屋征收与补偿条例 | npc | central | 1,117.5 | 1,118.5 | -1.0 | 620 (13) | 900168484 gov |
+| 17 | 12729148 | 食品安全法 | npc | central | 1,116.5 | 1,108.5 | +8.0 | 495 (20) | 900098390 bjb_wjw |
+| 18 | 12731734 | 突发事件应对法 | npc | central | 1,091.5 | 1,094.5 | -3.0 | 619 (14) | 900083691 fj_wjw |
+| 19 | 12652296 | 十四五规划和2035年远景目标纲要 | ndrc | central | 1,081.0 | 1,081.0 | 0 | 365 (34) | |
+| 20 | 101629 | 广东省自然资源厅 (org name) | gd | provincial | 1,070.0 | 1,069.5 | +0.5 | 466 (23) | 4058874 gd |
+| 21 | 11637955 | 机动车驾驶证申领和使用规定（公安部令第162号） | ga | municipal | 1,050.5 | 1,048.0 | +2.5 | 543 (17) | |
+| 22 | 12747503 | 政府采购法 | npc | central | 1,009.5 | 1,015.0 | -5.5 | 590 (16) | |
+| 23 | 12694426 | 个人信息保护法 | cac | central | 964.5 | 969.5 | -5.0 | 407 (27) | 900078779 nx_gxt |
+| 24 | 12742512 | 预算法 | npc | central | 956.0 | 953.5 | +2.5 | 414 (26) | 12747502 npc |
+| 25 | 12651563 | 土地管理法实施条例 | gov | central | 943.5 | 943.0 | +0.5 | 505 (19) | 900165159 gov |
+| 26 | 12732495 | 货物进出口管理条例 | npc | central | 938.5 | 947.5 | -9.0 | 247 (66) | 12752161 npc |
+| 27 | 900093344 | 中小企业划型标准规定 | gov | central | 926.0 | 973.5 | -47.5 | 252 (62) | |
+| 28 | 12651172 | 中共中央印发《中国共产党纪律处分条例》 | gov | central | 850.5 | 844.0 | +6.5 | 483 (22) | 900164745 gov |
+| 29 | 2492990 | 中山市国土空间总体规划 印发通知 | zhongshan | municipal | 819.0 | 819.0 | 0 | 490 (21) | |
+| 30 | 12701750 | 对外贸易法 | mofcom | central | 818.5 | 818.5 | 0 | 286 (47) | 12745970 npc |
+
+**[measured]** M changed the holder of 21 of these 30. It changed one value in the top 30
+(土地管理法实施条例, by 3.0): otherwise the PRE ranking has the same numbers in the same order,
+held by other ids. W changed the value of 24 of 30, by at most 47.5 (中小企业划型标准规定,
+2.1%). It swapped ranks 14 and 15 and moved 中小企业划型标准规定 from 23 to 27; no other order
+changed. The largest W corrections sit below the top 30:
+工会法 248.0 to 175.0, 村民委员会组织法 250.0 to 184.0, 人民防空法 550.5 to 497.0 (about rank
+81). 广东省自然资源厅 at rank 20 is a bare organization name. §1.4 drops such nodes; the stored
+score does not.
+
+**[measured]** Concentration and composition of the doc-level rankings (all 341,313 documents,
+unpooled, uncorrected):
+
+| Measure | PRE | A1OFF | NEW | moved by |
+|---|---|---|---|---|
+| `citation_rank` top 1% share | 59.9% | 58.1% | 58.1% | M |
+| `citation_rank` Gini, all / cited | 0.963 / 0.724 | 0.961 / 0.716 | 0.961 / 0.717 | M |
+| Never cited | 86.5% | 86.1% | 86.1% | M |
+| `citation_rank` top 100 share | 13.8% | 13.7% | 13.8% | neither |
+| Raw inbound top 1% share | 62.2% | 61.1% | 61.1% | M (W cannot) |
+| Raw inbound Gini, all / cited | 0.966 / 0.707 | 0.964 / 0.704 | 0.964 / 0.704 | M |
+| `citation_rank` top 100: central by document level | 78 | 78 | 79 | neither |
+| `citation_rank` top 100: central by host site | 68 | 83 | 84 | **M** |
+| `citation_rank` top 100: law + regulation | 69 | 70 | 69 | neither |
+| Raw inbound top 100: central by document level | 72 | 75 | 75 | M |
+| Raw inbound top 100: central by host site | 59 | 80 | 80 | **M** |
+
+**[reading]** M is the change that matters for composition, and only under a host-site count.
+Before M the national laws' edges sat on bureau reposts (`nx_gxt`, `bjb_tjj`, `fj_yjt`,
+`fj_wjw`), so counting by host level read them as provincial or municipal. `doc_identity`
+already levelled those reposts central, which is why the document-level count stayed near 78
+throughout. W moved the composition by one. The 1 to 2 point fall in doc-level concentration
+under M is **[inferred]** a split: the new rule can give an exact-title key and a core key of one
+text to different copies, so the same citer now reaches two documents (PRE has 7,690 fewer
+distinct citer-target pairs). Part of it may be the simulation itself. The pooled §8.1 figures,
+which merge those copies again, do not move.
+
+### 8.4 Does W bring the weighted ranking closer to the raw one?
+
+The prediction: W removed an over-weighting that was a weighting artefact, so `citation_rank`
+should move toward `doc_inbound.inbound`. **[measured]** It does not.
+
+| Agreement of `citation_rank` with raw inbound | PRE | A1OFF | NEW |
+|---|---|---|---|
+| Top 10 overlap | 9/10 | 9/10 | 9/10 |
+| Top 30 overlap | 25/30 | 25/30 | 25/30 |
+| Top 100 overlap | 82/100 | 83/100 | 82/100 |
+| Spearman, all 47k scored documents | 0.833 | 0.834 | 0.831 |
+| Spearman, union of both top-300s | 0.765 | 0.800 | 0.799 |
+| CV of weight per citer, top 300 by raw | 0.281 | 0.261 | 0.263 |
+| Top 30 overlap with §8.2 pooled corrected top 30 | 21/30 | 22/30 | 22/30 |
+| Top 100 overlap with §8.2 pooled corrected top 100 | 65/100 | 73/100 | 72/100 |
+
+On 10-01 the stored ranking overlapped the memo's corrected top 30 on 19/30. That is the
+comparator in the last two rows, not `doc_inbound`, which did not exist then. The path is
+19 (10-01) to 21 (growth and resolver fixes) to 22 (M) to 22 (W).
+
+**[reading]** W moved every agreement measure by a point or less, either not at all or the wrong way. Two reasons.
+First, W is not a move toward equal weights. Its 13,846 reclassified edges go both directions:
+4,230 municipal-to-provincial (1.5 to 2.0, up), 1,523 provincial-to-central (up), 2,224
+central-to-provincial (down), 1,240 central-to-municipal (down), 762 central-to-research
+(down to 0.5). Total weight falls only 0.4% (607,820 to 605,276). Second, the laws W corrected
+most (工会法, 村民委员会组织法, 代表法) sit far below the top 30, where the overlap is measured.
+M did more convergence than W (top-300 Spearman 0.765 to 0.800), because it put each text's
+edges on one copy instead of a repost.
+
+The five `citation_rank`-only members of the top 30 show what the remaining gap is:
+反倾销条例 (raw rank 38), 十四五规划纲要 (34), 对外贸易法 (47), 中小企业划型标准规定 (62),
+货物进出口管理条例 (66). Three of them carry more than 3.0 of weight per distinct citer
+(反倾销条例 4.04, 货物进出口管理条例 3.80, 中小企业划型标准规定 3.67), which a single central
+citation cannot pay. **[inferred]** Their excess is the edges-versus-citers overhang: one
+document cites the same instrument more than once (by 文号 and by title), and `citation_rank`
+counts edges while `doc_inbound.inbound` counts citers. Neither M nor W touches that. The raw-only
+members are 深圳市保障性住房条例, a 龙岗 news item on 百千万工程 (a §1.3 containment proxy that
+persists), 民法典, 文物保护法 and 建设工程质量管理条例.
+
+### 8.5 Which claims survive
+
+- **"Authority is heavily concentrated."** Survives under every treatment. Top 1% holds
+  55.4% pooled and corrected, 61.1% of raw doc-level inbound, 58.1% of `citation_rank`. Gini
+  0.948 to 0.964 over all nodes. 84% to 88% of documents are never cited.
+- **"Of the top 100, 80 are central."** Survives as "about four in five": 84 pooled and
+  corrected, 79 by `citation_rank` at document level, 75 by raw inbound. Before M a host-site
+  count gave 68 and 59. Count levels by `doc_identity.admin_level_doc` or by the pooled
+  node, never by the holder's host site.
+- **"75 are regulations or laws."** Survives: 77 pooled. The split moved to 39 laws and 38
+  regulations; not traced to either change.
+- **"The three largest are 城乡规划法, 政府信息公开条例, 道路交通安全法."** Survives as a set.
+  Their order depends on the metric. Pooled corrected: 城乡规划法 first. Raw doc-level:
+  道路交通安全法 first (2,149 citers, but at 1.53 weight per citer, mostly Shenzhen
+  public-security notices). `citation_rank`: 政府信息公开条例 first (4,303.5, 2.32 per citer,
+  the broadest and most central citer base). The §2.3 reading that rank 1 by count is a
+  Zhongshan artifact and 政府信息公开条例 is the broadest anchor still holds. The weighted
+  ranking puts it first in all three states; W only widens its lead (+65.5).
+- **"`citation_rank`'s top is framework law, 19/30 overlap."** Survives and strengthens:
+  22/30, and 90 of the top 100 are `instrument_kind='framework'`. The stored score still ranks a
+  bare organization name (广东省自然资源厅) at 20.
+- **"W should converge the weighted ranking on the raw one."** Does not hold (§8.4).
+
+### 8.6 Procedure
+
+Python over the extracts below, on the droplet, `?mode=ro`, `nice -n 19`. PRE is built with
+`extract_citations._norm_title`, `_genre_rank`, `_title_cores_of_title` and `_LEVEL_PREF`
+imported read-only, applying the matcher's (genre, level, id) ranking to the highest-id row per
+raw title.
+
+```sql
+SELECT id, title, site_key, algo_doc_type, date_published, citation_rank,
+       publisher, classify_main_name FROM documents;
+SELECT doc_id, admin_level_doc, genre, instrument_kind FROM doc_identity;
+SELECT source_id, target_id, citation_type, source_level, target_ref
+FROM citations WHERE target_id IS NOT NULL;                 -- 310,136 rows
+SELECT doc_id, inbound FROM doc_inbound;                     -- 41,179 rows
+-- stored ranking, the NEW column
+SELECT d.id, d.title, d.site_key, i.admin_level_doc, d.citation_rank, b.inbound
+FROM documents d LEFT JOIN doc_identity i ON i.doc_id = d.id
+LEFT JOIN doc_inbound b ON b.doc_id = d.id
 ORDER BY d.citation_rank DESC LIMIT 30;
 ```
