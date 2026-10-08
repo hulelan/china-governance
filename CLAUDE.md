@@ -562,6 +562,60 @@ about Wuxi and obvious as a fact about a 54-name set. Prefer deriving these tabl
 that is already complete (`CITY_PROVINCE`, `sites.admin_level`) over hand-maintaining a second one,
 and where a hand list must exist, make the unmapped case return None loudly rather than guessing.
 
+## A recurring bug shape: a rule validated on the population where it does NOT fire
+
+The precision of a heuristic is meaningless until you know *where it fires*. Twice now a flag has
+been hand-checked carefully and still shipped wrong, because the check ran on the sites or rows
+the rule barely touches.
+
+| rule | where its precision was measured | where it actually fires | what shipped wrong |
+|---|---|---|---|
+| `build_doc_identity` crawl-stamped dates (A4) | two Jiangsu sites | 76 sites, mostly shallow archives | "74 sites / 27,915 docs crawl-stamped" — the rule was detecting shallow archives, not stamped dates |
+| `base.BODY_GRAPHIC_TITLE` → terminal `image_only` | `gov` (10 → 0 false matches) and `miit` (15 → 2) | **`bj`, ~93% of the class**: 1,268 bodiless vs 107 has-body rows carry the cue | a single transient extraction failure permanently retired a text-bearing document (found and fixed 2026-10-08) |
+
+**Rule:** before trusting a flag's precision, run `GROUP BY site_key` (or by jurisdiction, or by
+whatever the rule's population is) on *where the flag fires*, and hand-check the largest bucket,
+not a convenient one. The tell in the Beijing case: the two validation sites had **zero** bodiless
+rows carrying the cue, so the measurement that looked like 0% false positives was really 0 trials.
+A second tell is a cue the site uses for two things at once — Beijing publishes an infographic,
+an audio reading and the full text of one document on a single page titled
+`一图读懂、音频解读：…关于印发《X》的通知`.
+
+**And weigh the consequence, not just the precision.** `image_only` was terminal because it
+"provably cannot yield text", which bought 1 fetch per row instead of 3 — about 2,536 fetches
+once, roughly an hour, one time. The ledger's recurring saving (~21 min/night) comes entirely
+from the attempt CAP, which applies to every reason. A one-time hour was buying the permanent,
+silent loss of a document. Prefer a cap you can lift (`--retry-bodies`) to a verdict only an
+explicit requeue reopens, and reserve genuine terminality for verdicts that come from the data
+itself rather than a guess — `pdf_only` reads the URL's suffix, which is why it stayed terminal.
+
+## A watcher must not match itself
+
+`pgrep -f PAT` tests PAT against the full command line of **every** process, including the shell
+running the `pgrep`. So this, which I have written three times on the droplet, never exits:
+
+```bash
+while pgrep -f "crawlers.govcms --site jsrd" | grep -qv $$; do sleep 30; done   # WRONG
+```
+
+Both the outer `bash -c` and the inner one carry that string in their own command lines, and
+`$$` excludes only one of them, so the loop sleeps forever and whatever followed it never runs.
+Found 2026-10-08: three such chains had been sleeping for hours and one was holding a pending
+`build_site_stats.py`. The `[j]srd` bracket trick DOES work here (`pgrep -f` takes a regex), but
+prefer a pattern the watcher cannot contain:
+
+```bash
+while pgrep -f "python3 -m crawlers.govcms --site jsrd" >/dev/null; do sleep 30; done
+```
+
+This is the same family as the other wrapper failures logged in
+`memory/feedback_subagent_orchestration.md` (a `tail -1` truncating a traceback, a `for` loop
+exiting 0 over nine crashed sites, `$?` after a pipe). Two more for the list, both from
+2026-10-08: **`timeout` does not exist on macOS**, so `timeout 900 python3 -m pytest …` fails with
+`command not found` and a wrapper that prints a count sees nothing; and **`${PIPESTATUS[0]}` is a
+bash-ism** — under zsh it expands to empty, so a guard built on it silently never fires (zsh
+spells it `${pipestatus[1]}`).
+
 ## A recurring bug shape: length floors measured on a NORMALIZED string
 
 Four separate bugs this project has shipped are the same mistake (the fourth was predicted
