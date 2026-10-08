@@ -540,6 +540,28 @@ read-only. Validated live: 4 of 5 previously-failing documents classified on the
 `max_tokens` is a ceiling, so the ~70% of documents that already finish under 2,000 cost the
 same as before. A one-off `--retry-failed` backfill of the ~1,864 unclassified docs is ~$11. As of June 2026 the droplet's nightly `daily_sync.sh` Phase 2 runs this UNBOUNDED (no `--limit`), so it drains the full backlog (~156k docs, ~$78, ~40h) on the first reliable run, then only touches new docs. The `mkdir` lock keeps the next day's cron from piling a second classifier on top.
 
+## A recurring bug shape: a hand-maintained table silently bounds a measurement
+
+Five times now a result has turned out to describe one of our own lookup tables rather than the
+corpus. The table is never wrong about what it contains; it is wrong about what it OMITS, and the
+omission is invisible because the code returns a clean answer either way.
+
+| table | what it omitted | the measurement it silently bounded |
+|---|---|---|
+| `data/source_ontology.yaml` | 231 of 510 site keys | "Other / unclassified" held 22k docs and the exclude-news filter missed them (fixed 2026-10-07 with an `admin_level` fallback) |
+| `geo.DISTRICT_CITY` | every Wuxi division | 1,163 Wuxi district docs had NO province, so the same-province gate dropped them from every provincial comparison |
+| the 文号 registry (via `AMBIGUOUS_DOCNUM_PREFIXES`) | 无锡 has no entry at all | `惠府` resolved to 惠州市, putting 22 Wuxi docs in Guangdong |
+| `build_doc_identity.KNOWN_LOCALITIES` (54 names, seeded from `_PROV_MUNI` + the 文号 registry) | `无锡市`, because Wuxi has no 文号 entry | `localize()` cannot place a Wuxi title, so `localized_of` fires on **2** Wuxi pairs against **44** Suzhou — and `pair-channels.md`'s renaming-channel floor is therefore a floor on the TABLE, not on the corpus (found 2026-10-08) |
+| `citations` title index / `_best_core` floors | short folded titles | see the length-floor section below |
+
+**Rule:** when a per-jurisdiction or per-site number looks like a finding, check whether the
+jurisdiction is in every table the path touches before believing it. The tell is an ordering that
+reverses when you change denominator: Wuxi titles carry their city name MORE often than Suzhou's
+(43.2% vs 54.1% lack it) yet Wuxi's renaming channel fires 20x less, which is impossible as a fact
+about Wuxi and obvious as a fact about a 54-name set. Prefer deriving these tables from a table
+that is already complete (`CITY_PROVINCE`, `sites.admin_level`) over hand-maintaining a second one,
+and where a hand list must exist, make the unmapped case return None loudly rather than guessing.
+
 ## A recurring bug shape: length floors measured on a NORMALIZED string
 
 Four separate bugs this project has shipped are the same mistake (the fourth was predicted
