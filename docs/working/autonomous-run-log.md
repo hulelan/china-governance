@@ -2637,3 +2637,79 @@ comparison group for the 283 entrants on any title-observable outcome, needing n
 
 Shipped `242456c` (`docs/research/local-legislative-devolution.md`, placed in Part III of the
 curated reading order, 38 memos) and the Part III entry in `findings-synthesis.md`.
+
+---
+
+## Iteration 89 — the RMB question turned into the bottom-up case B2 asked for
+
+The user asked what we hold on the RMB, then sharpened it to "signals on how they manage the RMB
+relative to other currencies". Answering it honestly needed three traps cleared, and the follow-on
+measurement found a finding bigger than the question.
+
+**The coverage answer** (`rmb-coverage.md`). The monetary apparatus is the corpus's biggest
+institutional hole: **PBC 31 documents, SAFE 22, no NFRA at all**, against MOF 3,395 and chinatax
+5,018. The core statutes ARE held and well cited (外汇管理条例 77 citers, 中国人民银行法 46) but
+through the metadata-only `npc` tier, so we hold their titles and not a word of text. **Both sites
+return real content from NYC** (141KB / 102KB, byte-checked) — the crawler walks **page 1 only**
+(7 + 20 links ≈ the 31 we hold, hence the 2025-12 floor), `index_N.html` 404s, the pager is
+JS-driven. A dialect fix, not a vantage problem. Unresolved demand is all PBC/CBRC 部门规章:
+人民币银行结算账户管理办法 22 citers, 非金融机构支付服务管理办法 18.
+
+**Three traps, each returning a clean zero**, all of which produced a confident wrong answer
+before I caught them. (a) **美元 returns 0 from the trigram index** — 2 characters against a
+3-character minimum, while 人民币 is 3 and works, so a side-by-side comparison reported the dollar
+absent from a corpus holding it **8,454** times. That is the named length-floor shape, now found in
+the search layer. (b) **跨境人民币 returns 0 from the segmented index** — jieba splits it, so the
+phrase is never a token. The two indexes are complementary and **neither covers both cases**.
+(c) The **uncontrolled year series reverses the trend**: raw, the 美元:人民币 ratio *rises* to 1.72
+by 2026, because 2026 holds 98,402 documents against 2024's 29,269. On a fixed 17-site panel it
+**halves 0.70 → 0.31 across 2013-2017 and sits flat for eight years**, low of 0.24 in 2024.
+
+**The structural read:** RMB internationalization reaches the documentary record as **zone-and-plan
+policy, not monetary regulation** — the most-cited carriers are 大湾区纲要 (365 citers), 十五五规划
+建议 (209), 三中全会决定 (197), 深圳先行示范区 (139), 横琴 (47), 自贸区 (28). PBC and SAFE are not
+in the top fourteen sites. Stated with its own caveat: that is partly what you see when the central
+bank is 31 documents.
+
+**Then the state-capital thread paid off** (`patient-capital-cascade.md`). The unreplicated NBER
+paper nearest the user's question is **w32701, Government as Venture Capitalists in AI** — and we
+hold the half it lacks, the authorizing instruments (1,769 docs mention 引导基金, 267 whose TITLE
+is a fund instrument, 1998-2026). Tracing 耐心资本 gave a **fully verified bottom-up cascade**,
+which is exactly what `corpus-lessons.md` B2 asked for and `bottom-up-channel.md` could not find:
+
+- **2019-02-19 Beijing**, work-report task **item 85**, with named lead official and five assigned
+  bureaus — operative, not rhetorical;
+- 2021-06 Beijing states its own aim as 吸引耐心资本、**打造北京样板**, 在全国发挥示范引领作用;
+- 2022-06 Beijing claims **全国率先** and coins 懂科技的"耐心资本";
+- **2022-08-12 Heilongjiang reproduces that phrase near-verbatim**, two months later and **eleven
+  months before any central document in the corpus uses the term** — horizontal diffusion;
+- **2023-07-11, first central appearance: the 国家信息中心 OBSERVING localities**
+  (《未来产业成为各地谋长远的重头戏》), an analytic piece, not an instruction;
+- **2024-07-21 the Third Plenum decision** writes 发展耐心资本; PBC+金融监管总局+证监会+外汇局
+  implement it into Tianjin nine days later. **5 years 5 months** local-to-center. Media enters on
+  the exact day of the Plenum decision, after five silent local years.
+
+**I read all seven earliest bodies before believing it**, because a local document QUOTING a
+central text produces an identical FTS match and means the opposite — all seven are in their own
+operative register. And central is **over-sampled** relative to Beijing (26,100 `gov` vs 8,490 `bj`,
+crawled to 1999), so the four-year gap is not a sampling gap.
+
+**The methodological payoff is the part that generalizes.** The upward channel here carries **no
+citation at all** — nothing cites Beijing's 2019 plan, the Plenum does not cite Heilongjiang, the
+SIC piece does not cite the 中关村 measures it describes. What travels upward is a **phrase**, and
+our citation machinery cannot see a phrase; `localized_of` and `title_reissue` cannot either, since
+no title is reused. So **upward flow measured on citations will always read near-zero, not because
+it is absent but because the two directions are not symmetric objects: downward travels as
+instruments, upward as vocabulary.** Measuring both with one instrument guarantees the asymmetry
+we reported. The memo states the n>1 design (date every operative noun phrase in the Plenum
+decision and the FYP recommendations against its first sub-national use) and does not claim it.
+
+**NBER status made durable** in `related-literature.md`: both memos in the Outcomes table, plus an
+explicit note that **two of the seven "run now" items remain** (#4 diffusion-intensity index, #5
+aligning agendas — both computable on what we already hold, #5 needing a fixed-site panel first)
+and the specific blocker for each never-attempted §10 paper (w29466/w27723 need procurement and
+protest data; w31676 trade data; w32993 has no single replicable estimate).
+
+Shipped `526ec58`. 40 memos, 231 tests passing. **Launched** the PBC pagination work as code-only,
+briefed to find the JS pager, add SAFE only if it is the same dialect, and — explicitly — to
+recommend NOT shipping rather than invent a fragile guess.
