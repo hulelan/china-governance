@@ -2232,3 +2232,30 @@ stub. The remaining weekly slots (`chongqing` should RUN tonight as weekday 4's 
 `hangzhou` should skip) and the `zhejiang` Monday probe sit later in the sequence and had not been
 reached at 08:29. Phase 1 still running 2.5h in; the end time is the real test of the prediction that
 it finishes noticeably before the usual ~10:25.
+
+## P2 Iteration 80 (two predictions confirmed; one consequence the user should see)
+**Phase 1 timing — CONFIRMED.** `Phase 1 done 09:32:48`, i.e. **212 min**, against 10:08:55 /
+10:08:32 / 10:13:26 / 10:25:27 on the previous four nights (mean ≈ 10:14), so **about 41 min
+faster**. Every gate behaved as designed: `sic`, `ipc_court`, `wuhan`, `most`, `hangzhou` skipped on
+their non-slot weekdays, `chongqing` correctly RAN on weekday 4, `zhejiang` skipped as a Monday probe,
+and `miit` ran (it stays nightly by design). The ~41 min is consistent with zhejiang's ~30 min plus the
+skipped weekly crawlers; the timing memo's larger ~152 min figure assumed items I deliberately did not
+take (dept-group rotation, weekly cadence for ndrc/mee/mof).
+**Classifier — CONFIRMED in production.** First 600 of tonight's batch: **600 ok, 0 err,
+`reasons: none`**, against a ~34% silent failure rate before `1511b81`. (The 894 WARNING lines in the
+log are Phase 1 crawler retries; a grep for classifier `doc <id>` warnings finds none, consistent with
+zero failures.)
+**The consequence:** Phase 2 is classifying **23,710** documents instead of the usual ~2,700, because
+today's crawling added ~22k unclassified documents at once (gazette 11,450, Wuxi 4,685, the gov
+library's historical tail). At 0.3 docs/s the log's ETA is **~1,205 min ≈ 20 h**, so the classifier
+holds the nightly lock until roughly 06:00-07:30 tomorrow. Effects: the PRIMARY/SECONDARY org-stub
+checks and all Phase 2b-2d derivations wait ~20 h; **tomorrow's 06:00 cron will skip** because the lock
+is held, so there is no crawl tomorrow; and the batch costs roughly **$45-50** in DeepSeek calls on my
+blended estimate (most docs cost as before; the reasoning-heavy minority that used to fail silently now
+cost ~$0.0053 each). This is the pipeline's DESIGNED behaviour (CLAUDE.md documents the unbounded drain
+and the lock that stops a second classifier piling on), so I am not interrupting it, per the standing
+"ask before killing background processes" rule. But the choice between one long drain and a bounded
+nightly `--limit` is the owner's, and I have put it in front of them.
+In the window, launched the one research question NOT blocked on the derivations: whether the
+文号-denominator result generalizes from Shenzhen to Wuxi (it needs only `document_number` and dates,
+which the crawl captured directly).
