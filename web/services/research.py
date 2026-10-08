@@ -34,7 +34,9 @@ _cache: dict = {}
 # files themselves; this only fixes grouping and order.
 CURATED: list[tuple[str, list[str]]] = [
     ("Start here: the synthesis", ["findings-synthesis"]),
-    ("Part I · The citation network", ["citation-network-structure", "wenhao-denominator"]),
+    ("Part I · The citation network", [
+        "citation-network-structure", "wenhao-denominator", "instrument-lifespan",
+    ]),
     ("Part II · Diffusion and fidelity", [
         "diffusion-atlas", "diffusion-fidelity", "fidelity-provincial",
         "fidelity-jiangsu", "daily-tracker-concept", "policy-tempo",
