@@ -25,6 +25,12 @@ the pre-amendment legal roster exactly — **79 jurisdictions, which is 49 autho
 autonomous prefectures** — which is why this is not a collection artifact. By 2024 municipal
 regulations outnumber provincial ones, 1,285 to 813.
 
+**A placebo group confirms it** (added 2026-10-08). Autonomous counties legislate too, from 136
+jurisdictions, but under the **民族区域自治法 of 1984** rather than the 立法法 — they gained nothing
+in 2015. Their jurisdiction count is flat at 14-20 through 2015, **18 in 2016 and 17 in 2017**,
+while the 设区的市 go 35 → **148** → 250. A database that merely started collecting in 2016 would
+have lifted both tiers: they sit on the same site, in the same table, reached by the same crawler.
+
 The amendment also *confined* new entrants to three domains (城乡建设与管理, 环境保护,
 历史文化保护). That constraint is visible in the titles: new entrants legislate inside those
 domains **8.8 to 15.9 percentage points more often** than contemporaneous incumbents, against an
@@ -135,6 +141,43 @@ A collection that happened to cover a fraction of China's cities would not repro
 cities plus the autonomous prefectures, which is the roster's own size. The corpus recovers the law
 it never recorded.
 
+### A placebo group with a different legal basis, and it shows no break
+
+The strongest available check on the causal story was sitting in the data unexamined (found
+2026-10-08 while auditing the unprovinced rows, §Limits). **Autonomous counties** (自治县) and
+**autonomous banners** (自治旗) also legislate — 1,154 regulations from **136 distinct
+jurisdictions** — but their authority comes from the **民族区域自治法 (1984)**, as 自治条例 and
+单行条例, not from the 立法法 at all. They were never in the pre-2015 49-city roster and they gained
+nothing in 2015. So if the 2016 jump is the amendment, this tier must not jump.
+
+Distinct legislating jurisdictions per year, by authorization basis:
+
+| year | 设区的市 (立法法 2015) | 自治县 / 自治旗 (民族区域自治法 1984) | 自治州 |
+|---|---|---|---|
+| 2010 | 41 | 14 | 9 |
+| 2011 | 36 | 18 | 10 |
+| 2012 | 40 | 10 | 5 |
+| 2013 | 34 | 12 | 5 |
+| 2014 | 37 | 14 | 6 |
+| 2015 | 35 | 20 | 7 |
+| **2016** | **148** | **18** | 8 |
+| 2017 | 250 | 17 | **21** |
+| 2018 | 257 | 32 | 24 |
+| 2020 | 271 | 47 | 36 |
+| 2024 | 285 | 46 | 45 |
+
+**The treated tier quadruples in 2016 and the placebo tier does not move** (14-20 before, 18 in
+2016, 17 in 2017 — inside its own noise band). A database that simply began collecting local
+regulations in 2016 would have lifted both, since both sit on the same site, in the same table,
+reached by the same crawler. It lifted one.
+
+Two honest readings of the rest of the placebo series. The autonomous counties **do** rise from
+2018 (32 → 47 → 47 → 49), two years late and *without a discontinuity* — consistent with spillover
+from the general expansion of local legislative capacity, or with practice diffusing, but not with
+the 2015 amendment, which would have shown up in 2016-17 as it did for the cities. And **自治州 jump
+in 2017, not 2016**: the amendment did also revise the 自治州 provisions, and provincial designation
+was staggered, so a one-year-later break for them is expected rather than awkward.
+
 ---
 
 ## 3. The scope limit on new entrants is visible in the titles
@@ -200,8 +243,20 @@ and time-to-first-regulation on a new subject. `instrument-lifespan.md`'s revisi
 - **`lead_issuer` is not a canonical registry** (A5 is still open). The jurisdiction counts are
   suffix-normalized, not registry-resolved, so treat 79 / 283 / 362 as ±5%, and the five-fold
   break as the robust quantity.
-- **3,406 `npc` rows carry no province.** They are mostly national law, but the residual has not
-  been audited, so no province's count should be treated as its complete legislative output.
+- **3,406 `npc` rows carry no province, and the residual IS now audited (2026-10-08).** 2,475 are
+  correctly unprovinced central instruments (中华人民共和国 statutes, State Council 条例, 最高人民法院
+  interpretations, NPC decisions — 20 of 20 sampled were unambiguously national). The other **931
+  are a systematic gap, not noise**: 848 自治县 + 73 自治旗 + 6 municipal + 4 other. The cause is
+  that `data/city_province.csv` / `geo.CITY_PROVINCE` holds **prefecture-level divisions only** —
+  which is deliberate and is why 东方市 is correctly absent (`build_doc_identity`'s locality
+  whitelist, CLAUDE.md) — so an autonomous *county* resolves only when its title happens to carry a
+  province prefix. Measured: 自治州 (prefecture-level) is **1,042 provinced / 0 unprovinced**, while
+  自治县 / 自治旗 is **233 / 921**. The visible mechanism is the prefix: `甘肃省肃北蒙古族自治县…`
+  resolves, `宽城满族自治县…` does not. **Consequence for this memo:** every per-province count in §1
+  omits ~921 autonomous-county regulations, so a province's total is a floor, and provinces with
+  many autonomous counties (yn, gz, hb, hn, gs, nm) are understated more than others. §2's
+  jurisdiction counts are unaffected — they are computed from `lead_issuer`, not from `province` —
+  and the placebo test in §2 uses this tier deliberately.
 - **The permitted-domain test is a keyword proxy on titles**, reported at two breadths precisely
   because neither is authoritative. It establishes a gap and its direction, not its true size.
 - **The panel is unbalanced in time** (§1), so a pre-2000 comparison is not available at
