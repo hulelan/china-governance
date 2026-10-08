@@ -133,8 +133,11 @@ A2  instrument_id — mirrors of one text share one id.
             `implementing`, and never pools with the higher-level text. A bare《X》
             repost (no locality anywhere in the title) stays a mirror: 受权发布丨…印发《X》
             on Xinhua, or 国务院…《X》 re-posted by a ministry. Locality names come from
+            geo.CITY_PROVINCE (every prefecture-level division) plus
             issuer_parser.DOCNUM_SUBNATIONAL (the 文号 registry's agency names) plus the
             doc's own masthead; province-shaped names (X省 / X自治区) are always accepted.
+            (2026-10-08: the registry alone vouched for 23 cities, which bounded the
+            channel's own measurement — see _known_localities.)
     IN-CHAIN GENRE FLIP (2026-10-06, docs/working/qa-genre-flip.md): the `localized`
             flag above (which only keeps a doc OUT of the higher text's pool) fires on
             ANY higher-ranked same-stem member. The genre flip promulgation ->
@@ -893,8 +896,35 @@ _LOC_LEVELS = ("provincial", "municipal", "district")
 
 
 def _known_localities():
-    """Locality names the 文号 registry already vouches for (广东省, 深圳市, 苏州市 …)."""
-    out = set(_PROV_MUNI)
+    """Locality names a CORE PREFIX may be read as: every prefecture-level division
+    (geo.CITY_PROVINCE, 354 rows) plus whatever the 文号 registry adds on top.
+
+    (2026-10-08) The registry WAS the only seed, and it is not a list of localities —
+    it is a list of 文号 heads, so it vouched for exactly the 23 cities that happen to
+    have one (苏州市 via 苏府, every Guangdong gkmlpt city via 粤*/深*) and for no other.
+    That silently bounded the measurement it fed: `localized_of` fired on 2 无锡市 pairs
+    against 44 苏州市 ones, an ordering impossible as a fact about Wuxi (43.2% of Wuxi
+    titles carry the city name vs 54.1% of Suzhou's) and obvious as a fact about a
+    hand-maintained list — the shape CLAUDE.md names. CITY_PROVINCE is the complete,
+    already-loaded national list the province resolver and jurisdiction_chain() both
+    read, so seeding from it removes the bound instead of widening it one city at a time.
+
+    Measured corpus-wide before shipping (docs/working/qa-wenhao-province-ambiguity.md
+    §8, two scratch rebuilds of the 346,955-doc corpus side by side): 54 -> 381 names;
+    11,312 docs gain or change a localize() locality; instrument POOLING moves by exactly
+    1 document (1 merge, 0 splits) because a non-localized doc pools on its FULL core;
+    `diffusion_events` rebuilds byte-identical; `validate_cascades` 15/15 either way;
+    1,336 new `localized_of` edges (2,075 -> 3,411), 1,287 of them on the npc 地方法规
+    tier that could not reach the channel at all before. Adversarial: 0 of 2,149
+    site-resolvable newly-localized docs got a locality from another province, and 0 of
+    9,873 contradicted their own publisher / lead_issuer / 文号.
+
+    Note what CITY_PROVINCE does NOT contain, and why that is load-bearing: it holds
+    PREFECTURE-level divisions only, so the collision-prone county-level city names are
+    absent (东方市, Hainan -> 东方市场X办法 stays unlocalized). Bare district names are
+    also deliberately out of scope here — geo.DISTRICT_CITY is a different, much more
+    collision-prone surface (开发区 / 园区 / 城区) and was not measured."""
+    out = set(_PROV_MUNI) | set(CITY_PROVINCE)
     for agency in DOCNUM_SUBNATIONAL.values():
         a = agency[2:] if agency.startswith("中共") else agency
         m = _LOC_FIRST.match(a)
@@ -938,8 +968,13 @@ def locality_of_head(head):
 
 def locality_in_core(core, masthead_loc):
     """A locality PREFIX inside an instrument core ('深圳市推动…行动方案' -> '深圳市'),
-    accepted only when the 文号 registry knows the name, the doc's own masthead names
-    it, or it is province-shaped (X省 / X自治区) — '智慧城市建设方案' is not a locality."""
+    accepted only when KNOWN_LOCALITIES holds the name (every prefecture-level division
+    + the 文号 registry's heads), the doc's own masthead names it, or it is
+    province-shaped (X省 / X自治区) — '智慧城市建设方案' is not a locality.
+
+    A mid-title mention cannot be mistaken for the issuer's own locality: this anchors at
+    ^, and a title that merely names another city ('广东省…关于学习推广无锡市经验的通知')
+    keeps its masthead locality."""
     m = _LOC_FIRST.match(core) or _LOC_DISTRICT.match(core)
     if not m:
         return None
