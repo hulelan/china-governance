@@ -45,7 +45,7 @@ CURATED: list[tuple[str, list[str]]] = [
     ("Part III · Centralization, experimentation, coordination", [
         "recentralization-experimentation", "experimentation-wang-yang",
         "site-selection-gdp", "successor-detector", "bottom-up-channel",
-        "local-legislative-devolution", "joint-issuance",
+        "local-legislative-devolution", "authority-invocation", "joint-issuance",
     ]),
     ("Part IV · Sectors and campaigns", [
         "patient-capital-cascade", "rmb-coverage",

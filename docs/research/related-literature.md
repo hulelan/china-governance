@@ -180,12 +180,21 @@ already hold:
   "hierarchical effectiveness" correlates with the plain adopter COUNT at +0.957: use the
   per-adopter mean, which points the other way (−0.271). New: breadth costs both authority
   (2.67 → 2.46) and elaboration (0.99 → **0.81**) across adopter-count quintiles.
-- **#5 Aligning Agendas in Public-Activity Reports** (Journal of Chinese Political Science, 2026).
-  Topic models over 71,460 activity releases; provincial issue shares track the General Secretary
-  more than the Premier. Our `genre` field isolates readouts and reports, and we reach the
-  municipal and district tiers they did not. The constraint is that our readout coverage is
-  uneven by province, so this one needs a fixed-site panel first (see `rmb-coverage.md` §4 trap 3
-  for why that is not optional).
+- ~~**#5 Aligning Agendas in Public-Activity Reports**~~ — **DONE 2026-10-08,
+  `authority-invocation.md`**, reframed rather than reproduced. Their design is unavailable and the
+  reason is a finding: the Party hierarchy is nearly absent as an ISSUER here (104 provincial
+  party-committee documents vs 19,015 government ones) because 政府信息公开 obliges administrative
+  organs, not the Party — so the party-secretary-vs-governor half cannot be run on this corpus at
+  any crawl depth. But the Party channel is highly visible as INVOKED authority. On a fixed 18-site
+  panel the General-Secretary channel goes 0.0% (2012) → 30-43% (2024) while the Premier channel
+  sits at 0.0-1.0% at every level in every year — so their central claim is not a ratio but an
+  **absence**. Two things the level dimension adds: the gradient **inverts** (2016 central 8.0% >
+  municipal 7.0%; 2024 municipal **42.9%** > central 31.7%), and institutional invocation (党中央)
+  keeps the **opposite** gradient throughout (2024: 33.0 / 22.0 / 14.6). It also disagrees with
+  `recentralization-experimentation.md`: authority-borrowing by NAME did not revert after 2017,
+  while borrowing by CITATION did.
+
+**All seven "run now" items now have memos.**
 
 NBER papers in §10 never attempted, with the blocker for each: **w29466 AI-tocracy** and
 **w27723 Data-intensive Innovation** need procurement contracts and protest data (we hold the
