@@ -2302,3 +2302,47 @@ Launched the two highest-value read-only pieces instead:
    is that "open"/"landed" claims carry the date they were verified and the section is re-checked
    against the git log, not from memory). Two agents touch that file, so this one is scoped to the
    status section only, with rebase-on-conflict.
+
+## P2 Iteration 83 (the status rewrite corrected me three times)
+**`425d432` LANDED** and the agent corrected my framing on three counts, all verified by me
+directly against the live DB:
+1. **The Wuxi merge is NOT finished.** `wuxi` holds **2,209 live against 3,865** in
+   `documents_wuxi.db` (iteration 81 measured 1,707 URLs absent), so ~44% of its MUNICIPAL
+   documents are still outside the corpus, blocked by the write lock. The districts ARE complete
+   (xinwu 1,087, jiangyin 756, xishan 450, liangxi 209, binhu 83, huishan 47, yixing 36; live
+   Wuxi total 4,877 across eight keys). I had been saying "merged" since iteration 76. **This was
+   time-critical**, because the `fidelity-wuxi` study was already running on the partial data and
+   could have returned "Suzhou-specific" for a MERGE reason — a wrong answer to B1, the volume's
+   biggest caveat. Messaged it mid-flight to distinguish the two causes, to prefer "still
+   underpowered, pending the second merge" if the thinness is the merge, and to state the pair
+   count it would expect once the remaining rows land.
+2. **`localized_of` is 2,014 live, not the 1,958 its committing memo claims** (verified: 2,014).
+   The droplet build is the authority over a memo's figure.
+3. **MIIT is worse than the memos say**: I measure **5,447 bodiless of 7,864** (the agent read
+   5,607 on a slightly wider predicate; the memos quote 5,383) because the nightly keeps
+   re-fetching stubs that can never gain a body from NYC.
+It also **corrected the premise of the note I asked for.** I had framed the status section as
+having gone stale through neglect; the agent checked the git log and found the previous status was
+committed 2026-10-07 03:00 (`6120839`) and was **accurate when written** — five of its six "Open
+now" items closed in the following twenty-four hours. So the note says it drifts within a day of
+heavy change, which is both true and fairer than what I asked for. And the framework-gate check I
+flagged as "do not assume" was worth making: it DID land (`890a25a`), and `is_framework` now reads
+`instrument_kind` with the 23%-precise regex as a dead fallback, so the widened gate is what built
+the live 45,524-row `diffusion_events`.
+Live figures it verified: **346,955 docs / 479 sites**, resolution **52.97%** (310,136 of
+585,471), doc_identity 338,856, succession 14,624, diffusion 45,524, tracker 46,178, validator
+**15/15** read-only (the last *nightly* logs 13/13 because that ran the pre-split code).
+**Four open items I had failed to list**, now in the status: the second Wuxi merge;
+`sites.admin_level` still carrying the site level, so new analysis must join `doc_identity`;
+`diffusion_events.topic` holding only the anchor's first topic tag; and the jurisdiction-level
+breadth recount, which it sharpened usefully — it is a **jurisdiction** count, not a document
+count, and the document-level distribution now existing (municipal 122,625 / provincial 68,300 /
+central 67,439 / media 50,985 / district 27,800 / research 1,707) could be mistaken for the answer.
+**Launched** the Phase 1 timing item #2 as code-only: stop re-fetching bodies that can never
+arrive, built as a `body_fetch_failures` ledger on the exact pattern that took the classifier from
+34% silent failures to 0 in 4,400 documents today — reason codes, an attempts threshold, a
+`--retry-bodies` override, and a side table rather than a `documents` column. The named
+verification the timing memo demanded is that bodiless rows must not be silently abandoned, so the
+ledger is the deliverable, not a blanket skip, and the `anti_bot_stub` class must be re-queueable
+in one command the day a residential vantage exists. Brief licensed to recommend NOT shipping if
+the saving is small.
