@@ -1997,3 +1997,43 @@ that of per-document weighting, and testing rather than assuming the prediction 
 weighted ranking closer to the raw one); and a code agent for the ~770 "分享到：" share-widget
 tails, which must distinguish a chrome suffix on real text (trim) from an all-chrome body (flag,
 never empty), leave a mid-body 分享到 alone, and audit every change.
+
+## P2 Iteration 70 (my convergence prediction failed; the predicted fourth bug turned up)
+**`citation-network-structure.md` re-based** (`29fc8b1`, dated §8, old table kept and labelled).
+The agent separated the two changes cleanly by computing every figure in three states on tonight's
+edges — PRE (old resolver rule simulated), A1OFF (tonight's edges, site-level weights) and NEW
+(stored) — so PRE→A1OFF is the mirror change M and A1OFF→NEW is the weighting change W. Its NEW
+recompute matches stored `citation_rank` and `doc_inbound` with **0 mismatches**, and W changes
+exactly the **5,930** documents seen live. PRE is a simulation and is labelled one (it moves 119k
+edges against the commit's 85.6k measured before tonight's ingest).
+**My prediction failed, which is why I asked for it to be tested rather than assumed.** I expected
+A1 to bring the weighted ranking closer to raw inbound, on the theory that the over-weighting it
+removed was an artefact. It did not: top-30 overlap with `doc_inbound` 25 → 25 → 25, top-100 82 →
+83 → 82, Spearman 0.833 → 0.834 → 0.831. W moves weight in BOTH directions rather than toward
+equal weights, and its large cuts (工会法 248 → 175, 人民防空法 550.5 → 497) sit below the top 30.
+The mirror fix did more convergence than W did. The leftover gap looks like the edges-versus-citers
+overhang, which neither change touches: 反倾销条例 carries 4.04 of weight per distinct citer, above
+the 3.0 any single central citation can give.
+**The headline claims survive.** Authority stays heavy-tailed under every treatment (top 1% holds
+55-62%, Gini 0.948-0.964); "about four in five of the top 100 are central" (84 pooled, 79 by
+`citation_rank`, 75 by raw); laws plus regulations 77 of 100. The memo's own pooled top-3 is
+unchanged (城乡规划法 1,895, 政府信息公开条例 1,546, 道路交通安全法 1,329). One honest loose end:
+the laws/regulations split moved from 27/48 to 39/38 and neither change explains it; untraced.
+**A clean demonstration of why per-document level matters:** counting the top-100's central share
+by HOST SITE moved **68 → 83** under M, because before the fix national laws' edges sat on reposts
+held by provincial and municipal bureaus (nx_gxt, bjb_tjj, fj_yjt, fj_wjw). Counted by
+`doc_identity` level it stayed at 78-79 throughout. Same documents, same edges; only the level
+attribution differed.
+**The fourth folded-string length-floor bug, predicted in CLAUDE.md and now found:** the memo's own
+Appendix pooling floors on the folded title, so 民法典 and 预算法 — 3 characters once 中华人民共和国
+is stripped — were never pooled. Added as row four of the CLAUDE.md table (`1908ef4`). I wrote there
+that the production resolver is unaffected, then **verified that rather than asserting it**:
+预算法 holds 414 edges and 民法典 384 on their canonical npc copies, the duplicate copies correctly
+hold 0, and only 48 unresolved refs mention either. The resolver's `LENGTH(title) >= 5` floor reads
+the RAW title (10 characters), so it is safe.
+**Queued:** the stored `citation_rank` still ranks a bare ORGANIZATION name, 广东省自然资源厅, at
+**#20** — a masthead stub absorbing citations through containment, the same residual the
+REF_PATTERN fix logged ("masthead stubs remain containment-eligible targets"). Worth a guard that
+excludes organization-name-only titles from being citation targets.
+Running: BM25 rebuild (since 01:20); Wuxi crawl at 475 docs / 100% body in `documents_wuxi.db`;
+the share-tail script agent.
