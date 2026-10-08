@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parents[3]))
 from analyze import (
     REF_PATTERN, get_admin_level,
-    NAMED_REF_PATTERN, is_policy_document, classify_named_ref_level,
+    NAMED_REF_PATTERN, is_policy_document, classify_named_ref_level, POLICY_KEYWORDS,
     build_known_abbrevs, canonicalize_formal_ref,
     looks_like_body_run, recover_named_heads,
 )
@@ -273,6 +273,41 @@ _WRAP_PLAIN = re.compile(
 _MASTHEAD_PRE = re.compile(r'^[一-鿿\s丨·、]{2,40}' + _INST_SUFFIX + r'[\s丨·、]*$')
 _WRAP_CORE_MIN = 6  # normalized floor for a wrapper-derived core
 
+# --- Organization-name-only titles: exact-only targets (2026-10-07) -------------
+# Some crawled "documents" are masthead stubs: the whole title is an AGENCY NAME
+# (广东省自然资源厅, 深圳市住房和建设局, 江门市自然资源局), algo_doc_type 'other', usually
+# an empty body. Containment tier (a) — "a stored title is a substring of the cited
+# name" — let ANY reference that merely embeds the agency name resolve onto that stub
+# whenever the real instrument is not held: 《广东省自然资源厅关于推进征收农村集体土地留用地
+# 高效开发利用的通知》 → 广东省自然资源厅. Measured 2026-10-07 on the live corpus: 150 such
+# stubs held 4,604 resolved edges (广东省自然资源厅 alone 692, citation_rank #20), a
+# 15-edge hand-check found every one a mis-resolution of an unheld instrument, and
+# ZERO resolved refs equalled a bare organization name.
+# Rule: an org-name-only title is NOT a containment candidate (tiers (a) and (b));
+# it stays an EXACT-tier candidate, so a ref that genuinely names the bare
+# organization still resolves to it. The ref then falls through to the remaining
+# tiers / title cores, or stays honestly unresolved (a crawl-queue entry).
+# "Org-name-only" = the module's existing masthead shape (a CJK run ending in an
+# _INST_SUFFIX, as _MASTHEAD_PRE, plus 中心 for 深圳市疾病预防控制中心-type public
+# institutions) with NO instrument genre word (analyze.POLICY_KEYWORDS, 关于) and not
+# an action/news title — 成立深圳市减灾委员会 / 授予…先进小区 are decisions, 我市召开
+# …通报会 is a news readout; both keep today's behaviour. A genre word that is part
+# of the agency's NAME (规划和自然资源局, 自然资源规划局, 计划生育协会, 标准化研究院) is
+# masked before the genre check, or 广州市规划和自然资源局 (63 edges) would escape.
+_ORG_NAME = re.compile(r'^[一-鿿\s丨·、]{2,40}(?:' + _INST_SUFFIX + r'|中心)[\s丨·、]*$')
+_AGENCY_GENRE_WORD = re.compile(r'(?:规划|计划|标准)(?=和|局|院|委|化|生育|学会|协会|研究)')
+_ORG_ONLY_NOT = re.compile(
+    '关于|' + '|'.join(POLICY_KEYWORDS) +
+    r'|^(?:成立|调整|设立|撤销|组建|授予|创建|命名|表彰|撤并|变更)'   # a decision ABOUT a body
+    r'|召开|举行|举办|出席|参加|(?:格|新|大|布|开|全)局$')            # an event / headline
+
+
+def _is_org_only_title(nt):
+    """True for a NORMALIZED title that is just an organization name (exact-only)."""
+    return (bool(_ORG_NAME.match(nt))
+            and not _ORG_ONLY_NOT.search(_AGENCY_GENRE_WORD.sub('', nt))
+            and not _NEWS_TITLE_RE.search(nt))
+
 
 def _title_cores_of_title(title):
     """Instrument cores a STORED title should also be keyed under, as
@@ -353,13 +388,19 @@ class TitleMatcher:
     de-duplicating by title upstream hands the decision to insertion order.
     """
 
-    def __init__(self, title_to_doc, site_levels=None, aliases=None):
+    def __init__(self, title_to_doc, site_levels=None, aliases=None, org_only_exact=False):
         # title_to_doc: either {title: value} or an ITERABLE OF (title, value) PAIRS.
         # The pair form exists so callers holding several documents under the SAME
         # title (mirror promulgations) can hand all of them over instead of letting a
         # dict silently keep whichever one was inserted last — the ranking below, not
         # insertion order, then decides which copy represents the instrument.
         # aliases: {norm cited_as -> norm canonical title}; default = data/instrument_aliases.csv
+        # org_only_exact: make organization-name-only titles exact-tier-only (see
+        #   _is_org_only_title). OFF by default because build_diffusion_events also
+        #   builds TitleMatchers over topic STEMS, and stems such as 国家认定企业技术中心 /
+        #   承接产业转移示范区 share the masthead shape without being organizations —
+        #   gating them would silently change title_reissue matching. The citation
+        #   resolver (extract_all) turns it on.
         self.aliases = load_aliases() if aliases is None else dict(aliases)
         # Index on NORMALIZED titles (punctuation/prefix folded). When two titles
         # normalize identically (mirror copies), keep the promulgation-genre copy,
@@ -406,6 +447,9 @@ class TitleMatcher:
         for nc, (_, _, _, did) in best_core.items():
             self.core[nc] = did
         self.titles = list(self.exact.keys())
+        # org-name-only titles: exact-tier only, never containment (see _is_org_only_title)
+        self.org_only = (frozenset(t for t in self.titles if _is_org_only_title(t))
+                         if org_only_exact else frozenset())
         self.index = {}  # gram -> set of title indices
         for idx, t in enumerate(self.titles):
             for g in self._grams(t):
@@ -458,7 +502,10 @@ class TitleMatcher:
         if L >= min_len:
             for length in range(L, min_len - 1, -1):
                 for i in range(L - length + 1):
-                    did = self.exact.get(name[i:i + length])
+                    sub = name[i:i + length]
+                    if sub in self.org_only:  # an agency name inside the ref is not the ref
+                        continue
+                    did = self.exact.get(sub)
                     if did is not None:
                         return did
         # (b) the cited name is a substring of a longer stored title (floor is on title).
@@ -466,7 +513,7 @@ class TitleMatcher:
         # rather than set-iteration order. No candidate -> unresolved (virtual target).
         best = None
         for t in self._containing(name):
-            if len(t) < min_len:
+            if len(t) < min_len or t in self.org_only:
                 continue
             did = self.exact[t]
             if not self._containment_ok(did):
@@ -655,7 +702,8 @@ def extract_all(conn: sqlite3.Connection, dry_run: bool = False):
     for row in conn.execute("SELECT site_key, admin_level FROM sites").fetchall():
         site_levels[row[0]] = row[1] or "unknown"
 
-    matcher = TitleMatcher(title_rows, site_levels)  # indexed fuzzy title resolver (fast)
+    # indexed fuzzy title resolver (fast); agency-name-only titles are exact-only targets
+    matcher = TitleMatcher(title_rows, site_levels, org_only_exact=True)
     print(f"Lookup tables: {len(docnum_to_id)} doc numbers, {len(title_rows)} title rows "
           f"({len(matcher.exact)} distinct normalized titles), {len(site_levels)} sites")
 
