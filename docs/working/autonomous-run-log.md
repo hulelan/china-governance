@@ -2037,3 +2037,39 @@ REF_PATTERN fix logged ("masthead stubs remain containment-eligible targets"). W
 excludes organization-name-only titles from being citation targets.
 Running: BM25 rebuild (since 01:20); Wuxi crawl at 475 docs / 100% body in `documents_wuxi.db`;
 the share-tail script agent.
+
+## P2 Iteration 71 (org-name stubs gated; the expected resolution DROP pre-registered)
+**Org-stub containment guard LANDED** (`4b890aa`, 02:08 UTC, inside the 05:30 deadline, so the
+06:00 nightly's citation rebuild applies it). Class: **2,260** documents whose whole title is an
+organization name (2,199 `other`, 848 empty body); **181 of them held 4,802 resolved edges**
+(1.5% of 310,136), with 广东省自然资源厅 at rank #20 on 692 edges and 4 of the class in the top
+100. The agent narrowed a first predicate that caught 4,886 because many hits were news headlines
+ending in 会 or 局 — and masked genre words that are part of an agency's own name (规划和自然资源局,
+计划生育, 标准化), without which 广州市规划和自然资源局's 63 edges would have slipped through.
+**Hand-check: all 25 edges sampled on the stubs are mis-resolutions** of an instrument that is not
+held, two of them across provinces (a Beijing ref and a Chongqing ref both landed on Heyuan stubs).
+No resolved ref is exactly a bare organization name, so the stubs keep exact-tier eligibility only.
+**A silent side effect it caught and avoided:** `build_diffusion_events` builds its own
+`TitleMatcher`s over topic STEMS, and 72 stems (国家认定企业技术中心, 承接产业转移示范区 …) share the
+organization shape, so a global gate would have silently changed `title_reissue` matching. The gate
+is therefore opt-in (`org_only_exact=True`, set only by `extract_all`); verified at line 706.
+**Where the 4,789 displaced edges go** (real matcher, read-only, all live titles, plus 8,000 random
+edges of which **0** changed): **4,567 honest-unresolved**, **134 gains** (they now reach the right
+instrument via its 印发 or decree wrapper or a 【已废止】 copy), **64 to a 转发 transmittal** (better
+than a stub, still a proxy), and **24 wrong-to-wrong**, all of which were already wrong. **Zero
+correct edges lost.** Validator simulated: none of the displaced edges reach any of the 15 checks'
+inputs; top-5 unchanged; no diffusion anchor is an org stub.
+**PRE-REGISTERED, so tomorrow's number is not misread:** after the 06:00 nightly's citation
+rebuild, resolved edges should FALL by about **4,570** net, i.e. resolution from 52.97% to roughly
+**52.2%**. That fall IS the improvement: false edges are being turned into honest unresolved ones,
+the same "absolute resolved count is not the honest metric" lesson from the August backfill read in
+the other direction. If resolution instead RISES or falls by much more than ~4,600, something else
+moved and must be investigated. Also expected: 广东省自然资源厅 leaves the top 20. No validator check
+reads resolution %, so the drop cannot trip Phase 2d.
+**Deliberately NOT stacked tonight:** the agent's two leftover resolver-precision patterns, generic
+short titles (政府信息公开指南, 涉企收费目录清单) attracting containment, and documents ABOUT an
+instrument (延长 / 贯彻 / 废止) winning containment over the instrument. Two simultaneous changes to
+the resolver would confound the measurement of each; tonight applies only the org-stub gate, and
+those two follow once its predicted effect is confirmed.
+Suite **189 passed, 1 skipped**. Running: BM25 rebuild (~50 min in), Wuxi at 959 docs / 100% body,
+the tail-trim script agent.
