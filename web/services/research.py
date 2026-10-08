@@ -39,7 +39,7 @@ CURATED: list[tuple[str, list[str]]] = [
     ]),
     ("Part II · Diffusion and fidelity", [
         "diffusion-atlas", "diffusion-fidelity", "fidelity-provincial",
-        "fidelity-jiangsu", "daily-tracker-concept", "policy-tempo",
+        "fidelity-jiangsu", "fidelity-wuxi", "daily-tracker-concept", "policy-tempo",
     ]),
     ("Part III · Centralization, experimentation, coordination", [
         "recentralization-experimentation", "experimentation-wang-yang",

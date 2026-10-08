@@ -164,6 +164,18 @@ bases, so the share moved because the repair pulled hundreds of long-lag Suzhou 
 (`fidelity-provincial.md` §2.2, logged not resolved; re-read queued). Suzhou-sourced events are
 1,406 on the live table, up from 788.)*
 
+*(Update 2026-10-08, `fidelity-wuxi.md`: **B1 is discharged** on Wuxi, the second non-Suzhou
+Jiangsu prefecture (4,877 documents, 397 province-to-city pairs, 195 nested pairs, 152 chains,
+larger than Suzhou's sample on two of the three measures) which replicates all three nested
+findings separately from Suzhou (province-before-city 83.6% of 195 against Suzhou 69.4% of 144
+and Guangdong cities 68.2% of 1,046; city closer to the province 94.1% of 152 against 96.9% and
+91.6%; median overlap 0.115 / relay 5.3% / mid 18.5% against 0.054 / 4.3% / 12.4% and 0.097 /
+9.9% / 19.7%) while correcting the one number that looked provincial, since per CITY the
+Guangdong relay rate itself runs 2.2% (广州) to 18.4% (阳江) with a median of 8.9% and both
+Jiangsu cities fall inside that spread near 广州 and 深圳, so relay tracks prefecture capacity
+[inferred] and not province, whereas province-before-city (per-city 61.7 to 90.0, median 83.6,
+Wuxi exactly on it) and chain descent (79.3 to 98.0, median 93.5) are stable across it.)*
+
 ### Part III. Central-local dynamics
 - **Recentralization and experimentation** (`recentralization-experimentation.md`;
   Luo/Wang/Yang recentralization claim and Wang/Yang pilots, NBER w29402). The upward-citation

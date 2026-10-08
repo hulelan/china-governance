@@ -584,3 +584,38 @@ SELECT relation, COUNT(*) FROM instrument_succession WHERE successor_id IN (<P i
 # 6. Subsample: 40 x (5 of 13 GD city portals with >= 100 city-level docs; random 5,514 docs);
 #    pairs/chains/events filtered to the kept M ids; report min/Q1/median/Q3/max.
 ```
+
+---
+
+*(Verdict appended 2026-10-08, `fidelity-wuxi.md`: **B1 is discharged.** Wuxi was merged (`wuxi`
+plus seven `wxd_*` sites, 4,877 documents) and is the second non-Suzhou Jiangsu prefecture at
+comparable depth: 397 province-to-city pairs (243 scored), 195 nested central-anchor pairs, 152
+full chains, against Suzhou's 551 / 144 / 97, so on two of the three measures Wuxi is the larger
+sample. All three findings replicate on it, reported separately and never pooled into a Jiangsu
+number: province-before-city **83.6% of 195** (Suzhou 69.4% of 144, Guangdong cities 68.2% of
+1,046 pooled), city closer to the province than to the centre **94.1% of 152** (Suzhou 96.9%,
+Guangdong 91.6%, centre-only text 1.4% of the Wuxi document at the median against 16.0%
+province-only), city fidelity median **0.115** / relay **5.3%** / mid **18.5%** on the union basis
+(Suzhou 0.054 / 4.3% / 12.4%, Guangdong 0.097 / 9.9% / 19.7%), with 12 of Wuxi's 13 relays
+own-masthead 市政府办公室 re-issuances of the 省政府办公厅 text at a 185-day median lag, the same
+object as §4.3's. **One correction to this memo's headline.** The Jiangsu relay rate of 3.3%
+against Guangdong's 10.8% is not a provincial fact. Measured per CITY, Guangdong's own relay rate
+runs 2.2% (广州) to 18.4% (阳江), median 8.9% over the 13 portals with 50 or more scored pairs, and
+both Jiangsu cities fall inside that spread at and just below its first quartile, beside 广州 and
+深圳; the Guangdong ordering runs from the large coastal prefectures to the small ones, so §4.3's
+open question ("whether city size predicts relay is open; one city cannot test it") resolves in
+favour of city capacity rather than province [inferred for scale, measured for the ordering].
+Province-before-city (per-city range 61.7 to 90.0, median 83.6, Wuxi exactly on it) and chain
+descent (79.3 to 98.0, median 93.5) are stable across that distribution, so only the relay number
+was a composition artefact of pooling 15 Guangdong cities against one Jiangsu city. Three further
+notes: Wuxi's dates need no repair (all 4,877 `date_quality='good'`, one row where the
+`/doc/YYYY/MM/DD/` path disagrees with `date_published`, 文号-year agreement 93.8%); the `wxd_*`
+tier makes the city-to-district hop measurable in Jiangsu for the first time and **contradicts**
+§8's "districts do not copy in either province" (309 pairs, 227 scored, median 0.112, relay 12.8%
+against Guangdong districts' 1.0%), though the titles split it into 转发 by urban districts within
+the month and renamed re-issuance by the county-level cities 江阴/宜兴 at 140 to 587 days; and
+1,707 Wuxi municipal rows are still awaiting a second merge (blocked by the nightly write lock),
+which the per-genre rates project at +274 pairs, so the verdict does not depend on them. The Wuxi
+memo rebuilt `doc_identity`, `citations` and `diffusion_events` read-only because the live ones
+predate the merge, and its Suzhou citation basis (507 pairs / 426 scored / relay 3.5%) reproduces
+`fidelity-provincial.md` §2.2's 473 / 426 / 3.3%.)*
