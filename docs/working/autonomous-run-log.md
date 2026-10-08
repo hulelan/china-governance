@@ -2471,3 +2471,57 @@ ship, with numbers" named as an acceptable outcome.
 Rebuild owed once the lock clears: identity → succession → diffusion → tracker → validate. Expect
 topic-labelled aggregates to move, since 1,163 Wuxi district docs become eligible for the
 same-province gate for the first time; `fidelity-wuxi.md`'s Jiangsu figures are floors by 22 docs.
+
+## P2 Iteration 86 (ship, and the feared corpus-wide change is ONE document)
+**`87eec6c` LANDED: `KNOWN_LOCALITIES` now seeds from `geo.CITY_PROVINCE`, 54 → 381 names.** The
+"it changes instrument pooling corpus-wide" caution was **right to demand measurement and wrong on
+the substance**: `instrument_id` changes on **1 document**, 1 pool merges, **0 split**.
+Method: two full read-only `build_doc_identity` rebuilds of the live 346,955-doc corpus dumped to
+separate scratch DBs and diffed, plus a **590 MB slim fork** of documents.db (every table the
+identity → diffusion → tracker → validator chain reads, bodies blanked, reproducing 15/15) forked
+twice so `build_diffusion_events --write` and the tracker rollup could be rebuilt under BOTH
+identities. Nothing live written, verified after the fact. I checked the shipped code myself: 381
+names, 无锡市 present, **东方市 correctly ABSENT** (county-level, and the collision that would have
+broken `东方市场建设管理办法`), Wuxi now localizes, and the adversarial
+`广东省…关于学习推广无锡市经验的通知` still keeps 广东省. Suite **229 passed**.
+Blast radius: **11,312 docs gain a locality**; `localized_of` **2,075 → 3,411 (+1,336, 0 removed,
+0 retargeted)**; the only genre transition is promulgation→implementing; province resolution
+81.1% → 81.6% with **0 re-codings**; and `diffusion_events` rebuilt **byte-identical** (sha
+matched) because `IMPLEMENTING_IDENTITY_GENRES` covers promulgation and implementing alike, so the
+flips are invisible to the matcher. `validate_cascades` **15/15 line for line** after a full
+diffusion + tracker rebuild under the new identity. It also verified that **what shipped is what
+was measured**: a sha over `(doc_id, instrument_id, instrument_role, genre, localized_of, province,
+loc, stem)` for all 346,955 docs matches the monkeypatched wide build exactly.
+Why pooling barely moves, which is worth keeping: a non-localized doc pools on its **full** core, so
+recognizing a city only re-keys a doc that ALSO has a higher-level same-stem sibling — and then
+every copy re-keys with it. Hence zero splits.
+**This is not a Wuxi fix.** Localities with ≥1 edge go **85 → 308**. 无锡市 2 → 73 while **苏州市
+stays 83** — the cities that already worked do not move; only the invisible ones appear. The
+dominant beneficiary is the **`npc` 地方法规 tier, 1,287 of the 1,336 new edges**: 28.6k local 人大
+instruments titled `<city>X条例` whose title is their ONLY locality evidence, which is exactly why
+the masthead fallback never rescued them. 25 provinces benefit (ha 154, js 135, sd 130, ln 109 …).
+Adversarial: **zero misplacements** against two independent arbiters (2,149/2,149 agree with the
+site province; 9,873 confirm against the doc's own publisher ∪ lead_issuer ∪ 文号, 0 name another
+province's city). Three structural reasons, each pinned in a test: the `^` anchor on the core; a
+转发 wrapper keeps the wrapper as core; and `CITY_PROVINCE` is prefecture-level ONLY, so the
+collision-prone county names are absent. Hand-check 30/30 newly-localized correct, 29/30 added
+edges correct, and **the one error is a known class** (`大同市…人事任免办法`, self-government
+housekeeping that `GENERIC_STEM_RE` exists for but does not list), **2 documents corpus-wide**;
+extending that denylist would re-base the existing 2,075 edges too, so it is a logged follow-up
+rather than a bundled change. All five invariants identical old vs wide (政府信息公开条例 2
+instruments; the 城乡规划法 trio; 29/29 国务院令 unique — 29 not 20, corpus growth; 政府工作报告 12
+pools none spanning a year; validator 15/15).
+Narrower options rejected **on numbers**, not taste: "only cities that host documents" fixes wuxi's
+37 edges and misses the npc tier's 1,287, forfeiting 96% of the gain while leaving the same shape in
+place one city at a time; "require masthead corroboration" IS the existing fallback and is precisely
+what fails on a 地方法规.
+**I made the memo correction myself** (`7e16f98`), since the agent correctly left that decision to
+me: `pair-channels.md` now records that its renaming floor bounded a 54-name table rather than the
+corpus, and the sharpest line in the whole exchange is the reason — **a coverage floor rises when
+documents arrive; this one rose 64% with no new documents.** Also recorded there: no pre-2026-10-08
+`localized_of` count is comparable to a post one, any per-city figure from before measures which
+cities had a 文号 head, the npc tier's share is a NEW series rather than a grown one, and the
+citation-basis +0.2 pt stands because the matcher output is byte-identical.
+Owed when the lock clears (~10:00 UTC 2026-10-09): identity → succession → diffusion → tracker →
+validate. Expect `genre='implementing'` 18,699 → 20,035 and `localized_of` → 3,411, and expect NO
+tracker or cascade figure to move, both having been rebuilt and compared.
