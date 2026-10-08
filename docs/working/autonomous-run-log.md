@@ -2987,3 +2987,61 @@ the summary should see the identification check and not just the correlation. Me
 **Method note worth keeping:** the check existed only because the memo had written its own
 un-audited residual into Limits instead of omitting it. The habit of logging what you have *not*
 verified is what produced the best evidence here, two days later.
+
+---
+
+## Iteration 95 — both deferred resolver patterns measured; one closed, one narrowed, one deferred honestly
+
+`474b707`. `consistency-review.md` H1 had left two patterns open after the proxy-target fix and both
+sounded large. Measured read-only, neither is — and the measurement surfaced something bigger that I
+deliberately did **not** report as a finding.
+
+**Pattern 1, "documents about an instrument winning containment": largely already fixed.** The
+archetype was 河南省实施《城乡规划法》办法 holding the law's 2,139 citations. The same shape today on
+土地管理法 ranks **correctly**: the law 665 inbound > its implementing 条例 505 > Guangdong's
+implementing measure 270 > 上海 11 / 陕西 4 / 四川 3 / 安徽 3 / 西藏 2. Of the 68,846 edges whose
+target title embeds a 《》 instrument, inspection says most are **legitimate issuance wrappers** —
+中共中央印发《中国共产党纪律处分条例》 *is* that regulation's promulgating document, which is what
+`instrument_id` exists to pool.
+
+One residual, and I **recommended not fixing it**: an infographic holds **317 citers** of
+《公民防疫基本行为准则》 — but the instrument is **not in the corpus**, so containment had exactly one
+candidate. Refusing explainer targets would unresolve 317 edges without relocating them. That is
+coverage-bound, not matching-bound (the A6 lesson), so the fix is to crawl the instrument.
+
+**Pattern 2, "generic short titles": reduces to three title families.** Most high-inbound short
+titles are mirror pooling working as designed. The signature of a real collision is **no pooling at
+all** (`n_instruments == n_docs`) — and my first attempt at a "decisive" cut was wrong: *more than
+one* `instrument_id` is NOT the signature, because the identity layer **deliberately** separates
+editions (政府信息公开条例 is 22 docs / 3 instruments, correctly). On the corrected signature:
+3,904 citers, 72 winners, 60 titles, which split again into
+
+- **genuinely different documents sharing a generic name** — 政府工作报告 (25 docs, 283 citers),
+  房屋征收补偿决定书 (39 docs, 95), the 国务院废止决定 series (6, 126) — about **660 citers**;
+- **org names**, 211 citers, **already covered** by the `org_only_exact` gate (Prediction 1);
+- **copies of one text that failed to pool** — a different bug, see below.
+
+Recommended a small denylist of *document-instance* names (`决定书` / `通知书` / `告知书`, plus
+政府工作报告) rather than a general rule: a reference to 政府工作报告 with no jurisdiction qualifier is
+**unresolvable in principle**, and resolving it to an arbitrary copy is worse than leaving it
+unresolved — the same precision-over-recall trade the org-stub gate already makes.
+
+**The thing I refused to call a finding.** Families of identically-titled documents: 3,423 pooled
+(9,052 docs) against **21,268 not pooled (55,252 docs)**. 86% non-pooling looks alarming, so I split
+it by whether the copies are even inside the window: 8,123 families span **>400 days** (edition
+separation, by design) and **11,891 families / 28,225 documents sit within 400 days and still did
+not pool** — some with a span of **0 days** and real citation weight on one copy
+(中共中央关于制定…第十五个五年规划的建议, 2 docs, span 0, **209 citers**).
+
+**But the live `doc_identity` is stale relative to current code** — `localized_of` reads 2,014 where
+the pending rebuild predicts ~3,350 — and 2,180 of those 11,891 families contain a document with
+**no identity row at all**. Staleness and a real pooling defect are **not separable until the
+rebuild runs**, so the number went in as **Prediction 5** in `prereg-next-rebuild.md`, registered
+*before* the rebuild, which is the only way to tell which it is. If it survives, it earns real work:
+28,225 documents is 8% of the corpus, and `instrument_id` is what `citation_rank`, the diffusion
+anchors and the tracker's anchor-diversity columns all pool on.
+
+**Method note.** Three times this tick a cut that looked decisive was not — `≥3 instruments` caught
+editions, `n_docs ≥ 5` caught mirrors, `86% non-pooling` caught intended behaviour. Each time the
+fix was to find the discriminator rather than report the number, and the last one had no available
+discriminator at all, which is what a prediction is for.
