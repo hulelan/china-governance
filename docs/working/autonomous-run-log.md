@@ -2713,3 +2713,75 @@ protest data; w31676 trade data; w32993 has no single replicable estimate).
 Shipped `526ec58`. 40 memos, 231 tests passing. **Launched** the PBC pagination work as code-only,
 briefed to find the JS pager, add SAFE only if it is the same dialect, and — explicitly — to
 recommend NOT shipping rather than invent a fragile guess.
+
+---
+
+## Iteration 90 — the diffusion-intensity index, and a PBC gap that was two bugs
+
+**NBER #4 done** (`diffusion-intensity-index.md`, `d2fd033`) — the last of the seven
+highest-corpus-fit papers computable with no new data. Their 9,091 low-carbon documents become
+**12,211 explicit adoption events, 796 anchors, 20 policy areas**, with adoption as a resolved
+citation or title re-issuance instead of text similarity.
+
+**Their two dimensions ARE independent** — hierarchical effectiveness × textual intensity at
+Spearman **−0.085** (−0.046 vs elaboration). A composite earns its second axis, which is the test
+a 2-D construction has to pass and which one domain cannot run. The mechanism sits one level down:
+textual intensity is nearly **flat across the hierarchy** (provincial 4,708 chars vs municipal
+4,735), so an adopter's level does not predict its length. **I reported the sensitivity instead of
+the flattering spec:** at `--min-adopters 10 --weights 4,2,1` the correlation **flips sign to
++0.128**, and a residual whose sign is unstable across reasonable specifications is noise around
+zero — which strengthens the claim rather than weakening it.
+
+**The critique:** summed over adopters, "hierarchical effectiveness" correlates with the plain
+adopter COUNT at **+0.957** (+0.895 stricter). The sum is the natural reading of "total
+effectiveness" and it is 90%+ a document count, because the level mix is similar across anchors so
+the weights barely matter. Use the per-adopter mean, which points the **other** way (−0.271), and
+report `n` separately. **New finding needing cross-domain variation in reach to see:** breadth costs
+both authority (2.67 → 2.46) and elaboration (**0.99 → 0.81**) across adopter-count quintiles, which
+sharpens `diffusion-fidelity.md`'s 88% — the elaboration rate is not uniform, it declines with
+reach. Shipped `scripts/rnd/analysis/diffusion_intensity.py`, verified at both specs; I made its
+`ROOT` tolerate a shallower path after my own test crashed on a module-level `parents[3]`.
+
+**The PBC agent came back and I verified every load-bearing claim myself.** It found what I had
+measured (page-1-only) was **half the problem**. The other half: `_rows` required a node id of
+`\d{15,}`, and **only post-2025 articles carry the 19-digit timestamp id** — legacy articles carry
+7-digit CMS ids (I confirmed `3591089`, `3591225`, `3591318` on page 6), so the floor silently
+refused every pre-2025 document. **That is the length-floor shape for the sixth time**, and the fix
+is the right one: move the floor to where it is actually true, guarding only the date *fallback*.
+Dates now come from the list page's `hui12` span (confirmed: 2000-06-01, 2000-05-16, 2000-04-30 on
+page 6), which also beats the node id where both exist, since the node id is the CMS *creation*
+stamp and can precede publication.
+
+Independently verified: the pager is `{section}/{prefix}-{N}.html` with the prefix read from the
+live `tagname` attributes — section 3581332 → `3b3662a6-22.html` (**22 pages**), 144957 →
+`21892-6.html` (**6 pages**), both exactly as reported; page 6 returns 36,107 real bytes. And the
+"never rebuild the prefix from `moduleid`" rule is right for a reason beyond the uuid truncation
+the agent named: the page carries **several portlets' moduleids** (I grepped `36410` and
+`f5fa941d9…`, matching neither prefix), so picking the wrong one silently yields a wrong path. The
+shipped code reads `tagname` scoped to the section (`pbc.py:106`) and never touches moduleid for it.
+
+**The finding that changes what the backfill is worth, verified on two articles:** 360 of 541 (69%)
+publish as a PDF whose only on-page trace is a link whose text IS the title, so the extracted body
+read like prose — `3591089` is 39 characters, 中国人民银行关于执行《储蓄管理条例》的若干规定（银发
+〔1993〕7号）.pdf. It was invisible **twice**: it counted as "already stored WITH a body" so no
+backfill revisited it, and it carried none of `extract_pdf_text.py`'s `附件`/`点击`/`下载` markers so
+the PDF pipeline could not see it either. Now labelled `附件：…` with URLs in `attachments_json`, and
+logged as the **6th row** of the marker-table bug shape in CLAUDE.md.
+
+**Scope discipline worth recording:** the agent probed SAFE, found a different CMS (date-in-path
+URLs, `共28页`, zero easysite markers) and **declined to build it**, recommending a separate build —
+exactly the brief, and the right call.
+
+**Decisions taken.** (1) Let the nightly deploy the ~510-document backfill: it git-pulls on its own,
+fits inside `run_crawler`'s cap at ~10 min, and running it by hand now would be a second writer
+against the locked DB. (2) The 31 pre-existing rows keep their node-id dates (off by days at worst);
+logged in `prereg-next-rebuild.md` as a follow-up with the existing `redate_from_html.py` route,
+below the bar at 31 documents.
+
+**Prediction 4 pre-registered** before the backfill lands: `pbc` 31 → ~541, oldest 1993-01-14, and
+the following citations rebuild should **raise** resolution — with the named test that
+人民币银行结算账户管理办法 (22 citers), 非金融机构支付服务管理办法 (18), 商业银行服务价格管理办法
+(14) and 金融租赁公司管理办法 (11) should drop out of the unresolved head. **If resolution rises and
+none of those four resolve, the demand list was wrong about what PBC publishes** — the more
+interesting outcome, and recorded so it cannot be glossed. Also registered: `pbc` body coverage will
+look POOR (~181/541 inline) and that is the honest number replacing a fake one, not a regression.

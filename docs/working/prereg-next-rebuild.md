@@ -69,6 +69,37 @@ at 2,840/6,821 items, so a freed budget first buys it the `gfxwj` section it has
 Phase 1 wall-clock that does *not* fall on night one is therefore consistent with the prediction,
 and the thing to check instead is whether `beijing` reached a new section.
 
+## Prediction 4 — the PBC backfill must RAISE resolution, and in a named place
+
+`crawlers/pbc.py` now walks the easysite pager (`af874c7`, verified independently 2026-10-08:
+section 3581332 → 22 pages, 144957 → 6, both confirmed from the live `tagname` attributes). The
+next nightly git-pulls it and will store ~510 new documents in ~10 min, inside `run_crawler`'s cap.
+
+- `pbc` goes **31 → ~541** documents, oldest **1993-01-14** (currently 2025-12).
+- Each arrives with **title + 文号 + date**, which is exactly what `TitleMatcher` indexes, so the
+  FOLLOWING citations rebuild should **raise** resolved edges. This is the opposite direction from
+  Prediction 1, and the two land in different nightlies, so do not read them together.
+- **The named place:** 《支付结算办法》(银发〔1997〕393号) and 《储蓄管理条例》implementing rules
+  are confirmed present on page 6 (I read both bodies). The unresolved monetary head measured
+  2026-10-08 is 人民币银行结算账户管理办法 **22 citers**, 非金融机构支付服务管理办法 **18**,
+  商业银行服务价格管理办法 **14**, 金融租赁公司管理办法 **11**. If PBC's archive contains them,
+  those specific `target_ref` groups should drop out of the unresolved list. **If resolution rises
+  but none of those four resolve, the gain came from somewhere else and the demand list was wrong
+  about what PBC publishes** — which is the more interesting outcome and must not be glossed.
+- **~360 of the 541 are attachment-only** (body = the PDF's filename). They are now labelled
+  `附件：…` with URLs in `attachments_json`, so expect `pbc` body coverage to look POOR
+  (~181/541 with real inline text) and do not read that as a crawler regression. It is the honest
+  number replacing a fake one — those 360 previously would have counted as "has a body".
+
+## Open follow-up (logged, not done)
+
+The **31 pre-existing `pbc` rows keep their node-id dates**. The 19-digit node id is the CMS
+*creation* stamp and can precede publication (measured: `2026012314163359926` is listed as
+2026-01-26, not 01-23), so a few of the 31 are off by days. The crawler skips by URL, so they will
+not self-correct. `scripts/redate_from_html.py --site pbc` is the existing route (it maps
+`site_key` → the crawler's own dater) once a `pbc` dater is registered in `SITE_DATERS`. Judged
+below the bar for now: 31 documents, error of days, no analysis depends on it.
+
 ## How to check
 
 ```bash
