@@ -761,6 +761,25 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   gated on confirming listing pages are reverse-chronological, dept-group rotation in 3
   chunks (which would *increase* coverage), and 2-wide parallelism (bounded by the
   2-writer SQLite rule). Together those would take Phase 1 to roughly 100 min.
+- **(2026-10-08) Why do 55% of newly-authorized cities' regulations fall outside the three
+  domains the 2015 立法法 amendment confined them to?** `local-legislative-devolution.md` measures
+  the confinement as real but leaky: the 283 cities that gained legislative power in 2015-17 do
+  legislate inside 城乡建设与管理 / 环境保护 / 历史文化保护 9-16 pt more than the 79 incumbents in
+  the same period, yet most of their output still scores outside it. Three candidate explanations
+  and we cannot separate them: genuine scope creep that provincial 人大 review tolerates; titles
+  that understate a regulation whose substance IS in scope; or the keyword proxy missing permitted
+  material. **What would settle it:** the bodies. The `npc` tier is metadata-only (0 of 31,070
+  rows carry text, "Body requires Chinese IP access"), so this specific question is gated on the
+  same residential/HK vantage as the MIIT stubs. A cheaper partial route: the 备案 (filing-for-
+  review) records, if any source publishes which municipal regulations were returned or amended
+  on review.
+- **(2026-10-08) Three stale watcher chains are sleeping on the droplet** (pids 244667/244669,
+  3259309, 3772407), each stuck on the self-matching `pgrep` described above. They consume nothing
+  but a 15-30s sleep, and one is holding an unexecuted `build_site_stats.py`, so `site_stats` /
+  `corpus_stats` are stale as of the Wuxi merge (cosmetic: the homepage's cached counts). NOT
+  killed — the standing rule is to ask first. Either kill them and run `build_site_stats.py` once
+  the write lock clears, or let the next nightly's Phase 2c rebuild those tables anyway, which it
+  will.
 - **(2026-06) Is DeepSeek `references_json` worth the cost over regex refs?**
   We have regex-extracted `references_source` on ~133k docs (`regex_v1`). A
   sample comparison found ~72% overlap with DeepSeek's refs. Open question
