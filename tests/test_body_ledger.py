@@ -7,7 +7,7 @@ skips a document only when it is "already stored WITH a body"
 (`if existing and existing[1]`), so a stored-but-BODILESS row is re-fetched
 every night forever and the HTTP fetch is paid before the extraction fails.
 Beijing spent 760 fetches (~21 min of its 30-minute cap) per night on rows of
-which 86.4% are 一图读懂/图解/视频 documents whose body is an image; MIIT's
+which 85% are 一图读懂/图解/视频 documents whose body is an image; MIIT's
 3,841 saved files are 42 bytes of a CMS refusal served to the droplet's IP.
 
 The named verification the memo demanded is that a skipped row must NOT be

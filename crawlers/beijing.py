@@ -470,8 +470,9 @@ def crawl_section(
 
         # Stored but BODILESS. Without the ledger this row is re-fetched every
         # night forever: measured 2026-10-08, zcjd paid 760 fetches (~21 min of
-        # its 30-minute cap) for zero recovered bodies, and 86.4% of bj's 1,636
-        # bodiless rows are 一图读懂/图解/视频 documents whose body is an image.
+        # its 30-minute cap) for zero recovered bodies, and 1,391 of bj's 1,636
+        # bodiless rows (85%) are 一图读懂/图解/视频 documents whose body is an
+        # image, so no vantage and no extractor will ever give them text.
         # body_fetch_blocked is READ-ONLY and we `continue` without touching
         # `documents`, so no wide-row UPDATE (and no body overflow rewrite)
         # happens on the skip path. Reversible: `scripts/body_ledger.py

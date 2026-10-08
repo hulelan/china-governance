@@ -400,9 +400,10 @@ def commit_with_retry(conn, *, stats: WriteRetryStats = None,
 #     after the extractor commits 0eeb4d5/ff8ed83/f858356 — not a crawler
 #     re-fetch. Phase 1b reads `raw_html_path` directly and is NOT gated by this
 #     ledger, so extractor-fix recoveries keep working untouched.
-#   - `bj`: 1,636 bodiless, 86.4% of them titled 一图读懂/图解/视频 — documents
-#     whose body is an IMAGE. Beijing spent 760 fetches (~21 min) per night
-#     re-downloading infographics that have no text to extract.
+#   - `bj`: 1,636 bodiless, of which 1,391 (85.0%) are titled 一图读懂 / 图解 /
+#     视频 by the anchored cue below (1,418, 86.7%, by a bare substring test) —
+#     documents whose body is an IMAGE. Beijing spent 760 fetches (~21 min) per
+#     night re-downloading infographics that have no text to extract.
 #   - `miit`: 5,395 bodiless; 3,841 of its saved files are 42 bytes of
 #     "信息模板页面配置实体不能为空" (the CMS refusing a datacenter IP) and 1,527
 #     have no saved HTML at all.
