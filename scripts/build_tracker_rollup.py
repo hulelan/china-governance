@@ -99,6 +99,15 @@ CREATE TABLE IF NOT EXISTS tracker_weekly (
     n_anchors              INTEGER NOT NULL DEFAULT 0,   -- distinct anchor instruments among cascade_events
     top_anchor_share       REAL    NOT NULL DEFAULT 0,   -- modal instrument's events / cascade_events
     top_anchor             INTEGER NOT NULL DEFAULT 0,   -- that instrument_id (= canonical doc id)
+    -- The two INDEPENDENT intensity dimensions (docs/research/diffusion-intensity-index.md).
+    -- Kept apart on purpose: authority and text carry no shared information
+    -- (Spearman -0.085, sign-unstable across specs), so one column cannot stand
+    -- for both. authority_mean is PER ADOPTER, never a sum -- summed over
+    -- adopters it correlates with cascade_events itself at +0.957, i.e. it would
+    -- just be a second copy of the count.
+    authority_mean         REAL    NOT NULL DEFAULT 0,   -- mean w(level) over cascade_events: prov 3 / muni 2 / dist 1
+    text_median            INTEGER NOT NULL DEFAULT 0,   -- median adopter body chars (from doc_len)
+    elab_median            REAL    NOT NULL DEFAULT 0,   -- median adopter chars / anchor chars
     PRIMARY KEY (topic, iso_week, admin_level)
 );
 CREATE INDEX IF NOT EXISTS idx_tracker_weekly_topic_week ON tracker_weekly(topic, iso_week);
@@ -120,7 +129,26 @@ MIGRATE = {
         "ALTER TABLE tracker_weekly ADD COLUMN top_anchor_share REAL NOT NULL DEFAULT 0;",
     "top_anchor":
         "ALTER TABLE tracker_weekly ADD COLUMN top_anchor INTEGER NOT NULL DEFAULT 0;",
+    "authority_mean":
+        "ALTER TABLE tracker_weekly ADD COLUMN authority_mean REAL NOT NULL DEFAULT 0;",
+    "text_median":
+        "ALTER TABLE tracker_weekly ADD COLUMN text_median INTEGER NOT NULL DEFAULT 0;",
+    "elab_median":
+        "ALTER TABLE tracker_weekly ADD COLUMN elab_median REAL NOT NULL DEFAULT 0;",
 }
+
+# Adopter-authority weights, from "Measuring policy diffusion intensity"
+# (IP&M 2025). A level absent here contributes nothing and is counted in the
+# denominator only if it has a weight, so `unknown` adopters do not dilute.
+AUTHORITY_W = {"provincial": 3.0, "municipal": 2.0, "district": 1.0}
+
+
+def _median(xs):
+    xs = sorted(xs)
+    n = len(xs)
+    if not n:
+        return 0
+    return xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2
 # agg column slots
 NEW, CAS, LOW, PROV, MENT = range(5)
 
@@ -207,6 +235,12 @@ def compute(conn) -> dict:
     pooled_sites: dict[tuple, Counter] = defaultdict(Counter)
     anchors: dict[tuple, Counter] = defaultdict(Counter)
     pooled_anchors: dict[tuple, Counter] = defaultdict(Counter)
+    # Per-cell samples for the two intensity dimensions. Lists, not running sums,
+    # because body lengths are right-skewed and the memo reports medians; cells
+    # are small (12,211 confirmed events over ~36k cells), so this is cheap.
+    authority: dict[tuple, list] = defaultdict(list)
+    texts: dict[tuple, list] = defaultdict(list)
+    elabs: dict[tuple, list] = defaultdict(list)
     anchor_titles: dict[int, str] = {}
     weeks: dict[str, str] = {}  # iso_week -> week_start
 
@@ -231,13 +265,27 @@ def compute(conn) -> dict:
     # --- cascade events: anchor's full topic set (fallback: stored topic) ---
     # s.site_key = the SOURCE doc's portal, for the per-cell site-diversity columns.
     n_ev = 0
+    # `doc_len` (built by build_site_stats) supplies both body lengths as plain
+    # ints, so this join never touches `body_text_cn`. Reading the bodies here
+    # instead would be ~7s of overflow pages per rebuild for no gain -- and a
+    # GROUP BY over them is the 74s automatic-covering-index trap in CLAUDE.md.
+    # LEFT JOIN: a missing doc_len row (a document crawled after the last
+    # build_site_stats) yields NULL and is skipped for the text columns only,
+    # never for the counts.
+    has_len = bool(conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='doc_len'").fetchone())
+    len_sel = ("sl.chars, al.chars " if has_len else "NULL, NULL ")
+    len_join = ("LEFT JOIN doc_len sl ON sl.doc_id = e.source_id "
+                "LEFT JOIN doc_len al ON al.doc_id = e.anchor_id " if has_len else "")
     for (mtype, d10, level, ev_topic, anchor_topics, alevel, impl, src_site,
-         anchor_id, anchor_title) in conn.execute(
+         anchor_id, anchor_title, src_chars, anchor_chars) in conn.execute(
             "SELECT e.match_type, substr(e.source_date,1,10), "
             f"       COALESCE(e.source_level,'unknown'), e.topic, d.topics_algo, {level_expr}, "
-            f"       {impl_expr}, COALESCE(s.site_key,''), e.anchor_id, e.anchor_title "
+            f"       {impl_expr}, COALESCE(s.site_key,''), e.anchor_id, e.anchor_title, "
+            f"       {len_sel}"
             "FROM diffusion_events e LEFT JOIN documents d ON d.id = e.anchor_id "
             "                        LEFT JOIN documents s ON s.id = e.source_id "
+            f"{len_join}"
             "WHERE substr(e.source_date,1,10) BETWEEN ? AND ?",
             (DATE_LO, DATE_HI)):
         if alevel == "provincial":
@@ -267,10 +315,18 @@ def compute(conn) -> dict:
                 pooled_sites[(t, iw)][src_site] += 1
                 anchors[(t, iw, level)][inst] += 1
                 pooled_anchors[(t, iw)][inst] += 1
+                w = AUTHORITY_W.get(level)
+                if w is not None:
+                    authority[(t, iw, level)].append(w)
+                if src_chars:
+                    texts[(t, iw, level)].append(src_chars)
+                    if anchor_chars:
+                        elabs[(t, iw, level)].append(src_chars / anchor_chars)
 
     return {"agg": agg, "sites": sites, "pooled_sites": pooled_sites,
             "anchors": anchors, "pooled_anchors": pooled_anchors,
             "anchor_titles": anchor_titles, "weeks": weeks,
+            "authority": authority, "texts": texts, "elabs": elabs,
             "n_docs": n_docs, "n_ev": n_ev}
 
 
@@ -286,20 +342,27 @@ def build(db_path: Path) -> tuple:
 
         r = compute(conn)
         agg, sites, anchors, weeks = r["agg"], r["sites"], r["anchors"], r["weeks"]
+        authority, texts, elabs = r["authority"], r["texts"], r["elabs"]
         rows_out = []
         for (t, iw, lvl), v in agg.items():
             n_sites, share, top = site_diversity(sites.get((t, iw, lvl)))
             n_anc, a_share, a_top = anchor_diversity(anchors.get((t, iw, lvl)))
+            aw = authority.get((t, iw, lvl)) or []
+            a_mean = sum(aw) / len(aw) if aw else 0.0
             rows_out.append((t, iw, lvl, weeks[iw], v[NEW], v[CAS], v[LOW], v[PROV], v[MENT],
-                             n_sites, share, top, n_anc, a_share, a_top))
+                             n_sites, share, top, n_anc, a_share, a_top,
+                             a_mean,
+                             int(_median(texts.get((t, iw, lvl)) or [])),
+                             float(_median(elabs.get((t, iw, lvl)) or []))))
 
         conn.execute("DELETE FROM tracker_weekly")
         conn.executemany(
             "INSERT INTO tracker_weekly(topic, iso_week, admin_level, week_start, "
             "new_docs, cascade_events, cascade_events_lowconf, cascade_events_prov, "
             "cascade_events_mentions, n_sites, top_site_share, top_site, "
-            "n_anchors, top_anchor_share, top_anchor) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows_out)
+            "n_anchors, top_anchor_share, top_anchor, "
+            "authority_mean, text_median, elab_median) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows_out)
         conn.commit()
         conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         rows = conn.execute("SELECT COUNT(*) FROM tracker_weekly").fetchone()[0]

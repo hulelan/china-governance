@@ -51,6 +51,10 @@ CREATE TABLE IF NOT EXISTS corpus_stats (
     key   TEXT PRIMARY KEY,   -- total | with_body | with_docnum | site_count | year:<YYYY>
     value INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS doc_len (
+    doc_id INTEGER PRIMARY KEY,
+    chars  INTEGER NOT NULL          -- LENGTH(body_text_cn), 0 when absent
+);
 CREATE TABLE IF NOT EXISTS doc_inbound (
     doc_id  INTEGER PRIMARY KEY,          -- documents.id (only docs with >=1 inbound)
     inbound INTEGER NOT NULL DEFAULT 0,   -- distinct citing documents, self-cites dropped
@@ -94,13 +98,24 @@ def build(db_path: Path) -> tuple:
         # The year expression mirrors web/database.py's translation of the live
         # get_stats query (EXTRACT(YEAR FROM to_timestamp(date_written))), so the
         # precomputed by-year rollup is identical to what the slow path returns.
+        # `LENGTH(body_text_cn)` DOES read the overflow pages, unlike the `!= ''`
+        # predicate above -- but measured 2026-10-08 on the live corpus that is
+        # 7.3s for all 346,955 bodies (2.2s without it), because the plan stays a
+        # bare `SCAN documents`. The 74s get_sites pathology was never "reading
+        # bodies": it was the AUTOMATIC COVERING INDEX SQLite builds for a
+        # `LEFT JOIN sites ... GROUP BY site_key` with the body inside the
+        # aggregate (verified with EXPLAIN QUERY PLAN). This loop aggregates in
+        # PYTHON, so no such index is built and a per-document length is ~5s.
+        # Keep it that way: do not move this aggregation into SQL.
         agg: dict[str, list] = {}
         by_year: dict[int, int] = {}
-        for site_key, has_body, has_docnum, yr in conn.execute(
-                "SELECT site_key, COALESCE(body_text_cn,'') != '', "
+        lens: list[tuple] = []
+        for doc_id, site_key, has_body, has_docnum, yr, chars in conn.execute(
+                "SELECT id, site_key, COALESCE(body_text_cn,'') != '', "
                 "COALESCE(document_number,'') != '', "
                 "CASE WHEN date_written > 0 THEN "
-                "CAST(strftime('%Y', date_written, 'unixepoch') AS INTEGER) END "
+                "CAST(strftime('%Y', date_written, 'unixepoch') AS INTEGER) END, "
+                "LENGTH(COALESCE(body_text_cn,'')) "
                 "FROM documents"):
             row = agg.get(site_key)
             if row is None:
@@ -110,6 +125,7 @@ def build(db_path: Path) -> tuple:
             row[2] += has_docnum
             if yr is not None:
                 by_year[yr] = by_year.get(yr, 0) + 1
+            lens.append((doc_id, chars or 0))
 
         site_count = conn.execute("SELECT COUNT(*) FROM sites").fetchone()[0]
         totals = [sum(v[i] for v in agg.values()) for i in range(3)]
@@ -119,6 +135,11 @@ def build(db_path: Path) -> tuple:
             "INSERT INTO site_stats(site_key, doc_count, body_count, docnum_count) "
             "VALUES (?,?,?,?)",
             [(k, v[0], v[1], v[2]) for k, v in agg.items()])
+        # doc_len: a narrow side table, never a `documents` column -- an UPDATE on
+        # `documents` rewrites the whole record including the body overflow pages
+        # (the compute_scores lesson in CLAUDE.md). 347k rows of (int, int) is ~5MB.
+        conn.execute("DELETE FROM doc_len")
+        conn.executemany("INSERT INTO doc_len(doc_id, chars) VALUES (?,?)", lens)
         conn.execute("DELETE FROM corpus_stats")
         conn.executemany(
             "INSERT INTO corpus_stats(key, value) VALUES (?,?)",

@@ -217,14 +217,29 @@ weighted sum.
 
 ---
 
-## Next: this belongs in the tracker
+## In the tracker (shipped 2026-10-08)
 
-The per-area columns in §4 are a weekly-computable object, and `policy-tempo.md` already concluded
-the tracker is an instrument for burstiness and level timing but **not yet** for cross-area tempo.
-The independence result is what unblocks that: authority and textual intensity can be tracked as
-two separate per-area series without one shadowing the other. The build is a rollup over
-`diffusion_events` joined to `doc_identity`, which is exactly what `build_tracker_rollup.py`
-already does for counts — so this is a column addition, not a new pipeline.
+`tracker_weekly` now carries `authority_mean`, `text_median` and `elab_median` per topic × ISO week
+× level, so the two dimensions are tracked weekly as **separate** series — which is only defensible
+because §2 showed they are independent. This is what `policy-tempo.md` was missing when it
+concluded the tracker was an instrument for burstiness and level timing but **not yet** for
+cross-area tempo.
+
+Three implementation notes that are really findings:
+
+- **`authority_mean` is a mean, never a sum**, for the reason in §2's mislabelled-axis section. The
+  count it would otherwise duplicate is already in `cascade_events`.
+- **Body lengths come from a new `doc_len(doc_id, chars)` table**, built inside the single
+  sequential scan `build_site_stats.py` already pays for. A `GROUP BY` over `body_text_cn` is the
+  74-second automatic-covering-index trap in CLAUDE.md — but the trap is the GROUP BY, not the body
+  read: measured 2026-10-08, a plain sequential read of all 346,955 bodies is **7.3 s** (2.2 s
+  without the `LENGTH`), and the plan stays a bare `SCAN documents`. The CLAUDE.md note has been
+  corrected, because its earlier wording reads as "touching bodies is expensive" and nearly stopped
+  this column from being built.
+- **The rollup degrades cleanly when `doc_len` is absent** (a document crawled after the last
+  `build_site_stats`): the counts and the authority axis never depend on it, and the text columns
+  report 0 rather than dropping the row. Pinned in `tests/test_tracker_intensity.py`, which also
+  asserts the query plan so a future edit that reintroduces the materialization fails loudly.
 
 ## Replication
 
