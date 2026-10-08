@@ -200,6 +200,20 @@ def init_db(db_path: Path = None) -> sqlite3.Connection:
         CREATE INDEX IF NOT EXISTS idx_doc_changes_type ON document_changes(change_type);
         CREATE INDEX IF NOT EXISTS idx_doc_changes_detected ON document_changes(detected_at);
         CREATE INDEX IF NOT EXISTS idx_doc_changes_run ON document_changes(sync_run_id);
+
+        -- Body-fetch ledger. See the "Body-fetch ledger" block below for why it
+        -- is a SIDE TABLE and not a column on `documents`.
+        CREATE TABLE IF NOT EXISTS body_fetch_failures (
+            doc_id     INTEGER PRIMARY KEY,
+            site_key   TEXT NOT NULL DEFAULT '',
+            reason     TEXT NOT NULL DEFAULT '',
+            attempts   INTEGER NOT NULL DEFAULT 0,
+            first_seen TEXT,
+            last_seen  TEXT
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_body_fail_reason ON body_fetch_failures(reason);
+        CREATE INDEX IF NOT EXISTS idx_body_fail_site ON body_fetch_failures(site_key);
     """)
 
     # URL uniqueness index — created separately because existing dups must be
@@ -363,6 +377,248 @@ def commit_with_retry(conn, *, stats: WriteRetryStats = None,
         log.error(f"  commit failed after {attempts} attempts ({what}); "
                   f"rows remain pending in the open transaction")
     return ok
+
+
+# --- Body-fetch ledger (`body_fetch_failures`) ---
+#
+# WHAT THIS TRADES AWAY, SAID PLAINLY: every crawler here skips a document only
+# when it is "already stored WITH a body" (`if existing and existing[1]`), so a
+# row that is stored but bodiless is re-fetched EVERY NIGHT, FOREVER, and the
+# HTTP fetch is paid before the extraction fails. This ledger lets a crawler
+# stop paying for a row that has already failed `BODY_MAX_ATTEMPTS` times. That
+# is a deliberate trade of completeness for time on rows that are currently
+# unobtainable — and the ledger IS what makes the trade reversible: nothing is
+# silently abandoned, because every skipped row keeps a row here naming WHY, so
+# a new fetch vantage, a fixed extractor or a site that comes back can re-queue
+# exactly the affected class in one command
+# (`python3 scripts/body_ledger.py --requeue anti_bot_stub`).
+#
+# Measured 2026-10-08 on 15 nightly manifests (Sep 24 - Oct 8), read-only:
+#   - 1,552 bodiless rows gained a body over 14 nights, but only 12 of them on
+#     the first retry and 23 within three. 1,348 landed in ONE event on Oct 7,
+#     which was Phase 1b (`backfill_from_html.py`) re-extracting SAVED HTML
+#     after the extractor commits 0eeb4d5/ff8ed83/f858356 — not a crawler
+#     re-fetch. Phase 1b reads `raw_html_path` directly and is NOT gated by this
+#     ledger, so extractor-fix recoveries keep working untouched.
+#   - `bj`: 1,636 bodiless, 86.4% of them titled 一图读懂/图解/视频 — documents
+#     whose body is an IMAGE. Beijing spent 760 fetches (~21 min) per night
+#     re-downloading infographics that have no text to extract.
+#   - `miit`: 5,395 bodiless; 3,841 of its saved files are 42 bytes of
+#     "信息模板页面配置实体不能为空" (the CMS refusing a datacenter IP) and 1,527
+#     have no saved HTML at all.
+#
+# WHICH REASONS ARE GENUINELY TERMINAL:
+#   image_only / pdf_only  — terminal FOR THIS MECHANISM anywhere, not just from
+#       NYC: there is no text body to fetch. The recovery path is OCR or
+#       `scripts/extract_pdf_text.py`, never another HTTP GET. Hence
+#       BODY_TERMINAL_REASONS: not even `--retry-bodies` re-sends these; only an
+#       explicit `--requeue` does.
+#   anti_bot_stub          — terminal FROM NYC ONLY ("not yet" everywhere else).
+#       The server answers, with a refusal page. A residential or HK vantage is
+#       the fix, which is why this reason is kept distinct and re-queueable.
+#   html_missing / http_error — "not yet". The fetch failed outright; the site
+#       may come back. Attempt-capped, overridable with `--retry-bodies`.
+#   empty_extraction       — "not yet". The HTML is a real page our extractor
+#       cannot parse. Fixed by an extractor change plus Phase 1b, which does not
+#       need the crawler to re-fetch anything.
+#
+# It is a SIDE TABLE, never a column on `documents`: `documents` rows are wide
+# and an UPDATE rewrites the `body_text_cn` overflow pages (CLAUDE.md's
+# compute_scores lesson — touching every row once rewrote ~5GB of WAL). The skip
+# path must therefore never touch `documents` at all.
+
+BODY_MAX_ATTEMPTS = 3
+
+# No HTTP GET can ever produce a text body for these, from any vantage, so ONE
+# recorded failure is enough: they are skipped immediately and not even
+# `--retry-bodies` re-sends them. Only `body_ledger.py --requeue` does, which is
+# why the classification of `image_only` is anchored and hand-checked below.
+BODY_TERMINAL_REASONS = ("image_only", "pdf_only")
+
+# Reachable from a different vantage; kept distinct so it can be re-queued.
+BODY_VANTAGE_REASONS = ("anti_bot_stub",)
+
+BODY_REASONS = ("anti_bot_stub", "html_missing", "http_error",
+                "empty_extraction", "pdf_only", "image_only")
+
+# Measured: MIIT's refusal page is 42 bytes. A real article page is >2KB; the
+# smallest genuine saved page in the corpus's bodiless set is ~2KB. 512 leaves
+# an order of magnitude of headroom under that and an order above the refusals.
+BODY_STUB_MAX_BYTES = 512
+
+# Titles whose document body is an image or a video, so no text exists to extract.
+#
+# ANCHORED on purpose, and hand-checked (2026-10-08) rather than taken on faith,
+# because `image_only` is TERMINAL after a single failure. A bare substring test
+# for 视频|音频|直播 matched real regulations — 《互联网直播服务管理规定》,
+# 《网络视听节目音频响度技术要求…》, 司法部…海外远程视频公证 — any of which a
+# transient extraction failure would then have abandoned permanently. Requiring
+# the cue at the title's head/tail or before a delimiter costs almost nothing in
+# recall and removes that class of false terminal:
+#   bj bodiless   broad 1,418/1,636 (86.7%)  ->  anchored 1,391 (85.0%)
+#   gov has-body  broad 10 matches           ->  anchored 0
+#   miit has-body broad 15                   ->  anchored 2 (both真 一图读懂)
+# 图表 is dropped entirely: too generic to anchor safely.
+_BODY_GRAPHIC_CUE = r"一图读懂|一图看懂|一图了解|图解|图说|漫画"
+BODY_GRAPHIC_TITLE = re.compile(
+    r"^\s*[【\[（(]?\s*(?:" + _BODY_GRAPHIC_CUE
+    + r"|一图|动漫|动画|短视频|微视频|视频|音频|直播|H5)"      # head of title
+    r"|(?:" + _BODY_GRAPHIC_CUE + r")\s*[:：丨|《]"              # cue + delimiter
+    r"|(?:" + _BODY_GRAPHIC_CUE + r")\s*[）)】\]]?\s*$"         # tail of title
+    r"|文件图解|政策图解|图片解读|一图读懂"                        # unambiguous anywhere
+)
+
+_BODY_BINARY_SUFFIXES = (".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx")
+
+# Global override, so the nightly can flip it for every crawler in one place:
+#   RETRY_BODIES=1 ./scripts/daily_sync.sh
+# Per-crawler it is the `--retry-bodies` flag (see add_body_ledger_args).
+RETRY_BODIES = bool(os.environ.get("RETRY_BODIES"))
+
+
+def set_retry_bodies(flag: bool) -> None:
+    """Turn the attempt cap off for this process (the `--retry-bodies` flag)."""
+    global RETRY_BODIES
+    RETRY_BODIES = bool(flag)
+
+
+def add_body_ledger_args(parser) -> None:
+    """Add `--retry-bodies` to a crawler's argparse parser."""
+    parser.add_argument(
+        "--retry-bodies", action="store_true",
+        help=f"Re-fetch bodies for rows with >= {BODY_MAX_ATTEMPTS} recorded "
+             f"failures in body_fetch_failures (terminal "
+             f"{'/'.join(BODY_TERMINAL_REASONS)} rows still need "
+             f"`scripts/body_ledger.py --requeue`)")
+
+
+def apply_body_ledger_args(args) -> None:
+    """Honour `--retry-bodies` if the parser defined it."""
+    if getattr(args, "retry_bodies", False):
+        set_retry_bodies(True)
+        log.info("  --retry-bodies: the body_fetch_failures attempt cap is OFF")
+
+
+def ensure_body_ledger(conn) -> None:
+    """Create `body_fetch_failures` if absent (idempotent).
+
+    `init_db` already does this, so crawlers never need to call it; scripts that
+    open the DB themselves do.
+    """
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS body_fetch_failures (
+            doc_id     INTEGER PRIMARY KEY,
+            site_key   TEXT NOT NULL DEFAULT '',
+            reason     TEXT NOT NULL DEFAULT '',
+            attempts   INTEGER NOT NULL DEFAULT 0,
+            first_seen TEXT,
+            last_seen  TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_body_fail_reason ON body_fetch_failures(reason);
+        CREATE INDEX IF NOT EXISTS idx_body_fail_site ON body_fetch_failures(site_key);
+    """)
+
+
+def _body_ledger_row(conn, doc_id):
+    """(reason, attempts) or None. Returns None if the table does not exist.
+
+    Deliberately NOT cached per connection: an `id(conn)` cache is wrong because
+    CPython reuses ids after a connection is closed, which made a fresh
+    connection inherit a stale "table is missing" verdict (caught by
+    tests/test_body_ledger.py). The lookup is a primary-key hit, so paying it
+    every time is cheaper than being wrong.
+    """
+    try:
+        return conn.execute(
+            "SELECT reason, attempts FROM body_fetch_failures WHERE doc_id = ?",
+            (doc_id,),
+        ).fetchone()
+    except sqlite3.OperationalError as e:
+        if "no such table" not in str(e).lower():
+            raise
+        return None
+
+
+def body_fetch_blocked(conn, doc_id, *, retry: bool = None) -> bool:
+    """True if this bodiless row has failed enough times to stop re-fetching it.
+
+    READ-ONLY: callers use this in place of giving up on `existing[1]`, and must
+    `continue` WITHOUT writing to `documents` (see the block comment above).
+    """
+    if doc_id is None:
+        return False
+    row = _body_ledger_row(conn, doc_id)
+    if row is None:
+        return False                      # never failed before — always try it
+    reason, attempts = row[0] or "", row[1] or 0
+    if reason in BODY_TERMINAL_REASONS:
+        return True                       # only an explicit --requeue reopens these
+    if RETRY_BODIES if retry is None else retry:
+        return False
+    return attempts >= BODY_MAX_ATTEMPTS
+
+
+def classify_body_failure(*, body: str = "", html: str = None, title: str = "",
+                          url: str = "", fetch_error=None) -> str:
+    """Name the reason a body fetch produced nothing. See BODY_REASONS."""
+    if fetch_error is not None:
+        return "http_error"
+    if not html:
+        return "html_missing"
+    stripped = html.strip()
+    if len(stripped.encode("utf-8", "replace")) <= BODY_STUB_MAX_BYTES \
+            and "<html" not in stripped[:2048].lower():
+        return "anti_bot_stub"
+    if url and url.split("?")[0].lower().endswith(_BODY_BINARY_SUFFIXES):
+        return "pdf_only"
+    if title and BODY_GRAPHIC_TITLE.search(title):
+        return "image_only"
+    return "empty_extraction"
+
+
+def record_body_failure(conn, doc_id, site_key: str, reason: str, *,
+                        stats: WriteRetryStats = None) -> None:
+    """Upsert a ledger row, incrementing the attempt counter."""
+    write_with_retry(
+        conn,
+        """INSERT INTO body_fetch_failures
+               (doc_id, site_key, reason, attempts, first_seen, last_seen)
+           VALUES (?, ?, ?, 1, datetime('now'), datetime('now'))
+           ON CONFLICT(doc_id) DO UPDATE SET
+               reason    = excluded.reason,
+               site_key  = excluded.site_key,
+               attempts  = body_fetch_failures.attempts + 1,
+               last_seen = excluded.last_seen""",
+        (doc_id, site_key, reason),
+        stats=stats, what=f"body_fetch_failures upsert doc {doc_id}",
+    )
+
+
+def clear_body_failure(conn, doc_id, *, stats: WriteRetryStats = None) -> None:
+    """A row that finally yielded a body must not keep a failure record."""
+    write_with_retry(conn, "DELETE FROM body_fetch_failures WHERE doc_id = ?",
+                     (doc_id,), stats=stats,
+                     what=f"body_fetch_failures clear doc {doc_id}")
+
+
+def note_body_attempt(conn, doc_id, site_key: str, *, body: str = "",
+                      html: str = None, title: str = "", url: str = "",
+                      fetch_error=None, stats: WriteRetryStats = None):
+    """Record the outcome of ONE body-fetch attempt. Returns the reason, or None.
+
+    Success (a non-empty body) deletes any ledger row, so a site that comes back
+    is clean again. Failure upserts the row with a classified reason.
+    """
+    if doc_id is None:
+        return None
+    if body and body.strip():
+        if _body_ledger_row(conn, doc_id) is not None:
+            clear_body_failure(conn, doc_id, stats=stats)
+        return None
+    reason = classify_body_failure(body=body, html=html, title=title, url=url,
+                                   fetch_error=fetch_error)
+    record_body_failure(conn, doc_id, site_key, reason, stats=stats)
+    return reason
 
 
 # --- HTTP ---

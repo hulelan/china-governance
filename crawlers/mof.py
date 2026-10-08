@@ -26,10 +26,14 @@ from urllib.parse import urljoin
 
 from crawlers.base import (
     REQUEST_DELAY,
+    add_body_ledger_args,
+    apply_body_ledger_args,
+    body_fetch_blocked,
     fetch,
     init_db,
     log,
     next_id,
+    note_body_attempt,
     save_raw_html,
     show_stats,
     store_document,
@@ -263,6 +267,7 @@ def crawl_html_section(conn, section_key: str, section: dict, fetch_bodies: bool
 
     stored = 0
     bodies = 0
+    skipped_ledger = 0
     for item in all_items:
         doc_url = item["url"]
         existing = conn.execute(
@@ -272,6 +277,16 @@ def crawl_html_section(conn, section_key: str, section: dict, fetch_bodies: bool
             stored += 1
             continue
 
+        # Stored but BODILESS: without the ledger this row is re-fetched every
+        # night forever and the fetch is paid before extraction fails.
+        # body_fetch_blocked is READ-ONLY and we `continue` WITHOUT touching
+        # `documents`, so the skip path never rewrites a wide row. Reversible
+        # via `scripts/body_ledger.py --requeue <reason>` or `--retry-bodies`.
+        if existing and body_fetch_blocked(conn, existing[0]):
+            stored += 1
+            skipped_ledger += 1
+            continue
+
         doc_id = existing[0] if existing else next_id(conn)
         body_text = ""
         raw_html_path = ""
@@ -279,6 +294,8 @@ def crawl_html_section(conn, section_key: str, section: dict, fetch_bodies: bool
         publisher = "财政部"
         date_published = item["date_str"]
 
+        doc_html = None
+        fetch_error = None
         if fetch_bodies:
             try:
                 doc_html = fetch(doc_url)
@@ -294,10 +311,11 @@ def crawl_html_section(conn, section_key: str, section: dict, fetch_bodies: bool
                     raw_html_path = save_raw_html(SITE_KEY, doc_id, doc_html)
                     bodies += 1
             except Exception as e:
+                fetch_error = e
                 log.warning(f"  Failed to fetch {doc_url}: {e}")
             time.sleep(REQUEST_DELAY)
 
-        store_document(conn, SITE_KEY, {
+        row_written = store_document(conn, SITE_KEY, {
             "id": doc_id,
             "title": item["title"],
             "document_number": doc_number,
@@ -309,6 +327,18 @@ def crawl_html_section(conn, section_key: str, section: dict, fetch_bodies: bool
             "classify_main_name": name,
             "raw_html_path": raw_html_path,
         })
+
+        # Ledger the body-fetch outcome, AFTER the row is known to be ours:
+        # store_document returns False when the id belongs to a different
+        # site_key, and a ledger entry keyed on someone else's document
+        # would block THEIR body fetch. A body clears any entry; no body
+        # records a reason and bumps the attempt counter, so this row stops
+        # being paid for after BODY_MAX_ATTEMPTS.
+        if fetch_bodies and row_written:
+            note_body_attempt(conn, doc_id, SITE_KEY, body=body_text,
+                              html=doc_html, title=item["title"], url=doc_url,
+                              fetch_error=fetch_error)
+
         stored += 1
 
         if stored % 20 == 0:
@@ -316,7 +346,8 @@ def crawl_html_section(conn, section_key: str, section: dict, fetch_bodies: bool
             log.info(f"  Progress: {stored}/{len(all_items)} stored, {bodies} bodies")
 
     conn.commit()
-    log.info(f"  Done: {stored} documents stored, {bodies} bodies fetched")
+    log.info(f"  Done: {stored} documents stored, {bodies} bodies fetched"
+             + (f", {skipped_ledger} skipped (body ledger)" if skipped_ledger else ""))
     return stored
 
 
@@ -643,10 +674,12 @@ def main():
                         help="List URLs without fetching bodies")
     parser.add_argument("--db", type=str,
                         help="Path to SQLite database (default: documents.db)")
+    add_body_ledger_args(parser)
     parser.add_argument("--max-docs", type=int, default=0,
                         help="Cap docs fetched from the czwg gazette archive "
                              "(0=all; for bounded validation runs)")
     args = parser.parse_args()
+    apply_body_ledger_args(args)
 
     conn = init_db(Path(args.db) if args.db else None)
 

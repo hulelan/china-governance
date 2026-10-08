@@ -38,6 +38,7 @@ sys.path.insert(0, str(ROOT))
 
 from crawlers.base import (  # noqa: E402  (needs sys.path above)
     WriteRetryStats,
+    clear_body_failure,
     commit_with_retry,
     write_with_retry,
 )
@@ -294,6 +295,14 @@ def backfill(sites=None, dry_run: bool = False, limit: int = 0):
                     last_changes = conn.total_changes
                     updated += 1
                     by_site[site_key] += 1
+                    # This row now has a body; drop any body_fetch_failures
+                    # entry so the ledger keeps telling the truth. This is the
+                    # path that actually recovers bodies (1,348 of the 1,552
+                    # recoveries in the Sep-24..Oct-8 manifests landed here,
+                    # from an extractor fix) and it is deliberately NOT gated by
+                    # the ledger — it costs no network.
+                    clear_body_failure(conn, doc_id, stats=stats)
+                    last_changes = conn.total_changes
                 if updated and updated % 200 == 0:
                     commit_with_retry(conn, what=f"backfill_from_html @{i}")
             else:
