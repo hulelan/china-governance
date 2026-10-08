@@ -2116,3 +2116,16 @@ stats, diffusion, succession and validation. Predicted effect to pre-register th
 resolved edges from the tails (84 named + 106 llm + 5 formal), plus small `ai_relevance` and 5-gram
 fidelity moves; `doc_identity` genre unaffected (it reads header fields only).
 BM25 rebuild at 276,000 / 341,313 (81%) at 02:29, finishing about 02:45.
+
+## P2 Iteration 73 (BM25 rebuild clean)
+`SEG_DONE rc=0 02:42:35` after 4,877s: **341,313 of 341,313** documents segmented and indexed
+(`doc_search_seg` row count equals the corpus exactly), and the WAL truncated to **0 bytes**, so the
+builder's final checkpoint ran. The 240 collision-cleared documents' stale tokens are gone. The local
+launch wrapper had reported exit 1; the detached job on the droplet was unaffected, which is the
+fourth time tonight `setsid nohup` has separated a wrapper failure from the real work.
+Search verified end to end: `/search` returns 200 with ranked documents. The first query after the
+rebuild took **11.0s** cold, then **0.22s** on repeat — page-cache warm-up as CLAUDE.md documents for
+a freshly rebuilt index on this box, not a regression. Checked by re-running rather than assumed.
+Wuxi still on step 1 (`wuxi --deep`): **1,555 docs at 100% body** in `documents_wuxi.db` by 02:43.
+Step 1's cap is 03:17; the seven districts follow. Merge into documents.db only if it can finish
+before 06:00 with no other writer; documents.db currently has none.
