@@ -342,3 +342,15 @@ SELECT source_id,target_id,target_ref FROM citations
 WHERE source_id IN (900134172,900134176) AND target_id IN (900050079,900048912,900048164);
 -- -> 900134176 cites 900048164 (generative-AI measures)
 ```
+
+---
+
+## Re-base note (2026-10-08)
+
+The central/sub-national split in this memo was computed from `sites.admin_level`. Re-measured on
+the per-document `doc_identity.admin_level_doc`, **it holds**: only two citers reclassify per
+anchor, in opposite directions. The fuller table, and one misreading it pre-empts — 44 of the
+generative-AI rule's apparently "non-central" citers are **`media`**, not sub-national government,
+so a central-versus-non-central cut overstates local reach by eight times — are in
+`ai-governance-diffusion.md` finding 2. Sub-national **government** citation of the whole triad is
+**11 of 282 distinct citers (3.9%)**, 8 of them `genre='promulgation'`.

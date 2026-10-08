@@ -31,6 +31,30 @@ behave differently**, and the split is the finding.
    center itself**. The 2022 algorithm-recommendation rule has 80 central citers and **0
    provincial**. Localities do not re-issue AI regulation; they leave it at the top.
 
+   *(Re-based on `doc_identity` 2026-10-08, and it holds — sharpened. The claim was computed from
+   `sites.admin_level`; on the per-document level (`corpus-lessons.md` A1) only **two citers
+   reclassify per anchor**, in opposite directions, so nothing of substance moves. Current distinct
+   citers, with the levels split properly:*
+
+   | anchor | central | **sub-national govt** | media | other | total |
+   |---|---|---|---|---|---|
+   | algorithm-recommendation 2022 | 82 | **2** | 2 | 11 | 97 |
+   | deep-synthesis 2022 | 64 | **3** | 6 | 7 | 80 |
+   | generative-AI 2023 | 53 | **6** | **44** | 2 | 105 |
+
+   *"80 central citers and 0 provincial" reads 82 and 0 today — the growth is corpus and resolver
+   changes, not level. And the fuller measure is stronger than the original: sub-national
+   **government** citation of the whole triad is **11 of 282 distinct citers (3.9%)**, of which 8
+   carry `genre='promulgation'`.*
+
+   ***A misreading this pre-empts.*** *The generative-AI rule looks locally diffused on a
+   central-versus-non-central cut — 47 of 105, 45%. It is not: **44 of those are `media`**, which is
+   its own `admin_level` in this corpus (Xinhua, People's Daily, 36Kr, Phoenix), and 39 of them are
+   `genre='news'` — "796款生成式人工智能服务完成备案", "AI色情，该怎么管？". Sub-national government
+   is **6 of 105, 5.7%**. **"Non-central" is not "sub-national" here**, and for AI regulation the
+   difference is the entire story: the press covers these rules heavily, localities do not re-issue
+   them.)*
+
 3. **Promotion is what diffuses.** The one anchor whose sub-national citers rival its
    central citers is the 2025 State Council **"AI+" action** opinion (10 central, 6
    provincial, 8 municipal). And localities do not merely relay it. They **elaborate it into

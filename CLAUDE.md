@@ -73,6 +73,13 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     48 → 26 while its denominator rose 743 → 765, so Culture replaced Tourism as slowest. Treat
     any topic-level series as sensitive to anchor selection, and re-base it after an identity
     change instead of assuming only the counts moved.
+    **A second trap in the same family, found 2026-10-08: `media` is its own `admin_level`, so
+    "non-central" is NOT "sub-national".** On the generative-AI rule a central-vs-non-central cut
+    gives 47 of 105 non-central (45%) and reads as local diffusion; 44 of those are `media`
+    (Xinhua, People's Daily, 36Kr, Phoenix) and 39 are `genre='news'`, leaving sub-national
+    **government** at 6 of 105 (5.7%) — an eightfold overstatement. Split the levels explicitly
+    (`central` / `provincial|municipal|district|department` / `media`) in any diffusion measure;
+    `docs/research/ai-governance-diffusion.md` finding 2 carries the worked case.
   - **Per-document identity layer (2026-10-06)** — `doc_identity` side table
     (`scripts/build_doc_identity.py`, nightly Phase 2b LAST step, `--force` because the
     nightly holds the lock; ~37s, one transaction): `admin_level_doc` + `level_source`

@@ -3158,3 +3158,51 @@ plus the communications cap. 281 → **283 passed, 1 skipped**.
 moved into CLAUDE.md's commands section and the entry was deleted, per the standing practice. And
 the memo's claim that the gap was "logged in Open Questions" was itself updated, since that sentence
 would otherwise have been false the moment the entry was removed.
+
+---
+
+## Iteration 98 — re-based the AI memos on `doc_identity`: the claim holds, and gets sharper
+
+`industrial-policy-targeting.md` was re-based when the identity layer landed and **had two claims
+withdrawn**; the three AI memos never were, so their central/local splits were still reading
+`sites.admin_level`. Re-measured today.
+
+**The headline claim survives cleanly.** "The 2022 algorithm-recommendation rule has 80 central
+citers and **0 provincial**" reads **82 and 0** on the per-document level. Only **two citers
+reclassify per anchor**, in opposite directions (department→municipal, municipal→central), so they
+nearly cancel. The 80 → 82 drift is corpus growth and resolver changes, not level.
+
+**I caught a flaw in my own first query** before reporting it: I summed over joined rows, so a
+source citing an anchor twice counted twice — the duplicate-edge overhang CLAUDE.md names (251
+citers carry 2+ edges). Redone with `COUNT(DISTINCT source_id)`.
+
+**And then the generative-AI rule's 47 "non-central" citers nearly made me soften the memo.** 47 of
+105 is 45%, which reads as local diffusion and would have undercut the central-monopoly finding. It
+is not local diffusion:
+
+| anchor | central | **sub-national govt** | media | other | total |
+|---|---|---|---|---|---|
+| algorithm-recommendation 2022 | 82 | **2** | 2 | 11 | 97 |
+| deep-synthesis 2022 | 64 | **3** | 6 | 7 | 80 |
+| generative-AI 2023 | 53 | **6** | **44** | 2 | 105 |
+
+**`media` is its own `admin_level` in this corpus**, so "non-central" is not "sub-national" — and
+for this anchor the difference is the whole story. 44 of the 47 are media (Xinhua, People's Daily,
+36Kr, Phoenix) and **39 are `genre='news'`**: 796款生成式人工智能服务完成备案, AI色情，该怎么管？,
+换脸盗声乱象频发. Sub-national **government** is **6 of 105 (5.7%)**, an **eightfold** difference
+from the naive cut.
+
+So the memo's claim is not merely intact, it is **stronger than it stated**: sub-national government
+citation of the entire regulatory triad is **11 of 282 distinct citers (3.9%)**, of which 8 carry
+`genre='promulgation'`. The press covers these rules heavily; localities do not re-issue them.
+
+Recorded in `ai-governance-diffusion.md` finding 2 (the full table plus the misreading it
+pre-empts), a pointer note in `ai-regulatory-web.md`, and as a **named trap in CLAUDE.md** beside
+the existing anchor-relabelling caution, since the two are the same family: a diffusion measure
+that does not split `media` out overstates local reach, and here by 8×.
+
+**Pattern across this session's measurement ticks, now five deep:** every time a number looked like
+a finding, the discriminator was a category the first cut had merged — mirrors with collisions,
+editions with pooling failures, intended behaviour with bugs, and now the press with local
+government. The habit that keeps working is to ask *what two things could this number be* before
+writing it down.
