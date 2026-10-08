@@ -231,7 +231,9 @@ python3 -m crawlers.spp                          # Supreme People's Procuratorat
 python3 -m crawlers.csrc                         # Securities regulator 证监会 (政策法规库, ~150 docs)
 python3 -m crawlers.chinatax                     # Tax admin 税务总局 政策法规库 (~9,900 docs; C3VK cookie + JSON API)
 python3 -m crawlers.chinatax --max-docs 500      # Bounded backfill chunk
-python3 -m crawlers.pbc                          # People's Bank of China 央行 条法司 (规范性文件+部门规章)
+python3 -m crawlers.pbc                          # People's Bank of China 央行 条法司 (规范性文件+部门规章; 541 docs, 1993–)
+python3 -m crawlers.pbc --probe                  # enumerate the section lists, write NOTHING (reachability check)
+python3 -m crawlers.pbc --max-pages 3            # bound the walk (default 40; both live sections are <= 22 pages)
 python3 -m crawlers.trs --site nhsa             # TRS WCM central bodies (医保局 NHSA, 广电 NRTA)
 python3 -m crawlers.trs --list-sites            # Generic TRS "recordset" crawler (encrypted-param dialect)
 python3 -m crawlers.govcms --list-sites         # Generic gov "t-date list" crawler (central ministries)
@@ -542,7 +544,7 @@ same as before. A one-off `--retry-failed` backfill of the ~1,864 unclassified d
 
 ## A recurring bug shape: a hand-maintained table silently bounds a measurement
 
-Five times now a result has turned out to describe one of our own lookup tables rather than the
+Six times now a result has turned out to describe one of our own lookup tables rather than the
 corpus. The table is never wrong about what it contains; it is wrong about what it OMITS, and the
 omission is invisible because the code returns a clean answer either way.
 
@@ -553,6 +555,7 @@ omission is invisible because the code returns a clean answer either way.
 | the 文号 registry (via `AMBIGUOUS_DOCNUM_PREFIXES`) | 无锡 has no entry at all | `惠府` resolved to 惠州市, putting 22 Wuxi docs in Guangdong |
 | `build_doc_identity.KNOWN_LOCALITIES` (54 names, seeded from `_PROV_MUNI` + the 文号 registry) | `无锡市`, because Wuxi has no 文号 entry | `localize()` cannot place a Wuxi title, so `localized_of` fires on **2** Wuxi pairs against **44** Suzhou — and `pair-channels.md`'s renaming-channel floor is therefore a floor on the TABLE, not on the corpus (found 2026-10-08) |
 | `citations` title index / `_best_core` floors | short folded titles | see the length-floor section below |
+| `extract_pdf_text.py`'s selection markers (`附件`/`点击`/`下载`) | a body that is JUST the attachment's filename | PBOC publishes pre-2020 docs as a PDF whose only on-page trace is a link whose text IS the document title, so the extracted body reads like prose: it carries none of the three markers (invisible to the PDF pipeline) AND counts as "already stored WITH a body" (no backfill revisits it). 360 of 541 `pbc` docs; fixed 2026-10-08 at the source by labelling the stub `附件：…` in `crawlers/pbc.py:_body_of` rather than widening the marker list for every site |
 
 **Rule:** when a per-jurisdiction or per-site number looks like a finding, check whether the
 jurisdiction is in every table the path touches before believing it. The tell is an ordering that
