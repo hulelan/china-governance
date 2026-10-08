@@ -108,12 +108,12 @@
                     {% for l in W.levels %}{% set c = r.cells[l] %}
                     <td class="text-right">
                         <div class="cell-new {{ 'cell-zero' if not c.new }}">{{ "{:,}".format(c.new) }}</div>
-                        <div class="cell-cas">{% if c.cas %}{{ c.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if c.low %} <span class="cell-low">({{ c.low }})</span>{% endif %}{% if c.prov %} <span class="cell-prov">+{{ c.prov }}<sub>p</sub></span>{% endif %}</div>
+                        <div class="cell-cas"{% if c.cas and c.text_median %} title="adopter text: median {{ "{:,}".format(c.text_median) }} chars, {{ c.elab_median|round(2) }}x the anchor&#10;adopter authority: {{ c.authority_mean|round(2) }} (provincial 3 / municipal 2 / district 1)&#10;the two are independent — neither stands for the other"{% endif %}>{% if c.cas %}{{ c.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if c.low %} <span class="cell-low">({{ c.low }})</span>{% endif %}{% if c.prov %} <span class="cell-prov">+{{ c.prov }}<sub>p</sub></span>{% endif %}</div>
                     </td>
                     {% endfor %}
                     <td class="text-right">
                         <div class="cell-new font-medium">{{ "{:,}".format(r.new) }}</div>
-                        <div class="cell-cas">{% if r.cas %}{{ r.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if r.low %} <span class="cell-low">({{ r.low }})</span>{% endif %}{% if r.prov %} <span class="cell-prov">+{{ r.prov }}<sub>p</sub></span>{% endif %}</div>
+                        <div class="cell-cas"{% if r.cas and r.authority_mean %} title="mean adopter authority this week: {{ r.authority_mean|round(2) }} (provincial 3 / municipal 2 / district 1) — pooled exactly across levels.&#10;Text medians are shown per level only: a median of medians is not a median."{% endif %}>{% if r.cas %}{{ r.cas }}{% else %}<span class="cell-zero">·</span>{% endif %}{% if r.low %} <span class="cell-low">({{ r.low }})</span>{% endif %}{% if r.prov %} <span class="cell-prov">+{{ r.prov }}<sub>p</sub></span>{% endif %}</div>
                     </td>
                 </tr>
             {% endfor %}

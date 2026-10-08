@@ -195,5 +195,45 @@ class DocLen(unittest.TestCase):
             self.assertIn("SCAN documents", plan, plan)
 
 
+class ServicePooling(unittest.TestCase):
+    """web/services/tracker.row_intensity — how a week pools across levels."""
+
+    def setUp(self):
+        from web.services import tracker
+        self.T = tracker
+
+    def test_authority_pools_event_weighted_not_naively_averaged(self):
+        """A cell's mean x its event count is that cell's authority sum, so the
+        pooled figure must weight by events. The naive mean-of-means here is
+        2.0; the correct answer is 2.5."""
+        cells = [{"cas": 3, "authority_mean": 3.0, "text_median": 1000, "elab_median": 0.5},
+                 {"cas": 1, "authority_mean": 1.0, "text_median": 9000, "elab_median": 4.0}]
+        got = self.T.row_intensity(cells)
+        self.assertAlmostEqual(got["authority_mean"], 2.5)
+        self.assertNotAlmostEqual(got["authority_mean"], 2.0,
+                                  msg="this is the mean-of-means bug")
+
+    def test_text_medians_are_not_pooled_at_all(self):
+        """A median of medians is not a median, and these distributions are
+        right-skewed, so the pooled row reports 0 and the template shows the
+        text figures per level only. Faking it would be worse than omitting it."""
+        cells = [{"cas": 3, "authority_mean": 3.0, "text_median": 1000, "elab_median": 0.5},
+                 {"cas": 1, "authority_mean": 1.0, "text_median": 9000, "elab_median": 4.0}]
+        got = self.T.row_intensity(cells)
+        self.assertEqual(got["text_median"], 0)
+        self.assertEqual(got["elab_median"], 0.0)
+
+    def test_empty_week_is_zero_not_a_division_error(self):
+        for cells in ([], [{"cas": 0, "authority_mean": 0.0}]):
+            got = self.T.row_intensity(cells)
+            self.assertEqual(got, {"authority_mean": 0.0, "text_median": 0,
+                                   "elab_median": 0.0}, cells)
+
+    def test_template_parses(self):
+        from jinja2 import Environment, FileSystemLoader
+        env = Environment(loader=FileSystemLoader(str(ROOT / "web" / "templates")))
+        env.get_template("tracker.html")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -290,6 +290,39 @@ async def _has_instrument_cols(db) -> bool:
     return _store("tw_instrument_cols", {"n_anchors", "top_anchor_share", "top_anchor"} <= cols)
 
 
+async def _has_intensity_cols(db) -> bool:
+    """True once the rollup carries authority_mean/text_median/elab_median
+    (2026-10-08). Checked as its own set, like the two above, because a table
+    rebuilt between commits can have one set and not another."""
+    hit = _cached("tw_intensity_cols")
+    if hit is not None:
+        return hit
+    rows = await db.fetch("PRAGMA table_info(tracker_weekly)")
+    cols = {r["name"] for r in rows}
+    return _store("tw_intensity_cols",
+                  {"authority_mean", "text_median", "elab_median"} <= cols)
+
+
+def row_intensity(cells):
+    """Merge per-level cells into one pooled week's intensity figures.
+
+    `authority_mean` pools EXACTLY: a cell's mean times its event count is that
+    cell's authority sum, so the event-weighted mean of the cells is the mean over
+    all the week's adopters.
+
+    The two text figures do NOT pool, and are deliberately not faked. A median of
+    medians is not a median, and these distributions are right-skewed (which is why
+    the memo reports medians rather than means in the first place). So the pooled row
+    carries `text_median`/`elab_median` of 0 and the template shows them per level
+    only. See docs/research/diffusion-intensity-index.md.
+    """
+    cas = sum(c.get("cas", 0) for c in cells)
+    if not cas:
+        return {"authority_mean": 0.0, "text_median": 0, "elab_median": 0.0}
+    weighted = sum(c.get("authority_mean", 0.0) * c.get("cas", 0) for c in cells)
+    return {"authority_mean": weighted / cas, "text_median": 0, "elab_median": 0.0}
+
+
 async def _anchor_titles(db, ids):
     """instrument_id -> cleaned anchor title, for the flagged weeks' tooltips. The
     instrument id is the canonical doc's id, so a PK lookup on documents suffices."""
@@ -321,12 +354,14 @@ async def get_weekly(db, topic: str, weeks: int):
     lo, hi = wk[-1][0], wk[0][0]
     div = await _has_diversity_cols(db)
     inst = await _has_instrument_cols(db)
+    intens = await _has_intensity_cols(db)
     div_cols = ", n_sites, top_site_share, top_site" if div else ""
     inst_cols = ", n_anchors, top_anchor_share, top_anchor" if inst else ""
+    int_cols = ", authority_mean, text_median, elab_median" if intens else ""
     rows = await db.fetch(
         f"""SELECT iso_week, admin_level, week_start, new_docs,
                   cascade_events, cascade_events_lowconf, cascade_events_prov,
-                  cascade_events_mentions{div_cols}{inst_cols}
+                  cascade_events_mentions{div_cols}{inst_cols}{int_cols}
            FROM tracker_weekly
            WHERE topic = $1 AND iso_week BETWEEN $2 AND $3""", topic, lo, hi)
     cells = defaultdict(dict)
@@ -335,13 +370,14 @@ async def get_weekly(db, topic: str, weeks: int):
     DIV = {"n_sites": 0, "top_site_share": 0.0, "top_site": "", "diverse": None}
     INST = {"n_anchors": 0, "top_anchor_share": 0.0, "top_anchor": 0, "top_anchor_n": 0,
             "top_anchor_title": "", "single_instrument": None}
+    INTENS = {"authority_mean": 0.0, "text_median": 0, "elab_median": 0.0}
     for r in rows:
         if (r["new_docs"] or r["cascade_events"] or r["cascade_events_lowconf"]
                 or r["cascade_events_prov"] or r["cascade_events_mentions"]):
             seen_levels.add(r["admin_level"])
         cell = {"new": r["new_docs"], "cas": r["cascade_events"],
                 "low": r["cascade_events_lowconf"], "prov": r["cascade_events_prov"],
-                "men": r["cascade_events_mentions"], **DIV, **INST}
+                "men": r["cascade_events_mentions"], **DIV, **INST, **INTENS}
         if div:
             cell.update(n_sites=r["n_sites"] or 0, top_site_share=r["top_site_share"] or 0.0,
                         top_site=r["top_site"] or "",
@@ -354,13 +390,17 @@ async def get_weekly(db, topic: str, weeks: int):
                         top_anchor_n=int(round(share * cell["cas"])),
                         single_instrument=is_single_instrument(cell["cas"], r["n_anchors"] or 0,
                                                                share))
+        if intens:
+            cell.update(authority_mean=r["authority_mean"] or 0.0,
+                        text_median=r["text_median"] or 0,
+                        elab_median=r["elab_median"] or 0.0)
         cells[r["iso_week"]][r["admin_level"]] = cell
     levels = [l for l in LEVEL_ORDER if l in seen_levels]
     levels += sorted(l for l in seen_levels if l not in LEVEL_ORDER)
 
     out_rows, totals = [], dict.fromkeys(KEYS, 0)
     level_totals = {l: dict.fromkeys(KEYS, 0) for l in levels}
-    empty = {**dict.fromkeys(KEYS, 0), **DIV, **INST}
+    empty = {**dict.fromkeys(KEYS, 0), **DIV, **INST, **INTENS}
     for i, (iw, monday) in enumerate(wk):
         c = cells.get(iw, {})
         row = {"iso_week": iw, "week_start": monday, "is_current": i == 0,
@@ -374,6 +414,7 @@ async def get_weekly(db, topic: str, weeks: int):
             totals[k] += row[k]
         row.update(row_diversity(list(row["cells"].values())) if div else DIV)
         row.update({**INST, **row_instrument(list(row["cells"].values()))} if inst else INST)
+        row.update(row_intensity(list(row["cells"].values())) if intens else INTENS)
         out_rows.append(row)
     # Titles for the flagged weeks' modal instruments (a PK lookup on <= `weeks` ids).
     titles = await _anchor_titles(
