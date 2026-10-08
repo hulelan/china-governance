@@ -2269,3 +2269,36 @@ differs: Wuxi rises through 2017 and steps down in 2019; no pre-2010 decline; no
 Second-merge prediction revised: documents_wuxi.db holds 1,707 wuxi URLs absent from documents.db, not
 ~1,787; all departmental series. Main limit: post-2019 Wuxi rests on citation-only 锡政呈 (±30% band).
 Nightly still classifying: 1,000/23,710, 0 err, ETA ~1,225 min.
+
+## P2 Iteration 82 (new context; two read-only studies in the lock window)
+Picked up with iterations 69-81 out of context; re-oriented from the git log, the run-log tail and
+the live droplet. **My first check was wrong in my own favour:** `pgrep -af "crawlers\.|build_|compute_"`
+returned 0 and I read it as "nothing running", but the pattern omits `classify_documents` — the
+nightly is very much alive. That is the fifth shell-wrapper self-deception of this run, and the
+memory note now covers four of them; this one is a different shape again (a pattern that does not
+cover the process you are asking about), so the rule generalizes to: **a process check must name the
+thing you expect to find, and "0 results" is only evidence if the pattern would have matched.**
+State: nightly Phase 1 done 09:32 (+957, 346,955 docs), **Phase 2 classifying 4,400 / 23,710 with
+0 errors** — the classifier fix measured in production across 4,400 consecutive documents against
+the ~34% failure rate it replaced. Lock held until roughly 10:00 UTC tomorrow.
+**Two queued items are genuinely blocked, not forgotten:** the body-tail trim (33,105 bodies,
+scripted, verified and deliberately ordered trim-then-BM25-once) is a writer; and the org-stub
+pre-registration (resolution should FALL from 52.97% to about 52.2%) cannot be read until Phase 2b
+rebuilds citations, which the classifier has not reached. Both wait.
+Launched the two highest-value read-only pieces instead:
+1. **`fidelity-wuxi.md` — the study B1 existed for.** B1's charge was that province-before-city,
+   the province as translation layer and the 92.8% chain figure were "Guangdong findings presented
+   as China findings"; `fidelity-jiangsu.md` answered "hardens, on ONE city" because Suzhou was 89%
+   of Jiangsu's city documents. Wuxi is now merged, so the three findings can be run on three city
+   sets (Guangdong districts, Suzhou, Wuxi) with Jiangsu never pooled into one number. Required to
+   name one of three verdicts — discharged, Suzhou-specific, or still underpowered with the pair
+   count that would be needed — and licensed to stop if Wuxi is too thin.
+2. **The synthesis "Status and what remains" rewrite.** It is stale for the second time in two
+   days: its "Open now" list names the second Jiangsu prefecture, the identity columns and the
+   §2.1 re-read, all since landed, and omits two days of work. The brief asks the agent to verify
+   every one of my "closed" claims against the live DB and git log and to correct me, to report the
+   org-stub prediction as PRE-REGISTERED rather than observed, and to add a short note on how the
+   section goes stale (it is edited by whoever finishes a piece, so it drifts within a day; the fix
+   is that "open"/"landed" claims carry the date they were verified and the section is re-checked
+   against the git log, not from memory). Two agents touch that file, so this one is scoped to the
+   status section only, with rebase-on-conflict.
