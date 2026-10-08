@@ -233,6 +233,13 @@ A6  province (2026-10-07) — the 2-letter code (scripts/rnd/analysis/geo.PROVIN
     (延边朝鲜族自治州人民政府). NULL for central / media / research docs and when no
     field names a locality; consumers fall back to province_of(site) on NULL, so a doc
     whose site already carries a province behaves exactly as before.
+      One ARBITRATION (2026-10-08, docs/working/qa-wenhao-province-ambiguity.md): a 文号
+    head can be claimed by two governments — 惠府发/惠府办 is 惠州市 (gd) in the registry
+    and 无锡市惠山区 (js) on `wxd_huishan` — so when the 文号 reading disagrees with the
+    province of the SITE the doc was crawled from AND the matched registry key is in
+    AMBIGUOUS_DOCNUM_PREFIXES, the 文号 candidate is DROPPED and the remaining fields
+    decide. The site is evidence, not a candidate: it never supplies the answer here.
+    Measured scope: 22 documents, the corpus's only 文号-vs-site province conflicts.
 
 A7  instrument_kind (2026-10-07, docs/working/qa-framework-gate.md) — the kind of text,
     orthogonal to `genre` (genre says whether the doc IS the text or is ABOUT it; kind
@@ -428,14 +435,43 @@ def _docnum_prefix(docnum):
     return prefix
 
 
-def docnum_agency(docnum):
-    """Sub-national agency the 文号 registry names for this prefix (粤府 -> 广东省人民政府)."""
+def docnum_registry_key(docnum):
+    """The DOCNUM_SUBNATIONAL key this 文号's prefix matches, or None.
+
+    The match is a `startswith`, not an exact lookup, because a 文号 head carries a SERIES
+    suffix the registry does not list (沪府发/沪府规 under 沪府, 苏政办发 under 苏政办): on the
+    live corpus 18,365 of the 36,243 registry-matched 文号 (50.7%) match only by prefix and
+    they are overwhelmingly right, so tightening this to exact keys is not an option. The
+    cost of the loose match is that a head claimed by two governments resolves to whichever
+    one the registry lists — see AMBIGUOUS_DOCNUM_PREFIXES below.
+    """
     prefix = _docnum_prefix(docnum)
     if prefix:
         for p in _SUBNAT_PREFIXES:
             if prefix.startswith(p):
-                return DOCNUM_SUBNATIONAL[p]
+                return p
     return None
+
+
+def docnum_agency(docnum):
+    """Sub-national agency the 文号 registry names for this prefix (粤府 -> 广东省人民政府)."""
+    key = docnum_registry_key(docnum)
+    return DOCNUM_SUBNATIONAL[key] if key else None
+
+
+# 文号 heads that MORE THAN ONE government uses, so the registry's single answer is only a
+# guess. A 文号 prefix is a registry fact about one named agency; it cannot by itself say
+# WHICH 惠-something government signed, and the corpus holds both:
+#   惠府发 / 惠府办 / 惠府办规 / 惠府规发 — 惠州市 (Guangdong, `huizhou`, 865 docs) AND
+#                                       无锡市惠山区 (Jiangsu, `wxd_huishan`, 22 docs).
+# Measured 2026-10-08 (docs/working/qa-wenhao-province-ambiguity.md): across all 346,955
+# documents these 22 are the ONLY 文号-vs-site province conflicts in the corpus, and the only
+# 文号-vs-own-masthead conflicts other than one genuinely joint 粤府函 批复. The latent set is
+# larger than what fires today (42 of 114 registry keys share their head with another
+# prefecture-level division, and district names — which is what 惠山区 is — are not in any
+# table here at all), so this set is EVIDENCE-DRIVEN: add a key when a conflict is measured,
+# and record the measurement.
+AMBIGUOUS_DOCNUM_PREFIXES = frozenset({"惠府", "惠府办"})
 
 
 def level_of_docnum(docnum, site_level):
@@ -553,15 +589,36 @@ def province_of_name(name):
     return None
 
 
-def derive_province(doc, lead_issuer):
+def derive_province(doc, lead_issuer, site_prov=None):
     """A6: province code of a SUB-NATIONAL doc's issuing locality, from the header
     fields in A1 order; None when none names a locality (consumers then fall back
-    to the site's province)."""
-    for name in (lead_issuer, docnum_agency(doc["docnum"]), doc["publisher"],
-                 masthead_of(doc["title"])):
+    to the site's province).
+
+    `site_prov` is the province of the SITE the document was crawled from
+    (build_diffusion_events.province_of). It is NOT a candidate — the whole point of A6 is
+    that a document's province is a property of the document, not of its portal — it is
+    used only to ARBITRATE one known-ambiguous reading, below.
+    """
+    for field, name in (("lead_issuer", lead_issuer),
+                        ("docnum", docnum_agency(doc["docnum"])),
+                        ("publisher", doc["publisher"]),
+                        ("masthead", masthead_of(doc["title"]))):
         code = province_of_name(name)
-        if code:
-            return code
+        if not code:
+            continue
+        # ARBITRATION (2026-10-08): the SITE is evidence too. When an AMBIGUOUS 文号 head
+        # (one that several governments use) points at a different province than the portal
+        # the document was crawled from, the 文号 is the weaker witness — it names an agency
+        # by abbreviation, while the portal is where the issuing government published. Drop
+        # the 文号 candidate and let the REMAINING fields speak (publisher, then the title
+        # masthead, then localize()); if none of them resolves, the consumer's own
+        # site fallback applies. This is deliberately NOT a blanket precedence change:
+        # the 文号 still beats the masthead everywhere else, because a joint 批复 signed
+        # 粤府函 by two provinces must stay with the province whose registry issued it.
+        if (field == "docnum" and site_prov and code != site_prov
+                and docnum_registry_key(doc["docnum"]) in AMBIGUOUS_DOCNUM_PREFIXES):
+            continue
+        return code
     code = province_code_of_locality(doc.get("_loc"))
     if code:
         return code
@@ -1572,6 +1629,11 @@ def load(conn):
 
 def build(conn):
     t0 = time.time()
+    # province_of(site) is read inside the A6 loop below (the 文号 arbitration), so load
+    # the site names HERE rather than relying on main() — a direct build(conn) caller
+    # (a read-only shim, a notebook) would otherwise silently see province_of == None
+    # everywhere and lose the arbitration. load_site_names clears first, so it is idempotent.
+    load_site_names(conn)
     docs, site_level, lead, crawl_year = load(conn)
     t_load = time.time() - t0
     for d in docs.values():
@@ -1585,7 +1647,10 @@ def build(conn):
     inst = assign_instruments(docs)
     stamped = crawl_stamped_sites(docs, site_level, crawl_year)
     for d in docs.values():
-        d["province"] = derive_province(d, d["lead_issuer"]) if d["level"] in SUBNATIONAL else None
+        # province_of(site) is passed only to arbitrate an ambiguous 文号 head (A6); it is
+        # never itself the answer — consumers fall back to it on NULL as they always did.
+        d["province"] = (derive_province(d, d["lead_issuer"], province_of(d["site"]))
+                         if d["level"] in SUBNATIONAL else None)
         if not d["has_date"]:
             d["date_quality"] = "missing"
         elif d["site"] in stamped:
@@ -2488,6 +2553,32 @@ _PROVINCE_TESTS = [
     (dict(title="市人民政府办公室关于印发市级储备粮管理办法的通知", docnum="", publisher="", _loc="<municipal>@huizhou"),
      None, None),
 ]
+# A6 arbitration: (doc fields, lead_issuer, province_of(site), expected code). The 文号 head
+# 惠府 is used by BOTH 惠州市 (gd) and 无锡市惠山区 (js), so the registry's single answer is
+# only correct for one of them and the site breaks the tie — qa-wenhao-province-ambiguity.md.
+_PROVINCE_SITE_TESTS = [
+    # 惠府* on a Wuxi district site: the 文号 says gd, the site says js -> the masthead decides
+    (dict(title="无锡市惠山区人民政府关于印发无锡市惠山区江苏省知识产权建设示范（县域）工作方案的通知",
+          docnum="惠府发〔2023〕12号", publisher=""), None, "js", "js"),
+    (dict(title="无锡市惠山区人民政府办公室印发关于规范全区旅游民宿管理的指导意见的通知",
+          docnum="惠府办〔2026〕14号", publisher=""), None, "js", "js"),
+    (dict(title="无锡市惠山区人民政府办公室关于印发惠山区企业转贷应急资金管理办法（试行）的通知",
+          docnum="惠府办规〔2025〕2号", publisher=""), None, "js", "js"),
+    (dict(title="无锡市惠山区人民政府关于清理规范性文件的决定",
+          docnum="惠府规发〔2025〕1号", publisher=""), None, "js", "js"),
+    # the SAME 文号 on Huizhou's own portal is untouched: no conflict, so no arbitration
+    (dict(title="惠州市人民政府办公室关于印发2016年惠州市食品安全重点工作安排的通知",
+          docnum="惠府办函〔2016〕12号", publisher=""), None, "gd", "gd"),
+    (dict(title="关于印发市级储备粮管理办法的通知", docnum="惠府办〔2016〕12号", publisher=""),
+     None, "gd", "gd"),
+    # the arbitration is gated on the ambiguous SET: a 粤府函 joint 批复 whose masthead names
+    # another province keeps the 文号's province even though the masthead disagrees
+    (dict(title="福建省人民政府广东省人民政府关于闽粤经济合作区发展规划的批复",
+          docnum="粤府函〔2015〕170号", publisher=""), None, "gd", "gd"),
+    # ...and an ambiguous head with NO site province to arbitrate against behaves as before
+    (dict(title="关于印发市级储备粮管理办法的通知", docnum="惠府办〔2016〕12号", publisher=""),
+     None, None, "gd"),
+]
 _CHAIN_TESTS = [
     ("广东省", ()), ("北京市", ()), ("宁夏回族自治区", ()), ("广州市", ("广东省",)),
     ("苏州市", ("江苏省",)), ("深圳市龙华区", ("深圳市", "广东省")), ("大鹏新区", ("深圳市", "广东省")),
@@ -2635,6 +2726,12 @@ def self_test():
         if got != exp:
             fails += 1
             print(f"XX derive_province({fields['title'][:30]!r}, {issuer!r}) = {got!r}, expected {exp!r}")
+    for fields, issuer, site_prov, exp in _PROVINCE_SITE_TESTS:
+        got = derive_province(fields, issuer, site_prov)
+        if got != exp:
+            fails += 1
+            print(f"XX derive_province({fields['docnum']!r}, site={site_prov!r}) = {got!r}, "
+                  f"expected {exp!r}")
     for stem, exp in _GENERIC_STEM_TESTS:
         if bool(GENERIC_STEM_RE.search(stem)) != exp:
             fails += 1
@@ -2646,7 +2743,8 @@ def self_test():
             print(f"XX crawl_stamped_sites[{label}] = {got!r}, expected {exp!r}")
     total = (len(_LEVEL_TESTS) + len(_TITLE_LEVEL_TESTS) + len(_GENRE_TESTS) + len(_KIND_TESTS) + len(_KEY_TESTS)
              + len(_SHORT_KEY_TESTS) + len(_LOCALIZE_TESTS) + len(_POOL_TESTS) + len(_CHAIN_TESTS)
-             + len(_GENERIC_STEM_TESTS) + len(_STAMP_TESTS) + len(_PROVINCE_TESTS))
+             + len(_GENERIC_STEM_TESTS) + len(_STAMP_TESTS) + len(_PROVINCE_TESTS)
+             + len(_PROVINCE_SITE_TESTS))
     print(f"self-test: {total - fails}/{total} passed")
     return fails == 0
 
@@ -2678,7 +2776,7 @@ def main(argv=None):
         return 2
 
     conn = connect(args.db, ro=not writing)
-    load_site_names(conn)  # province_of(site) for the A6 coverage audit
+    load_site_names(conn)  # province_of(site) for the A6 coverage audit (build() repeats it)
     docs, meta = build(conn)
     site_level = {d["site"]: d["site_level"] for d in docs.values()}
     print_stats(docs, meta, site_level)

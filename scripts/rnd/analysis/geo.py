@@ -59,6 +59,16 @@ DISTRICT_CITY = {
     "龙门县": "惠州市", "周矶管理区": "潜江市", "后湖管理区": "潜江市",
     "重庆高新区": "重庆市", "重庆经开区": "重庆市", "万盛经开区": "重庆市",
     "莱芜": "济南市", "莱芜区": "济南市",  # 莱芜市 was merged into 济南 in 2019 (not in the CSV)
+    # Wuxi (2026-10-08): the `wuxi` + seven `wxd_*` sites were merged 2026-10-08 and NONE
+    # of Wuxi's sub-divisions was in this table, so every bare-district locality the Wuxi
+    # portals emit resolved to None and the province had to come from the 文号 instead —
+    # which is how 22 `wxd_huishan` documents (惠府发/惠府办, shared with 惠州市, Guangdong)
+    # were coded `gd`. See docs/working/qa-wenhao-province-ambiguity.md.
+    # 江阴市 / 宜兴市 are county-level cities (县级市) under 无锡市, not prefectures, so they
+    # belong here rather than in data/city_province.csv; all seven names are nationally
+    # unique, so no '<city><district>' qualifier is needed.
+    "梁溪区": "无锡市", "锡山区": "无锡市", "惠山区": "无锡市", "滨湖区": "无锡市",
+    "新吴区": "无锡市", "江阴市": "无锡市", "宜兴市": "无锡市",
 }
 _BJ_DISTRICTS = ("东城区 西城区 朝阳区 丰台区 石景山区 海淀区 门头沟区 房山区 通州区 顺义区 "
                  "昌平区 大兴区 怀柔区 平谷区 密云区 延庆区 北京经济技术开发区").split()
@@ -165,6 +175,14 @@ def _self_test():
         ("锡林郭勒盟", "nm"), ("阿坝藏族羌族自治州", "sc"),
         ("Linxia Hui Prefecture (临夏回族自治州)", "gs"), ("Laiwu (莱芜)", "sd"),
         ("Chongqing Municipality", "cq"), ("Dapeng New District", "gd"),
+        # Wuxi's districts + county-level cities (added 2026-10-08)
+        ("Wuxi Huishan District (惠山区)", "js"), ("Wuxi Xinwu District (新吴区)", "js"),
+        ("梁溪区", "js"), ("锡山区", "js"), ("滨湖区", "js"),
+        ("Jiangyin (江阴市)", "js"), ("Yixing (宜兴市)", "js"),
+        # an UNMAPPED bare district must stay None, never a guess off its first character:
+        # 惠城区 is 惠州's own district and 江岸区 is 武汉's, and neither may be resolved by
+        # the 惠/江 heads that DOCNUM_SUBNATIONAL happens to use (qa-wenhao-province-ambiguity.md)
+        ("Huizhou Huicheng District (惠城区)", None), ("Wuhan Jiangan District (江岸区)", None),
         ("广东省", "gd"), ("Nowhere Portal", None), ("", None), (None, None),
         ("Beijing Municipal People's Congress (北京市人大)", "bj"),       # institution prefix
         ("Shenzhen DRC (深圳市发展和改革委员会)", "gd"), ("广州日报", None),  # city prefix / no place
