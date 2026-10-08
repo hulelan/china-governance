@@ -2525,3 +2525,60 @@ citation-basis +0.2 pt stands because the matcher output is byte-identical.
 Owed when the lock clears (~10:00 UTC 2026-10-09): identity → succession → diffusion → tracker →
 validate. Expect `genre='implementing'` 18,699 → 20,035 and `localized_of` → 3,411, and expect NO
 tracker or cascade figure to move, both having been rebuilt and compared.
+
+---
+
+## Iteration 87 — the ledger shipped, and its one terminal verdict was validated where it does not fire
+
+**Verified the hand-back before accepting it.** Tests reproduce exactly (230 passed, 1 skipped at
+the agent's commit). The decisive claim checks out on the droplet's own logs: Phase 1b
+`backfill_from_html` ran **0–8 bodies for eighteen consecutive nights, then 1,425 on 2026-10-07**
+and 165 on 10-08, so the mechanism that actually recovers bodies reads SAVED HTML and costs no
+network — and the ledger deliberately does not gate it. Gating the network path while leaving the
+free path open is the right architecture, and the measurement is what shows it.
+
+**But one verdict was wrong, and in a way worth naming.** `image_only` was TERMINAL after a single
+failure — `--retry-bodies` would not re-send it, only an explicit `--requeue` would. The cue was
+anchored and hand-checked, and the check ran on **gov (10 → 0 false matches) and miit (15 → 2)**.
+Measured where the cue actually fires, bodiless / has-body rows carrying it:
+
+| site | bodiless w/ cue | has-body w/ cue |
+|---|---|---|
+| bj | **1,268** | **107** |
+| miit | 87 | 2 |
+| gov / mof / ndrc | 0 / 0 / 0 | 0 / 2 / 0 |
+
+Beijing is ~93% of the class and was never checked; the two validation sites have **zero** bodiless
+cue rows, so "0 false positives" was really **0 trials**. Beijing's dominant shape is
+`一图读懂、音频解读：北京市生态环境局关于印发《X》的通知` — one page carrying the infographic, the
+audio reading AND the full text — and the cue sits at the HEAD, so anchoring cannot touch it.
+110 of 178 sampled has-body titles still classified `image_only`.
+
+**My own first fix died on its own measurement**, which is the part worth keeping: "also names an
+instrument in 《》, therefore text-bearing" would have de-terminalized **673 of Beijing's 1,190**
+bodiless cue rows, all genuinely pictorial. Guillemets do not separate the classes.
+
+**What terminality actually bought** settled it. One fetch per row instead of three is ~2,536
+fetches on bj **once** (~68 min, one time). The recurring ~21 min/night the ledger exists for comes
+entirely from the attempt CAP, which applies to every reason. A one-time hour was buying the
+permanent, silent loss of a text-bearing document. Shipped `59c984a`: `image_only` is an ordinary
+capped reason keeping its name as a `--stats` / `--requeue` lever; `pdf_only` stays terminal because
+its verdict reads the URL's suffix rather than guessing from a title. The seed still caps
+`image_only` directly — there the page is already held and already yields nothing — and
+`--retry-bodies` now re-opens it, which terminality did not. 231 passed, 1 skipped.
+
+**Two named shapes added to CLAUDE.md (`5087673`).** (1) *A rule validated on the population where
+it does NOT fire* — this plus the A4 crawl-stamped-dates case, which was checked on two Jiangsu
+sites and was really detecting shallow archives. The rule: `GROUP BY` where the flag fires and
+hand-check the LARGEST bucket. (2) *A watcher must not match itself* — three droplet chains had
+been sleeping for hours on `while pgrep -f "crawlers.govcms --site jsrd" | grep -qv $$`, because
+both the outer and inner `bash -c` carry that string in their own command lines and `$$` excludes
+only one. One of them was holding a pending `build_site_stats.py`, so `site_stats`/`corpus_stats`
+are stale as of the Wuxi merge. **Not killed — standing rule is to ask first.** Two more wrapper
+traps logged from today: `timeout` does not exist on macOS, and `${PIPESTATUS[0]}` is a bash-ism
+that expands to empty under zsh (`${pipestatus[1]}`), so a guard built on it silently never fires.
+
+**The classifier fix, now validated at scale:** 8,200 of 23,710 drained with **2 errors (0.024%)**,
+against 20–37% silent failure every night since the 07-25 v4-flash migration. `classify_failures`
+holds exactly `json_unsalvageable=1` and `content_risk=1`. ETA ~10:15 UTC 2026-10-09, so the owed
+write sequence (identity → succession → diffusion → tracker → validate) stays queued behind it.
