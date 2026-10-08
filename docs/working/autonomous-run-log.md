@@ -2146,3 +2146,24 @@ and a resumable follow-up must finish `bmgfxwj` pages 43-100 (~1,160 docs; the c
 URLs). The seven districts are now running (`wxd_liangxi` 162 at 03:25). Because the chain writes its
 OWN database it can run straight through the 06:00 nightly with no contention; only the MERGE has to
 avoid the nightly window.
+
+## P2 Iteration 75 (districts land exactly as predicted; the org-stub test re-designed)
+Wuxi districts, all real completions well under their 2,400s caps: `wxd_liangxi` 10 min,
+`wxd_xishan` 20, `wxd_huishan` 2, `wxd_binhu` 3. Counts match the scratch test **exactly** —
+梁溪 **209**, 锡山 **450**, 惠山 **47**, 滨湖 **83** against the predicted 209 / 450 / 47 / 83 — at
+~100% body. `wxd_xinwu` 535 of 1,095 at 04:12; `wxd_jiangyin` (~803) and `wxd_yixing` (~36) follow.
+Chain should finish about 05:10.
+**Re-designed the pre-registered test for the org-stub fix, because the original one was going to be
+confounded no matter what.** I had predicted aggregate resolved edges would fall ~4,570. But every
+nightly adds documents, and merging ~4,300 Wuxi documents before 06:00 would add their citations
+too, so the aggregate cannot isolate the org-stub effect. The provenance-specific test can:
+- **PRIMARY:** resolved edges whose target is an organization-only title should fall from **4,802**
+  to approximately **0** (exact-tier refs to a bare organization are the only survivors, and the
+  agent found none). 广东省自然资源厅 should leave the top 20.
+- **SECONDARY:** aggregate resolved edges, DECOMPOSED by source site, so Wuxi's additions
+  (`wuxi`, `wxd_*`) and the night's ordinary crawl are separated from the rest.
+This makes it safe to merge Wuxi before the nightly, which is the better outcome anyway: its
+documents then get citations, identity rows and scores tonight instead of sitting underived a day.
+Merge plan: as soon as WUXI_CRAWL_DONE, if it can finish by ~05:40 with no other writer. The
+`wuxi` municipal follow-up (bmgfxwj pages 43-100, ~1,160 docs) cannot fit before 06:00, but it writes
+its own DB, so it runs through the nightly and gets a second merge later.
