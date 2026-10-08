@@ -2896,3 +2896,39 @@ wrapped, which printed `0` and, because grep exits 1 on no match, silently trunc
 with `grep -cF` on a short single-line substring, each check as its own command; and when a script
 makes several replacements, write nothing unless **all** anchors matched — a partial write is worse
 than none, because the commit message will describe the whole change.
+
+---
+
+## Iteration 93 — the intensity columns reach the page, and one figure refuses to pool
+
+`da66b7b`. Service-side the columns go in behind `_has_intensity_cols`, the same per-set feature
+detection the diversity and instrument columns already use, so `/tracker` works unchanged against a
+`tracker_weekly` that has not been rebuilt yet — which matters, because the rebuild is queued behind
+the write lock until ~10:40 UTC.
+
+**The pooling was the real decision.** `authority_mean` **composes exactly**: a cell's mean times its
+event count is that cell's authority sum, so a week pools as the event-weighted mean of its level
+cells. I pinned it against the trap — for cells of (3 events @ 3.0) and (1 event @ 1.0) the right
+answer is **2.5** and the naive mean-of-means is **2.0**.
+
+**The two text figures do not compose, and I did not fake them.** A median of medians is not a
+median, and these distributions are right-skewed — which is the whole reason the memo reports
+medians rather than means. So the pooled row carries 0, the template shows the text figures **per
+level only**, and the week-total tooltip says plainly that the authority figure pooled exactly while
+the medians did not. The alternative — a cas-weighted mean of the cell medians — would have looked
+like a number and been nothing, and it would have been invisible to anyone reading the page.
+
+**Display choice:** tooltips, not new columns. The table already carries new-docs and cascade counts
+per level; three more numbers per cell would wreck a dense layout that works. The existing design
+already puts the `single-source` and `single-instrument` explanations in `title` attributes, so this
+follows it. Per-level cells get text + authority + the note that the two are independent; the week
+total gets the pooled authority.
+
+**I used the all-or-nothing edit pattern I had just written into CLAUDE.md** (iteration 92): both
+edit scripts this tick build a list of (anchor, replacement) pairs, check **every** anchor, and
+write nothing unless all matched — 8 edits to the service and 2 to the template, each verified
+afterwards with single-line `grep -cF` run as its own command. No partial write, no commit message
+describing an edit that did not land.
+
+269 → **273 passed, 1 skipped** (4 new service tests, including one asserting the template parses).
+Nothing ran against the live DB.
