@@ -314,3 +314,5 @@ max-serial and -5.2%/yr by method-of-moments), which withdraws the 函 rise asse
 `sz-gazette-scoping.md` §3.2. So the formal-document channel narrowed beside a letter channel that was
 already larger than it in 2001; that is a change in instrument form, not evidence of less governing, and
 it is n=1 on a special economic zone.*
+
+*(2026-10-08) `wenhao-denominator-wuxi.md` runs the same 文号 estimators on Wuxi, an ordinary Jiangsu prefecture, and the verdict is (a), replication in proportion but not in path: over 2010-2025 Wuxi's government register (锡政发 plus the 锡政呈 请示 register split out of it in 2018, which otherwise reads as a false 84% one-year collapse) falls −6.8%/yr against 深府's −6.0%/yr and its office series −12.6%/yr against 深府办's −14.9%/yr, with 规范性文件 registers appearing in the same window at the same scale, but Wuxi held level through 2017 and stepped down in 2019 where Shenzhen fell through 2012-2017, its office series fell by three quarters rather than collapsing, and the pre-2010 Shenzhen decline does not appear in Wuxi at all.*

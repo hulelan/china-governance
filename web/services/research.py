@@ -35,7 +35,7 @@ _cache: dict = {}
 CURATED: list[tuple[str, list[str]]] = [
     ("Start here: the synthesis", ["findings-synthesis"]),
     ("Part I · The citation network", [
-        "citation-network-structure", "wenhao-denominator", "instrument-lifespan",
+        "citation-network-structure", "wenhao-denominator", "wenhao-denominator-wuxi", "instrument-lifespan",
     ]),
     ("Part II · Diffusion and fidelity", [
         "diffusion-atlas", "diffusion-fidelity", "fidelity-provincial",
