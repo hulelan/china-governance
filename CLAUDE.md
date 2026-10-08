@@ -55,7 +55,15 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     `tracker_weekly` (per topic × ISO week × admin_level new-doc + cascade counts,
     `scripts/build_tracker_rollup.py`). Both rebuild in `daily_sync.sh` Phase 2c
     after citations/scores/topics. Anchor set excludes `npc` 地方法规 (they're
-    local 人大 regs mis-leveled as central) and explainer representatives. Known
+    local 人大 regs mis-leveled as central) and explainer representatives.
+    **Intensity columns (2026-10-08):** `tracker_weekly` also carries `authority_mean` (mean
+    adopter authority weight: provincial 3 / municipal 2 / district 1), `text_median` (median
+    adopter body chars, from `doc_len`) and `elab_median` (median adopter chars / anchor chars).
+    TWO dimensions on purpose, from the IP&M-2025 replication in
+    `docs/research/diffusion-intensity-index.md`: they correlate at Spearman −0.085 and the sign
+    flips to +0.128 under a stricter spec, so one composite would discard real information.
+    `authority_mean` is a MEAN and never a sum — summed over adopters it correlates with
+    `cascade_events` itself at +0.957, i.e. a second copy of the count. Known
     gap: `diffusion_events.topic` stores only the anchor's FIRST topic tag; the
     tracker service compensates with a cached anchor→topics map. **A consequence measured
     2026-10-07:** since a cascade is labelled by its ANCHOR's `topics_algo`, and the
@@ -592,6 +600,30 @@ silent loss of a document. Prefer a cap you can lift (`--retry-bodies`) to a ver
 explicit requeue reopens, and reserve genuine terminality for verdicts that come from the data
 itself rather than a guess — `pdf_only` reads the URL's suffix, which is why it stayed terminal.
 
+## An anchor string copied from a rendered view, not from the file
+
+Twice in one sitting (2026-10-08) an edit script asserted on a string reconstructed from how a
+file *looked* rather than from its bytes, and the file had the sentence **wrapped across two
+lines**:
+
+```python
+old = "FIX = precompute a `site_stats` table nightly (an index can't help; the aggregate ...)"
+assert old in s          # fails: the file breaks after "can't"
+```
+
+Both times the assert was the FIRST of several, the write happened at the END of the script, and
+so **nothing at all was written** — while the commit that followed described the edit as done. The
+second instance was the *verification* of the first: `grep -c "<phrase>"` for a phrase my own
+replacement text had wrapped, which printed `0` and, because `grep` exits 1 on no match, silently
+truncated the rest of an `&&` chain of checks.
+
+**Rules.** Read the anchor out of the file (`python3 -c "print(repr(open(f).read().split(chr(10))[N]))"`)
+before writing an edit against it. Verify a landed edit with `grep -cF` on a short **single-line**
+substring, and run each check as its own command, never chained with `&&` after something that can
+legitimately return 0 matches. And when an edit script makes several replacements, let it write
+nothing unless **all** anchors matched (the loop above does this deliberately) — a partial write is
+worse than no write, because the commit message will describe the whole change.
+
 ## A watcher must not match itself
 
 `pgrep -f PAT` tests PAT against the full command line of **every** process, including the shell
@@ -820,14 +852,26 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   cache), so `/` is **~72s cold / ~30ms warm** and does NOT warm up. The 1h cache is
   **per-worker on 2 workers**, so it recomputes per worker per hour and starves the site to
   one worker while it runs. FIX = precompute a `site_stats` table nightly (an index can't
-  help; the aggregate must read the body column). Also: `classify_main_name` has NO index
+  help; the aggregate must read the body column). **(Clarified 2026-10-08 — the wording above
+  misled me into nearly abandoning a feature.) The 74 seconds was the AUTOMATIC COVERING INDEX,
+  not the body read.** Verified with `EXPLAIN QUERY PLAN`: the `sites LEFT JOIN documents GROUP BY
+  site_key` shape plans as `SEARCH d USING AUTOMATIC COVERING INDEX (site_key=?) LEFT-JOIN`,
+  materializing ~4GB through a 32MB cache. A *plain sequential* read of every body is **7.3s for
+  all 346,955 rows** (2.2s for the `!= ''` predicate, which the engine answers from each record's
+  length header) and plans as a bare `SCAN documents`. So per-document body-derived columns ARE
+  affordable — `doc_len(doc_id, chars)` is built inside `build_site_stats`'s existing single scan
+  for ~5s — **provided the aggregation stays in Python and no SQL-side `GROUP BY` touches the
+  body.** `tests/test_tracker_intensity.py` asserts that query plan, so an edit that reintroduces
+  the materialization fails loudly. Also: `classify_main_name` has NO index
   (`idx_documents_category` is on `category_id`, a look-alike trap), so the categories facet
   + category browse filter full-scan (1.3-5.7s); `CREATE INDEX idx_documents_classify_main
   ON documents(classify_main_name)` fixes both. Everything else (<250ms) is healthy. See
   the fix plan in `perf-diagnosis.md`. **All three fixes shipped:** `site_stats` (74s → 2.3s),
   the index, and `corpus_stats` (commit `ebf1dc8`, same single scan in `build_site_stats.py`,
   read by `get_stats` with a live-query fallback) → `/` cold **0.23s**, `/browse` **0.35s**.
-  Both tables rebuild nightly in Phase 2c.
+  Both tables rebuild nightly in Phase 2c, alongside **`doc_len(doc_id, chars)`** — per-document
+  `LENGTH(body_text_cn)` from the same single scan, so later analysis reads a body length as an int
+  instead of re-reading the body (used by `tracker_weekly`'s intensity columns).
 - **(2026-08-11) The public site is PRIVATE — behind HTTP Basic Auth.** nginx
   server-level `auth_basic` on the chinagovernance :443 block; creds in
   `/etc/nginx/.htpasswd` (user `admin`, apr1 hash — NOT in the repo). This supersedes
