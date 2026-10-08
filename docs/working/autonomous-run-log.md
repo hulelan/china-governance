@@ -2406,3 +2406,68 @@ thin `localized_of` coverage (2 Wuxi pairs vs 44 Suzhou) by "26% of Wuxi titles 
 3.7% for Suzhou". My own count over ALL titles gives **43.2%** and **54.1%** — which would refute
 the explanation. Someone has the wrong denominator and I do not know whose, so the agent must find
 what denominator makes each true before either number is propagated.
+
+## P2 Iteration 85 (the fix landed; it corrected my mechanism and refused my tightening)
+**`3639ccf` LANDED**, and it corrected **both** premises I had handed it, plus declined the
+tightening I proposed — with measurement in each case.
+**Where I was wrong.** (1) `localize()` does NOT return 惠山区 on those titles; it returns 无锡市,
+because `locality_in_core` needs masthead corroboration — and `_loc` is consulted AFTER the 文号
+anyway, so it never gets a turn. (2) `province_name_of_place('惠山区')` **already returned None**;
+it does not match a key 惠, because that loop's keys are full division names and
+`'惠山区'.startswith('惠州市')` is false. The actual loose match is in `docnum_agency`:
+`prefix.startswith(registry_key)`, i.e. `惠府发`.startswith(`惠府`). Wuxi's absence from
+`DISTRICT_CITY` is still the enabling condition — with no Wuxi sub-division in any table the 文号
+is the only field that yields ANY answer — it just yields a wrong one instead of being outranked.
+**The class is tiny and not derivable.** Of 36,243 docs whose 文号 resolves to a registry agency
+with a province, exactly **22 conflict with their site's province** — one prefix family (惠府,
+惠府办, 惠府办规, 惠府规发), one site. The short heads I suspected produce **none** (no registry key
+starts with 锡, 常 or 台; 江府 and 新政 agree everywhere). A site-independent check confirms which
+reading is right: 文号 vs the doc's OWN masthead over 23,183 docs gives 23,160 agreements and 23
+conflicts, 22 of them these Wuxi docs. **The 23rd is the counter-example that kept the fix narrow:**
+`粤府函〔2015〕170号 福建省人民政府广东省人民政府关于闽粤经济合作区发展规划的批复` — masthead says fj,
+文号 says gd, and the **文号 is right**, because the joint 批复 issued out of the Guangdong registry.
+A blanket "masthead beats 文号" would have broken it. And 42 of 114 registry keys share a leading
+character with another prefecture (东府 东莞/东营, 中府 中山/中卫, 河府 河源/河池/河南/河北 …) — yet
+**the key that actually bit is not in that list**, because 惠 collides with a DISTRICT and the repo
+has no district table. So the ambiguous set is not derivable and must stay evidence-driven.
+Fix: `AMBIGUOUS_DOCNUM_PREFIXES = {惠府, 惠府办}` with the measurement and an extend-from-evidence
+rule in the comment; `derive_province(..., site_prov=None)` takes the site as an **arbiter, not a
+candidate** — when the 文号 candidate disagrees AND its matched key is ambiguous, that candidate is
+dropped and publisher → masthead → localize → title head decide; explicitly commented as not a
+precedence change. Seven Wuxi divisions added to `DISTRICT_CITY`. `build()` now loads site names
+itself so a direct `build(conn)` caller cannot silently lose the arbitration. Blast radius measured
+old-vs-new over the whole corpus: **1,185 docs change — 22 corrected gd→js and 1,163 newly resolved
+None→js** (jiangyin 664, xinwu 316, binhu 58, liangxi 51, yixing 35, huishan 21, xishan 18), **0
+lost a province, 0 moved between two non-null provinces.** Suite 202 → **215 passed**, identity
+self-test 195 → 203, geo 23 → 32.
+**It refused my exact-match tightening, correctly.** An exact-only `province_name_of_place` would
+lose **20,958 doc-weighted resolutions over 218 distinct strings — and it hand-checked all 218,
+every one correct** (武汉硚口区, 苏州张家港市, 那曲地区, plus 福建省X厅 ×40 and 重庆市X局 ×43). The
+distinction it drew is the one I missed: that loop is **parsing a compound name**, not standing in
+for a missing table entry, so the length-floor family does not apply. Likewise `docnum_agency`'s
+`startswith` cannot be tightened: **18,365 of 36,243 registry matches (50.7%) match only by
+prefix** — 沪府发, 粤府函, 京政发 — all correct, because the registry deliberately does not enumerate
+series suffixes.
+**My title figures were the right ones, and the memo's explanation is refuted.** The 26% / 3.7% is
+the residual of a four-branch `CASE` whose SECOND branch absorbs 866 Wuxi / 3,629 Suzhou titles
+that mostly contain no city name either; its appendix also printed the four counts out of the
+branches' emission order, which is how the 市政府 bucket got read as the no-city one. On the right
+denominator — titles with no city name anywhere — it is **43.2% Wuxi vs 54.1% Suzhou**, so the
+ordering FLIPS and the masthead-style story cannot stand.
+**The real gate is another missing table entry, and it is the most consequential finding here.**
+`locality_in_core` accepts a core locality only if it is in `KNOWN_LOCALITIES`, a **54-name set
+seeded from `_PROV_MUNI` plus the 文号 registry**. I verified directly: the set has 54 entries,
+**苏州市 is in it via 苏府 and 无锡市 is absent because Wuxi has no 文号 registry entry**, so
+`locality_in_core` returns 苏州市 for a Suzhou title and **None** for the Wuxi equivalent. That is
+why `localized_of` fires 2 vs 44, and it means **`pair-channels.md`'s renaming-channel floor is a
+floor on a 54-name list, not on the corpus.** Added to CLAUDE.md (`3f93409`) as the run's SECOND
+named bug shape — *a hand-maintained table silently bounds a measurement* — with five instances
+(the ontology's 231 unmapped sites, `DISTRICT_CITY`, the 文号 registry, `KNOWN_LOCALITIES`, the
+title length floors) and the tell: **an ordering that reverses when you change denominator.**
+Launched the decision as measurement-first: seed `KNOWN_LOCALITIES` from `geo.CITY_PROVINCE` (354
+complete divisions) or not, with per-city blast radius, an adversarial set of titles that MENTION a
+city that is not the issuer's, hand-checks, every established invariant re-verified, and "do not
+ship, with numbers" named as an acceptable outcome.
+Rebuild owed once the lock clears: identity → succession → diffusion → tracker → validate. Expect
+topic-labelled aggregates to move, since 1,163 Wuxi district docs become eligible for the
+same-province gate for the first time; `fidelity-wuxi.md`'s Jiangsu figures are floors by 22 docs.
