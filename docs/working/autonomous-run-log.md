@@ -3630,3 +3630,36 @@ than letting the wrapper quietly become pointless. Suite 283 → **293 passed, 1
 module that did not import `sys`, and only the live run surfaced the `NameError` — `python3 -c
 "ast.parse(...)"` passed it cleanly, because a missing import is a runtime error, not a syntax
 error. Worth remembering that a syntax check is not an import check.
+
+---
+
+## Iteration 105 — audited the memos for the trap: a clean negative, and the reason it is one
+
+With the routing helper shipped, the obvious question was whether any **published** count is a
+silent zero. Audited it, and **no memo is affected.**
+
+**Bounding the audit mattered more than running it.** My first extraction found "173 1-2 char terms
+appearing beside counts" — almost all noise: fragments of longer terms (会法 from 工会法, 务院 from
+国务院), table row labels (北京, 广东), 文号 prefixes (深府, 深发), and sector names from a keyword
+classifier. The real risk set is only terms a memo says it **counted via FTS**, which is 8 memos.
+
+**And the key distinction, measured:** `LIKE` has **no length floor** — `title LIKE '%转发%'` returns
+**6,257** and `'%美元%'` **596**, while trigram FTS returns **0** for 美元. So every memo that counts
+by LIKE is safe at any term length; the floor is purely an FTS property. That alone removes most of
+the 173.
+
+Of the 8 FTS-mentioning memos: three were written today and route correctly;
+`wenhao-denominator-wuxi.md` queries only 锡政发-style 3+ prefixes; `search-primer.md`'s `MATCH` is a
+generic `email`-table illustration; `successor-detector.md` has no FTS query. And
+**`attention-campaigns.md` line 136 already says** *"mentions were counted via the `doc_search`
+trigram FTS for the terms of 3+ characters"* — it had written the rule down before I rediscovered it.
+
+**That last fact is the one worth keeping.** The knowledge was already in the repo, in prose, in a
+memo I had read. It did not reach my hands at the moment I typed a query — the same shape as
+`authority_invocation.py` holding correct routing as a private copy nobody could import. So: **a
+rule written in prose protects the document it is written in; only a rule written in code protects
+the next thing you do.** That is the argument for iteration 104's module, stated better by this
+audit than by the six failures that prompted it.
+
+Recorded in CLAUDE.md beside the trap row, including the LIKE-has-no-floor distinction, so the next
+audit of this kind is bounded in one line instead of extracting 173 candidates.
