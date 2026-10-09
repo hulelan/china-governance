@@ -3939,6 +3939,17 @@ instrument is to grep for the **SQL shape** — `s.admin_level` inside a FROM/WH
 mentions of "central". Recorded in CLAUDE.md so the next audit of this kind starts with the right
 query.
 
+**A self-inflicted failure in this very entry, and the fix is structural.** The commit that was
+supposed to carry the CLAUDE.md half of this (`4683e6a`) contains **only the log file** — the edit
+script printed `ANCHOR NOT FOUND — nothing written` and the `git commit` **ran anyway**, because the
+commands were newline-separated rather than `&&`-chained. The all-or-nothing write worked exactly as
+designed; what failed is that **nothing gated the commit on it**. And the anchor missed for the
+trap I named myself in iteration 92: I took it from my own earlier replacement text instead of from
+the file, where line 91 reads `a level. Two memos stated…` so "Two memos" is not at a line start.
+**New rule, now applied: an edit script and its commit must be `&&`-chained, with the script
+printing a sentinel the chain depends on.** A write-at-the-end script that cannot fail the chain is
+a commit message waiting to lie.
+
 **The substantive conclusion is reassuring and worth stating plainly:** the volume's memos were
 substantially **more careful about levels than my audit implied**. Two of them anticipated the exact
 problem `doc_identity` was later built to fix — one by constructing a fixed-site robustness set, one

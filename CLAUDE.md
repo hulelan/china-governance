@@ -91,6 +91,21 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     a level. Two memos stated such a finding in level vocabulary and both needed correcting
     (`diffusion-fidelity.md`'s four-step gradient, which was really three; this one's, which was
     right but misworded).
+    **Sweep closed 2026-10-09, with its real scope.** Of seven memos flagged, **three were genuinely
+    on `sites.admin_level`** and all three held or improved: `recentralization-experimentation` (the
+    2013 upward-citation step is **+16.1 pt** per-document against +17.9 site-based, despite **23.7%**
+    of edges having an endpoint reclassified); `attention-campaigns` (**strengthened** — the central
+    campaign share goes 0.21→1.00% site-based but **0.28→1.31%** per-document, roughly twice any
+    other level instead of modestly ahead, because ~28k npc regulations sat in the central
+    *denominator*); `joint-issuance` (**headline immune** — its fixed gov/ndrc/mof/mee set excludes
+    npc, so only the all-central variant shifts, by +6 to +7.5 pt). **Four needed nothing:**
+    `diffusion-atlas` and `fidelity-jiangsu` inherit `admin_level_doc` through `diffusion_events`,
+    `bottom-up-channel` queries it directly, and **`citation-network-structure` built its own
+    per-document re-leveling before `doc_identity` existed** — it re-levels the 28,184 npc 地方法规
+    from `publisher` and prints the uncorrected matrix beside the corrected one.
+    **Method note for the next audit:** I decided which memos needed checking with a grep counting
+    *mentions* of level words, and it over-reported by more than half (3 real of 7 flagged). Grep the
+    SQL shape — `s.admin_level` inside a FROM/WHERE — not prose mentions of "central".
   - **Per-document identity layer (2026-10-06)** — `doc_identity` side table
     (`scripts/build_doc_identity.py`, nightly Phase 2b LAST step, `--force` because the
     nightly holds the lock; ~37s, one transaction): `admin_level_doc` + `level_source`
