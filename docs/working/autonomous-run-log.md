@@ -3417,3 +3417,38 @@ it will look fine.
 the totals had scrolled past and I nearly reported the per-site table as if it were the summary.
 Re-ran with `--report-json` and `setsid nohup … < /dev/null` so the run owns its output and survives
 independently of the ssh session.
+
+**Iteration 101c — the trim's full scope, and the 3.8% that a percentage hides.**
+
+Full dry-run report (306s over 62,591 prefiltered bodies): **33,418 carry a trailing chrome block**
+→ `trim=32,808`, `flagged=610`. The 610 are **all-chrome** bodies and are flagged rather than
+trimmed, which is the right call — a body that is nothing but widget text needs re-extraction or a
+ledger entry, not truncation to empty.
+
+**The safety case is the marker census**, and it is reassuring: all 16 markers are unambiguously
+page furniture with **none overlapping document content** — 扫一扫在手机打开当前页 22,922,
+CODE(js/css) 11,083, 分享到 6,004, 相关解读 3,157, 网站导航 2,802, 微博 1,473, 相关文档 1,308,
+打印本页 1,261, 【关闭】 1,032, 下一篇 779, 微信 457, 上一篇 367, 【打印】 266, 关闭窗口 190,
+相关链接 151, QQ空间 4. Concentrated in `gov` (12,763 of the 扫一扫 rows), `js` 5,231, `suzhou`
+3,741, `most` 1,059.
+
+**But the distribution has a tail a summary percentage would hide.** 20,227 of 32,808 trims remove
+under 5% of the body — and 1,147 remove **50-90%**, 94 remove **≥90%**:
+
+| removed share | <2% | 2-5% | 5-10% | 10-25% | 25-50% | **50-90%** | **≥90%** |
+|---|---|---|---|---|---|---|---|
+| suffix rows | 13,743 | 6,484 | 3,854 | 3,912 | 3,574 | **1,147** | **94** |
+
+So **1,241 rows (3.8%) lose more than half their body**, and the two explanations — the body really
+was mostly chrome, versus the detector over-reached — **produce the same number**. That is the
+session's recurring shape again, and here it means those rows need *eyes*, not a percentage, before
+a 33k-row write. `--dump-tsv` emits per-row before/after; a sample of the ≥90% and 50-90% bands is
+the check. `--revert` makes it recoverable either way, but knowing beforehand is better than
+relying on undo.
+
+**Two of my own tooling slips this tick, both caught:** I re-ran the 306s scan a second time to get
+a TSV when the JSON I already held would have answered the structural questions (the JSON turned
+out to carry aggregates only, so the re-run was needed after all — but I should have read the JSON
+first and known that). And a `git commit -m "…"` with unescaped double quotes inside it broke the
+shell and silently left the edit uncommitted while printing four `pathspec` errors; the heredoc
+form I had been using all session is immune, and I went back to it.
