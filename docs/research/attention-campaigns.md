@@ -73,6 +73,26 @@ government documents for the whole window, and the 2018-20 hump in 攻坚战 men
 
 ## 1. Method
 
+*(**Level basis checked 2026-10-09, and Test 2 gets STRONGER.** This memo predates `doc_identity`
+and takes levels from `sites.admin_level`, which files ~28k npc 地方法规 as central. Those
+regulations sit in the central **denominator** and essentially never carry a campaign title, so the
+central share was being deflated. Re-measured on the per-document level, same proxy and same
+periods:*
+
+| basis | central 2010-14 | 2015-19 | 2020-26 | provincial 2020-26 | municipal 2020-26 | district 2020-26 |
+|---|---|---|---|---|---|---|
+| site (as published) | 0.21% | 0.87% | **1.00%** | 0.68% | 0.75% | 0.55% |
+| **per-document** | 0.28% | 1.27% | **1.31%** | 0.60% | 0.67% | 0.62% |
+
+*The denominator moves exactly as that mechanism predicts: central n falls **55,025 → 41,444** for
+2020-26 as the npc regulations leave, while provincial rises 35,600 → 41,698.*
+
+***So "the campaign label has moved UP the hierarchy, not down" holds and sharpens.*** *On the site
+basis central (1.00%) was only modestly ahead of municipal (0.75%). On the per-document basis
+central is **1.31% against 0.60 / 0.67 / 0.62** — roughly **twice any other level** — and the rise
+across the window is 0.28 → 1.31 rather than 0.21 → 0.99. The published figures understated the
+finding.)*
+
 **Universe.** Government levels only (`sites.admin_level` in central, provincial, municipal,
 district, department). Media and research sites are excluded because the question is about
 bureaucratic attention. Years 2005-2025 for the statistics; 2026 (to 2026-09) reported

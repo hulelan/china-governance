@@ -3822,3 +3822,42 @@ likely the composition effect a panel exists to remove. The memo was **more care
 Recorded as such, with the outstanding work named (re-run the per-document basis on the R2 panel)
 and with the consequence for `authority-invocation.md` stated: its disagreement with this memo holds
 **only within the R2 panel** until that re-run happens, and should be read that way.
+
+---
+
+## Iteration 110 — two more memos checked: one needed nothing, one got stronger
+
+**`diffusion-atlas` needed no work, and that is worth recording so nobody repeats the check.** My
+audit counted 5 "level claims" in it, but they are prose mentions: the memo is built on
+`diffusion_events`, which I verified in iteration 99 reads `admin_level_doc` and holds no `media`
+rows. So the province-before-city finding has been on the per-document basis all along. Two of my
+six flagged memos turn out to be false positives of a grep, which is a fair reminder that an audit
+counting *mentions* over-reports.
+
+**`attention-campaigns` genuinely was on the site basis** — line 76 says so — and re-basing it
+**strengthens Test 2**. The mechanism was predictable before measuring: the ~28k npc 地方法规 sit in
+the **central denominator** and essentially never carry a campaign title, so the central share was
+deflated.
+
+| basis | central 2010-14 | 2015-19 | 2020-26 | prov 2020-26 | muni 2020-26 | dist 2020-26 |
+|---|---|---|---|---|---|---|
+| site (as published) | 0.21% | 0.87% | **1.00%** | 0.68% | 0.75% | 0.55% |
+| **per-document** | 0.28% | 1.27% | **1.31%** | 0.60% | 0.67% | 0.62% |
+
+The denominator moves exactly as that predicts: central n falls **55,025 → 41,444** for 2020-26 as
+the npc regulations leave, provincial rises 35,600 → 41,698.
+
+**So "the campaign label has moved UP the hierarchy, not down" holds and sharpens.** On the site
+basis central (1.00%) was only modestly ahead of municipal (0.75%); on the correct basis central is
+**1.31% against 0.60 / 0.67 / 0.62**, roughly **twice any other level**. The published figures
+understated their own finding.
+
+**Running tally of this sweep, which is now the useful summary:** of the memos checked, two needed
+nothing (`diffusion-atlas` inherits the right basis; `fidelity-provincial` was right but misworded),
+three got **stronger** (the AI triad eightfold, recentralization's 2013 step at +16.1 pt,
+attention-campaigns' central share doubling its lead), one had its **shape corrected**
+(`diffusion-fidelity`'s four steps are three), and one of my own claims was overstated tenfold. **A
+re-base is not a cleanup — it is a measurement, and it has moved findings in both directions.**
+
+**Cron watch:** 05:40 UTC, the lock is still held and the 06:00 cron has not fired. Twenty minutes
+to the window plan's first falsifiable prediction.
