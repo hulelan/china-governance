@@ -4815,3 +4815,60 @@ window and moved to background).
 Citations, scores and the segmented search index for the merged rows come with tonight's nightly,
 which regenerates them in the correct order — `merge_db.py` deliberately does not merge citations.
 
+---
+
+## Iteration 131 — chased an open question and found three stacked blockers, the last of which was the real one
+
+Started on the trim's open question ("should it write ledger rows for the bodies it leaves?") and
+the answer turned out to be that **the question's premise was wrong**, which took three measurements
+to establish.
+
+**First my own criterion was wrong.** I approximated the open question's functional test and got
+**5,324** content-free rows where it reports **163** — a 33x gap, so I was measuring a different
+population and said so rather than presenting it as a re-measurement. Hand-checking 12 of my flagged
+rows showed why: they are **attachment-only** documents (`详见附件`, `文件下载链接`), plus one
+genuine false positive — a Tibet hotline notice whose content IS the phone numbers, which my
+digit-stripping erased. **That is a length-floor bug of exactly the family CLAUDE.md documents:** I
+measured emptiness on a string my own normalizer had stripped of digits.
+
+**Then the real population.** **7,802** documents have a body under 400 chars saying "see
+attachment"; **6,731 (86%)** carry `attachments_json`; **6,013** name a PDF across 45 sites (szdp
+958, szlhq 563, szeb 438, hrss 428, jtys 412, swj 313); **ZERO** had ever been enriched. These are
+not extraction failures — the content is in a PDF — so the tool is `extract_pdf_text.py`, not the
+trim and not HTML re-extraction.
+
+**Three stacked blockers, in the order I found them:**
+
+1. **The script parses SAVED RAW HTML to find the attachment url**, and the mirror begins
+   2026-06-08, so it could not see the url for most of these. But **`attachments_json` held the url
+   all along**, with `name`, `mime` and `size`. Fixed: `attachment_url_from_json`, preferring a PDF
+   over an office format, refusing an unreadable `.rar`. 8 tests. Verified on 12 szdp rows: every
+   one reads `html=N json_url=Y`, so all 12 would have been skipped before.
+2. **TLS.** The stored `https://` url fails on **5 of 6** sampled Shenzhen hosts with
+   `SSL: BAD_ECPOINT` — OpenSSL cannot parse their elliptic-curve certificates, very likely SM2.
+   Not a firewall, not a WAF. Forcing `http://` worked on **8 of 8** with valid `%PDF-` magic.
+   **This blocker was already handled** — `download_attachment` retries https→http — which corrects
+   my first write-up, where I listed it as open. It does generalize CLAUDE.md's `sz_gazette`
+   parenthetical ("http only, https fails from Python") from one crawler's quirk to a property of
+   Shenzhen government hosts.
+3. **`import fitz` fails on the droplet.** PyMuPDF was never installed there and is not in
+   `requirements.txt`. **This is the actual reason for the zero**: the script was written when the
+   Mac held the database and has been silently unimportable since the June 2026 migration. A
+   documented ACTIVE script that cannot import. Installed (1.28.2) and pinned.
+
+**And one correction I nearly shipped.** The first real run extracted **0 of 12** on szdp — all
+scanned images, no text layer — and I began writing the population off as needing OCR. Sampling
+seven OTHER sites: szlhq 4/4, szeb 4/4, jtys 4/4, wjw 4/4, swj 3/4, zjj 3/4, hrss 2/4 = **24 of 28
+(86%)**. szdp is the single outlier because 大鹏新区 publishes its social-assistance tables as scans.
+**The "validate where the flag fires" lesson running in reverse** — a one-site sample is a sample of
+one, the same shape as the `image_only` cue validated on two zero-trial sites and my own `raw_html`
+audit whose 87.6% measured the average SITE, not the average row.
+
+Full run in flight (pid 675885, ~6,013 documents, commits every 10 extractions so transaction hold
+time stays bounded, ~12 h of margin before the nightly). The content is fiscal and social-assistance
+microdata — 最低生活保障金发放情况, 低保家庭生活扶助金, 临时救助金, 人才发展专项资金支出,
+部门预算 / 部门决算, 询价公告 — invisible to every body-text query in the corpus until now.
+
+Also this iteration: the second Wuxi merge's stats tables rebuilt (`site_stats` 348,662,
+`instrument_inbound` 40,574).
+
