@@ -3531,3 +3531,55 @@ that it was overstated tenfold on first telling, and the Open Question is rewrit
 the threshold go" to "there is no usable threshold; the criterion is functional, and what remains
 open is only whether 163 rows are worth wiring". Added the follow-up test: re-measure after the trim
 runs with re-extraction, because if the residue is ~10 rows it is not worth doing at all.
+
+---
+
+## Iteration 103 — the state-VC half, and the index trap reversing a comparison
+
+Returned to NBER **w32701**'s fund-document half. The paper studies guidance-fund *outcomes*; we
+hold the authorizing instruments, so the question available to us is about the **design of the
+incentive**: a bureaucracy that punishes losses cannot run a venture portfolio, so if 耐心资本 is
+real policy there should be a matching blame-shield for the officials deploying it.
+
+**There is such a vocabulary, and it is older than patient capital.** `尽职免责` in **597**
+documents, `容错` 1,093, `免责` 1,050, `风险容忍` 117 — and 容错 runs 46-74 documents a year across
+**2018-2020** while 耐心资本 is 0-1 until **2022**. So my first hypothesis (an institutional
+*package* arriving together) was wrong in a useful direction: the shield is the senior institution.
+
+**But then the discriminator reversed, and the reason is the session's recurring trap built into my
+own query.** Asking whether 尽职免责 belongs to lending or to funds, my first run returned:
+
+| lending contexts (2-char) | funds contexts (3-4 char) |
+|---|---|
+| 信贷 **0%**, 贷款 **0%**, 银行 **0%** | 创业投资 28%, 股权投资 24%, 引导基金 18% |
+
+— a clean, confident "it is about funds". **All three lending terms are two characters**, so the
+trigram index returned false zeros, while every fund term happens to be three or four. Routed to
+`doc_search_seg` the answer is the **opposite**: 融资 **59%**, 银行 **50%**, 贷款 **49%**, 信贷
+**41%**, against 引导基金 18% and 耐心资本 **9%**.
+
+**That is the sharpest form of this trap I have hit: it does not merely hide a count, it can reverse
+a comparison** whenever one side is 2-char and the other is not. Recorded as a row in CLAUDE.md's
+marker-table with the rule stated as *route every term by length before comparing any two of them*,
+and noting that `doc_search_seg` fails the other way on jieba-splittable compounds. Sixth occurrence
+this session (美元, 李强, 让利, 容错, 劣后, and this one).
+
+**The corrected finding is better than the package hypothesis.** The liability shield belongs to
+**credit officers making small-business loans** (小微企业 41%, 普惠金融 17%) and reaches funds only
+secondarily. Within documents only **13%** of the 504 耐心资本 rows mention 容错 at all, while
+**23%** mention 引导基金 — patient capital is firmly tied to the *instrument* and loosely to the
+*protection*.
+
+So the finding is a **gap**, and it is falsifiable forward: the state has asked for long-horizon,
+loss-tolerant capital **without extending to fund managers the blame protection it built for loan
+officers**. If patient capital is to function as policy rather than exhortation, a fund-specific
+免责 / 容错 regime should appear in fund management measures or 国资 performance rules. **If it does
+not appear within a few years, the better reading is that 耐心资本 is a demand on private capital
+rather than a reform of state incentives.** Written into the memo as a prediction the corpus can
+re-check at no cost.
+
+Also measured and reported with its caveat: fund-instrument authorization shows **no devolution** —
+the central share sits at 47-54% across all four eras (pre-2010 through 2021-26), unlike the
+legislative devolution finding. And the 2026 counts in every series are inflated by composition
+(~98k documents against 2024's ~29k), so the memo says to read the 2018-20 vs 2022-24 **ordering**,
+not the 2026 levels.

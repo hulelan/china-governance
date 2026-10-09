@@ -142,6 +142,40 @@ one city's technology-park finance reforms, and ratified centrally five years la
 panel would date the instrument's spread; only the document record dates the *argument's* spread,
 and here the argument leads.
 
+### The missing half of the institution (measured 2026-10-09)
+
+A bureaucracy that punishes losses cannot run a venture portfolio, so if patient capital is real
+policy there should be a matching **blame-shield** for the officials deploying it. There is such a
+vocabulary — `尽职免责` ("due diligence, exemption from liability") in **597** documents, `容错` in
+1,093, `免责` in 1,050, `风险容忍` in 117 — and it is **older** than patient capital: 容错 runs
+46-74 documents a year across 2018-2020 while 耐心资本 is 0-1 until 2022.
+
+**But it was built for lending, not for funds.** Co-occurrence with the 597 `尽职免责` documents:
+
+| context | share | | context | share |
+|---|---|---|---|---|
+| 融资 | **59%** | | 创业投资 | 28% |
+| 银行 | **50%** | | 股权投资 | 24% |
+| 贷款 | **49%** | | 引导基金 | 18% |
+| 信贷 | 41% | | **耐心资本** | **9%** |
+
+So the liability shield belongs to **credit officers making small-business loans** (小微企业 41%,
+普惠金融 17%), and it reaches guidance funds only secondarily and patient capital barely. Within
+documents, only **13%** of the 504 耐心资本 documents mention 容错 at all, while **23%** mention
+引导基金 — patient capital is firmly tied to the *instrument* and loosely to the *protection*.
+
+**The finding is therefore a gap, and it is falsifiable forward.** The state has asked for
+long-horizon, loss-tolerant capital **without extending to fund managers the blame protection it
+built for loan officers**. If patient capital is to function as policy rather than exhortation, a
+fund-specific 免责 / 容错 regime should appear — in fund management measures, in 国资 performance
+rules, or in the 政府投资基金 guidance. **If it does not appear within a few years, the better
+reading is that 耐心资本 is a demand on private capital rather than a reform of state incentives.**
+That is a prediction this corpus can check, and it costs nothing to re-run.
+
+*(Caveat on the series: the 2026 counts are inflated by corpus composition — 2026 holds ~98k
+documents against 2024's ~29k, the trap recorded in `rmb-coverage.md` §4 — so read the 2018-2020
+versus 2022-2024 **ordering**, which is robust, not the 2026 levels.)*
+
 ---
 
 ## Limits
