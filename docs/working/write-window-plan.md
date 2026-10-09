@@ -27,6 +27,40 @@ its job. But the consequence is that the next nightly to actually run is **06:00
 ~10:45 UTC and 06:00 UTC is used.** That window is ~19 hours and it is the only chance to land the
 day's work a day earlier. What is waiting:
 
+## REVISED 2026-10-09 09:29 UTC — most of this now happens tonight, by accident
+
+**I pulled the droplet while testing the runbook's lock guard.** The guard's lock-free path ran
+`git pull --ff-only` for real, moving the droplet from `f86a0cf` to `64706d2`. Unintended, so here
+is the assessment rather than a reassurance:
+
+- **The running nightly is safe, verified not assumed.** Bash reads a script incrementally from
+  disk, so a modified `daily_sync.sh` under a live shell is a genuine hazard —
+  `git diff f86a0cf..HEAD -- scripts/daily_sync.sh` is **empty**. Of the 54 changed files none is
+  the running shell; the rest are Python and docs, which the shell invokes fresh.
+- **And it is beneficial.** The nightly shell (pid 501769) is still alive in Phase 2, so when the
+  classifier finishes (~83 min from 09:29) it will continue into **Phase 2b-2d with today's code**:
+  `build_doc_identity`, `build_instrument_succession`, `extract_citations` (the org-stub gate AND
+  the instance-title denylist), `build_site_stats` (now writing `doc_len`),
+  `build_diffusion_events`, `build_tracker_rollup` (now writing the intensity columns),
+  `build_search_index_seg`, and `validate_cascades`.
+
+**So Predictions 1, 2, 5, 6 are tested tonight, not tomorrow**, and the rebuild I had queued for a
+manual window largely runs itself. **Prediction 7 is NOT** — the trim has to be applied before the
+citations rebuild to remove the 195 tail-only edges, and the trim is not in `daily_sync.sh`.
+
+**What still needs the window**, because nothing in the remaining nightly phases does it:
+
+| item | why the nightly will not do it |
+|---|---|
+| **body-ledger seed** | not in `daily_sync.sh`; and it should precede a crawl, not follow one |
+| **PBC crawl** (31 → ~541) | Phase 1 completed at 09:32 **yesterday**, before the code existed |
+| **second Wuxi merge** | a manual `merge_db.py` step |
+| **body-tail trim** | not in `daily_sync.sh`; P7's 195 edges wait for the NEXT citations rebuild |
+
+`scripts/run_write_window.sh` runs exactly these in order, refuses to start while the lock is held,
+takes the lock itself so tomorrow's cron skips rather than collides, and stops the chain on the
+first failure. `--dry-run` prints the plan and touches nothing.
+
 ## Order (each step's reason is why it must precede the next)
 
 ```bash

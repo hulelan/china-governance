@@ -4120,3 +4120,39 @@ that never announce themselves in a title or body, which this corpus **by constr
 post-2022 fall and immediately bounded what that can mean. Each step answered the previous question
 and produced a smaller one, which is the shape a measurement sequence should have.
 
+---
+
+## Iteration 117 — built the window runbook, and its own guard test pulled production
+
+**Wrote `scripts/run_write_window.sh`** rather than composing the owed sequence live at the end of a
+long session, which is how an order gets dropped. It encodes the dependencies as comments stating
+*why* each step precedes the next, refuses to start while the sync lock is held, **takes the lock
+itself** so tomorrow's cron skips rather than collides, stops the chain on the first failure, and
+has a `--dry-run` that touches nothing.
+
+**Tested the guard both ways, and the lock-free path ran `git pull --ff-only` on production.** That
+was unintended. I ran it against a decoy lock precisely so a broken guard could not start the real
+sequence — but step 1 is the pull, and with the decoy lock free the guard correctly let it through.
+
+**Assessed rather than reassured.** Bash reads a script **incrementally from disk**, so a modified
+`daily_sync.sh` under a live shell is a real hazard — and
+`git diff f86a0cf..HEAD -- scripts/daily_sync.sh` is **empty**. Of 54 changed files none is the
+running shell. The nightly (pid 501769) is safe.
+
+**And the side effect turns out to be what the window plan wanted.** The nightly shell is still in
+Phase 2, so when the classifier finishes (~83 min) it continues into **Phase 2b-2d with today's
+code** — identity, succession, citations (with both resolver fixes), `build_site_stats` writing
+`doc_len`, diffusion, the tracker writing its new intensity columns, BM25, and validate. **So
+Predictions 1, 2, 5 and 6 are tested tonight rather than tomorrow.**
+
+**Prediction 7 is not**, and that distinction matters: the trim must be applied *before* a citations
+rebuild to remove its 195 tail-only edges, and the trim is not in `daily_sync.sh`. Four items still
+need the window — the ledger seed, the PBC crawl (Phase 1 finished yesterday, before the code
+existed), the Wuxi merge, and the trim.
+
+**The honest summary of this tick:** I got a useful outcome from a mistake, verified the specific
+hazard it could have caused instead of assuming it was fine, and wrote the revised state into the
+plan. A beneficial accident is still an accident, and the guard test should have used a decoy that
+stops before step 1 — which is what `--dry-run` is for, and what I should have combined with the
+decoy lock.
+
