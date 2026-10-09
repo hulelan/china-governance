@@ -3489,3 +3489,45 @@ the fix for a title-only body. (2) The residue after re-extraction belongs in
 chosen carelessly would ledger a large pre-existing population in one stroke. 200 is my eyeball
 from the kept-text samples, not a measured boundary, and picking it properly is its own small
 piece of work rather than something to bolt onto a 33k-row write mid-window.
+
+---
+
+## Iteration 102 — measuring my own claim cut it by a factor of ten
+
+Last tick I wrote that the body-tail trim "manufactures ~1,576 invisible bodies" and logged the
+ledger threshold as an Open Question with 200 chars as my eyeball. This tick measured it, and **the
+claim was overstated tenfold.**
+
+**The right criterion is functional, not a length.** Strip the document's title *and* the metadata
+boilerplate (日期 / 来源 / 字号 / 打印 / 索引号 …) from the kept body, then ask whether anything
+remains:
+
+| | rows |
+|---|---|
+| kept under 200 chars (what I reported) | 1,576 |
+| **actually content-free** | **163** |
+| short but genuine (title + date + source + a line) | ~1,400 |
+
+**And a length cutoff provably cannot separate them.** The content-free set spans **26-158
+characters**, and any cutoff that captures all of it also captures **758 rows that do have
+content** — so the 200-char threshold I proposed would have been **~90% false positives**. That is
+the transferable part: I had reached for a threshold when the classes are not separable by length
+at all.
+
+The real 163 are unambiguous when you look: `习近平同阿塞拜疆总统阿利耶夫通电话` + date +
+来源：新华社 + 字号/打印 widgets — gov.cn news stubs whose body never extracted. My inference from
+reading `bjd_tongzhou/900092023` ("keeps only its own title") generalised one example to a
+population, and the population turned out to be 10× smaller.
+
+**I also caught my first criterion being too strict before trusting it.** A plain title-removal test
+returned **3** rows, because a body of "title + 日期：2026-08-06 + 来源：潞源街道" counts as "has
+more" when date-and-source boilerplate is not content either. Rather than propagate a correction
+based on a criterion I could see was wrong, I refined it once (strip metadata too) and got 163. So
+the honest sequence this tick was: 1,576 (too loose) → 3 (too strict) → **163 (right)**, and the
+discipline that produced the answer was refusing to ship either of the first two.
+
+**Corrected in both places** — CLAUDE.md's marker-table seventh instance now leads with the fact
+that it was overstated tenfold on first telling, and the Open Question is rewritten from "where does
+the threshold go" to "there is no usable threshold; the criterion is functional, and what remains
+open is only whether 163 rows are worth wiring". Added the follow-up test: re-measure after the trim
+runs with re-extraction, because if the residue is ~10 rows it is not worth doing at all.

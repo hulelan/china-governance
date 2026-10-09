@@ -77,11 +77,19 @@ git pull                       # f86a0cf -> today's HEAD. Nothing below exists w
    | 50-90% | 1,148 | 422 | **423 (36%)** |
    | rest | 31,565 | 1,335 | 1,110 (3%) |
 
-   **~1,576 documents end up with under 200 characters** — `bjd_tongzhou/900092023` keeps only its
-   own title. Those bodies were never real; they were a title wrapped in a stylesheet. After
-   trimming they are **effectively bodiless while still counting as "has a body"**, so neither
-   `backfill_from_html.py` nor the nightly will ever revisit them. **That is exactly the double
-   invisibility that hid 360 attachment-only `pbc` rows** (CLAUDE.md's marker-table, 6th row).
+   1,576 documents end up with under 200 characters. **I first read that as 1,576 effectively
+   bodiless rows; measured properly it is 163**, and the correction matters because it changes this
+   from a significant problem to a minor one. Stripping the title *and* the metadata boilerplate
+   (日期 / 来源 / 字号 / 打印 …) and then asking whether any content remains gives **163 content-free
+   rows**; the other ~1,400 are short but genuine (title + date + source + a line of notice).
+
+   **A length cutoff cannot separate them.** The content-free set spans **26-158 characters**, and
+   any cutoff capturing it also captures **758 rows that do have content** — so the 200-char
+   threshold was ~90% false positives. The criterion must be functional, not a length. The real 163
+   look like `习近平同阿塞拜疆总统阿利耶夫通电话` + date + 来源：新华社 + 字号 widgets: gov.cn news
+   stubs whose body never extracted. They still carry the double invisibility that hid 360
+   attachment-only `pbc` rows (CLAUDE.md's marker-table) — a useless but non-empty body is invisible
+   to every filter that tests for emptiness — but at 163 rows it is a follow-up, not a blocker.
 
    **Two consequences for this step:**
    1. **Do NOT pass `--no-reextract`.** I used it in the dry-run for speed, which is why the report

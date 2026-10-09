@@ -595,14 +595,22 @@ omission is invisible because the code returns a clean answer either way.
 | `citations` title index / `_best_core` floors | short folded titles | see the length-floor section below |
 | `extract_pdf_text.py`'s selection markers (`附件`/`点击`/`下载`) | a body that is JUST the attachment's filename | PBOC publishes pre-2020 docs as a PDF whose only on-page trace is a link whose text IS the document title, so the extracted body reads like prose: it carries none of the three markers (invisible to the PDF pipeline) AND counts as "already stored WITH a body" (no backfill revisits it). 360 of 541 `pbc` docs; fixed 2026-10-08 at the source by labelling the stub `附件：…` in `crawlers/pbc.py:_body_of` rather than widening the marker list for every site |
 
-*(A seventh instance, predicted by this table and then found 2026-10-09: the body-tail trim
-(`scripts/trim_body_tails.py`) is **correct** — hand-checked on its 8 most aggressive rows, every
-removal is pure CSS/JS — but it leaves **~1,576 documents with under 200 characters of body**, of
-which `bjd_tongzhou/900092023` keeps only its own title. Those read as "has a body", so
-`backfill_from_html.py` and the nightly skip them forever. Same shape as the `pbc` attachment-only
-row above: a document that is useless but non-empty is invisible to every filter that tests for
-emptiness. Mitigation is to run the trim **with** re-extraction, not `--no-reextract`, and to hand
-the residue to `body_fetch_failures` as `empty_extraction`; the second half is an open follow-up.)*
+*(A seventh instance, found 2026-10-09 — and its size was **overstated tenfold on first telling**,
+which is itself the lesson. The body-tail trim (`scripts/trim_body_tails.py`) is **correct**:
+hand-checked on its 8 most aggressive rows, every removal is pure CSS/JS. It leaves 1,576 documents
+under 200 characters, and I first recorded that as 1,576 **effectively bodiless** rows. Measured
+properly — strip the title AND the metadata boilerplate (日期/来源/字号/打印…), then ask whether any
+content remains — the real number is **163**. The rest are short but genuine (title + date + source
++ a line or two of notice).*
+
+***A length cutoff cannot be used here, and that is the transferable part.*** *The content-free set
+spans **26-158 characters**, and any cutoff that captures it also captures **758 rows that do have
+content** — so the 200-char threshold I eyeballed would have had a ~90% false-positive rate. The
+criterion has to be **functional** (nothing left after removing the title and the metadata), not a
+length. Examples of the real 163: `习近平同阿塞拜疆总统阿利耶夫通电话` + date + 来源：新华社 + 字号
+widgets — gov.cn news stubs whose body never extracted. At 163 rows this is a minor follow-up, not
+the significant issue the first telling implied. Mitigation unchanged: run the trim **with**
+re-extraction, not `--no-reextract`.)*
 
 **Rule:** when a per-jurisdiction or per-site number looks like a finding, check whether the
 jurisdiction is in every table the path touches before believing it. The tell is an ordering that
@@ -838,17 +846,19 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
 - **(2026-10-09) Should `trim_body_tails.py` write `body_fetch_failures` rows for the bodies it
   leaves under ~200 characters?** Measured before applying it: the trim is correct (hand-checked on
   its 8 most aggressive rows — every removal is pure CSS/JS) but it leaves **~1,576 documents with
-  under 200 chars**, 43 of the 95 rows in the ≥90% band and 423 of the 1,148 in the 50-90% band.
-  `bjd_tongzhou/900092023` keeps only its own title. **What we know:** such a row counts as "has a
-  body", so `backfill_from_html.py` (which refuses to write a shorter body) and the nightly both
-  skip it forever — the same double invisibility that hid 360 attachment-only `pbc` rows.
-  Re-extraction is the first remedy and the script already has it (run `--apply` **without**
-  `--no-reextract`), but whatever it cannot rescue should land in the ledger as `empty_extraction`
-  so it is tracked instead of looking fine. **The open question is where the threshold goes**: 200
-  chars is my eyeball from the kept-text samples, not a measurement, and 1,110 of the 31,565
-  small-trim rows are *already* under 200 before any trim, so a threshold set carelessly would
-  ledger a large pre-existing population in one go. Top sites affected: cppcc 312, suzhou 291,
-  bjb_wjw 64, bjd_tongzhou 48, bjd_fangshan 45.
+  under 200 chars** — **but only 163 of those are content-free** (measured 2026-10-09 by stripping
+  the title AND the metadata boilerplate, then asking whether anything remains; the other ~1,400 are
+  short but genuine). **The threshold question is now answered, and the answer is that there is no
+  usable threshold:** the content-free set spans **26-158 chars** and any cutoff capturing it also
+  captures **758 rows that do have content**, so the criterion must be **functional** — nothing left
+  after removing the title and the metadata — not a length. The real 163 are gov.cn news stubs
+  (`习近平同阿塞拜疆总统阿利耶夫通电话` + date + 来源：新华社 + 字号 widgets) whose body never
+  extracted. **What remains open is only whether it is worth wiring**: such a row counts as "has a
+  body", so `backfill_from_html.py` (which refuses to write a shorter body) and the nightly both skip
+  it forever — the invisibility is real — but 163 rows is small, and re-extraction (`--apply`
+  **without** `--no-reextract`) may rescue most of them before any ledger row is needed. Re-measure
+  after the trim runs; if the residue is still ~150 it is a 20-line change, and if it is ~10 it is
+  not worth doing.
 - **(2026-10-08) Why do 55% of newly-authorized cities' regulations fall outside the three
   domains the 2015 立法法 amendment confined them to?** `local-legislative-devolution.md` measures
   the confinement as real but leaky: the 283 cities that gained legislative power in 2015-17 do
