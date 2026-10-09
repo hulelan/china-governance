@@ -39,6 +39,32 @@ those and relay nearly vanishes.
 monotonic: province 0.074, city 0.051, department 0.031, district 0.030. The province is the
 forwarding tier. The levels below it write.
 
+*(Level basis corrected 2026-10-08. **The four-step gradient above is not reproducible as stated**,
+because `department` is not a per-document level. It was a `sites.admin_level` value, and
+`sites.admin_level='department'` names a **kind** of body rather than a **tier**: all 14 such sites
+are **Shenzhen municipal bureaus** (公安局, 民政局, 人力资源和社会保障局, 商务局, 交通运输局,
+住房和建设局, 科技创新局, 司法局, 应急管理局, 教育局, 发改委, 卫健委, 审计局, plus 中山市自然资源局),
+and `doc_identity.admin_level_doc` correctly resolves **33,594 of their 33,997 documents to
+`municipal`**. So the old "department 0.031" row is a subset of the city row, not a tier below it,
+and the gradient has three steps, not four. `scripts/rnd/analysis/pairs.py` cannot emit a
+department subset — `LEVEL_CODE` holds only central/provincial/municipal/district — which is how
+this was caught.*
+
+***The qualitative claim survives and is unaffected:*** *province is the highest-overlap tier and
+everything below it is lower, so "the province is the forwarding tier, the levels below it write"
+holds. What changes is that merging the old department row into city pulls the city median down
+from 0.051 toward the department value, since the merged documents sit at 0.031 — so the
+province-to-city gap is **wider** than stated, not narrower. The exact re-based medians are being
+recomputed; until they land, read the three-step ordering as sound and the city figure as an upper
+bound.*
+
+*Two things checked at the same time and found clean, recorded so they are not re-checked:
+`diffusion_events` contains **no `media` rows at all** (only municipal 26,135 / provincial 16,575 /
+district 2,814), and `pairs.py` excludes `media` by construction and already reads
+`admin_level_doc` rather than `sites.admin_level`. So this memo's pair set was never contaminated
+by press coverage — the trap that overstated local reach eightfold in
+`ai-governance-diffusion.md` finding 2 does not reach here.)*
+
 **The fiscal-versus-promotional thesis holds in direction and fails in magnitude.** Anchors in the
 top fiscal-keyword quartile get about twice the text reuse of the bottom quartile (median 0.076 vs
 0.044, Spearman rho 0.24), and the 以旧换新 re-issuances (median 0.168) borrow roughly eight times

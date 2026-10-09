@@ -3206,3 +3206,50 @@ a finding, the discriminator was a category the first cut had merged — mirrors
 editions with pooling failures, intended behaviour with bugs, and now the press with local
 government. The habit that keeps working is to ask *what two things could this number be* before
 writing it down.
+
+---
+
+## Iteration 99 — the media trap does not reach the diffusion machinery, but a stale level does
+
+Carried iteration 98's `media` finding into the atlas and fidelity memos. Two clean negatives and
+one real staleness.
+
+**Clean: the diffusion machinery was never contaminated.** `diffusion_events` contains **no `media`
+rows at all** — only municipal 26,135, provincial 16,575, district 2,814. And `pairs.py` excludes
+media **by construction**: its `LEVEL_CODE` holds only central/provincial/municipal/district, so a
+media document scores `None` and drops out; its header already documents "levels from
+`doc_identity.admin_level_doc`, never `sites.admin_level`". So the eightfold overstatement that the
+AI memos were exposed to cannot reach the fidelity pair set. **Recorded in the memo so nobody
+re-checks it** — a negative result that is written down is worth as much as a positive one here.
+
+**Then `department` turned out not to be a level.** `admin_level_doc` takes six values — municipal
+122,625 / provincial 68,300 / central 67,439 / media 50,985 / district 27,800 / research 1,707 —
+and **`department` is not among them**, though `sites.admin_level` has 14 department sites.
+
+**I nearly read that as a 10%-of-corpus mis-levelling.** 33,594 of 33,997 department-site documents
+resolve to `municipal`, and provincial departments coded municipal would have been a serious bug.
+So I listed the 14 sites before concluding: they are **all Shenzhen municipal bureaus** — 公安局,
+民政局, 人力资源和社会保障局, 商务局, 交通运输局, 住房和建设局, 科技创新局, 司法局, 应急管理局,
+教育局, 发改委, 卫健委, 审计局, plus 中山市自然资源局 — which CLAUDE.md records as "Shenzhen
+municipal + 9 districts + **13 departments**". So `municipal` is **correct**, and the identity layer
+is *better* than the site label: `sites.admin_level='department'` names a **kind** of body, while a
+level should name a **tier**.
+
+**The staleness that follows is real.** `diffusion-fidelity.md` reports a four-step monotonic
+gradient — "province 0.074, city 0.051, **department 0.031**, district 0.030" — computed on site
+levels. That gradient **is not reproducible as stated**, because the department row is a *subset of
+the city row*, not a tier below it, and `pairs.py` cannot emit a department subset at all (which is
+how I caught it). The qualitative claim survives untouched: province is the highest-overlap tier,
+everything below writes. But merging the old department documents into city pulls the city median
+**down** from 0.051 toward 0.031, so **the province-to-city gap is wider than stated, not
+narrower** — the correction strengthens the memo's own point.
+
+Corrected in the memo with the full reasoning, and marked the exact re-based medians as **being
+recomputed** rather than guessed: `pairs.py --csv` with scoring is running detached on the droplet,
+and until it lands the memo says to read the three-step ordering as sound and the city figure as an
+**upper bound**. Writing "being recomputed" is the honest state; writing a number I had not
+measured would not be.
+
+**The session's measurement pattern, now six deep:** mirrors vs collisions, editions vs pooling
+failures, intended behaviour vs bugs, press vs local government, a kind of body vs a tier. Every
+one was a category the first cut had merged.
