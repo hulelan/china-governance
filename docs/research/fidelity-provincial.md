@@ -32,6 +32,37 @@ nearly verbatim**: 汕尾市残疾儿童康复救助实施办法 (0.96 of the pr
 it is a prefecture-city practice. Districts and Shenzhen bureaus do not do it (relay 0.2% and
 1.1%). [measured]
 
+*(Re-based on `doc_identity` 2026-10-08, on the same subset rebuilt from `pairs.py`: **7,404 scored
+same-province pairs**, up from 5,765. Three results.*
+
+***The finding holds.** Band split **relay 8.5% / mid 17.1% / elaboration 74.4%**, against the
+memo's 9.1 / 18.8 / 72.2 — within sampling of the original on a 28% larger set.*
+
+***It is better supported than when written.** The memo's main caveat was that 5,462 of 5,765 pairs
+(95%) were Guangdong. On the rebuilt set that share is roughly **64%** (4,791/7,404; approximate —
+detected by site-key prefix, so read it as "materially lower", not as a precise figure). Corpus
+growth has partly done what `corpus-lessons.md` B1 asked for, so the province-to-city hop is no
+longer close to a Guangdong-only result.*
+
+***But the sentence above cannot be stated in level vocabulary, and that is the interesting part.***
+*On the per-document basis **every one of the 7,404 pairs is `municipal`** — there is no level
+variation left to report, because `admin_level_doc` resolves Shenzhen's bureaus and the prefecture
+cities to the same tier, correctly (they are both city-level bodies). The contrast the memo draws
+is nonetheless **real and large**, and splitting the bureaus out inside the municipal tier
+reproduces it:*
+
+| within `municipal` | pairs | median overlap | relay |
+|---|---|---|---|
+| prefecture-city governments | 6,705 | 0.083 | **9.3%** |
+| Shenzhen municipal bureaus | 699 | 0.037 | **0.9%** |
+
+*A **tenfold** difference in relay, holding tier constant. So the distinction is not between tiers
+at all — it is between a **city government** and a **city bureau**, which is a fact about the
+**kind of body**, an axis `admin_level_doc` deliberately does not encode. The memo's claim was
+right; only its vocabulary was wrong, and the fix is to say "city bureaus" rather than to imply a
+tier below the city. (The old "districts" half of the claim is now moot: the subset holds just 26
+district-site pairs.)*
+
 **The three-hop finding.** 2,444 full chains exist (509 central anchors, 561 provincial
 implementations, 1,907 municipal documents). In **92.8%** of them the city's text is closer to
 the province than to the center. The median city document is 20.4% provincial text and 5.4%

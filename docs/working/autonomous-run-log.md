@@ -3292,3 +3292,48 @@ into the memo and shipped that, rather than estimating from the direction I was 
 Had I estimated, I would have got the city figure roughly right (0.049 vs my implied ~0.045-0.05)
 and **missed the district correction entirely** — which is the larger of the two and changes what
 the finding says.
+
+---
+
+## Iteration 100 — the last unchecked memo: the claim was right, the vocabulary was not
+
+Re-based `fidelity-provincial.md`, the final memo whose level claims had never been checked, using
+the scored pair CSV from iteration 99. Three results, and the third is the one worth keeping.
+
+**The finding holds.** Rebuilt subset is **7,404 scored same-province pairs** (was 5,765). Band
+split **relay 8.5% / mid 17.1% / elaboration 74.4%** against the memo's **9.1 / 18.8 / 72.2** —
+within sampling on a 28% larger set.
+
+**It is better supported than when written**, which is the pleasant direction for a re-base to go.
+The memo's main caveat was that 5,462 of 5,765 pairs (**95%**) were Guangdong. On the rebuilt set
+that is roughly **64%** — flagged as approximate, since I detect it by site-key prefix. Corpus
+growth has partly done what `corpus-lessons.md` B1 asked for: the province-to-city hop is no longer
+close to a Guangdong-only result.
+
+**And the memo's sentence cannot be stated in level vocabulary.** On the per-document basis **all
+7,404 pairs are `municipal`** — no level variation remains, because `admin_level_doc` puts
+Shenzhen's bureaus and the prefecture cities in the same tier, which is **correct**: both are
+city-level bodies. Yet the contrast the memo draws is real and large. Splitting the bureaus out
+*inside* the municipal tier:
+
+| within `municipal` | pairs | median overlap | relay |
+|---|---|---|---|
+| prefecture-city governments | 6,705 | 0.083 | **9.3%** |
+| Shenzhen municipal bureaus | 699 | 0.037 | **0.9%** |
+
+**A tenfold difference in relay, holding tier constant.** So the distinction is not between tiers
+at all — it is between a **city government** and a **city bureau**, a fact about the **kind of
+body**, on an axis `admin_level_doc` deliberately does not encode. The memo's claim was right and
+only its wording implied a tier below the city.
+
+**That is now the third named trap in CLAUDE.md's level family**, and it is the general form of the
+other two: `sites.admin_level='department'` is not a tier, `admin_level_doc` cannot express
+kind-of-body, and `sites.admin_level` is the only place kind survives — mislabelled as a level. Two
+memos stated a kind-finding in level vocabulary; `diffusion-fidelity.md`'s was wrong in shape (four
+steps, really three) and this one's was right but misworded. The distinction between those two
+outcomes is exactly why each needed measuring rather than a blanket correction.
+
+**Level re-base now complete across the volume:** industrial-policy (done earlier, two claims
+withdrawn), the three AI memos (hold, one sharpened eightfold), diffusion-fidelity (shape
+corrected, propagated to three quoting memos), fidelity-provincial (holds, better supported,
+reworded). Nothing is left reading `sites.admin_level` as a tier.

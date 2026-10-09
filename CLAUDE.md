@@ -80,6 +80,17 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     **government** at 6 of 105 (5.7%) — an eightfold overstatement. Split the levels explicitly
     (`central` / `provincial|municipal|district|department` / `media`) in any diffusion measure;
     `docs/research/ai-governance-diffusion.md` finding 2 carries the worked case.
+    **A third, found 2026-10-08: TIER and KIND-OF-BODY are different axes, and `admin_level_doc`
+    encodes only the first.** `sites.admin_level='department'` is not a tier — all 14 such sites are
+    Shenzhen municipal bureaus, and the identity layer correctly calls their documents `municipal`.
+    But a real finding lives on the kind axis: holding tier constant, prefecture-city governments
+    relay provincial text at **9.3%** and Shenzhen city bureaus at **0.9%** (6,705 vs 699
+    same-province pairs, `docs/research/fidelity-provincial.md`). So a claim about "departments"
+    versus "cities" is about the kind of body, and must be stated that way — `admin_level_doc`
+    cannot express it, and `sites.admin_level` is the only place the kind survives, mislabelled as
+    a level. Two memos stated such a finding in level vocabulary and both needed correcting
+    (`diffusion-fidelity.md`'s four-step gradient, which was really three; this one's, which was
+    right but misworded).
   - **Per-document identity layer (2026-10-06)** — `doc_identity` side table
     (`scripts/build_doc_identity.py`, nightly Phase 2b LAST step, `--force` because the
     nightly holds the lock; ~37s, one transaction): `admin_level_doc` + `level_source`
