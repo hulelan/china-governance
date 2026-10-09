@@ -296,10 +296,31 @@ _WRAP_CORE_MIN = 6  # normalized floor for a wrapper-derived core
 # masked before the genre check, or 广州市规划和自然资源局 (63 edges) would escape.
 _ORG_NAME = re.compile(r'^[一-鿿\s丨·、]{2,40}(?:' + _INST_SUFFIX + r'|中心)[\s丨·、]*$')
 _AGENCY_GENRE_WORD = re.compile(r'(?:规划|计划|标准)(?=和|局|院|委|化|生育|学会|协会|研究)')
+# The headline clause's `新局` alternative needs a lookbehind, because it is a
+# MORPHEME-BOUNDARY bug of the same family as the length floors above. It was written
+# for 开创新局 / 于变局中开新局 ("open a new chapter"), but 科技创新·局 — a Science,
+# Technology and Innovation Bureau — splits after 创新, not before 新. So every
+# 科技创新局 in the country matched the headline pattern and was EXEMPTED from the
+# org-only gate. 深圳市科技创新局 (id 1351876, a BODILESS stub) therefore kept 7
+# containment edges, and a check of all 7 found every one a real unheld instrument
+# whose title merely BEGINS with the bureau's name
+# (深圳市科技创新局2025年度深圳市重点实验室组建资助项目申请指南 …). That is the MIRROR of the
+# 2026-10-01 proxy-target bug: there the ref was SHORTER than the held title and the
+# fix was to let exact beat containment; here the ref is LONGER and there is no exact
+# candidate at all, so containment runs unopposed onto an issuer name — which is a
+# prefix of every document that issuer ever publishes. Cost is not the inflated rank
+# but the CONCEALED DEMAND: those 7 refs should read "unresolved — coverage gap" and
+# flow to the citation crawl queue.
+# Gate measured, not reasoned: all 12 corpus titles ending in 创新局 (2026-10-09) split
+# 8 / 4 exactly — the 8 ending in 科技创新局 are ALL agencies (深圳市/市/区/bare), and the
+# 4 ending in 创新局 otherwise are ALL headlines (感恩奋进创新局, 再创新局, 融合创新局,
+# 开创新局). So the lookbehind is 科技创, NOT 创: a bare `(?<!创)` would wrongly
+# un-exempt those four headlines.
 _ORG_ONLY_NOT = re.compile(
     '关于|' + '|'.join(POLICY_KEYWORDS) +
     r'|^(?:成立|调整|设立|撤销|组建|授予|创建|命名|表彰|撤并|变更)'   # a decision ABOUT a body
-    r'|召开|举行|举办|出席|参加|(?:格|新|大|布|开|全)局$')            # an event / headline
+    r'|召开|举行|举办|出席|参加|(?:格|大|布|开|全)局$'
+    r'|(?<!科技创)新局$')                              # an event / headline
 
 
 # Titles that can never be a resolution target at all, in ANY tier — not even
