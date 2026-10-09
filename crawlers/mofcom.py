@@ -499,6 +499,30 @@ def _extract_ec_meta(html: str) -> dict:
     return meta
 
 
+_EC_MOJIBAKE = re.compile(r"\?{3,}")
+_CJK = re.compile(r"[\u4e00-\u9fff]")
+
+
+def _best_ec_title(meta: dict, listing_title: str) -> str:
+    """Prefer the ARTICLE page's `var title` over the listing's.
+
+    The export-control LISTING endpoint serves some titles with every CJK
+    character replaced by a literal ASCII "?" (0x3f — not U+FFFD, so it is not our
+    decoding). 725 stored rows were destroyed that way before this was found, and
+    they kept arriving at 113-186/yr. The article page is clean, which is why the
+    BODIES were always intact, and `_extract_ec_meta` already parses its
+    `var title` for other fields. So take the article title whenever it is usable
+    and fall back to the listing only when the page gave us nothing — which is the
+    case for a DELISTED article, whose page is now just the portal shell.
+    Repair for rows stored before this fix:
+    scripts/rnd/backfill/repair_mofcom_titles.py
+    """
+    t = (meta.get("title") or "").strip()
+    if t and not _EC_MOJIBAKE.search(t) and _CJK.search(t):
+        return t
+    return listing_title
+
+
 def crawl_ec_list_section(conn, section_key: str, section: dict,
                           fetch_bodies: bool = True):
     """Crawl an export control paginated list section (news, FAQ, etc.)."""
@@ -542,6 +566,7 @@ def crawl_ec_list_section(conn, section_key: str, section: dict,
         doc_id = existing[0] if existing else next_id(conn)
         body_text = ""
         raw_html_path = ""
+        meta = {}          # per-row: a failed fetch must not leak the previous row's meta
         publisher = item.get("source") or "商务部"
         date_published = item["date_str"]
 
@@ -562,8 +587,8 @@ def crawl_ec_list_section(conn, section_key: str, section: dict,
 
         store_document(conn, SITE_KEY, {
             "id": doc_id,
-            "title": item["title"],
-            "document_number": _extract_doc_number(item["title"]),
+            "title": _best_ec_title(meta, item["title"]),
+            "document_number": _extract_doc_number(_best_ec_title(meta, item["title"])),
             "publisher": publisher,
             "date_written": _parse_date(date_published),
             "date_published": date_published,
@@ -653,6 +678,7 @@ def crawl_ec_zcfg_section(conn, fetch_bodies: bool = True):
         doc_id = existing[0] if existing else next_id(conn)
         body_text = ""
         raw_html_path = ""
+        meta = {}          # per-row: a failed fetch must not leak the previous row's meta
         publisher = "商务部"
         date_published = item["date_str"]
 
@@ -673,8 +699,8 @@ def crawl_ec_zcfg_section(conn, fetch_bodies: bool = True):
 
         store_document(conn, SITE_KEY, {
             "id": doc_id,
-            "title": item["title"],
-            "document_number": _extract_doc_number(item["title"]),
+            "title": _best_ec_title(meta, item["title"]),
+            "document_number": _extract_doc_number(_best_ec_title(meta, item["title"])),
             "publisher": publisher,
             "date_written": _parse_date(date_published),
             "date_published": date_published,
