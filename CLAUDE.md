@@ -951,6 +951,18 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   killed — the standing rule is to ask first. Either kill them and run `build_site_stats.py` once
   the write lock clears, or let the next nightly's Phase 2c rebuild those tables anyway, which it
   will.
+- **(2026-10-09) Why does `raw_html_path` point at files that were never written, and how many
+  rows are affected?** All 725 mojibake `mofcom` rows carry `raw_html_path` values like
+  `raw_html/mofcom/2278.html`, while `raw_html/mofcom/` contains **223** files all named by DB id
+  (`12701950.html`). So the path was recorded from the crawler's pre-`store_document` local id
+  rather than the final row id, or the files were written and later lost. Consequence: any tool
+  that re-parses saved HTML (`backfill_from_html.py`, `redate_from_html.py`,
+  `trim_body_tails.py --apply` with re-extraction) silently finds nothing for these rows and falls
+  through, and the mojibake repair had to re-fetch over the network instead. **What we know:** the
+  dangling pointers are confirmed for `mofcom`'s export-control section; whether other crawlers
+  share the pattern is **unmeasured**. A cheap check is a sampled `os.path.exists` over
+  `raw_html_path` grouped by `site_key` — worth running before anyone relies on the raw-HTML
+  mirror again.
 - **(2026-06) Is DeepSeek `references_json` worth the cost over regex refs?**
   We have regex-extracted `references_source` on ~133k docs (`regex_v1`). A
   sample comparison found ~72% overlap with DeepSeek's refs. Open question
@@ -1022,6 +1034,34 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
     `/etc/nginx/sites-enabled/chinagovernance`, then `nginx -t && systemctl reload nginx`.
 
 
+- **(2026-10-09) A field can be destroyed AT THE SOURCE while its siblings are fine — and
+  a mojibake title removes a document from every title-keyed analysis.** 725 `mofcom`
+  export-control rows were stored with every CJK character in the TITLE replaced by a literal
+  ASCII `?` (`0x3f` — **not** U+FFFD, which is what our own `errors="replace"` produces at
+  `crawlers/mofcom.py:403/608` and `base.py:718`, so our decoding was never the cause). The
+  **article page is clean**, which is why 724 of the 725 BODIES are intact and none are mojibake;
+  it is the export-control **listing endpoint** that serves the field that way. Consequence, which
+  is the part that matters: a mojibake title is invisible to BOTH FTS indexes, can never be a
+  citation target, and can never match a `title_reissue` diffusion edge — so the ministry holding
+  **500 of the 1,071 出口管制 documents** had 725 documents absent from every title-keyed count.
+  **A corpus can hold a document and still not have it.**
+  - **Root fix shipped** (`4ad3670`): `crawlers/mofcom.py:_best_ec_title()` prefers the ARTICLE
+    page's `var title` (which `_extract_ec_meta` already parsed for `source`/`publishTime`) and
+    falls back to the listing only when the page gives nothing. It also initialises `meta = {}`
+    per row — `meta` previously persisted across loop iterations, which was harmless only while
+    nothing outside the `try` read it.
+  - **Repair for rows stored earlier**: `scripts/rnd/backfill/repair_mofcom_titles.py` re-fetches
+    the article (703 of 725 recovered, 0 fetch failures), then `--body-fallback` sets the title
+    from the body's own `【发布文号】` for rows whose page is now the **portal shell** because the
+    article was DELISTED (13 more). **9 rows remain mojibake on purpose** — no header, and a
+    fabricated title is worse than a visibly broken one. `raw_html_path` is a DANGLING pointer on
+    all 725 (it names `raw_html/mofcom/2278.html` while that directory stores files by doc id), so
+    disk re-parsing was impossible; see the Open Question below.
+  - **Do not over-read the delisting.** I first called these instruments the portal had removed and
+    we alone retained; measured, that is **too strong** — we already hold the same instruments
+    under full descriptive titles from another crawl path, with exact 文号 agreement
+    (商务部公告2025年第1号/第18号/第21号/第22号, 不可靠实体清单工作机制公告〔2025〕7号/〔2025〕8号).
+    What the recovery bought is searchability and 文号 linkage to the twin, not rescue.
 - **Broken/unreliable gkmlpt sites** (Dongguan, Foshan, Bao'an, Shantou, Zhaoqing,
   Zhanjiang, Chaozhou, Yantian, gd-partial): the authoritative list with per-site
   reasons now lives in code — `crawlers/gkmlpt.py` → `KNOWN_BROKEN`. A bulk

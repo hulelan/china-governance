@@ -4396,3 +4396,55 @@ Behaviour-preserving, verified rather than assumed. Second: a Python script can 
 running (the module is already loaded), unlike the bash incremental-read hazard — the repair kept
 going through the cleanup.
 
+---
+
+## Iteration 123 — finished the repair, then corrected the claim I had made about it
+
+**The title repair completed cleanly**: 703 of 725 recovered from the article page, **0 fetch
+failures, 0 write-skipped**, and exactly 22 mojibake rows left — so the accounting closes against
+the 22 "no usable title" warnings.
+
+**The 22 are a different defect.** Their article pages now return the portal **shell**: 10,684
+bytes of navigation, byte-identical between samples, no `var title`. The articles were
+**delisted**. 13 of the 22 carry their own `【发布文号】` in the body, so a `--body-fallback` pass
+(no network) sets the title from the document's own canonical identifier — which is how Chinese
+instruments are cited, not invention. **9 keep their mojibake title deliberately**: no header, and
+a fabricated title is worse than a visibly broken one. 725 → 9.
+
+**What the repair unlocked is a real sub-series.** The corpus holds **39 Unreliable Entity List
+documents, 2020-09-18 to 2025-11-05** — the 2020 规定, 22 instruments, 15 spokesperson
+justifications, with 15 instrument titles naming a firm (洛克希德·马丁, 雷神, 波音防务, 通用原子,
+PVH, 因美纳, 斯凯迪奥, 护盾人工智能, 萨罗尼克科技, 反无人机技术). Pairing each instrument to its
+nearest later justification inside 21 days: **17 of 22 pair, median lag 0 days, max 8, and 12 of 17
+(71%) are same-day or next-day.** On this record the explanation ships WITH the instrument — a
+different posture from `attention-campaigns.md`, where 解读 trails an instrument for weeks. The lag
+also *appears* to tighten (6-7 days in 2024, 0-1 across most of 2025) and I deliberately did **not**
+call that a finding: n=17, one 2025 action still lags 8 days, 5 instruments have no justification
+inside 21 days.
+
+**Then I checked my own archival claim and it failed.** I had written that these were instruments
+the portal removed and we alone retained. Measured against same-window documents: we **already
+hold** the same instruments under full descriptive titles from a different crawl path, with
+**exact 文号 agreement** — 商务部公告2025年第1号, 第18号, 第21号, 第22号,
+不可靠实体清单工作机制公告〔2025〕7号 and 〔2025〕8号 each have a fully-titled twin. Nothing was
+rescued from oblivion. The honest, narrower gain: 13 unsearchable rows now carry their 文号, which
+makes them findable and links them to their twin by document number — what `instrument_id` pools
+on. Twin and recovered bodies differ (20-char shingle overlap 0.02-0.47), so they are variant texts
+of one instrument, and which is fuller is **not** established. The claim is corrected in the memo
+itself (§7), not only here, because the memo is what a reader sees.
+
+**Fixed the leak, not just the spill.** The broken titles were still arriving at 113-186/yr. The
+crawler already fetched the article page and already parsed its JS variables — it used
+`meta["source"]` and `meta["publishTime"]` — and then took the TITLE from the listing and ignored
+`meta["title"]`. `_best_ec_title()` now prefers the article title when it has CJK and no 3+ run of
+`?`, falling back to the listing only for the delisted-shell case. The change also activated a
+**latent** bug I had to fix in the same commit: `meta` was never initialised before the `try`, so
+it persisted across loop iterations — harmless while nothing outside the `try` read it, but the
+moment the title reads it, a failed fetch would have assigned the **previous document's** title.
+Six tests pin both directions, including the two shapes that must be refused: an ASCII-only article
+title (the site banner `CHINA EXPORT CONTROL INFORMATION`) and a partial mojibake, since ASCII
+survives the substitution and real stored titles look like `????????PVH?????????` — which is also
+the detail that proved the substitution was single-byte and not our U+FFFD decoding.
+
+310 → **316 tests**. Deployed; `/research/export-control-regime` serves 200 in 0.14s.
+
