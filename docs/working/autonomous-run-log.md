@@ -5120,3 +5120,45 @@ syntax check is not an import check, which this project already knows.
 
 364 → **366 tests**.
 
+---
+
+## Iteration 138 — the RMB question, finally answerable, and the answer is bilateral
+
+Two same-day fixes made `rmb-coverage.md` re-measurable: the PBC cap bug (31 → **6,099** documents)
+and the panel date fix (pbc/chinatax/csrc/safe/spp were invisible to every series because those
+crawlers never populate `date_written`). The default panel is now **21 sites including pbc**.
+
+**One claim withdrawn.** The memo said the 美元:人民币 attention ratio "halves between 2013 and 2017
+and then **sits flat for eight years**". Re-measured:
+
+| | 2013 | 2017 | 2023 | 2026 |
+|---|---|---|---|---|
+| 美元 panel share | 2.71% | 0.93% | 0.53% | **0.33%** |
+| 人民币 panel share | 5.95% | 5.04% | 3.49% | 5.58% |
+| **美元 : 人民币** | **0.455** | **0.185** | **0.152** | **0.059** |
+
+It **keeps falling after 2017, another ~3x**. 美元 is SIGN_FLIP with panel-share ρ **−0.952**, close
+to perfectly monotonic, while 人民币 is roughly flat (ρ −0.538, 2023 trough then recovery). So the
+phenomenon is **not** a decline in currency talk — it is **dollar-specific reference being
+progressively displaced while RMB reference holds steady**.
+
+**And the sharper finding, which the old panel could not reach: the comparison is BILATERAL.** On the
+same panel 欧元 is **16** documents, 港元 **8**, 日元 **2**, 本币 **20** — against 美元's **684**. The
+dollar carries ~**43x** the euro's presence and ~**340x** the yen's. So its share falls 8x and **no
+other currency rises to replace it**. A basket story would show euro or yen share climbing as the
+dollar's fell; they do not register at all. This is the **retreat of a single reference point, not
+diversification of reference** — a different and more specific answer to "how do they manage the RMB
+relative to other currencies" than a flat ratio allowed.
+
+汇率 (0.37% → 0.24%, ρ −0.451, 2019 trough 0.16%) and 跨境人民币 (0.67% → 1.63% in 2015 → 0.23% in
+2019 → 0.59% in 2022) are both SIGN_FLIP and both noisy; neither carries a trend the memo states.
+§4's traps are vindicated hard: raw 美元 in 2026 is **4,858** against a panel count of **11**.
+
+§1 ("the managers are missing") is superseded for the PBC specifically and left standing for
+**SAFE 22** and an **absent NFRA** — with the date defect added, because that section could not have
+seen it: holding 6,099 PBC documents would still have shown nothing in a series keyed on
+`date_written`.
+
+Extraction meanwhile reached **1,700/4,164 with 570 extracted** — the yield is climbing now that it
+is past the szdp scan block (570 of 1,700 = 33%, against 89 of 1,025 earlier).
+
