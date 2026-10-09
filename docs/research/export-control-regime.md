@@ -177,10 +177,18 @@ established here.
 ## 8. Limitations
 
 1. **166 of the 1,071 documents (15.5%) have `date_written = 0`** and are therefore absent from
-   every series in §3. They are concentrated on `gov` (73) and they are not marginal documents —
-   they include **两用物项出口管制条例** (107 inbound), **稀土管理条例** and **商用密码管理条例**.
-   The regime's second anchor instrument cannot appear in its own time series. `redate_from_html.py`
-   is the existing tool for this shape and has not been run on `gov`.
+   every series in §3, concentrated on `gov` (73) and including **两用物项出口管制条例**,
+   **稀土管理条例** and **商用密码管理条例**. *(Cause corrected 2026-10-09,
+   `docs/working/undated-citation-weight.md`: I first wrote that the regime's second anchor
+   instrument "cannot appear in its own time series". The instrument IS dated — its npc canonical
+   copy carries 2024-09-29 — and `instrument_id` pools all five copies correctly. The real defect
+   is that **`doc_inbound` is computed per DOCUMENT**, so the 107 citations landed on an UNDATED gov
+   mirror while the dated canonical reads inbound 0. The weight and the date both exist, never on
+   the same row. This is corpus-wide, not local to this regime: **22,214 of 44,364 cited documents
+   are undated and carry 120,361 of 270,695 citations — 44.5% of all citation weight.** 2,201 docs
+   / 26,443 citations are recoverable by rolling `doc_inbound` up to `instrument_id`, with no date
+   inference at all. `redate_from_html.py` is NOT the tool for this: the raw-HTML mirror begins
+   2026-06-08, the droplet-migration date, so nothing crawled earlier has saved HTML to re-parse.)*
 2. **Five sites is a small panel.** It is the largest one this corpus supports for a central series
    with a pre-2021 baseline, which is a statement about our coverage, not about China.
 3. **The 2022 dip is unexplained.**

@@ -817,6 +817,24 @@ cannot open an edition, so it must not extend one.
   a pre-rebuild baseline: the row read `142099|2014`, a document id where the label should have been).
   **Use single quotes for string literals**, always, and be aware that the fallback is why this
   mistake survives so long before it bites.
+- **An INTEGER 0 counts as "present" when you compare it against `''`** — the sibling of the
+  double-quote trap above, and from the same cause: SQLite answers a different question cleanly.
+  `display_publish_time` is `typeof='integer'` on all 116,281 undated rows and is integer **0** on
+  104,776 of them, so `COALESCE(display_publish_time,'') != ''` is **TRUE** for every one of them —
+  integers sort before text in SQLite's type ordering. SQL therefore reported 116,281 rows as
+  having a recoverable date where Python, in which `0` is falsy, reported **106,732**. Python was
+  right. **Compare against the type you expect** (`display_publish_time > 0`), never against `''`,
+  and be suspicious whenever a "presence" count comes out suspiciously complete.
+  (`docs/working/undated-citation-weight.md` §5.)
+- **An unordered `LIMIT` is not a sample.** `... WHERE date_written>0 LIMIT 4000` with no
+  `ORDER BY` returns the first 4,000 rows in rowid order, which on this corpus means the low-id
+  sites. A date-agreement check run that way reported **68.8%** agreement between `date_written`
+  and `date_published` and read as "date_published is unreliable"; over the full 229,208 pairs the
+  agreement is **83.1% exact / 92.7% within ±7 days**. The slice was dominated by `gd`, which runs
+  at median −3 days with only 46% within ±1. A sampling problem had been diagnosed as a data
+  problem. Use `ORDER BY RANDOM() LIMIT n`, or aggregate the whole population — and note this is
+  the same lesson as the fixed-site panel (`scripts/rnd/analysis/panel.py`,
+  `rmb-coverage.md` §4 trap 3): **the slice you get for free is never the slice you want.**
 - **Partial index gotcha**: `idx_documents_url` is defined as `WHERE url != ''`. SQLite will NOT use this index for queries that omit that predicate. Always include `AND url != ''` in WHERE clauses that filter by URL, or expect a full table scan.
 
 ## Adding a New gkmlpt Site

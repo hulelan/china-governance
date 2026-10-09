@@ -61,7 +61,90 @@ CREATE TABLE IF NOT EXISTS doc_inbound (
     edges   INTEGER NOT NULL DEFAULT 0    -- raw resolved edge rows (what citation_rank weights)
 );
 CREATE INDEX IF NOT EXISTS idx_doc_inbound_inbound ON doc_inbound(inbound);
+CREATE TABLE IF NOT EXISTS instrument_inbound (
+    instrument_id INTEGER PRIMARY KEY,        -- doc_identity.instrument_id
+    inbound       INTEGER NOT NULL DEFAULT 0, -- distinct citing docs OUTSIDE the pool
+    edges         INTEGER NOT NULL DEFAULT 0,
+    copies        INTEGER NOT NULL DEFAULT 0, -- documents in the pool
+    cited_copies  INTEGER NOT NULL DEFAULT 0, -- copies carrying >=1 inbound of their own
+    dated_id      INTEGER,                    -- a copy that HAS a date (canonical preferred)
+    date_written  INTEGER NOT NULL DEFAULT 0  -- that copy's date; 0 = the whole pool is undated
+);
+CREATE INDEX IF NOT EXISTS idx_instrument_inbound_inbound ON instrument_inbound(inbound);
 """
+
+
+def build_instrument_inbound(conn) -> tuple:
+    """Roll citation weight up to `doc_identity.instrument_id`.
+
+    Why (docs/working/undated-citation-weight.md): `doc_inbound` is per DOCUMENT, so
+    weight lands on whichever COPY the citing text resolved to — frequently an undated
+    mirror — while the dated canonical copy reads inbound 0. Corpus-wide that is 22,214
+    of 44,364 cited documents and 120,361 of 270,695 citations (44.5%) sitting on rows
+    with no date, so any series joining citation weight to a date silently drops them.
+    Pooling recovers the part that needs NO date inference: a dated copy already exists
+    in the same instrument for 2,201 of those documents / 26,443 citations.
+
+    Two things this table does that the per-document one cannot:
+
+    1. **Pool-level self-citation.** A mirror citing its own sibling is the same text
+       citing itself. `doc_inbound` drops only `source_id = target_id`; here a citation
+       is dropped when the SOURCE is in the same instrument pool as the target.
+    2. **Carries a usable date.** `dated_id` / `date_written` name a copy that has one,
+       preferring the canonical copy and otherwise the earliest-dated copy, so an
+       analysis can read pooled weight against a real date.
+
+    Additive: nothing reads it until it opts in, and `doc_inbound` keeps its meaning.
+    Returns (rows, pooled_with_date, pooled_without_date).
+    """
+    conn.execute("DELETE FROM instrument_inbound")
+    # Edge aggregation, excluding citations whose source is in the target's own pool.
+    conn.execute("""
+        INSERT INTO instrument_inbound(instrument_id, inbound, edges)
+        SELECT ti.instrument_id, COUNT(DISTINCT c.source_id), COUNT(*)
+        FROM citations c
+        JOIN doc_identity ti ON ti.doc_id = c.target_id
+        LEFT JOIN doc_identity si ON si.doc_id = c.source_id
+        WHERE c.target_id IS NOT NULL
+          AND ti.instrument_id IS NOT NULL
+          AND (si.instrument_id IS NULL OR si.instrument_id != ti.instrument_id)
+        GROUP BY ti.instrument_id""")
+
+    # Pool size and how many copies carry inbound of their own.
+    conn.execute("""
+        UPDATE instrument_inbound SET
+          copies = (SELECT COUNT(*) FROM doc_identity i
+                    WHERE i.instrument_id = instrument_inbound.instrument_id),
+          cited_copies = (SELECT COUNT(*) FROM doc_identity i
+                          JOIN doc_inbound b ON b.doc_id = i.doc_id
+                          WHERE i.instrument_id = instrument_inbound.instrument_id
+                            AND b.inbound > 0)""")
+
+    # A copy that has a date: the canonical one if dated, else the earliest dated copy.
+    # `instrument_role` is feature-detected rather than assumed — this script runs in the
+    # nightly, so a doc_identity built before that column existed must degrade (to plain
+    # earliest-dated) instead of aborting Phase 2c.
+    has_role = any(r[1] == "instrument_role"
+                   for r in conn.execute("PRAGMA table_info(doc_identity)"))
+    role_first = ("CASE WHEN i.instrument_role = 'canonical' THEN 0 ELSE 1 END, "
+                  if has_role else "")
+    conn.execute(f"""
+        UPDATE instrument_inbound SET
+          dated_id = (
+            SELECT i.doc_id FROM doc_identity i JOIN documents d ON d.id = i.doc_id
+            WHERE i.instrument_id = instrument_inbound.instrument_id AND d.date_written > 0
+            ORDER BY {role_first}d.date_written
+            LIMIT 1)""")
+    conn.execute("""
+        UPDATE instrument_inbound SET
+          date_written = COALESCE(
+            (SELECT d.date_written FROM documents d WHERE d.id = instrument_inbound.dated_id), 0)""")
+    conn.commit()
+
+    rows = conn.execute("SELECT COUNT(*) FROM instrument_inbound").fetchone()[0]
+    with_date = conn.execute(
+        "SELECT COUNT(*) FROM instrument_inbound WHERE date_written > 0").fetchone()[0]
+    return rows, with_date, rows - with_date
 
 
 def build_doc_inbound(conn) -> tuple:
@@ -151,6 +234,20 @@ def build(db_path: Path) -> tuple:
         in_rows, in_max = build_doc_inbound(conn)
         print(f"doc_inbound built: {in_rows:,} docs with inbound, max {in_max:,}, "
               f"{time.time()-t_in:.1f}s")
+
+        # Pooled citation weight, which needs doc_inbound above AND doc_identity.
+        # Skipped (not failed) when doc_identity has not been built yet, so a fresh
+        # DB can still run this script before Phase 2b exists.
+        if conn.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+                        "AND name='doc_identity'").fetchone()[0]:
+            t_ii = time.time()
+            ii_rows, ii_dated, ii_undated = build_instrument_inbound(conn)
+            print(f"instrument_inbound built: {ii_rows:,} instruments "
+                  f"({ii_dated:,} with a dated copy, {ii_undated:,} wholly undated), "
+                  f"{time.time()-t_ii:.1f}s")
+        else:
+            print("instrument_inbound: SKIPPED (doc_identity not built yet)")
+
         conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         return conn.execute(
             "SELECT COUNT(*), COALESCE(SUM(doc_count),0) FROM site_stats").fetchone()
