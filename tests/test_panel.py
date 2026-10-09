@@ -36,13 +36,18 @@ JULY = {2013: 1372636800, 2014: 1404259200, 2015: 1435726800, 2016: 1467345600,
 def _db(rows):
     """rows = [(site_key, year, n_docs)] -> an in-memory documents table."""
     c = sqlite3.connect(":memory:")
+    # date_published must exist: panel.py keys on an EFFECTIVE date (date_written
+    # when present, else date_published) because 116,282 documents — whole sites
+    # like pbc 6,099/6,099, chinatax 5,018/5,018, csrc 272/272 — never populate
+    # date_written. See panel.YEAR_SQL.
     c.execute("CREATE TABLE documents (id INTEGER PRIMARY KEY, site_key TEXT, "
-              "date_written INTEGER, body_text_cn TEXT)")
+              "date_written INTEGER, date_published TEXT, body_text_cn TEXT)")
     i = 0
     for sk, yr, n in rows:
         for _ in range(n):
             i += 1
-            c.execute("INSERT INTO documents VALUES (?,?,?,?)", (i, sk, JULY[yr], "body"))
+            c.execute("INSERT INTO documents VALUES (?,?,?,?,?)",
+                      (i, sk, JULY[yr], f"{yr}-07-01", "body"))
     c.commit()
     return c
 
@@ -110,6 +115,46 @@ def test_the_rmb_shape_is_classified_as_a_sign_flip():
 def test_the_export_control_shape_is_classified_ok():
     """Also ground truth: central panel, both rhos positive, 502 panel documents."""
     assert classify(502, +0.952, +0.738) == "ok"
+
+
+def test_a_site_with_only_date_published_still_joins_the_panel():
+    """The defect this fixes: pbc 6,099/6,099, chinatax 5,018/5,018 and csrc 272/272
+    never populate date_written, so a panel keyed on it silently excluded the entire
+    monetary, tax and securities apparatus — including from the export-control panel
+    and the rmb-coverage re-check built earlier the same day."""
+    c = sqlite3.connect(":memory:")
+    c.execute("CREATE TABLE documents (id INTEGER PRIMARY KEY, site_key TEXT, "
+              "date_written INTEGER, date_published TEXT, body_text_cn TEXT)")
+    i = 0
+    for yr in range(2013, 2027):
+        for _ in range(40):
+            i += 1
+            # date_written = 0, exactly like pbc / chinatax / csrc
+            c.execute("INSERT INTO documents VALUES (?,?,?,?,?)",
+                      (i, "pbc", 0, f"{yr}-07-01", "body"))
+    c.commit()
+    p = build_panel(c, min_per_year=30, first_year=2013)
+    assert p.sites == frozenset({"pbc"}), p.sites
+    assert p.denom[2020] == 40, p.denom
+
+
+def test_date_written_is_preferred_when_both_exist():
+    """date_written is the ISSUANCE date; date_published is only the fallback."""
+    c = sqlite3.connect(":memory:")
+    c.execute("CREATE TABLE documents (id INTEGER PRIMARY KEY, site_key TEXT, "
+              "date_written INTEGER, date_published TEXT, body_text_cn TEXT)")
+    i = 0
+    for yr in range(2013, 2027):
+        for _ in range(40):
+            i += 1
+            # written says `yr`, published says a DIFFERENT year — written must win
+            c.execute("INSERT INTO documents VALUES (?,?,?,?,?)",
+                      (i, "s", JULY[yr], "1999-01-01", "body"))
+    c.commit()
+    p = build_panel(c, min_per_year=30, first_year=2013)
+    assert p.sites == frozenset({"s"}), p.sites
+    assert p.denom.get(1999) is None, "date_published must not override date_written"
+    assert p.denom[2020] == 40, p.denom
 
 
 if __name__ == "__main__":

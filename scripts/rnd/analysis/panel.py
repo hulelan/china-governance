@@ -48,6 +48,25 @@ from fts import term_ids, like_count  # noqa: E402
 
 DB = ROOT / "documents.db"
 
+# THE CANONICAL YEAR EXPRESSION. Use this, not `date_written`.
+#
+# Measured 2026-10-09: `documents.date_written` is 0 for 116,282 of 354,730 documents,
+# and for whole sites — pbc 6,099 of 6,099, chinatax 5,018 of 5,018, csrc 272 of 272,
+# safe 22 of 22, spp 40 of 40. Those crawlers simply never populate it, while
+# `date_published` is present on every one of them. So a panel keyed on date_written
+# silently excludes the entire monetary, tax and securities apparatus — which is what
+# the first version of this module did, and it is why the export-control panel and the
+# rmb-coverage re-check both ran without PBC.
+#
+# `build_doc_identity` already loads `date_published` as the document's date (hence a
+# diffusion anchor with date_written = 0 still produced sane lags), so this matches the
+# identity layer rather than inventing a third convention. date_written is preferred
+# where it exists because it is the issuance date; date_published is the fallback.
+YEAR_SQL = ("CAST(strftime('%Y', CASE WHEN COALESCE(date_written,0) > 0 "
+            "THEN date_written ELSE strftime('%s', date_published) END, "
+            "'unixepoch') AS INTEGER)")
+HAS_DATE_SQL = "(COALESCE(date_written,0) > 0 OR COALESCE(date_published,'') != '')"
+
 # Below this many panel documents a term gets a count, never a trend. 雪亮工程
 # (173 corpus-wide, a handful of sites) is the motivating case: related-literature.md
 # records its suggestive 2017->2022 shape and deliberately refuses to call it a finding.
@@ -148,10 +167,9 @@ def build_panel(conn, *, min_per_year=DEFAULT_MIN_PER_YEAR, first_year=2013,
     params = [level] if level else []
 
     rows = conn.execute(f"""
-        SELECT d.site_key, CAST(strftime('%Y', d.date_written, 'unixepoch') AS INT) yr,
-               COUNT(*)
+        SELECT d.site_key, {YEAR_SQL} yr, COUNT(*)
         FROM documents d {join}
-        WHERE d.date_written > 0 {body} {where_level}
+        WHERE {HAS_DATE_SQL} {body} {where_level}
         GROUP BY d.site_key, yr
     """, params).fetchall()
 
@@ -209,9 +227,8 @@ def series(conn, term, panel, *, column="title_and_body"):
     for chunk in (idl[i:i + 900] for i in range(0, len(idl), 900)):
         q = ",".join("?" * len(chunk))
         for sk, yr, n in conn.execute(f"""
-            SELECT site_key, CAST(strftime('%Y', date_written, 'unixepoch') AS INT) yr,
-                   COUNT(*)
-            FROM documents WHERE id IN ({q}) AND date_written > 0
+            SELECT site_key, {YEAR_SQL} yr, COUNT(*)
+            FROM documents WHERE id IN ({q}) AND {HAS_DATE_SQL}
             GROUP BY site_key, yr
         """, chunk):
             if yr in raw:
