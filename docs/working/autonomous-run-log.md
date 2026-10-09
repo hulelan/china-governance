@@ -4582,3 +4582,65 @@ broken for 公告-shaped titles, which is now the next real piece of work.
 The tool built chasing an unrelated defect was the cure for this one — except that it is itself
 broken for exactly this title shape, which is how the fifth length-floor instance surfaced.
 
+---
+
+## Iteration 126 — two identical-looking gates, and the named test caught that I patched the wrong one
+
+Went after the 公告-title pooling defect from last tick. **Two of my hypotheses were wrong before
+the right one, and I had already written the first into CLAUDE.md as established — so deleting that
+row mattered more than the fix.**
+
+- **NOT the `KEY_MIN` length floor.** `_best_core` returns a long core for these titles: it falls
+  back to the whole normalized title when `_title_cores_of_title` finds no 《X》 candidate, so
+  `instrument_key` is non-empty. I had recorded it as a fifth length-floor instance. It is not one.
+- **NOT `instrument_kind='housekeeping'`.** These rows do carry that label, and wrongly — an
+  entity-listing 公告 is not housekeeping — but the pooling path never reads that column.
+- **What it is:** `assign_instruments` requires a sub-pool to span **two distinct sites**. Every
+  duplicate here is on one `site_key`, because mofcom's main site and its export-control subdomain
+  are crawled under the same key, so one instrument held twice reads as two.
+
+**The shape, now named in CLAUDE.md:** the two-site rule is a HEURISTIC for "are these really one
+text", and it runs AFTER `split_by_docnum` — by which point the members already share an explicit
+文号 where one exists. That is direct evidence, strictly stronger than the heuristic standing in for
+it. **A guard that ignores better evidence it already holds will keep being wrong wherever that
+evidence exists.**
+
+**Then the part worth the whole iteration.** I relaxed the gate, 371 documents moved, and that read
+as success. The **named test said otherwise** — the two mofcom copies were still `unique`. There
+are **TWO identical-looking two-site gates**, one per sub-part (line 1556) and one on the whole
+group before the edition walk (line 1516), and I had patched the second. So the 371 documents that
+moved were **a different population than I intended**: multi-site groups whose sub-parts each
+landed on one site after the 文号 split. Nothing was wrongly pooled, so those look legitimate — but
+I had shipped a change and explained its effect with the wrong mechanism. An aggregate moving by
+371 would have closed the question; the named test reopened it.
+
+**With both gates fixed:** `unique` 330,167 → **320,002**, `mirror` 10,564 → 15,803, `canonical`
+6,224 → 11,150. **9,794 documents newly pooled.** That is 10x my pre-registered 935, because the
+outer gate groups by instrument KEY rather than exact title — a wider net than the one I measured.
+Pre-registration wrong again, for the third time, and for the same reason each time: the aggregate
+is only as good as the inventory of everything in the path.
+
+**So I audited instead of accepting.** Of **4,926 single-site pools (10,165 documents)**, exactly
+**one** lacked a shared non-empty 文号, and that one is a trailing-whitespace difference
+(`'汕府办函〔2019〕172号'` vs `'…172号  '`) which the helper's `.strip()` handles correctly and only
+the audit's unstripped check flagged. **99% (4,855 of 4,926) have byte-identical titles**, and the
+samples are unmistakable: 粤办函〔2018〕217号 held twice, 揭府函〔2011〕83号 twice, 揭府〔2011〕76号
+twice. The guards held completely — 深圳市交通运输局行政处罚听证公告 stayed 91 docs / 91 instruments,
+深圳天气趋势 32/32, the 韶府便笺 series 110/110, **zero wrong pools**.
+
+**A corpus-quality finding in its own right:** ~10,165 documents were duplicate rows of the same
+instrument on the SAME site, previously counted as distinct instruments, clustering on Guangdong
+municipal portals (揭阳, 汕尾, 粤) that store each document twice. Any per-instrument statistic over
+those sites was inflated by roughly a factor of two.
+
+**Then rebuilt everything downstream, because an identity change invalidates it**, and validated
+twice as CLAUDE.md requires after any identity change: `instrument_succession` 15,222 → **14,985**,
+`instrument_inbound` 42,512 → **40,573** instruments (22,760 with a dated copy),
+`diffusion_events` 51,205 → **48,445**, `tracker_weekly` **47,041**. **VALIDATION PASS 15/15 on the
+fully consistent state** — the three known cascades still reproduce at exactly 52 / 82 / 116 days,
+the proxy guards hold at 0 inbound, and `aiplus_implementing` moved 29 → 34, inside its band and in
+the direction pooling predicts.
+
+331 tests. The first validation run was on a stale `diffusion_events`, which passed and would have
+been easy to call done; re-running after the rebuild is what makes 15/15 mean something.
+
