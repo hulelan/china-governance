@@ -3338,6 +3338,14 @@ withdrawn), the three AI memos (hold, one sharpened eightfold), diffusion-fideli
 corrected, propagated to three quoting memos), fidelity-provincial (holds, better supported,
 reworded). Nothing is left reading `sites.admin_level` as a tier.
 
+> **CORRECTION, iteration 109 (2026-10-09).** That last sentence was wrong, and wrong in the way
+> this session keeps catching: I verified the memos I had looked at and then generalised to the ones
+> I had not. An audit counting level claims against re-base notes found **six memos with
+> substantial, unchecked level claims** — `recentralization-experimentation` (**14 claims, 0
+> re-based**), `attention-campaigns` (12, 0), `consumption-diffusion` (7, 0), `diffusion-atlas`
+> (5, 0), `joint-issuance` (4, 0), `bottom-up-channel` (4, 0). The right claim was "the five memos I
+> checked are re-based", which is what I should have written.
+
 ---
 
 ## Iteration 101 — the body-tail trim is ready, and the cron is going to skip
@@ -3771,3 +3779,46 @@ is the one that goes stale, because it gives a reader no way to calibrate the re
 likely to be misread stated in the synthesis itself: three precision fixes remove **≈5,156** resolved
 edges while the PBC backfill *raises* resolution in the same rebuild, so **the net number will not
 be interpretable** — only the per-fix checks.
+
+---
+
+## Iteration 109 — my completeness claim was wrong; checking it found a 23.7% reclassification
+
+**I had written "nothing is left reading `sites.admin_level` as a tier."** An audit counting level
+claims against re-base notes shows that was false: **six memos** carry substantial unchecked level
+claims — `recentralization-experimentation` **14 claims / 0 re-based**, `attention-campaigns` 12/0,
+`consumption-diffusion` 7/0, `diffusion-atlas` 5/0, `joint-issuance` 4/0, `bottom-up-channel` 4/0.
+Same error shape as the 1,576 overstatement: I verified what I had looked at and generalised to what
+I had not. Corrected in place in iteration 100's entry.
+
+**Took the most consequential one first**, and for a specific reason: `authority-invocation.md`
+*disagrees* with `recentralization-experimentation`, so if the latter's level basis were stale the
+disagreement could be an artifact of it.
+
+**The memo flags its own flaw at §1** — it takes levels from `sites.admin_level` and says so,
+noting the ~28k npc 地方法规 filed as central. Worth checking anyway: **66,747 of 281,640 resolved
+edges (23.7%) have at least one endpoint reclassified** on the per-document basis (43,047 sources,
+39,109 targets).
+
+**The finding survives.** Upward share of sub-national-source edges:
+
+| period | site basis | per-document | shift |
+|---|---|---|---|
+| 2008-12 | 50.8% | **47.6%** | −3.1 |
+| 2013-17 | 68.7% | **63.7%** | −5.1 |
+| 2018-22 | 68.1% | **61.8%** | −6.3 |
+| 2023-26 | 69.6% | **63.2%** | −6.4 |
+
+**+16.1 points at the 2013 boundary on the correct basis against +17.9 on the old one.** Every level
+sits 3-6 points lower — the npc regulations were inflating "upward" by being filed as central
+targets — but the shape is unchanged, and horizontal falls 51.6% → 35.6% across the same boundary
+with downward flat at 0.8%.
+
+**And the part I was careful about.** My all-edges series shows **no reversion** by 2023-26, where
+the memo reports a return to 2008-12 levels. It would have been easy to write that up as
+contradicting the memo. It does not: **§2.2 uses the R2 continuous-site set — a fixed-site panel —
+and I used all resolved edges**, so they are different measurements and the difference is most
+likely the composition effect a panel exists to remove. The memo was **more careful than my check**.
+Recorded as such, with the outstanding work named (re-run the per-document basis on the R2 panel)
+and with the consequence for `authority-invocation.md` stated: its disagreement with this memo holds
+**only within the R2 panel** until that re-run happens, and should be read that way.

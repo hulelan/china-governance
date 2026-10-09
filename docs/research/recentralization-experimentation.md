@@ -49,6 +49,36 @@ mechanism the corpus can see is designation, not absorption.
 
 ## 1. Data and definitions
 
+*(**Level basis checked 2026-10-09, and the finding survives.** This memo predates
+`doc_identity` and takes levels from `sites.admin_level` — which it flags itself at §1, noting the
+~28k npc 地方法规 filed as central. Re-measured on the per-document level, **66,747 of 281,640
+resolved edges (23.7%) have at least one endpoint reclassified** (43,047 sources, 39,109 targets),
+so the check was worth running. Upward share of sub-national-source edges, all resolved edges, both
+bases:*
+
+| period | site basis | per-document basis | shift |
+|---|---|---|---|
+| 2008-12 | 50.8% | **47.6%** | −3.1 pt |
+| 2013-17 | 68.7% | **63.7%** | −5.1 pt |
+| 2018-22 | 68.1% | **61.8%** | −6.3 pt |
+| 2023-26 | 69.6% | **63.2%** | −6.4 pt |
+
+***The 2013 step survives:*** *+16.1 points on the per-document basis against +17.9 on the site
+basis. Every level sits 3-6 points lower — the npc regulations were inflating the "upward" count by
+being filed as central targets — but the shape of the finding is unchanged, and the horizontal share
+falls 51.6% → 35.6% across the same boundary while downward stays at 0.8%.*
+
+***One thing my check could NOT reproduce, and the limitation is mine, not this memo's.*** *The
+all-edges series above shows **no reversion** by 2023-26 (63.2% against 47.6% in 2008-12), where §2.2
+reports a return to 2008-12 levels. §2.2 uses the **R2 continuous-site set** — a fixed-site panel —
+and I used all resolved edges, so the two are not the same measurement and the difference is most
+likely the composition effect a fixed panel exists to remove (`rmb-coverage.md` §4 trap 3). **This is
+not evidence against §2.2**; it is a reminder that the reversion is a fixed-panel result and should
+always be quoted as one. Re-running the per-document basis **on the R2 panel** is the outstanding
+check, and until it is done, `authority-invocation.md`'s disagreement with this memo — that
+authority-borrowing by NAME never reverted while borrowing by CITATION did — holds only within the
+R2 panel, which is how that memo should be read.)*
+
 **Universe.** `documents` joined to `sites`, `admin_level` in {central, provincial, municipal,
 department, district}. Department sites are Shenzhen municipal bureaus and are folded into
 municipal. Media and research sites are excluded. `date_published` must be at least 10
