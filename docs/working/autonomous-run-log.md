@@ -5057,3 +5057,66 @@ that reason** — a regex cannot read Python call syntax.
 Citations, scores, identity and the search index for the 6,068 merged rows come with tonight's
 nightly, which regenerates them in order.
 
+---
+
+## Iteration 137 — the panel I built this morning was keyed on a column whole institutions never fill
+
+Started from the PBC merge, intending to re-base `rmb-coverage.md` now that the monetary hole is
+filled (PBC 31 → **6,099** documents). The first query returned **n=0 for pbc**, which turned out to
+be the thread of the whole iteration.
+
+**`documents.date_written` is 0 for whole institutions.** pbc 6,099 of 6,099, chinatax 5,018 of
+5,018, csrc 272 of 272, safe 22 of 22, spp 40 of 40 — those crawlers never populate it, while
+`date_published` is present on every row. 116,282 of 354,730 documents corpus-wide.
+
+**And `panel.py`, the instrument I built this morning, keyed on exactly that column.** So every panel
+I produced today silently excluded the entire monetary, tax and securities apparatus — including the
+central panel behind the export-control finding. `build_doc_identity` had been loading
+`date_published` all along, which is why a diffusion anchor with `date_written = 0` still produced
+sane lags: something I noticed this morning and **explained wrongly** (I credited the matcher with
+resolving a date rather than noticing it used a different column).
+
+**Fixed, and the panel grew.** `YEAR_SQL` prefers `date_written` (the issuance date) and falls back
+to `date_published`, matching the identity layer rather than inventing a third convention. Central
+panel **5 → 8 sites** (adding gov, ndrc, chinatax), candidates 45 → 197, 2018 denominator
+**370 → 3,847**. Default panel **18 → 21 sites**, now including **pbc** for the first time — which
+is what unblocks the RMB question.
+
+**A published finding had to be corrected, and one claim withdrawn.** Re-running export control on
+the honest panel:
+
+| term | 2018 | 2020 | **2021** | 2023 | 2025 | ρ share |
+|---|---|---|---|---|---|---|
+| 出口管制 | 0.08% | 0.39% | **2.84%** | 4.33% | **4.45%** | **+0.952** |
+| 两用物项 | 0.08% | 0.15% | **1.28%** | 1.80% | **2.46%** | +0.952 |
+| 出口许可 | 0.70% | 0.66% | **1.25%** | 1.69% | 1.43% | +0.690 |
+
+The **internal control holds and gets cleaner** — the statute's own vocabulary steps ~7.3x and
+~8.5x at 2021 while pre-existing licensing steps ~1.9x. But **"steps and holds" is WITHDRAWN**: the
+old panel read 11.88 → 4.92 → 10.96 → 9.93 → 11.25, which looked flat; corrected it reads
+2.84 → 1.75 → 4.33 → 3.81 → **4.45** with ρ share **+0.738 → +0.952**. Not a statute creating a
+steady stream — a statute followed by **continuing escalation**. Corrected in the memo and in the
+literature map's outcome row, not silently restated.
+
+**Then my own fix broke the instrument, and re-checking the published findings is what caught it.**
+Keying on `date_published` admits free text, and a **single** document derived to year **2999**. That
+set `last_year = 2999`, making the required complete-year range 2013-2998, which no site covers — so
+the default panel selected **0 of 466 sites** and every series returned THIN. `date_written` had been
+accidentally protective: a bad epoch is still a number in range. Measured: 8 implausible buckets over
+~1,289 documents (NULL 683, **-4707** 587, 107, 2028, 2029, 2030, 2035, 2999). `YEAR_SQL` is now
+clamped to [1949, current+1], out-of-range counts as UNDATED, and a test feeds the panel all five
+poison shapes found in the corpus. **The bound belongs at the point of derivation** — the same lesson
+as the length floors: a guard that trusts its input's format is not a guard.
+
+**All three other published panel findings survive** on the 21-site panel, with larger n: 美元
+SIGN_FLIP (n 400 → **684**, panel ρ −0.923 → **−0.952**), 视频监控 SIGN_FLIP (n 647 → **950**),
+雪亮工程 THIN (n 58 → 82). Only the export-control one moved, because its panel was central-level
+where the composition change was largest.
+
+**Also caught mid-fix**: my first version left `{year}` and `{has_date}` as f-string fields naming
+undefined variables with a dead `.format()` after. It parsed and would have raised `NameError` at
+runtime. **Reading the generated source rather than trusting `ast.parse` is what found it** — a
+syntax check is not an import check, which this project already knows.
+
+364 → **366 tests**.
+
