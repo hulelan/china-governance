@@ -290,6 +290,55 @@ def download_attachment(url: str, base_url: str = "", timeout: int = 30) -> byte
         return None
 
 
+# A host that accepts a TCP connection but never answers costs the FULL timeout on
+# every document it owns. Measured 2026-10-09: a run sat 27 minutes with 23 s of CPU,
+# one ESTAB socket and ZERO database writes — roughly 54 documents at 30 s each, all
+# timing out on one peer. Because the work list is ordered by id, one host's documents
+# are contiguous, so a run can spend hours inside a single dead host. At that rate 5,084
+# documents would need ~42 h and collide with the nightly.
+HOST_FAIL_LIMIT = 8
+
+
+class HostBreaker:
+    """Stop fetching from a host after HOST_FAIL_LIMIT consecutive failures.
+
+    Consecutive, not cumulative: a host that fails 8 in a row is down, whereas a host
+    with 8 scattered failures among successes is merely serving some bad files. Any
+    success resets the count, so a slow-but-working host is never tripped.
+    """
+
+    def __init__(self, limit=HOST_FAIL_LIMIT):
+        self.limit = limit
+        self.consecutive = {}
+        self.tripped = set()
+
+    @staticmethod
+    def host_of(url):
+        from urllib.parse import urlparse
+        try:
+            return (urlparse(url).netloc or "").lower()
+        except Exception:                           # noqa: BLE001
+            return ""
+
+    def is_open(self, url):
+        return self.host_of(url) in self.tripped
+
+    def record(self, url, ok):
+        h = self.host_of(url)
+        if not h:
+            return
+        if ok:
+            self.consecutive[h] = 0
+            return
+        n = self.consecutive.get(h, 0) + 1
+        self.consecutive[h] = n
+        if n >= self.limit:
+            self.tripped.add(h)
+
+    def report(self):
+        return sorted(self.tripped)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Extract text from PDF attachments for stub-body documents"
@@ -358,6 +407,7 @@ def main():
             print(f"  ... and {len(rows) - 20} more")
         return
 
+    breaker = HostBreaker()
     processed = 0
     extracted = 0
     scanned = 0
@@ -415,9 +465,33 @@ def main():
         if attach_url.startswith("./") and url:
             attach_url = urljoin(url, attach_url)
 
+        if breaker.is_open(attach_url):
+            # This host has failed HOST_FAIL_LIMIT times in a row; do not pay another
+            # full timeout for it. See HostBreaker.
+            skipped += 1
+            processed += 1
+        # Unconditional: the progress line used to live inside `if text:`, so a
+        # run that extracted nothing printed nothing and looked hung. Measured
+        # 2026-10-09: 27 minutes, 23 s CPU, one ESTAB socket, zero output.
+        if processed % 25 == 0:
+            print(f"  Progress: {processed}/{len(rows)} processed, {extracted} "
+                  f"extracted, {scanned} scanned, {errors} errors, "
+                  f"{skipped} skipped" +
+                  (f" | hosts tripped: {', '.join(breaker.report())}"
+                   if breaker.report() else ""))
+            continue
+
         data = download_attachment(attach_url, base_url)
+        breaker.record(attach_url, bool(data))
         if not data:
             errors += 1
+            processed += 1
+            if processed % 25 == 0:
+                print(f"  Progress: {processed}/{len(rows)} processed, {extracted} "
+                      f"extracted, {scanned} scanned, {errors} errors, "
+                      f"{skipped} skipped" +
+                      (f" | hosts tripped: {', '.join(breaker.report())}"
+                       if breaker.report() else ""))
             continue
 
         # Detect actual format from magic bytes (overrides extension guess)
@@ -455,10 +529,6 @@ def main():
             extracted += 1
             if extracted % 10 == 0:
                 conn.commit()
-                print(
-                    f"  Progress: {processed}/{len(rows)} processed, "
-                    f"{extracted} extracted, {scanned} scanned, {errors} errors"
-                )
         else:
             scanned += 1
 
