@@ -687,6 +687,27 @@ legitimately return 0 matches. And when an edit script makes several replacement
 nothing unless **all** anchors matched (the loop above does this deliberately) — a partial write is
 worse than no write, because the commit message will describe the whole change.
 
+## Pre-register a named test, not an aggregate
+
+Measured 2026-10-09. Three precision fixes were registered before a rebuild with a predicted
+aggregate effect (resolution 52.97% → ~52.1%, ~4,960 fewer resolved edges) **and** three named
+targets expected to go to zero. The rebuild ran:
+
+* **the named targets were exact** — 政府工作报告 283 → **0**, 房屋征收补偿决定书 95 → **0**,
+  广东省自然资源厅 466 → **0**, settling both fixes beyond argument;
+* **the aggregate moved the other way** — resolved edges **rose** 310,136 → 344,049 and resolution
+  fell only 0.14 pp, because the same window's classification drain added ~65,770 `llm` reference
+  edges resolving at **60.4%**, swamping ~5,000 removals.
+
+The prereg even said "the net resolution number will not be interpretable" and still got it wrong,
+because it named one offsetting factor (a crawl that did not run) and missed the bigger one: **the
+drain was a reference *source*, not only a blocker.**
+
+**Rule:** an aggregate is a prediction about everything happening at once, so it is only as good as
+your inventory of everything happening at once. A named target is a prediction about **your own
+change**. Register both if you like, but let the named one decide. `docs/working/prereg-next-rebuild.md`
+is the worked example.
+
 ## An edit script must be able to fail its own commit
 
 Twice (2026-10-08, 2026-10-09) a commit message described a file change the commit did not contain.

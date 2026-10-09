@@ -1,3 +1,42 @@
+# RESULTS, 2026-10-09 11:20 UTC — scored against the registrations below
+
+The nightly's Phase 2b-2c ran with the new code (an accidental `git pull` during a guard test, see
+`write-window-plan.md`). Scoring every prediction, including the one I got wrong, which is the most
+useful line here.
+
+| prediction | outcome |
+|---|---|
+| **P1** org-stub gate | **CONFIRMED by its named test.** 广东省自然资源厅 **466 → 0** inbound. |
+| **P6** instance-title denylist | **CONFIRMED by its named tests.** 政府工作报告 **283 → 0**, 房屋征收补偿决定书 **95 → 0**. |
+| **P2** identity rebuild | **CONFIRMED on `localized_of`**: 2,014 → **3,420** against a predicted ~3,350 (the 70 extra is the 5,642 newly-indexed documents). **PARTLY MISSED on genre**: `genre='implementing'` 17,883 → **20,125**, i.e. **+2,242** where I predicted +1,336 — so ~900 documents gained the implementing genre *without* a `localized_of` edge, which my "same 1,336 by the same edges" wording did not allow for. |
+| **P5** instrument-pooling gap | **ANSWERED, and it is a REAL DEFECT.** Inside-400d unpooled families 11,891 → **11,786**; documents 28,225 → **27,982**. Essentially unchanged by the rebuild, so it was **not** staleness. 27,982 documents is 8% of the corpus and `instrument_id` is what `citation_rank`, the diffusion anchors and the tracker's anchor-diversity columns all pool on. **This now earns the work.** |
+| **P3** ledger seed | **not run** — not part of `daily_sync.sh`. |
+| **P4** PBC backfill | **not run** — Phase 1 completed before the crawler fix existed. |
+| **P7** tail trim | **not run** — not part of `daily_sync.sh`; its 195 tail-only edges wait for the next citations rebuild after a trim. |
+| `doc_len` | **built**, 346,955 rows, and `site_stats` took **7.7s** against the predicted ~7.3s (2.2s before the `LENGTH` column). |
+
+## The aggregate prediction was WRONG, and the reason is the lesson
+
+I predicted resolution **52.97% → ~52.1%**, a fall of ~4,960 edges from three precision fixes.
+Actual: **52.9721% → 52.8298%**, a fall of only **0.14 pp** — while **resolved edges ROSE 310,136 →
+344,049 (+33,913)** and total edges rose 585,471 → **651,241 (+65,770)**.
+
+**Why:** the classification drain I was waiting for added the edges. 23,707 documents were classified
+in that window, each contributing DeepSeek-extracted references, and `llm` edges now number 189,484
+at **60.4%** resolution — better than `named` (53.6%) or `formal` (40.1%). So ~65,770 new edges at
+60%+ swamped ~5,000 removals.
+
+**I wrote "the net resolution number will not be interpretable" and then still got it wrong**, because
+I named *one* offsetting factor — the PBC crawl, which did not even run — and missed the much larger
+one: **the drain itself was a reference source, not just a blocker.** I had been treating it purely
+as the thing holding the lock.
+
+**The transferable rule, now in CLAUDE.md:** pre-register a **mechanism-level named test**, not an
+aggregate. All three named targets went to exactly 0 and settled P1 and P6 beyond argument, on a
+night when the aggregate they share a denominator with moved the *opposite* way from the prediction.
+An aggregate is a prediction about everything happening at once; a named target is a prediction about
+your own change.
+
 # Pre-registration: what the next full rebuild must do
 
 *Written 2026-10-08, BEFORE the rebuild, so the numbers cannot be chosen after the fact. The
