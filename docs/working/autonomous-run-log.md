@@ -4001,3 +4001,39 @@ rule is recorded as being about tokenization rather than length. 293 → **296 p
 question mark next to a suspicious count. It is the thing that surfaced this. The tooling I built to
 stop a known mistake found an unknown one, which is the better argument for building it.
 
+---
+
+## Iteration 114 — the one-vote veto's life-cycle, and a retreat the record cannot explain
+
+Scoped and wrote the w33741 study (`one-vote-veto.md`, 44 memos). The paper shows the
+**一票否决** veto made the One Child Policy bite; the record can ask what the device did **next**.
+
+**The paper's own domain exits completely.** Of each period's 1,019 veto documents, the share also
+naming 计划生育 runs **40.6% → 17.9% → 21.1% → 7.6% → 0.0%**. From the plurality domain to exactly
+zero, tracking the policy's own end. 安全生产 held 30-35% for three consecutive periods then fell to
+10.7%; 环境保护 peaked at 39.6% and is 8.3%. And **poverty alleviation and food security entered
+late** — 脱贫攻坚 0.4% → 8.3%, 粮食安全 1.7% → 6.5% — the only domains higher now than ever.
+
+**The level profile inverts**: municipal **67%** (pre-2008) → central **31%** (2018-22) →
+provincial 31% / media 28% (2023-26). **Local practice, central codification, retreat** — the same
+local-first ordering as `patient-capital-cascade.md`, in an unrelated policy area, visible only
+because `doc_identity` gives a per-document level.
+
+**The best part of the memo is §4, where the obvious explanation fails.** The tempting story is the
+**基层减负** campaign against 形式主义 and excessive accountability. Our record does not support it:
+of 954 基层减负 documents only **25 (2.6%)** mention 一票否决, they are 69.2% about 形式主义, and the
+two series are **not synchronised** — 基层减负 runs 1 · 2 · 16 · 42 · 46 · 45 · 37 · 106 · 246 ·
+**403**, growing hardest *after* the veto has already declined. Also **`滥用一票否决` is genuinely
+absent**, zero by FTS and zero by LIKE (checked with `fts.diagnose_zero`, since a bare FTS zero is
+not evidence of absence — here it is): **no document frames the veto as abused.**
+
+So the retreat is visible and its cause is **not in the documents we hold**. I named three
+candidates the corpus cannot separate — an internal instruction we lack, the device following its
+domains out, or the promotion system shifting to instruments we are not counting (约谈, 挂牌督办,
+终身追责) — and flagged the third as the checkable one. Writing "unexplained" where the plausible
+story fails is the whole value of having measured it.
+
+Limits stated: co-occurrence is not attribution; 96-278 documents per period so only the large
+swings carry weight; 2026 is composition-inflated; and at 1,019 documents the series is too thin for
+the fixed-site panel every series here wants, so the periodisation is descriptive.
+

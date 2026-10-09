@@ -207,7 +207,11 @@ re-checking it):
   question — **which targets carry a veto, from when, and at what level** — i.e. how a
   promotion-blocking device spread across policy domains. That is the same shape as the
   `local-legislative-devolution` and 出口管制 findings: a named institutional device with a
-  documentary footprint.
+  documentary footprint. **Started the same day: `one-vote-veto.md`** — the device's full life-cycle,
+  with the paper's own domain (计划生育) going from the plurality at 40.6% of veto documents to
+  **exactly 0.0%**, a level inversion from municipal 67% to central 31% and back out, and a retreat
+  whose cause is **not in the documents we hold** (the obvious 基层减负 explanation fails: 2.6%
+  co-occurrence, and 减负 grows hardest *after* the veto has already declined).
 - **Mining Chinese Historical Sources At Scale: A Machine-Learning Approach to Qing State Capacity**
   (Keller, Shiue, Yan), **NBER w32982**, 2024. **Method comparator, not a replication target** — its
   corpus is Qing-era and ours begins in the 1980s. Kept because its measurement question is
