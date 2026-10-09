@@ -3736,3 +3736,38 @@ note says **swap, not workaround**, in those words.
 cron has not fired yet, so the plan's central prediction (that it finds the lock held and skips) gets
 tested in about two hours. Worth noting that the prediction is now falsifiable rather than
 hypothetical.
+
+---
+
+## Iteration 108 — consolidated the day into the synthesis, appending rather than rewriting
+
+With the cron still ~80 minutes out there was nothing to watch, so this tick did the consolidation
+the day had earned. `findings-synthesis.md` is the volume's entry point and **five of the day's six
+memos were absent from it**; its status section still read "all nine replications" when all seven
+"run now" papers now have memos.
+
+**Appended a dated block rather than rewriting**, because that section's own recorded failure mode
+is being rewritten from memory — and the earlier versions had both gone stale the same way. Verified
+the live figures first: corpus 346,955 / citations 585,471 / resolved 310,136 / `doc_identity`
+338,856 / `diffusion_events` 45,524 — **all unchanged from yesterday's status**, exactly as they
+should be with the write lock held all night. 43 memos, 293 tests, 65 commits since 2026-10-08 00:00.
+
+**What the block records.** The two closed replications (#4 diffusion-intensity, #5
+authority-invocation), the three findings outside the set (the 立法法 devolution with its
+1984-authorised placebo group; the 耐心资本 bottom-up cascade and its payoff that **upward flow
+travels as vocabulary where downward travels as instruments**, which is why citation-based measures
+of it always read near-zero; and the monetary coverage hole plus the PBC position statement), and
+the state-VC extension showing the blame-shield belongs to lending, not funds.
+
+**And the four corrections, given equal space on purpose.** `diffusion-fidelity.md`'s four-step
+gradient was not reproducible and re-measures as province 0.063 / city 0.049 / district 0.046, so
+"districts elaborate most" was wrong in emphasis; `fidelity-provincial.md` holds and is *better*
+supported (Guangdong share 95% → ~64%) but its contrast is city government versus city bureau, an
+axis `admin_level_doc` does not encode; the AI memos survived and sharpened eightfold; and my own
+1,576-invisible-bodies claim was overstated tenfold. A status section that lists only what was found
+is the one that goes stale, because it gives a reader no way to calibrate the rest.
+
+**Closing pointer** to the write window and the seven pre-registered predictions, with the one most
+likely to be misread stated in the synthesis itself: three precision fixes remove **≈5,156** resolved
+edges while the PBC backfill *raises* resolution in the same rebuild, so **the net number will not
+be interpretable** — only the per-fix checks.
