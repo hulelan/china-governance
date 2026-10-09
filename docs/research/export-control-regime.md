@@ -47,6 +47,33 @@ six sites and is useless here, because a panel beginning in 2020 cannot test a s
 
 ## 3. The series, with a built-in control
 
+> **CORRECTED 2026-10-09, same day, and one claim is withdrawn.** The panel below was keyed on
+> `documents.date_written`, which is **0 for whole institutions** — pbc 6,099 of 6,099, chinatax
+> 5,018 of 5,018, csrc 272 of 272 — because those crawlers never populate it while `date_published`
+> is present on every row. `panel.py` now keys on an effective date (written, else published), which
+> takes the central panel from **5 sites to 8** (adding `gov`, `ndrc`, `chinatax`), candidates from
+> 45 to 197, and the 2018 denominator from **370 to 3,847**. So the figures below were computed on a
+> panel missing most of the central government. Re-run:
+>
+> | term | 2018 | 2019 | 2020 | **2021** | 2022 | 2023 | 2024 | 2025 | ρ share |
+> |---|---|---|---|---|---|---|---|---|---|
+> | 出口管制 | 0.08% | 0.13% | 0.39% | **2.84%** | 1.75% | 4.33% | 3.81% | **4.45%** | **+0.952** |
+> | 两用物项 | 0.08% | 0.06% | 0.15% | **1.28%** | 0.58% | 1.80% | 2.02% | **2.46%** | +0.952 |
+> | 出口许可 | 0.70% | 0.22% | 0.66% | **1.25%** | 0.65% | 1.69% | 1.90% | 1.43% | +0.690 |
+>
+> **The internal control holds and gets cleaner.** At 2021 the statute's own vocabulary steps ~7.3×
+> (出口管制) and ~8.5× (两用物项) while pre-existing licensing steps ~1.9× (出口许可). That contrast
+> is the section's strongest argument and it survives a tenfold larger denominator.
+>
+> **But "it steps and holds" is WITHDRAWN.** On the old panel the series read 11.88 → 4.92 → 10.96 →
+> 9.93 → 11.25, which looked flat after the step; corrected it reads 2.84 → 1.75 → 4.33 → 3.81 →
+> **4.45**, and the share rank correlation rises **+0.738 → +0.952**. This is not a statute creating
+> a steady instrument stream — it is a statute followed by **continuing escalation**, which is a
+> different claim about the regime and should not be read as the campaign-versus-statute contrast
+> drawn below. The absolute shares are ~4× smaller throughout, purely from the honest denominator.
+
+
+
 Share of panel documents mentioning each term:
 
 | term | 2018 | 2019 | 2020 | **2021** | 2022 | 2023 | 2024 | 2025 | panel n | ρ raw | ρ share |

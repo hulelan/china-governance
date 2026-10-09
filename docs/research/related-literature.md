@@ -290,8 +290,12 @@ framework essay with no single replicable estimate.
 > the kind of relabelling `consistency-review.md` exists to catch.
 >
 > **The swap was RUN, 2026-10-09: `export-control-regime.md`.** The 2021 step survives a fixed
-> central panel (cac/mee/mof/mofcom/most, >=15 docs/yr, 2018-2025): 出口管制 goes 0.00 / 0.23 /
-> 0.98% → **11.88%** in 2021 and then HOLDS at 4.9-11.3% for five years, n=502, verdict OK.
+> central panel. *(Figures CORRECTED the same day: the panel was keyed on `date_written`, which
+> whole institutions never populate — pbc 6,099/6,099, chinatax 5,018/5,018 — so it was missing
+> most of the central government. On the corrected 8-site panel, 出口管制 goes 0.08 / 0.13 /
+> 0.39% → **2.84%** in 2021 and then keeps CLIMBING to **4.45%** by 2025, ρ share **+0.952**.
+> The "steps and holds" reading is withdrawn; it is a statute followed by continuing
+> escalation.)*
 > Two things make it a finding rather than a series. First an internal control: 出口许可 —
 > pre-existing licensing machinery rather than the statute's own vocabulary — only roughly
 > doubles where 出口管制 and 两用物项 step ~12x and ~11x, so the step is the law's vocabulary
