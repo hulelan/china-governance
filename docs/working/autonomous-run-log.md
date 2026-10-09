@@ -4288,3 +4288,111 @@ adopted one anchor — so every test passed and the defect was invisible until r
 a document that adopts sixty-two. A fixture that encodes the shape you imagine will not find the
 shape you did not.
 
+---
+
+## Iteration 122 — the panel became a tool, and the tool immediately caught me
+
+**Verified the tracker dedup fix on the live rebuild.** Both pre-registered cells hit:
+`all/2021-W44/municipal` fell 215,986 → **3,033** chars while `Trade/2021-W44/municipal` correctly
+HELD at 215,986, because it is a genuine single-event cell — one document, one anchor. The
+surviving `Agriculture ev=4 text=215986` row is the fix working, and it now carries information it
+could not before: four cascades from ONE 216KB document, where previously that was
+indistinguishable from four documents averaging 216KB. Every aggregate moved DOWN (mean 7,160 →
+6,885, median-of-medians 4,598 → 4,510, p90 11,847 → 11,566), which is the signature of a
+directional bias rather than noise. 3,700 of 7,324 populated cells were exposed.
+
+**Verified the peer session's claims instead of taking the report.** Both exact: 344,049 resolved
+edges, and the top 8 by `citation_rank` are all framework instruments with 广东省自然资源厅 gone.
+But my own operationalization of "org-only target" surfaced a residual they did not report, and it
+was a **morpheme-boundary bug** — the family named in CLAUDE.md, one layer up from the length
+floors. `_ORG_ONLY_NOT`'s headline clause carried `(?:格|新|大|布|开|全)局$`, written for 开创新局
+("open a new chapter"). But 科技创新·局 — a Science, Technology and Innovation Bureau — splits
+after 创新, not before 新, so **every 科技创新局 in the country** matched the headline pattern and
+was exempted from the org-only gate. 深圳市科技创新局, a bodiless stub, kept 7 containment edges,
+all of them real unheld instruments merely PREFIXED by the bureau's name.
+
+That is the **mirror** of the 2026-10-01 proxy-target bug, which is why that fix missed it: there
+the ref was SHORTER than the held title and the cure was exact-beats-containment; here the ref is
+LONGER and there is no exact candidate at all, so containment runs unopposed onto an issuer name —
+a prefix of every document that issuer ever publishes. The cost is not the inflated rank but
+**concealed demand**: those refs should read "unresolved, coverage gap" and flow to the crawl queue.
+
+The gate is measured, not reasoned. All 12 corpus titles ending in 创新局 split **8 / 4 exactly**:
+the 8 ending in 科技创新局 are all agencies, the 4 ending in 创新局 otherwise are all headlines
+(感恩奋进创新局, 再创新局, 融合创新局, 开创新局). So the lookbehind is 科技创 and NOT 创 — the
+obvious `(?<!创)` would have broken four real headlines. Proved discriminating in memory: old
+pattern 0/4 bureaus, fix 4/4, zero movement across 9 headline cases.
+
+**And a correction I nearly shipped as a fix.** My first probe flagged 177 of 1,830 bare-org titles
+as "leaking the guard". 84 of them leaked on `举办`. They were **my probe's** false positives — my
+`ORG_TAIL` regex accepted 办 and 局 as organisation suffixes, sweeping in 2019世界人工智能大会举办
+and 一季度光明区经济实现"七有"开局. The guard was correctly refusing them. One step from "fixing"
+a gate that was right, and the thing that stopped me was reading the leak reasons instead of the
+leak count.
+
+**Then built the lever the volume kept asking for: `scripts/rnd/analysis/panel.py`.** Six memos
+state that a series on this corpus needs a fixed-site panel; two hand-rolled it; `one-vote-veto.md`
+shipped without one and says so in its own limitations. That is a lesson that should be a tool. The
+module does not merely offer a panel — `series()` returns raw and panel TOGETHER with a verdict,
+and the verdict compares the two trend signs, so a caller cannot get the raw series without being
+told whether the panel contradicts it. It composes with this morning's `fts.py`, which already
+knows which index can see a given term.
+
+**It validated against the one answer already written down, unprompted:** 美元 on the default panel
+gives raw rho **+0.555** against panel-share rho **−0.923** → SIGN_FLIP, reproducing
+`rmb-coverage.md`'s documented reversal. The mechanism is naked in the 2026 row — **raw 4,022
+versus panel 7**, a 16x jump from 2025 that is entirely newly crawled media sites. The default
+panel also reproduces `authority-invocation.md`'s hand-built **18 sites** exactly.
+
+Three more verdicts, each useful: 视频监控 **SIGN_FLIP** (raw +0.791, panel share −0.549 —
+surveillance attention share is FALLING while the raw count rises); 雪亮工程 **THIN at n=58**,
+enforcing by tool the refusal `related-literature.md` made by hand; and 出口管制 **THIN at n=9**,
+which caught a category error of mine before it became a finding. The default panel is
+overwhelmingly Guangdong municipal with `mof` the only central site, so it is the wrong body to ask
+about a central instrument regime. **A central panel back to 2013 does not exist here** (1 site at
+≥30/yr): the frontier is 3 from 2016, 5 from 2018, 6 only from 2020 — a fact about our coverage
+worth recording for every future central series.
+
+**On the right panel the finding is real: `export-control-regime.md`.** Central, five sites, 2018-25.
+出口管制 goes 0.00 / 0.23 / 0.98% → **11.88%** in 2021 and HOLDS at 4.9-11.3% for five years,
+n=502, verdict OK. Two things make it a finding rather than a series. An **internal control**:
+出口许可 is pre-existing licensing machinery rather than the statute's own vocabulary, and only
+roughly doubles where 出口管制 and 两用物项 step ~12x and ~11x — so the step is the law's vocabulary
+entering the record, not a general rise in trade-restriction attention, which one series alone could
+never separate. And the **genre check that could have killed it**: in 2021 on the panel the step is
+76 mofcom `other` + 8 `promulgation` + 4 cac/mee documents and **ONE news document**. The regime's
+367 news documents live on guancha (253) and ifeng (73), which the panel excludes — exactly why raw
+2026 reads 357 against a panel 43.
+
+**Two data defects fell out of it, and the second is the better finding.** 166 of the 1,071
+documents (15.5%) carry `date_written = 0` and are invisible to every series — 73 on `gov`,
+including **两用物项出口管制条例** (107 inbound), 稀土管理条例 and 商用密码管理条例, so the regime's
+second anchor instrument cannot appear in its own time series.
+
+And **725 mofcom titles were stored as literal `?`** — every CJK character 0x3f, all 725 of the
+corpus's mojibake titles on this one site, 2021-2026 at 113-186/yr, so ongoing. My first diagnosis
+was WRONG and the codepoints disproved it: I blamed `errors="replace"` at mofcom.py:403/608, but
+that yields U+FFFD and these are 0x3f, so the LISTING endpoint serves them that way. The article
+pages are clean, which is why 724 of 725 bodies are intact and none are mojibake. `raw_html_path`
+is a dangling pointer for all 725 (it names `raw_html/mofcom/2278.html` while that directory stores
+by doc id), so disk recovery was impossible and the URL had to be re-fetched — using the
+`_extract_ec_meta` parser **already in the same crawler for a different section**.
+
+Why that is not hygiene: a mojibake title is invisible to BOTH FTS indexes, can never be a citation
+target, and can never match a `title_reissue` edge. mofcom holds 500 of the 1,071 export-control
+documents, so the ministry that owns the regime had 725 documents absent from every title-keyed
+analysis — and they are the regime's **justification record**, naming counterparties directly:
+就英制裁中国企业答记者问, 就加强两用物项对日本出口管制答记者问, 就安世半导体相关问题答记者问,
+就荷经济大臣卡雷曼斯就安世半导体问题表态答记者问, 就美方暂停实施出口管制穿透性规则答记者问. The
+general lesson: **a corpus can hold a document and still not have it.**
+
+**Two process notes.** The droplet `git pull` ABORTED because my own scp-for-validation left two
+untracked files that the pull would overwrite — exactly the hazard in
+`feedback_droplet_deploy_hygiene.md`, caught only because that rule says to verify HEAD moved. It
+had not; the memo 404'd. One of the two copies also DIFFERED from the committed version (I scp'd
+panel.py before the classify() refactor), so after cleaning and pulling I re-ran the export-control
+series on the committed file: all nine year rows and n=502 / rho +0.952 / +0.738 identical.
+Behaviour-preserving, verified rather than assumed. Second: a Python script can be `rm`'d while
+running (the module is already loaded), unlike the bash incremental-read hazard — the repair kept
+going through the cleanup.
+

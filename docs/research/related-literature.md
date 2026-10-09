@@ -250,6 +250,16 @@ policy half only — `ai-governance-diffusion.md` is the complement, not the rep
 > winding down, versus the programme maturing past the stage that generates policy documents. It is
 > recorded here as **a reachable study with its n stated**, so that whoever runs it starts with the
 > panel rather than the headline.
+>
+> **Panel verdict, 2026-10-09 (`panel.py`): the headline would have had the WRONG SIGN.** On the
+> default 18-site panel 视频监控 is a **SIGN_FLIP** — raw rho **+0.791** against panel-share rho
+> **−0.549**, n=647. The raw count rises; the SHARE of panel attention peaks at 2.07% in 2017 and
+> falls to 0.57% by 2025. So "surveillance policy is growing" is a statement about our crawl
+> schedule, and the composition-free reading is that video-surveillance deployment has been
+> losing share of sub-national policy attention since 2017. 雪亮工程 separately comes back
+> **THIN at n=58**, which is the tool enforcing the refusal made by hand above. Both are now
+> measured rather than warned about; a surveillance-deployment memo should open from the share
+> series, not the counts.
 **w31676 Exporting the Surveillance State** needs trade data; **w32993 Autocracy 2.0** is a
 framework essay with no single replicable estimate.
 
