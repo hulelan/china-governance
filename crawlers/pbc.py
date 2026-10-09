@@ -87,6 +87,26 @@ UA = {"User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.
 # docs/research/pbc-fx-position-2026.md — and so are the Monetary Policy Committee
 # quarterly readouts, joint-ministry 通知, and the monthly statistical releases.
 # Instruments and policy signals live in this "news" section, not only in 条法司.
+def section_pages(cap, max_pages, cap_applies=True):
+    """How many pages to walk for one section.
+
+    The per-section cap guards the NIGHTLY (see the comment above: "40 pages keeps the
+    nightly on current material"), not deliberate operator intent — and CLAUDE.md
+    documents the historical backfill as "a deliberate `--max-pages 411` run". But the
+    original `min(max_pages, cap)` made the cap win unconditionally, so that documented
+    command silently did the ordinary 40-page walk instead: measured 2026-10-09, a
+    `--max-pages 411` run listed **494** 沟通交流 documents where 411 pages is ~8,200.
+    Accepted, ran, exited 0, did something else — the sibling of a `--hops` value that
+    matched no hop and also exited 0.
+
+    So an EXPLICIT --max-pages overrides the cap (`cap_applies=False`); the default path
+    keeps it.
+    """
+    if cap and cap_applies:
+        return min(max_pages, cap)
+    return max_pages
+
+
 SECTIONS = [
     ("tiaofasi/144941/3581332", "规范性文件", None),
     ("tiaofasi/144941/144957", "部门规章", None),
@@ -262,12 +282,12 @@ def _body_of(html):
     return body
 
 
-def crawl(conn, fetch_bodies=True, max_pages=DEFAULT_MAX_PAGES):
+def crawl(conn, fetch_bodies=True, max_pages=DEFAULT_MAX_PAGES, cap_applies=True):
     store_site(conn, SITE_KEY, CFG)
     stats = WriteRetryStats()
     stored = 0
     for section, label, cap in SECTIONS:
-        rows = _walk(section, min(max_pages, cap) if cap else max_pages)
+        rows = _walk(section, section_pages(cap, max_pages, cap_applies))
         if _SKIP_TITLE_RE is not None and section.startswith("goutongjiaoliu"):
             before = len(rows)
             rows = [r for r in rows if not _SKIP_TITLE_RE.search(r[1] or "")]
@@ -326,15 +346,22 @@ def main():
                     help="store metadata only (no article fetches)")
     ap.add_argument("--probe", action="store_true",
                     help="enumerate the section lists and report; write NOTHING")
-    ap.add_argument("--max-pages", type=int, default=DEFAULT_MAX_PAGES,
-                    help=f"pages per section (default {DEFAULT_MAX_PAGES})")
+    ap.add_argument("--max-pages", type=int, default=None,
+                    help=f"pages per section (default {DEFAULT_MAX_PAGES}); passing this "
+                         "EXPLICITLY also overrides the per-section cap, which exists to "
+                         "bound the nightly rather than the operator")
     ap.add_argument("--db")
     args = ap.parse_args()
+    # An explicitly-passed --max-pages overrides the per-section cap; the default
+    # keeps it. See section_pages().
+    cap_applies = args.max_pages is None
+    if args.max_pages is None:
+        args.max_pages = DEFAULT_MAX_PAGES
 
     if args.probe:
         total, oldest, newest = 0, "", ""
         for section, label, cap in SECTIONS:
-            rows = _walk(section, min(args.max_pages, cap) if cap else args.max_pages)
+            rows = _walk(section, section_pages(cap, args.max_pages, cap_applies))
             # Probe reports what the crawl would STORE, so apply the same filter.
             skipped = 0
             if section.startswith("goutongjiaoliu"):
@@ -354,7 +381,7 @@ def main():
 
     conn = init_db(args.db) if args.db else init_db()
     _stored, stats = crawl(conn, fetch_bodies=not args.list_only,
-                           max_pages=args.max_pages)
+                           max_pages=args.max_pages, cap_applies=cap_applies)
     show_stats(conn)
     if stats.skipped:
         sys.exit(1)

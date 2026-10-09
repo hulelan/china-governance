@@ -287,6 +287,13 @@ python3 -m crawlers.pbc --max-pages 3            # bound the walk (default 40; t
 # which is how that position statement would have been missed.
 # Historical backfill of the section is a deliberate `--max-pages 411` run (~8,200
 # docs, ~2.75h of body fetches), NOT something the nightly should do under its cap.
+# (FIXED 2026-10-09 — until then this documented command DID NOT WORK. The code read
+# `min(max_pages, cap)`, so the 40-page cap always won and `--max-pages 411` silently
+# did the ordinary walk: a real run listed 494 沟通交流 docs where 411 pages is ~8,200.
+# Accepted, ran, exited 0, did something else — the sibling of a `--hops` value that
+# matches no hop and also exits 0. Now an EXPLICIT `--max-pages` overrides the cap,
+# because the cap guards the nightly and not the operator; `section_pages()` encodes
+# that and `tests/test_pbc_section_cap.py` pins both directions.)
 python3 -m crawlers.trs --site nhsa             # TRS WCM central bodies (医保局 NHSA, 广电 NRTA)
 python3 -m crawlers.trs --list-sites            # Generic TRS "recordset" crawler (encrypted-param dialect)
 python3 -m crawlers.govcms --list-sites         # Generic gov "t-date list" crawler (central ministries)
