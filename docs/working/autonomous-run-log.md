@@ -4872,3 +4872,27 @@ microdata — 最低生活保障金发放情况, 低保家庭生活扶助金, �
 Also this iteration: the second Wuxi merge's stats tables rebuilt (`site_stats` 348,662,
 `instrument_inbound` 40,574).
 
+---
+
+## Iteration 132 — the extraction is paying off, and the write queue now runs two jobs without contention
+
+**PDF extraction is working and the gain is large.** The target population fell **7,802 → 6,301** in
+the first ~25 minutes, so ~1,501 documents already enriched. (The log looked empty — 0 `Progress`
+lines — purely because Python buffers stdout when redirected to a file; the DB is the honest
+progress indicator, not the log.)
+
+**A verified example of what this recovers.** `12662773`, 2026年深圳市龙华区统计局部门预算, went
+from a **20-character stub** to **13,726 characters** of full budget text with its table of contents
+(部门概况 / 部门预算收支总体情况 / line items). `12661154`, the 龙华区人大常委会办公室 budget,
+14,904 characters. This is **district-level departmental fiscal data** that no body-text query in
+this corpus could previously see.
+
+**Second job launched under the documented no-contention pattern.** The PBC historical backfill of
+the 条法司 沟通交流 section (411 pages, ~8,200 documents, ~2.75 h per CLAUDE.md) is a writer, and the
+extraction already holds `documents.db` — so it runs with `--db documents_pbc.db` and will be merged
+with `merge_db.py` afterwards, exactly the pattern CLAUDE.md prescribes instead of risking the
+two-writer lock. 45 s in: 规范性文件 430 docs listed, pager totalpage=22.
+
+Both jobs are `nice -n 19` and network-bound, so the 2-vCPU box is not the constraint, and the
+nightly is ~11 h away.
+
