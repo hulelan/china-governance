@@ -765,7 +765,7 @@ spells it `${pipestatus[1]}`).
 
 ## A recurring bug shape: length floors measured on a NORMALIZED string
 
-Five separate bugs this project has shipped are the same mistake (the fourth was predicted
+Four separate bugs this project has shipped are the same mistake (the fourth was predicted
 here before it was found, which is the point of naming a pattern): **a minimum-length guard applied to a string AFTER normalization stripped
 characters from it.** Chinese statute names are the trap, because `中华人民共和国` is 7 characters
 and every normalizer folds it away.
@@ -777,7 +777,6 @@ and every normalizer folds it away.
 | `build_doc_identity._best_core` | `KEY_MIN = 6` on the folded core | every national statute got NO `instrument_key`, so all copies stayed `instrument_role='unique'` and nothing pooled (found 2026-10-07) |
 | `citation-network-structure.md` Appendix pooling (analysis code, not production) | a 5-char floor on the folded title | 民法典 and 预算法 fold to 3 characters once 中华人民共和国 is stripped, so the memo's own pooled authority statistics never pooled them (found 2026-10-08 during the A1 re-base). Note the resolver's title index is safe here because its `LENGTH(title) >= 5` floor reads the RAW title, 10 characters for 中华人民共和国民法典 |
 
-| `build_doc_identity._best_core` again, on 公告-shaped titles (found 2026-10-09) | `KEY_MIN` on the folded core | **a 商务部公告 does not pool at all.** Five held copies of 商务部公告2026年第11号/第12号 carry five DISTINCT `instrument_id`s (12701728, 12701729, 12704542, 12704543, 12724102), so `instrument_role='unique'` on every copy. Once the normalizer strips the 文号 AND the `公布将20家日本实体列入出口管制管控名单` tail, what is left is under the floor. Consequence measured in `geoeconomic-pressure-instruments.md` §5: an entity count summed over rows read **454** where the deduplicated truth is **338**, because mirrors and news restatements repeat one announcement. The memo works around it with a 文号 parsed from the TITLE; the pooling itself is still broken |
 
 **Rule:** measure a length floor on the string the user wrote, not on the string your
 normalizer produced; or exempt the shapes you know fold short (`法|法典|条例|修正案`) with an
@@ -790,6 +789,39 @@ level" lets a low-level repost **bridge** two editions. A 北京市统计局 rep
 2024 amendment 212 days after the 2018 edition's tail and merged them. Measure an edition window
 from its **anchor** (the latest copy at or above the edition's own level): a bureau's repost
 cannot open an edition, so it must not extend one.
+
+## A heuristic standing in for evidence, once the evidence is already in hand
+
+Found 2026-10-09, after **two wrong hypotheses of mine** — which is the part worth keeping, because
+I wrote the first one into this file as though established and had to delete it.
+
+**The symptom:** 商务部公告2026年第11号 is held twice with a byte-identical title, the same date, the
+same site and a poolable `genre='other'`, yet both copies carry `instrument_role='unique'` and
+distinct `instrument_id`s. 19 of 25 duplicate-title 公告 groups (52 documents) pool nothing. The
+measured consequence: an entity count summed over rows reads **454** where the deduplicated truth is
+**338** (`geoeconomic-pressure-instruments.md` §3).
+
+**What it is NOT**, both disproven rather than argued:
+- **not the `KEY_MIN` length floor.** `_best_core` returns a long core for these titles — it falls
+  back to the whole normalized title when `_title_cores_of_title` yields no 《X》 candidate, so
+  `instrument_key` is non-empty. I had recorded this as a fifth length-floor instance; it is not
+  one, and the row has been removed from that table.
+- **not `instrument_kind='housekeeping'`.** These rows do carry that label (wrongly — an
+  entity-listing 公告 is not housekeeping), but `instrument_kind` is only derived and stored; the
+  pooling path never reads it.
+
+**What it is:** `assign_instruments` requires a sub-pool to span **two distinct sites**
+(`len({m["site"] for m in part}) < 2 → continue`). Every duplicate here is on one `site_key`,
+because mofcom's main site and its export-control subdomain are crawled under the same key, so one
+instrument held twice reads as two.
+
+**The shape worth naming:** the two-site rule is a *heuristic* for "are these really one text",
+and it runs AFTER `split_by_docnum`, by which point the members of a part already share an
+**explicit 文号** — direct evidence of being one instrument, strictly stronger than the heuristic
+standing in for it. A guard that ignores the better evidence it already has will keep being wrong
+in the cases where that evidence exists. **Rule: when a heuristic and an identifier disagree,
+the identifier wins; and check whether the identifier was already computed upstream before
+reaching for the heuristic at all.**
 
 ## SQLite Concurrency Rules
 

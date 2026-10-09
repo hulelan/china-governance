@@ -856,6 +856,48 @@ def _core_ok(nc, core):
     return len(nc) >= KEY_MIN or (bool(_SHORT_KEY_RE.search(nc)) and _key_len(core) >= KEY_MIN)
 
 
+# A 文号 that identifies ONE instrument: it must carry a number, and (except for a
+# ministerial 令) a year. This is deliberately stricter than "document_number is
+# non-empty", because measured 2026-10-09 the non-empty set includes placeholders and
+# document-TYPE markers that mark a SERIES rather than one text: the literal string 无
+# ("none", 18 groups) and 韶府便笺 (5 groups — three different 试鸣防空警报的通告 on three
+# dates share it). Full-width ［］ is included because 江府办［2009］97号 is a real number
+# and the half-width-only form missed 7 groups.
+_NUMBERED_DOCNUM = re.compile(
+    r"(?:〔|\[|［|（|\()\s*\d{4}\s*(?:〕|\]|］|）|\))\s*第?\s*\d+\s*号"
+    r"|\d{4}\s*年\s*第\s*\d+\s*号"
+    r"|\d{4}\s*第\s*\d+\s*号"
+    r"|令\s*第\s*\d+\s*号$")
+
+
+def shares_numbered_docnum(part):
+    """True when every member of a sub-pool carries the SAME numbered 文号.
+
+    Why this exists: `assign_instruments` requires a sub-pool to span two distinct
+    SITES before it will pool, which is a heuristic for "are these really one text".
+    But the two-site rule runs AFTER `split_by_docnum`, so by this point the members
+    already share an explicit 文号 when they have one — direct evidence of being one
+    instrument, strictly stronger than the heuristic standing in for it. Without this
+    override, one instrument held twice on a single site reads as two instruments:
+    mofcom's main site and its export-control subdomain are crawled under one
+    `site_key`, so 商务部公告2026年第11号 was held twice as two `unique` rows, and an
+    entity count summed over rows read 454 where the deduplicated truth is 338
+    (`docs/research/geoeconomic-pressure-instruments.md` §3).
+
+    Scope measured before shipping: 457 same-site groups / 935 documents qualify. The
+    guard still protects 7,921 groups / 19,159 documents that carry no 文号 at all —
+    recurring administrative notices with identical titles that are genuinely DIFFERENT
+    documents (深圳市交通运输局行政处罚听证公告 x89, 深圳天气趋势 x31). Pooling those
+    would be destructive, which is why the override needs an identifier and not a
+    similarity.
+    """
+    nums = {(m.get("docnum") or "").strip() for m in part}
+    if len(nums) != 1:
+        return False
+    num = nums.pop()
+    return bool(num) and bool(_NUMBERED_DOCNUM.search(num))
+
+
 def _best_core(title):
     """-> (raw core, normalized core) of a stored title (the matcher's exact-core
     tier), or (None, None) when nothing reaches KEY_MIN."""
@@ -1511,7 +1553,13 @@ def assign_instruments(docs):
                 n_docnum_split += 1
                 n_subpools += len(parts)
             for part in parts:
-                if len(part) < 2 or len({m["site"] for m in part}) < 2:
+                if len(part) < 2:
+                    continue
+                # Two distinct sites, OR one shared numbered 文号 (see
+                # shares_numbered_docnum: an identifier beats the heuristic that
+                # stands in for it).
+                if (len({m["site"] for m in part}) < 2
+                        and not shares_numbered_docnum(part)):
                     continue
                 # R2 LAST, per sub-pool: a SERIES title does not name a text, so nothing
                 # in it pools. After R1 so that a numbered series still pools each
