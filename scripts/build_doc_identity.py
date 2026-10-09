@@ -1514,7 +1514,18 @@ def assign_instruments(docs):
     n_pooled = 0
     n_series = n_docnum_split = n_subpools = 0
     for members in groups.values():
-        if len(members) < 2 or len({m["site"] for m in members}) < 2:
+        if len(members) < 2:
+            continue
+        # THE OUTER two-site gate. There are TWO such gates — this one, before the
+        # edition walk, and one per sub-part after split_by_docnum. Relaxing only the
+        # inner one moved 371 documents but NOT the case that motivated the change,
+        # because the group is rejected here first: a NAMED test caught that where the
+        # aggregate would have read as success. Same evidence rule as the inner gate —
+        # a shared numbered 文号 beats the heuristic standing in for it, and a group
+        # whose members carry DIFFERENT numbers still fails (shares_numbered_docnum
+        # requires one number across all members), so an annual series stays guarded.
+        if (len({m["site"] for m in members}) < 2
+                and not shares_numbered_docnum(members)):
             continue
         dated = sorted((m for m in members if m["date"]), key=lambda m: m["date"])
         undated = [m for m in members if not m["date"]]
