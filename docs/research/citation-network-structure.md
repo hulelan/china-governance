@@ -585,7 +585,37 @@ not match.
 - **Age.** Mean inbound falls from about 1.5 for 2010-2016 documents to 0.14 for 2026
   documents. Section 3.2 controls for it by issue-year band; sections 2 and 5 do not and
   should be read as the state of the graph on 2026-10-01, not as a steady state.
-- **Mirror pooling.** Title-based, five-character minimum. It fixes level attribution for
+- **SUPERSEDED 2026-10-09 — use `instrument_inbound`, not this memo's own pooling.** The
+  title-based five-character minimum below is a known defect (CLAUDE.md's length-floor family):
+  中华人民共和国民法典 and 中华人民共和国预算法 fold to **three** characters once 中华人民共和国 is
+  stripped, so the memo's own statistics never pooled the most-cited texts in the corpus. The
+  production table `instrument_inbound` (built in `scripts/build_site_stats.py`) pools via
+  `doc_identity.instrument_id` with no folded-title floor, **drops pool-level self-citations** (a
+  mirror citing its own sibling, 8,871 of them, which a title-pooled node cannot detect because
+  `source_id != target_id` holds for every such edge), and carries the shared-文号 override added
+  the same day.
+
+  **Re-measured on that basis, and the Q3 headline is confirmed and slightly STEEPER:**
+
+  | | this memo | instrument basis |
+  |---|---|---|
+  | nodes | 239,187 (incl. 11,811 virtual) | 331,152 instruments |
+  | top 1% share | 54.5% pooled / **61.6%** corpus-nodes-only | **62.5%** |
+  | top 100 | 17.2% | **17.4%** |
+  | top 10 | — | 5.2% |
+  | threshold to enter top 1% | 11 inbound | **12** |
+  | median cited node | 1 | **2** |
+  | Gini | 0.948 (re-based) | **0.965** |
+  | never cited | 83.9% | **87.7%** |
+
+  The comparable row is *corpus nodes only*, since the instrument basis has no virtual nodes.
+  **What the floor was costing:** 民法典 holds **413 inbound across 7 copies, of which only 1
+  carried weight** — six copies invisible to the memo's pooling; 预算法 512; 城乡规划法 2,081
+  across 2. The concentration claim rests on exactly those top nodes, so it was understated. That
+  the corrected figure moves **up** rather than down is the reassuring direction: fixing a defect
+  that suppressed top-node weight should concentrate the distribution further, and it does.
+
+- **Mirror pooling (the superseded method).** Title-based, five-character minimum. It fixes level attribution for
   mirrored central instruments and over-merges generic titles across cities (政府工作报告).
   The headline concentration moves four points between pooled and unpooled.
 - **Proxy re-keying.** A heuristic applied to 27% of edges. Virtual-node level and genre are
