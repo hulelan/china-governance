@@ -3861,3 +3861,48 @@ re-base is not a cleanup — it is a measurement, and it has moved findings in b
 
 **Cron watch:** 05:40 UTC, the lock is still held and the 06:00 cron has not fired. Twenty minutes
 to the window plan's first falsifiable prediction.
+
+---
+
+## Iteration 111 — the cron prediction confirmed verbatim, and the sweep closes
+
+**`write-window-plan.md`'s central prediction is confirmed**, in the log's own words:
+
+```
+[Fri Oct  9 06:00:01 UTC 2026] Another daily_sync is already running
+(/tmp/china-governance-daily-sync.lock.d). Exiting.
+```
+
+No `daily-20261009-*.log` exists; the lock is still the one taken 2026-10-08 06:00:02. So today's
+fixes do wait for the 10-10 nightly unless the window is used, exactly as the arithmetic said. At
+06:07 the classifier read 19,200/23,710 with 286 minutes left — **window opens ≈10:53 UTC**.
+
+**The sweep closes, and three of my six flagged memos were grep artifacts.** `diffusion-atlas` is
+built on `diffusion_events` (document basis already), and **`bottom-up-channel` line 60 queries
+`doc_identity.admin_level_doc` directly** — both were never on the site basis. An audit counting
+*mentions* over-reports by about half, which is worth knowing before the next one.
+
+**`joint-issuance`: the headline is immune, the variant is not.** 27,052 npc rows carry an issuer
+record and sat in the central denominator as single-issuer local regulations. All-central, any
+genre: **12.9 → 18.8%**, **13.6 → 20.5%**, **14.3 → 21.8%** across the three periods — a **+6 to
++7.5 point** lift. The **fixed-site set (gov/ndrc/mof/mee) is unchanged** at 15.1 / 19.7 / 31.5,
+because npc is not one of its four sites.
+
+**That is this memo's own caution paying off rather than luck.** It built the fixed-site robustness
+set *because* the all-central denominator is composition-sensitive — and the level flaw turns out to
+be one more instance of exactly that sensitivity. A memo that anticipates the class of error is
+protected from the specific one it never saw.
+
+**And one limit I stated rather than papered over:** my reconstruction does not reproduce the memo's
+own all-central figures (it reports 23% → 15%, a fall; both my bases rise modestly), so the period
+boundaries or joint definition must differ. I therefore claim only that **the basis affects this
+variant and not the headline** — not that any published figure moves. Same discipline as the
+recentralization check: a non-matching reconstruction is evidence about my reconstruction.
+
+**Final sweep tally.** Six memos flagged; **three were false positives**; of the three real ones,
+**recentralization survived** (2013 step at +16.1 pt), **attention-campaigns strengthened** (central
+share doubled its lead), **joint-issuance's headline was immune** with its secondary variant shifted.
+Across the whole re-base: two needed nothing, four got stronger or survived, one had its shape
+corrected, one of my own claims was overstated tenfold, and one completeness claim of mine was
+simply false. Nothing in the volume now reads `sites.admin_level` as a tier **among the memos I have
+checked**, which is the claim I should have made the first time.

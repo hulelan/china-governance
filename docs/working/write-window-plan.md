@@ -13,6 +13,12 @@ miss and costs a full day if missed.*
 | next cron | **06:00 UTC 2026-10-09** |
 | droplet HEAD | `f86a0cf` — iteration 76, i.e. **none of today's code** |
 
+**CONFIRMED 2026-10-09 06:00:01 UTC**, verbatim from `logs/cron.log`:
+`[Fri Oct  9 06:00:01 UTC 2026] Another daily_sync is already running
+(/tmp/china-governance-daily-sync.lock.d). Exiting.` No `daily-20261009-*.log` exists. The lock is
+still the one taken at 2026-10-08 06:00:02, and at 06:07 the classifier read 19,200/23,710 with 286
+minutes left — window opening ≈**10:53 UTC**.
+
 **The 06:00 cron will find the lock held and skip.** The `mkdir` lock exists precisely so a
 classification drain that exceeds 24h does not get a second classifier piled on it, and it is doing
 its job. But the consequence is that the next nightly to actually run is **06:00 UTC 2026-10-10**.

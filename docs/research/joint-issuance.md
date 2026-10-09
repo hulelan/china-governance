@@ -129,6 +129,35 @@ Joint share by period for central sites with a long series:
 
 Five of seven rise. MOF falls after 2020 because the MOF crawl added the 财政部文告 gazette
 (2000 onward), which carries single-signer budget and accounting notices. MOST falls after its
+*(**Level basis checked 2026-10-09. The headline is immune; the all-central variant is not.** This
+memo takes levels from `sites.admin_level`, which files ~28k npc 地方法规 as central — and
+**27,052 of them carry an issuer row**, almost all single-issuer local regulations sitting in the
+central denominator. Re-measured:*
+
+| all-central, any genre | site basis | per-document basis |
+|---|---|---|
+| 2010-14 | 12.9% (n=8,129) | **18.8%** (n=5,686) |
+| 2015-19 | 13.6% (n=17,844) | **20.5%** (n=12,180) |
+| 2020-26 | 14.3% (n=42,504) | **21.8%** (n=28,799) |
+
+| fixed-site set (gov/ndrc/mof/mee) | share |
+|---|---|
+| 2010-14 | 15.1% |
+| 2015-19 | 19.7% |
+| 2020-26 | 31.5% |
+
+***The robustness set is unchanged by construction*** *— npc is not one of its four sites — so the
+memo's headline claim rests on the basis that was never contaminated. That is this memo's own
+caution paying off rather than luck: it built the fixed-site set precisely because the all-central
+denominator is composition-sensitive, and the level flaw turns out to be one more instance of that.*
+
+***The all-central variant shifts by +6 to +7.5 points at every period*** *once the npc regulations
+leave the denominator. One honest limit: my reconstruction above does not reproduce this memo's own
+all-central figures (it reports a fall of 23% → 15%, where both my bases rise modestly), so the
+period boundaries or the joint definition must differ. I therefore claim only that **the basis
+materially affects this variant and not the headline** — not that any specific published figure
+moves. Reproducing §2a's exact series on the per-document basis is the outstanding check.)*
+
 2015-19 peak. The all-central series in 2a is flatter than the robustness set because the
 early years are dominated by the chinatax site (tax circulars, 38-61% joint) and the late
 years add SAMR and MIIT portals (11-19% joint, 2,287 documents in 2024-26). The 2026 dip in the
