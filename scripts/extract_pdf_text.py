@@ -157,11 +157,37 @@ def extract_text_from_pdf(data: bytes) -> str:
         tmp_path = f.name
 
     try:
-        doc = fitz.open(tmp_path)
+        # An encrypted or malformed PDF must be a ROW-level outcome, not a run-level
+        # one. Measured 2026-10-09: a single `ValueError: document closed or encrypted`
+        # propagated out of here and killed a 6,013-document run after 1,544 had been
+        # enriched — the per-10 incremental commits are the only reason that work
+        # survived. A loop that pays network time per row cannot let one bad input abort
+        # the rest.
         text = ""
-        for page in doc:
-            text += page.get_text()
-        doc.close()
+        try:
+            doc = fitz.open(tmp_path)
+        except Exception as e:                      # noqa: BLE001
+            print(f"    unreadable PDF ({type(e).__name__}: {e}); skipping")
+            return ""
+        try:
+            if getattr(doc, "needs_pass", False) or getattr(doc, "is_encrypted", False):
+                # Try the empty password, which opens many "protected" gov PDFs.
+                if not doc.authenticate(""):
+                    print("    encrypted PDF (no empty-password access); skipping")
+                    return ""
+            for page in doc:
+                try:
+                    text += page.get_text()
+                except Exception as e:              # noqa: BLE001
+                    # One damaged page should not lose the rest of the document.
+                    print(f"    page unreadable ({type(e).__name__}); continuing")
+        except Exception as e:                      # noqa: BLE001
+            print(f"    PDF read failed ({type(e).__name__}: {e}); keeping partial text")
+        finally:
+            try:
+                doc.close()
+            except Exception:                       # noqa: BLE001
+                pass
     finally:
         os.unlink(tmp_path)
 
@@ -404,12 +430,20 @@ def main():
         else:
             actual_ext = ext
 
-        # Extract text based on format
+        # Extract text based on format. Wrapped because the run MUST survive one
+        # unreadable attachment (see extract_text_from_pdf): a crash here costs every
+        # row not yet reached, and they were each paid for with a network fetch.
         text = ""
-        if actual_ext == "pdf":
-            text = extract_text_from_pdf(data)
-        elif actual_ext in ("doc", "docx"):
-            text = extract_text_from_doc(data)
+        try:
+            if actual_ext == "pdf":
+                text = extract_text_from_pdf(data)
+            elif actual_ext in ("doc", "docx"):
+                text = extract_text_from_doc(data)
+        except Exception as e:                      # noqa: BLE001
+            print(f"  [{site_key}] {doc_id}: extract failed "
+                  f"({type(e).__name__}: {e}); skipping")
+            errors += 1
+            continue
 
         if text:
             # Prepend the original stub text so we keep the intro paragraph
