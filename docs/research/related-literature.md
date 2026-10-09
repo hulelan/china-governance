@@ -274,6 +274,31 @@ framework essay with no single replicable estimate.
 > **So the honest statement is a swap, not a workaround:** AI-tocracy's export question is
 > unreachable, and a *technology-export-control* study is reachable with AI as one controlled
 > domain. Those are different papers, and calling the second a replication of the first would be
-> the kind of relabelling `consistency-review.md` exists to catch. **w32701** is now started (above) and is the
+> the kind of relabelling `consistency-review.md` exists to catch.
+>
+> **The swap was RUN, 2026-10-09: `export-control-regime.md`.** The 2021 step survives a fixed
+> central panel (cac/mee/mof/mofcom/most, >=15 docs/yr, 2018-2025): 出口管制 goes 0.00 / 0.23 /
+> 0.98% → **11.88%** in 2021 and then HOLDS at 4.9-11.3% for five years, n=502, verdict OK.
+> Two things make it a finding rather than a series. First an internal control: 出口许可 —
+> pre-existing licensing machinery rather than the statute's own vocabulary — only roughly
+> doubles where 出口管制 and 两用物项 step ~12x and ~11x, so the step is the law's vocabulary
+> entering the record and not a general rise in trade-restriction attention. Second the genre
+> check that could have killed it: in 2021 on the panel the step is 76 mofcom `other` + 8
+> `promulgation` + 4 cac/mee documents and **1 news document**; the regime's 367 news documents
+> live on guancha (253) and ifeng (73), which the panel excludes — which is exactly why raw 2026
+> reads 357 against a panel 43. AI sits INSIDE the regime (半导体 217, 芯片 202, 人工智能 192,
+> 算力 73, 算法 48), which is the honest form of the AI-export question.
+>
+> It also surfaced two data defects that bounded it. 166 of the 1,071 documents (15.5%) carry
+> `date_written = 0` and are absent from every series — 73 on `gov`, including
+> **两用物项出口管制条例** (107 inbound), 稀土管理条例 and 商用密码管理条例, so the regime's second
+> anchor instrument cannot appear in its own time series. And **725 mofcom titles were stored as
+> literal `?`** (every CJK character 0x3f, served that way by the listing endpoint while the
+> article pages are clean), making the ministry that holds 500 of these documents invisible to
+> both FTS indexes, to citation targeting and to `title_reissue` — recovered by
+> `scripts/rnd/backfill/repair_mofcom_titles.py`. A corpus can hold a document and still not
+> have it.
+
+**w32701** is now started (above) and is the
 only one of the five whose missing half we actually hold.
 

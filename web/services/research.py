@@ -51,7 +51,7 @@ CURATED: list[tuple[str, list[str]]] = [
     ("Part IV · Sectors and campaigns", [
         "patient-capital-cascade", "rmb-coverage", "pbc-fx-position-2026",
         "ai-governance-diffusion", "ai-regulatory-web", "ai-plus-fidelity",
-        "industrial-policy-targeting", "attention-campaigns",
+        "industrial-policy-targeting", "export-control-regime", "attention-campaigns",
     ]),
     ("Foundations", ["consumption-diffusion", "research-agenda", "related-literature"]),
     ("Method & QA", [
