@@ -4156,3 +4156,31 @@ plan. A beneficial accident is still an accident, and the guard test should have
 stops before step 1 — which is what `--dry-run` is for, and what I should have combined with the
 decoy lock.
 
+---
+
+## Iteration 118 — pre-flight, because the droplet runs my code unattended in 45 minutes
+
+Yesterday's accidental pull means tonight's Phase 2b-2d executes **today's code with nobody
+watching**. So this tick verified it will actually run, rather than assuming.
+
+**Syntax on all 11 scripts Phase 2b-2d touches: ok.** But I did not stop there, because iteration
+104 taught me that *a syntax check is not an import check* — a missing `sys` import passed
+`ast.parse` cleanly and failed at runtime. So I exercised the imports properly with `--help`, which
+runs module-level code without doing work:
+
+`build_doc_identity` · `build_instrument_succession` · `build_site_stats` · `build_tracker_rollup` ·
+`validate_cascades` · `body_ledger` · `trim_body_tails` · `extract_citations` ·
+`build_diffusion_events` · `crawlers.pbc` — **all ten import OK on the droplet's Python.**
+
+**And the one query I changed, verified read-only against the real DB.** `build_site_stats`'s scan
+now selects six columns instead of four, and the new `LENGTH(COALESCE(body_text_cn,''))` returns
+real character counts (16,762 · 4,669 · 6,259 on the first three rows). Earlier timing put the full
+pass at **7.3s** against 2.2s without it, with the plan staying a bare `SCAN documents`.
+
+**Timing:** 10:02 UTC, classifier at 23,000/23,710 with **45 minutes** left, so Phase 2b begins
+≈10:48 and Predictions 1, 2, 5 and 6 are decided within the hour.
+
+Nothing discovered this tick and nothing changed — which is the right outcome for a pre-flight. The
+value is that if an import had been broken, I would have found it with 45 minutes of margin rather
+than from a failed nightly report tomorrow.
+
