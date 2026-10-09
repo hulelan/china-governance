@@ -238,9 +238,24 @@ def compute(conn) -> dict:
     # Per-cell samples for the two intensity dimensions. Lists, not running sums,
     # because body lengths are right-skewed and the memo reports medians; cells
     # are small (12,211 confirmed events over ~36k cells), so this is cheap.
+    #
+    # DEDUPLICATED BY SOURCE DOCUMENT, and that is not a detail. A document's
+    # length is a property of the DOCUMENT, not of each (source, anchor) event it
+    # appears in — and in this corpus the duplication correlates with length,
+    # because the documents that cite the most central anchors are long permit
+    # catalogues and 证照分离 reform plans. Measured on the 2026-10-09 build:
+    #   20,131 confirmed adopter EVENT rows vs 13,267 DISTINCT documents, and the
+    #   top repeaters are 广州市行政许可事项清单 (62 events, 71,902 chars), another
+    #   edition of it (49, 77,866), 广州市深化证照分离方案 (31, 215,986 chars) …
+    # Event-weighting therefore biases a median UPWARD rather than merely adding
+    # noise: one cell read text_median=71,902 off 163 rows that were only 72
+    # documents, against a typical 3,700-5,200. `cascade_events` stays an EVENT
+    # count by design (a document adopting three anchors is three cascades); the
+    # intensity columns are per ADOPTING DOCUMENT.
     authority: dict[tuple, list] = defaultdict(list)
     texts: dict[tuple, list] = defaultdict(list)
     elabs: dict[tuple, list] = defaultdict(list)
+    seen_src: dict[tuple, set] = defaultdict(set)
     anchor_titles: dict[int, str] = {}
     weeks: dict[str, str] = {}  # iso_week -> week_start
 
@@ -278,11 +293,11 @@ def compute(conn) -> dict:
     len_join = ("LEFT JOIN doc_len sl ON sl.doc_id = e.source_id "
                 "LEFT JOIN doc_len al ON al.doc_id = e.anchor_id " if has_len else "")
     for (mtype, d10, level, ev_topic, anchor_topics, alevel, impl, src_site,
-         anchor_id, anchor_title, src_chars, anchor_chars) in conn.execute(
+         anchor_id, anchor_title, src_chars, anchor_chars, source_id) in conn.execute(
             "SELECT e.match_type, substr(e.source_date,1,10), "
             f"       COALESCE(e.source_level,'unknown'), e.topic, d.topics_algo, {level_expr}, "
             f"       {impl_expr}, COALESCE(s.site_key,''), e.anchor_id, e.anchor_title, "
-            f"       {len_sel}"
+            f"       {len_sel}, e.source_id "
             "FROM diffusion_events e LEFT JOIN documents d ON d.id = e.anchor_id "
             "                        LEFT JOIN documents s ON s.id = e.source_id "
             f"{len_join}"
@@ -315,13 +330,16 @@ def compute(conn) -> dict:
                 pooled_sites[(t, iw)][src_site] += 1
                 anchors[(t, iw, level)][inst] += 1
                 pooled_anchors[(t, iw)][inst] += 1
-                w = AUTHORITY_W.get(level)
-                if w is not None:
-                    authority[(t, iw, level)].append(w)
-                if src_chars:
-                    texts[(t, iw, level)].append(src_chars)
-                    if anchor_chars:
-                        elabs[(t, iw, level)].append(src_chars / anchor_chars)
+                # one sample per adopting document per cell (see seen_src above)
+                if source_id not in seen_src[(t, iw, level)]:
+                    seen_src[(t, iw, level)].add(source_id)
+                    w = AUTHORITY_W.get(level)
+                    if w is not None:
+                        authority[(t, iw, level)].append(w)
+                    if src_chars:
+                        texts[(t, iw, level)].append(src_chars)
+                        if anchor_chars:
+                            elabs[(t, iw, level)].append(src_chars / anchor_chars)
 
     return {"agg": agg, "sites": sites, "pooled_sites": pooled_sites,
             "anchors": anchors, "pooled_anchors": pooled_anchors,

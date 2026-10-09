@@ -4241,3 +4241,50 @@ decided right now**, against the baseline locked down 13 minutes earlier: 310,13
 585,471, 52.9721%, with 政府工作报告 at 283 inbound, 房屋征收补偿决定书 at 95 and 广东省自然资源厅
 at 466 — all three expected to disappear.
 
+---
+
+## Iteration 121 — the rebuild passed 15/15, and its first real data exposed a defect in my own column
+
+**The nightly completed.** `VALIDATION PASS: 15/15` at 11:19, published at 346,955 documents, backup
+running (10.52 GB → 5.78 GB gz). Top-5 by `citation_rank` are all framework instruments
+(政府信息公开条例 4,396 · 城乡规划法 3,704 · 道路交通安全法 3,470 · 财政违法行为处罚处分条例 2,354 ·
+行政处罚法 1,907). `doc_len` 346,955 rows, `instrument_succession` 15,222, `diffusion_events` 51,205,
+`tracker_weekly` 47,040 with **7,480 rows carrying `authority_mean`**.
+
+**Then I read the sample cells instead of declaring success, and two were wrong:** `text_median`
+**71,902** and **77,866** characters with elaboration 5.83 and 7.88, against a typical 3,757-5,218 and
+0.57-0.73. Fifteen times the median the memo itself measured.
+
+**It is not `doc_len`. It is my column's grouping.** The outlier cell is dominated by *one* document —
+广州市人民政府关于公布广州市行政许可事项清单（2022年版）的通知, a 72KB permit catalogue — appearing 6+
+times because it cites many different central anchors. The intensity columns sampled per
+`(source, anchor)` **event**, so one long document contributed its length once per anchor.
+
+**And the bias has a direction, which is what makes it serious:**
+
+| events | chars | document |
+|---|---|---|
+| 62 | 71,902 | 广州市行政许可事项清单（2022年版） |
+| 49 | 77,866 | 广州市行政许可事项清单 |
+| 31 | **215,986** | 广州市深化"证照分离"改革工作方案 |
+| 28 | 127,914 | 揭阳市深化"证照分离"改革工作方案 |
+
+**20,131 event rows against 13,267 distinct documents**, and the repeaters are *systematically the
+longest*: permit catalogues and 证照分离 plans cite dozens of national laws each. So event-weighting
+pushes the median **up**, not just around. The outlier cell was 163 rows from **72 documents**.
+
+**Fixed**: the intensity samples now deduplicate by `source_id` within each cell, with the
+measurement written into the code comment so the next reader knows why. `cascade_events` stays an
+event count by design — a document adopting three anchors *is* three cascades — while the intensity
+columns are per adopting document. A test pins exactly that distinction: two anchors, two events,
+**one** sample. 296 → **297 passed, 1 skipped**.
+
+**The live `tracker_weekly` currently holds the biased values** and will self-correct at tomorrow's
+rollup; nothing reads those columns yet except the tooltips I added, so there is no analysis to
+retract.
+
+**Worth naming what caught it.** The columns were tested on a synthetic fixture where each document
+adopted one anchor — so every test passed and the defect was invisible until real data arrived with
+a document that adopts sixty-two. A fixture that encodes the shape you imagine will not find the
+shape you did not.
+

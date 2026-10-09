@@ -47,6 +47,7 @@ INSERT INTO sites VALUES ('gov','G','central'),('gd','D','provincial'),
 DOCS = """
 INSERT INTO documents(id,site_key,topics_algo,date_published,body_text_cn) VALUES
   (100,'gov','Energy','2024-01-01', 'a'),
+  (101,'gov','Energy','2024-01-02', 'a2'),
   (1,  'gd', 'Energy','2024-03-04', 'b'),
   (2,  'gz', 'Energy','2024-03-05', 'c'),
   (3,  'sz', 'Energy','2024-03-06', 'd');
@@ -56,6 +57,16 @@ INSERT INTO diffusion_events
   (1,100,'citation','Energy','provincial','2024-01-01','2024-03-04','A','central',1),
   (2,100,'citation','Energy','municipal', '2024-01-01','2024-03-05','A','central',1),
   (3,100,'citation','Energy','district',  '2024-01-01','2024-03-06','A','central',1);
+"""
+
+# doc 2 ALSO adopts a second anchor in the same week: two cascade EVENTS, but it
+# is one adopting DOCUMENT, so the intensity columns must sample it once.
+DOUBLE_ADOPT = """
+INSERT INTO doc_len VALUES (101,1000);
+INSERT INTO diffusion_events
+  (source_id,anchor_id,match_type,topic,source_level,anchor_date,source_date,
+   anchor_title,anchor_level,source_implementing) VALUES
+  (2,101,'citation','Energy','municipal','2024-01-02','2024-03-05','A2','central',1);
 """
 
 
@@ -193,6 +204,39 @@ class DocLen(unittest.TestCase):
             c.close()
             self.assertNotIn("AUTOMATIC COVERING INDEX", plan, plan)
             self.assertIn("SCAN documents", plan, plan)
+
+
+class DeduplicationByDocument(unittest.TestCase):
+    """A document's LENGTH is a property of the document, not of each
+    (source, anchor) event — and in this corpus the duplication CORRELATES with
+    length, because the documents citing the most central anchors are long permit
+    catalogues and 证照分离 plans. Measured on the live 2026-10-09 build: 20,131
+    confirmed adopter event rows against 13,267 distinct documents, with
+    广州市行政许可事项清单 appearing 62 times at 71,902 chars and
+    广州市深化证照分离方案 31 times at 215,986. Event-weighting therefore biases a
+    median UPWARD, not just noisily: one live cell read text_median=71,902 off 163
+    rows that were only 72 documents, against a typical 3,700-5,200.
+    """
+
+    def test_a_document_adopting_two_anchors_is_sampled_once(self):
+        with tempfile.TemporaryDirectory() as td:
+            p = _db(td)
+            c = sqlite3.connect(p)
+            c.executescript(DOUBLE_ADOPT)
+            c.commit()
+            c.close()
+            T.build(p)
+            c = sqlite3.connect(p)
+            row = c.execute(
+                "SELECT cascade_events, text_median, authority_mean FROM tracker_weekly "
+                "WHERE topic='Energy' AND admin_level='municipal' AND cascade_events > 0"
+            ).fetchone()
+            c.close()
+            self.assertEqual(row[0], 2, "two anchors = two cascade EVENTS, by design")
+            self.assertEqual(row[1], 2000,
+                             "but one adopting DOCUMENT, so its 2,000 chars appear once")
+            self.assertAlmostEqual(row[2], 2.0,
+                                   msg="authority is per adopting document too")
 
 
 class ServicePooling(unittest.TestCase):

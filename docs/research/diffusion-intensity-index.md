@@ -236,6 +236,18 @@ Three implementation notes that are really findings:
   without the `LENGTH`), and the plan stays a bare `SCAN documents`. The CLAUDE.md note has been
   corrected, because its earlier wording reads as "touching bodies is expensive" and nearly stopped
   this column from being built.
+- **Deduplicated by adopting document, fixed 2026-10-09 after the first real data exposed it.** The
+  columns first shipped sampling per `(source, anchor)` **event**, which is wrong because a
+  document's length is a property of the **document** — and in this corpus the duplication
+  **correlates with length**: the documents citing the most central anchors are long permit
+  catalogues and 证照分离 reform plans. Measured on the first populated build: **20,131 confirmed
+  adopter event rows against 13,267 distinct documents**, with 广州市行政许可事项清单 appearing **62
+  times at 71,902 chars** and 广州市深化证照分离方案 **31 times at 215,986**. So event-weighting
+  biased the median **upward** rather than merely adding noise — one cell read
+  `text_median=71,902` off 163 rows that were only **72 documents**, against a typical 3,700-5,200.
+  `cascade_events` remains an **event** count by design (a document adopting three anchors is three
+  cascades); the intensity columns are per **adopting document**. Pinned by
+  `test_a_document_adopting_two_anchors_is_sampled_once`.
 - **The rollup degrades cleanly when `doc_len` is absent** (a document crawled after the last
   `build_site_stats`): the counts and the authority axis never depend on it, and the text columns
   report 0 rather than dropping the row. Pinned in `tests/test_tracker_intensity.py`, which also
