@@ -5162,3 +5162,53 @@ seen it: holding 6,099 PBC documents would still have shown nothing in a series 
 Extraction meanwhile reached **1,700/4,164 with 570 extracted** — the yield is climbing now that it
 is past the szdp scan block (570 of 1,700 = 33%, against 89 of 1,025 earlier).
 
+---
+
+## Iteration 139 — the PBC backfill yields its best object: a 70-quarter stance series
+
+The 6,099 new PBC documents contain **70 quarterly Monetary Policy Committee readouts**,
+2009-04-12 to 2026-09-24, **all with body text**. New memo: `pbc-stance-series.md`.
+
+**This is the rare series in this corpus that needs NO panel control**, and saying why matters: a
+fixed institution on a fixed cadence producing a fixed genre has a denominator of one readout per
+quarter *by construction*. Everything else here needs `panel.py`. The measure is **presence**, not
+count, because readout length roughly doubles over the period (546 chars in 2009-04 to 1,300-1,700
+from 2023) and a count would inflate the later quarters — the same composition trap as a raw
+corpus-wide count, in miniature.
+
+**The stance word changed exactly twice in sixteen years, and both transitions share a shape:**
+
+| transition | overlap quarter (both words) | clean switch |
+|---|---|---|
+| 适度宽松 → 稳健 | **2009-12** | **2010-12** |
+| 稳健 → 适度宽松 | **2025-01** | **2025-03** |
+
+The committee **signals before it switches**. The 2009-12 overlap did NOT stick — 2010-03, 07 and 09
+revert to 适度宽松 alone before 2010-12 settles on 稳健 — so the overlap marks *deliberation*, not an
+announced date. The 2025-01 one did stick. 稳健 appears in 57 readouts and never after 2025-01.
+
+**And the finding that matters for the RMB question, because it separates two things usually
+discussed together:** the exchange-rate framework never changes while the stance around it does.
+**合理均衡 appears in 60 of 70 readouts continuously from 2010-12 to 2026-09**, straight through the
+2025 reversal; 双向浮动 in 33 from 2010-09. More than that — **合理均衡 first appears in 2010-12, the
+very quarter the prudent stance began, and OUTLIVED it.** The stated FX objective is the stable
+element; the monetary posture is the variable one, not the reverse.
+
+Two further results. **超调 ("overshoot") is episodic** — exactly 10 readouts, 2023-09 to 2025-12,
+absent from 2026-03, arriving and departing without reference to the stance change mid-run. And
+**以我为主 NEVER appears**: it is widely quoted as a PBOC formulation on policy autonomy and it is not
+committee language. That is a negative result **only a complete series can establish** — a sample or
+a keyword search over the whole corpus would likely have found it on a non-committee page and
+reported it as present.
+
+Together with iteration 138's dollar finding this gives a two-part answer to the RMB question: the
+**reference point** is retreating (美元 share down 8x, bilaterally, with no currency replacing it)
+while the **stated framework** is invariant (合理均衡 and 双向浮动 unbroken across 16 years and two
+stance regimes).
+
+Recorded as a tracker rule as well: a quarter carrying BOTH stance words is the signal the next may
+switch. Fired twice in sixteen years, right once.
+
+Extraction at **2,375/4,164 with 1,018 extracted** — yield now 43%, still climbing as it clears the
+szdp scan block.
+
