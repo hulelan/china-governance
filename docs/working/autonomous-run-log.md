@@ -3583,3 +3583,50 @@ the central share sits at 47-54% across all four eras (pre-2010 through 2021-26)
 legislative devolution finding. And the 2026 counts in every series are inflated by composition
 (~98k documents against 2024's ~29k), so the memo says to read the 2018-20 vs 2022-24 **ordering**,
 not the 2026 levels.
+
+---
+
+## Iteration 104 — tooled the trap instead of restating it
+
+Six occurrences of one mistake in a session is a tooling gap, not a discipline gap, so this tick
+built the fix rather than writing the rule a seventh time.
+
+**Checked first whether it was already solved**, and partly it was: `web/services/documents.py`
+line 729 tries the segmented index first and falls back to trigram **only at ≥3 chars**, so the web
+app was never wrong. The bug lived purely in **ad-hoc analysis**, which queries one index directly —
+and `authority_invocation.py` already had the correct routing logic **as its own private copy**,
+which is precisely how the trap got written a sixth time somewhere else. The right logic existed
+and was not reachable.
+
+**Shipped `scripts/rnd/analysis/fts.py`**: `term_ids` / `term_counts` / `report` / `cooccurrence`,
+routing by length, **reporting which index answered**, and **raising** if a caller forces an index
+that cannot see the term — `'银行' is 2 chars; doc_search needs >= 3 and would return a silent 0`.
+Verified live on the six terms that burned me: 美元 **8,454**, 李强 **1,614**, 银行 **21,668** (all
+previously 0), and 跨境人民币 587 / 耐心资本 504 routed to trigram because the segmented index
+splits them.
+
+**And `--cooccur-with` reproduces the corrected comparison**, which is the real regression:
+
+| context | share | index |
+|---|---|---|
+| 融资 | 59.8% | seg |
+| 银行 | 50.6% | seg |
+| 贷款 | 49.7% | seg |
+| 信贷 | 41.9% | seg |
+| 引导基金 | 18.4% | trigram |
+| 耐心资本 | 9.5% | trigram |
+
+Every row carries its index, so a blind zero is visible rather than silent. **Retrofitted
+`authority_invocation.py` to import the shared module** and deleted its private copy, so there is
+one route.
+
+**`tests/test_fts_routing.py`, 10 tests**, and two of them are the ones I care about: they assert
+that the fixture's **trigram index really does return 0 for a 2-char term** and that the
+**segmented index really does return 0 for a split compound** — testing the *premise*, not just my
+wrapper. If SQLite's tokenizers ever change, those fail and tell me the rule is obsolete rather
+than letting the wrapper quietly become pointless. Suite 283 → **293 passed, 1 skipped**.
+
+**One self-inflicted slip, caught by running it:** the retrofit inserted a `sys.path` line into a
+module that did not import `sys`, and only the live run surfaced the `NameError` — `python3 -c
+"ast.parse(...)"` passed it cleanly, because a missing import is a runtime error, not a syntax
+error. Worth remembering that a syntax check is not an import check.

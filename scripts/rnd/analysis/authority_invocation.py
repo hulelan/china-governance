@@ -27,6 +27,7 @@ Read-only. Writeup: docs/research/authority-invocation.md
 """
 import argparse
 import sqlite3
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -35,20 +36,12 @@ ROOT = _P[3] if len(_P) > 3 else Path.cwd()
 
 DEFAULT_TERMS = "习近平,党中央,总书记,国务院总理"
 LEVELS = ("central", "provincial", "municipal")
-TRIGRAM_MIN = 3          # fts5 tokenize='trigram' cannot match a shorter needle
 
-
-def term_ids(conn, term):
-    """Row ids whose text contains `term`, from whichever index can see it."""
-    if len(term) >= TRIGRAM_MIN:
-        idx, sql = "doc_search", 'SELECT rowid FROM doc_search WHERE doc_search MATCH ?'
-        arg = f'"{term}"'
-    else:
-        idx, sql = ("doc_search_seg",
-                    "SELECT rowid FROM doc_search_seg WHERE doc_search_seg MATCH ?")
-        arg = term
-    ids = {r[0] for r in conn.execute(sql, (arg,))}
-    return ids, idx
+# Index routing lives in one place now (scripts/rnd/analysis/fts.py). This file
+# had its own copy, which is exactly how the trap got written a sixth time in a
+# query elsewhere: the right logic existed but was not reachable.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fts import TRIGRAM_MIN, term_ids  # noqa: E402,F401
 
 
 def table(label, tot, hit, terms, years, min_per_year):
