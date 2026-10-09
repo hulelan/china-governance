@@ -687,6 +687,34 @@ legitimately return 0 matches. And when an edit script makes several replacement
 nothing unless **all** anchors matched (the loop above does this deliberately) — a partial write is
 worse than no write, because the commit message will describe the whole change.
 
+## An edit script must be able to fail its own commit
+
+Twice (2026-10-08, 2026-10-09) a commit message described a file change the commit did not contain.
+Both times the edit script did the right thing — it checked its anchors and **wrote nothing** — and
+both times `git commit` ran anyway, because the commands were newline-separated rather than
+`&&`-chained. An all-or-nothing write protects the **file**; it does not protect the **commit
+message**, which is what a reader trusts later.
+
+**Chain them, and have the script print a sentinel the chain depends on:**
+
+    python3 - <<'PYEOF' && echo EDIT_OK && git add FILE && git commit -F - <<'MSG'
+
+Three traps, every one of them hit while writing this very section:
+
+1. **The anchor taken from somewhere other than the file.** Copied from an earlier replacement
+   string it misses the file's line wrapping; copied from a subagent report or a rendered view it
+   may not be in the file at all (that is how the first attempt at this section failed). Read it
+   with `repr(open(f).read().split(chr(10))[N])` first. See "An anchor string copied from a
+   rendered view".
+2. **The commit not gated on the edit** — the shape above.
+3. **The heredoc delimiter appearing inside the content.** A script whose text contains a bare
+   `PY` line terminates a `<<'PY'` heredoc early and fails with a confusing
+   `unterminated triple-quoted string literal`. Use a delimiter that cannot occur in the body,
+   which is why the example above says `PYEOF`.
+
+Traps 1 and 3 each cost one attempt here, and **both were caught by trap 2's fix**: the gate
+refused to commit, so the only cost was a retry rather than a false commit message.
+
 ## A watcher must not match itself
 
 `pgrep -f PAT` tests PAT against the full command line of **every** process, including the shell

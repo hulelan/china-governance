@@ -3950,6 +3950,14 @@ the file, where line 91 reads `a level. Two memos stated…` so "Two memos" is n
 printing a sentinel the chain depends on.** A write-at-the-end script that cannot fail the chain is
 a commit message waiting to lie.
 
+**Footnote: writing that rule tripped two of the three traps it names.** The first attempt used an
+anchor I had taken from a **subagent's hand-back report** rather than from CLAUDE.md, so the string
+was not in the file at all. The second put a bare `PY` line inside a `<<'PY'` heredoc — the rule's
+own example text — which terminated the heredoc early and surfaced as
+`unterminated triple-quoted string literal`. **Both were caught by the gate**, which refused to
+commit, so each cost a retry instead of a false commit message. That is the clearest possible
+demonstration that the gate is the load-bearing part.
+
 **The substantive conclusion is reassuring and worth stating plainly:** the volume's memos were
 substantially **more careful about levels than my audit implied**. Two of them anticipated the exact
 problem `doc_identity` was later built to fix — one by constructing a fixed-site robustness set, one
