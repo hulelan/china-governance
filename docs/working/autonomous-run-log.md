@@ -4935,3 +4935,35 @@ The running backfill is doing the capped walk (881 staged rows: 规范性文件 
 部门规章 111) and is being **left to finish rather than killed**, per the standing rule; the real
 411-page run follows on the fixed code.
 
+---
+
+## Iteration 134 — the run did not finish, it crashed, and the incremental commits are why anything survived
+
+**I reported the extraction as "finished" last tick from a `kill -0` check. It had crashed.** Reading
+the log instead of the process table: a single `ValueError: document closed or encrypted` propagated
+out of `extract_text_from_pdf` and killed `main()` after **1,544 of ~6,013** documents were enriched.
+The remaining ~4,700 were never reached. **A dead process is not a completed one** — exit status was
+never checked because the process had already gone.
+
+**The per-10 incremental commits are the only reason the 1,544 survived**, which is exactly why I
+checked that commit cadence before launching. Had it committed once at the end, the crash would have
+lost everything.
+
+**This is the "a wrapper must not swallow failure" family inverted.** The failure was not hidden —
+it was FATAL to 4,700 good rows. A loop that pays a network fetch per row must treat a parse failure
+as a **row-level** outcome, never a run-level one.
+
+Fixed at three levels inside `extract_text_from_pdf`, each a real failure mode: `fitz.open` raising
+(malformed or truncated download), an encrypted document (now tries the empty password first, which
+opens many "protected" government PDFs), and a single damaged page (which no longer loses the rest
+of that document's text). The call site wraps the extractor as well, so no future extractor change
+can reintroduce a run-level abort. 6 tests, including the two beyond the crash: a **valid** PDF still
+yields its text (预算法 round-trips through a real fitz-built document) and a scanned page still
+returns empty, the szdp shape. 344 → **350 tests**.
+
+**Both jobs relaunched, with `PYTHONUNBUFFERED=1`** — the earlier log looked empty for 46 minutes
+purely because Python buffers stdout when redirected, which made the DB the only progress signal.
+Extraction found **5,084** documents remaining; the PBC 411-page backfill is now running on the
+fixed cap logic, into the same `documents_pbc.db` as the capped walk's 1,035 rows so one
+`merge_db.py` covers both.
+
