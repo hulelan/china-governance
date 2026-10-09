@@ -88,6 +88,56 @@ def test_busy_timeout_applied_on_every_connection():
                 offenders.append(f"{py.name}:{src[:m.start()].count(chr(10)) + 1}")
     assert not offenders, f"sqlite3.connect without busy_timeout: {offenders}"
 
+def test_busy_timeout_also_guarded_in_scripts():
+    """The scan above globbed only crawlers/, so a new unprotected connection in
+    scripts/ was never caught (found 2026-10-09 while merging the PBC backfill
+    alongside a running extraction).
+
+    Read-only connections need no busy handler, and officials.db has no concurrent
+    writer, so both are exempt — stated here so the exemptions are visible rather
+    than implied by a passing test.
+    """
+    import ast
+
+    EXEMPT_DB = ("officials.db",)
+    offenders = []
+    # FLAT scripts/*.py only — the ACTIVE pipeline (CLAUDE.md "Scripts Layout").
+    # scripts/rnd/** is deliberately out of scope: those are hand-run one-offs, so a
+    # lock error surfaces to the operator immediately, whereas a pipeline script fails
+    # unattended inside the 06:00 UTC nightly. Scoped after rglob flagged 8 rnd/ files
+    # and nothing in the pipeline (2026-10-09).
+    for py in sorted((ROOT / "scripts").glob("*.py")):
+        src = py.read_text(encoding="utf-8")
+        if any(db in src for db in EXEMPT_DB):
+            continue
+        try:
+            tree = ast.parse(src)
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "connect"
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == "sqlite3"):
+                continue
+            # `timeout=` kwarg IS the busy handler (merge_db uses it, which a regex
+            # looking only for the PRAGMA misses).
+            if any(k.arg == "timeout" for k in node.keywords):
+                continue
+            # read-only URIs cannot block a writer
+            seg = ast.get_source_segment(src, node) or ""
+            if "mode=ro" in seg:
+                continue
+            # a PRAGMA within the next 400 characters counts
+            off = sum(len(l) + 1 for l in src.split("\n")[: node.lineno - 1])
+            if "busy_timeout" in src[off:off + 600]:
+                continue
+            offenders.append(f"{py.relative_to(ROOT)}:{node.lineno}")
+    assert not offenders, (
+        "sqlite3.connect in scripts/ with no timeout kwarg, no busy_timeout pragma "
+        f"and not read-only: {offenders}")
+
 
 def test_is_lock_error_discriminates():
     assert is_lock_error(sqlite3.OperationalError("database is locked"))
