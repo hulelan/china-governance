@@ -3698,3 +3698,41 @@ and the post-2022 decline has **two readings the counts cannot separate**: the p
 down, versus the programme maturing past the stage that generates policy documents. So it is
 recorded as *a reachable study with its n stated*, so that whoever runs it starts with the panel
 rather than the headline.
+
+---
+
+## Iteration 107 — measured the last two §10 blockers; one is absent, not thin
+
+Finished turning the literature map's "blocked" labels into bounds.
+
+**w31676's blocker is sharper than "needs trade data".** The paper's object is surveillance-AI
+export *flows*, and our holdings have essentially nothing at that intersection:
+**出口管制 ∩ 视频监控 = 1 document.** One. That is not a thin-data problem to work around — the
+object is absent, which is a more useful thing to have written down than a guess about data we lack.
+
+**The export-control regime, though, is well covered** and the note had not said so: 出口管制
+**1,071** documents, 出口许可 767, 两用物项 412, 技术出口 328, 管制清单 211, 境外投资 1,521, with the
+MOFCOM 公告 instrument stream current through 2026 (drone two-use controls on the US 2026-08,
+strategic-mineral reporting 2026-06). **人工智能 appears in 192 of the 出口管制 documents**, 算法 in
+47 — AI is inside the regime, not outside it.
+
+And the central series steps at **2021**: 7 · 4 · 5 · 3 · 5 · 15 · **90** · 52 · **125** · 101 · 114
+across 2015-2025, bracketing the 出口管制法's effective date of **2020-12-01**. Same shape as the
+立法法 finding — a dated statute with a documentary step.
+
+**Recorded as a candidate, not a claim**, for two measured reasons: it needs the fixed-site panel
+like every series here, and the 2026 total of 395 is **304 media documents**, so the raw series is
+media-driven precisely where it looks most dramatic. That is the `media`-is-not-sub-national trap
+from iteration 98 reappearing in a new place, caught this time before it reached prose.
+
+**The framing I was careful about.** It would be easy to present a technology-export-control study
+as "the w31676 replication". It is not — the paper asks who imports surveillance AI and we would be
+asking how China controls technology exports. Those are different papers, and calling the second a
+replication of the first is exactly the relabelling `consistency-review.md` exists to catch. So the
+note says **swap, not workaround**, in those words.
+
+**Side observation on the write window:** at 04:10 UTC the classifier reads 17,600/23,710 with
+**387 minutes** left, finishing ≈10:40 UTC — matching `write-window-plan.md`'s arithmetic. The 06:00
+cron has not fired yet, so the plan's central prediction (that it finds the lock held and skips) gets
+tested in about two hours. Worth noting that the prediction is now falsifiable rather than
+hypothetical.

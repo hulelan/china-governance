@@ -226,6 +226,29 @@ policy half only — `ai-governance-diffusion.md` is the complement, not the rep
 > recorded here as **a reachable study with its n stated**, so that whoever runs it starts with the
 > panel rather than the headline.
 **w31676 Exporting the Surveillance State** needs trade data; **w32993 Autocracy 2.0** is a
-framework essay with no single replicable estimate. **w32701** is now started (above) and is the
+framework essay with no single replicable estimate.
+
+> **w31676 feasibility measured 2026-10-09, and the blocker is sharper than "trade data".** The
+> paper's object is surveillance-AI export *flows* to autocracies. Our holdings have essentially
+> nothing on that specific intersection: **出口管制 ∩ 视频监控 = 1 document.** One. So this is not
+> a thin-data problem to work around; the object is absent.
+>
+> **The export-CONTROL regime, by contrast, is well covered** — 出口管制 **1,071** documents,
+> 出口许可 767, 两用物项 412, 技术出口 328, 管制清单 211, 境外投资 1,521 — and the instrument stream
+> is current, with the MOFCOM 公告 series held through 2026 (drone two-use controls on the US,
+> 2026-08; strategic-mineral reporting rules, 2026-06). **人工智能 appears in 192 of the 出口管制
+> documents** and 算法 in 47, so AI is inside the regime rather than outside it.
+>
+> The central series steps at **2021**: 7 · 4 · 5 · 3 · 5 · 15 · **90** · 52 · **125** · 101 · 114
+> (2015→2025, central-level documents only), which brackets the 出口管制法 taking effect
+> **2020-12-01**. That is the same shape as `local-legislative-devolution.md` — a dated statute with
+> a documentary step — and it is **a candidate, not a claim**: it needs the fixed-site panel, and
+> the 2026 total of 395 is **304 media documents**, so the raw series is media-driven at the end
+> exactly where it looks most dramatic.
+>
+> **So the honest statement is a swap, not a workaround:** AI-tocracy's export question is
+> unreachable, and a *technology-export-control* study is reachable with AI as one controlled
+> domain. Those are different papers, and calling the second a replication of the first would be
+> the kind of relabelling `consistency-review.md` exists to catch. **w32701** is now started (above) and is the
 only one of the five whose missing half we actually hold.
 
