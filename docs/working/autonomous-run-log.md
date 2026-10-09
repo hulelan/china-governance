@@ -4184,3 +4184,29 @@ Nothing discovered this tick and nothing changed — which is the right outcome 
 value is that if an import had been broken, I would have found it with 45 minutes of margin rather
 than from a failed nightly report tomorrow.
 
+---
+
+## Iteration 119 — exact baseline before the rebuild, and a SQLite quoting trap
+
+Classifier still running at 10:34 with ~13 minutes left, so this tick locked down the **exact**
+pre-rebuild baseline rather than relying on yesterday's figures. Everything matches
+(346,955 documents · 310,136 resolved of 585,471 · **52.9721%** · `localized_of` 2,014 ·
+`genre='implementing'` 17,883 · `doc_len` **does not exist yet** · `pbc` still **31**), and the
+three **named** prediction targets are now written down with their current values so P1 and P6 can
+be checked **individually** instead of by the uninterpretable net:
+
+| target | inbound now | expected |
+|---|---|---|
+| 政府工作报告 (25 documents share the title) | **283** | gone (P6) |
+| 房屋征收补偿决定书 (39 documents) | **95** | gone (P6) |
+| 广东省自然资源厅 (an organization name) | **466** | gone (P1) |
+
+**And one row of my own query printed garbage, which is a trap worth naming.** The `localized_of`
+label came back as `142099|2014` — a document id where the label should be. Cause: **in SQLite,
+double quotes denote an IDENTIFIER**, so `"localized_of"` resolved to the actual *column* of that
+name. Every other label in the same query worked only because SQLite **falls back** to treating an
+unresolvable double-quoted identifier as a string. That fallback is exactly why the mistake survives
+unnoticed: a labelled report is correct for every label that happens not to collide with a column
+name, and silently prints data for the one that does. Recorded in CLAUDE.md beside the partial-index
+gotcha. The count itself (2,014) was unaffected.
+

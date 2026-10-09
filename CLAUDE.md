@@ -788,6 +788,14 @@ cannot open an edition, so it must not extend one.
   `scripts/` and was never the gap; `tests/test_write_contention.py` now has a
   static scan that fails if a new `sqlite3.connect` appears without it.
 - Web app opens DB read-only (`?mode=ro`) — never blocks crawlers.
+- **Double quotes in SQLite are IDENTIFIERS, not string literals.** `SELECT "localized_of", COUNT(*)
+  FROM doc_identity` returns the **column** `localized_of`, not the label — because SQLite resolves a
+  double-quoted name as a column when one exists, and only falls back to treating it as a string when
+  it does not. So a hand-written labelled report "works" for every label that happens not to collide
+  with a column name and silently prints data for the one that does (hit 2026-10-09 while capturing
+  a pre-rebuild baseline: the row read `142099|2014`, a document id where the label should have been).
+  **Use single quotes for string literals**, always, and be aware that the fallback is why this
+  mistake survives so long before it bites.
 - **Partial index gotcha**: `idx_documents_url` is defined as `WHERE url != ''`. SQLite will NOT use this index for queries that omit that predicate. Always include `AND url != ''` in WHERE clauses that filter by URL, or expect a full table scan.
 
 ## Adding a New gkmlpt Site

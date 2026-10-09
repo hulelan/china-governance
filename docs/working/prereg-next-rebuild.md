@@ -23,6 +23,36 @@ Note the baseline drift: the `localized_of` experiment ran from **2,075**, the l
 **2,014**. Predictions are therefore stated as **deltas**, not absolutes — an absolute target can
 be met or missed by corpus growth alone, which is not what is being tested.
 
+## Exact baseline re-verified 2026-10-34:45 UTC, minutes before the rebuild
+
+Yesterday's baseline still holds, re-read immediately before Phase 2b so the before/after is not
+relying on a day-old number:
+
+| quantity | value |
+|---|---|
+| documents | 346,955 |
+| citations total / resolved | 585,471 / **310,136** |
+| resolution | **52.9721%** |
+| `doc_identity` rows | 338,856 |
+| `localized_of` set | **2,014** |
+| `genre='implementing'` | **17,883** |
+| `instrument_succession` | 14,624 |
+| `diffusion_events` | 45,524 |
+| `tracker_weekly` | 46,178 |
+| `doc_inbound` | 41,179 |
+| **`doc_len` exists** | **no (0)** — created by tonight's `build_site_stats` |
+| `pbc` documents | **31** — unchanged; Phase 1 ran before the crawler fix existed |
+| unclassified remaining | 313 |
+
+**The three named prediction targets, so P1 and P6 can be checked individually rather than by the
+net:**
+
+| target | inbound now | expected after |
+|---|---|---|
+| 政府工作报告 (25 docs share the title) | **283** | **gone** (P6 denylist) |
+| 房屋征收补偿决定书 (39 docs) | **95** | **gone** (P6) |
+| 广东省自然资源厅 (an org name) | **466** | **gone** (P1 org gate) |
+
 ## Prediction 1 — the org-stub gate makes resolution FALL
 
 `extract_citations.py` gained an org-stub containment gate (`org_only_exact=True`): a reference
