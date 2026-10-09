@@ -50,13 +50,28 @@ and the gradient has three steps, not four. `scripts/rnd/analysis/pairs.py` cann
 department subset — `LEVEL_CODE` holds only central/provincial/municipal/district — which is how
 this was caught.*
 
-***The qualitative claim survives and is unaffected:*** *province is the highest-overlap tier and
-everything below it is lower, so "the province is the forwarding tier, the levels below it write"
-holds. What changes is that merging the old department row into city pulls the city median down
-from 0.051 toward the department value, since the merged documents sit at 0.031 — so the
-province-to-city gap is **wider** than stated, not narrower. The exact re-based medians are being
-recomputed; until they land, read the three-step ordering as sound and the city figure as an upper
-bound.*
+***The re-based gradient, measured** (35,331 scored citation-channel pairs, the same basis as the
+memo, which had 13,509 — the growth is corpus and resolver, not method):*
+
+| basis | provincial | municipal | department | district |
+|---|---|---|---|---|
+| **per-document (correct)** | **0.063** (n=13,204) | **0.049** (n=20,614) | — | **0.046** (n=1,513) |
+| site level (the old basis), today | 0.062 | 0.053 | 0.036 | 0.044 |
+
+*Two corrections follow, one expected and one not.*
+
+*As expected, **merging the old department row into city pulls the city median down** (0.053 →
+0.049, because the merged documents sit at 0.036), so the **province-to-city gap widens from 0.009
+to 0.014** — the memo's own point, that the province is the forwarding tier, gets stronger.*
+
+***Not expected: "districts and departments elaborate most" is wrong in emphasis.** District is
+**0.046**, not the 0.030 the memo reports, and on the site basis today it is 0.044 — so the memo's
+district figure was stale independently of the level question. City-to-district is therefore nearly
+**flat** (0.049 vs 0.046) where the memo had a wide gap (0.051 vs 0.030). The defensible claim is
+narrower: **the province-to-city step is the real one, and everything below the province is flat.**
+Relatedly, "District median overlap is 0.030 with **zero relays**" reads **0.9%** relays today, low
+but not zero. The gradient is still monotonic — 0.063 > 0.049 > 0.046 — so the direction of the
+finding is intact; its shape is one step, not three.)*
 
 *Two things checked at the same time and found clean, recorded so they are not re-checked:
 `diffusion_events` contains **no `media` rows at all** (only municipal 26,135 / provincial 16,575 /
@@ -181,6 +196,12 @@ central title still writes 94% of its own text in the typical case.
 | municipal | 4,539 | 0.051 | 0.6% | 91.6% | 3.7% |
 | department | 1,360 | 0.031 | 0.3% | 97.7% | 0.8% |
 | district | 801 | 0.030 | 0.0% | 98.9% | 1.0% |
+
+*(This table is on **site** levels. `department` is not a per-document level — all 14 such sites are
+Shenzhen municipal bureaus — so on the correct basis its row merges into `municipal` and the table
+has three rows, not four. Re-measured 2026-10-08 on 35,331 scored citation pairs: **provincial
+0.063 (n=13,204), municipal 0.049 (n=20,614), district 0.046 (n=1,513)**, district relay 0.9% rather
+than 0.0%. See the correction under §"Who elaborates most" above.)*
 
 **Provinces reuse the most central text, districts the least.** The gradient survives every
 robustness cut. Excluding 转发 pairs: province 0.072, district 0.030. Excluding the three

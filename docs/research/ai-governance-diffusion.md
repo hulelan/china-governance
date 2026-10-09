@@ -343,7 +343,7 @@ authored. There is no level gradient (a Haidian district plan elaborates as full
 provincial one); the variation is by sector, with single-sector plans (制造/交通/教育/养老)
 narrowing the most. *(Note 2026-10-01: n=10. Corpus-wide a level gradient exists, province 0.074,
 city 0.051, department 0.031, district 0.030; see `diffusion-fidelity.md` §3.2 and
-`fidelity-provincial.md` §2.1.)* This is the **opposite** of the consumption campaign, which propagated as
+`fidelity-provincial.md` §2.1. Level basis corrected 2026-10-08: `department` is not a per-document level — those are Shenzhen municipal bureaus — so the four-step gradient is really three, and today it reads **province 0.063, city 0.049, district 0.046**. The province-to-city step is the real one; below the province it is flat. See `diffusion-fidelity.md` §3.2's correction.)* This is the **opposite** of the consumption campaign, which propagated as
 templated re-issuance of the *same* named plan because it carried money and central operational
 rules. AI+ carries neither, so localities author new sector instruments with no central
 counterpart. (Caveat: 5-gram overlap counts gov-notice boilerplate, so the local figures are

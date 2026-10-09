@@ -3253,3 +3253,42 @@ measured would not be.
 **The session's measurement pattern, now six deep:** mirrors vs collisions, editions vs pooling
 failures, intended behaviour vs bugs, press vs local government, a kind of body vs a tier. Every
 one was a category the first cut had merged.
+
+**Iteration 99, continued — the recomputation landed, and it corrected more than predicted.**
+
+The detached `pairs.py --csv` run finished (62,796 rows, 182.8s). The CSV carries **both**
+`source_level` and `source_site_level`, so the two bases are directly comparable rather than
+inferred. On 35,331 scored citation-channel pairs (the memo's own basis, which had 13,509 — growth
+is corpus and resolver, not method):
+
+| basis | provincial | municipal | department | district |
+|---|---|---|---|---|
+| **per-document (correct)** | **0.063** (13,204) | **0.049** (20,614) | — | **0.046** (1,513) |
+| site level, today | 0.062 | 0.053 | 0.036 | 0.044 |
+
+**The predicted correction held:** merging department (0.036) into municipal pulls it 0.053 → 0.049,
+so the **province-to-city gap widens from 0.009 to 0.014** — the memo's own claim gets stronger, as
+I said it would before measuring.
+
+**The unpredicted one matters more.** District is **0.046**, not the memo's 0.030 — and on the site
+basis *today* it is 0.044, so **that figure was stale independently of the level question**.
+City-to-district is therefore nearly **flat** (0.049 vs 0.046) where the memo had a wide gap (0.051
+vs 0.030). So "districts and departments elaborate most" is **wrong in emphasis**: the defensible
+claim is that **the province-to-city step is the real one and everything below the province is
+flat**. Also "district … with **zero relays**" reads **0.9%** today — low, not zero.
+
+The gradient is still monotonic (0.063 > 0.049 > 0.046), so the finding's direction is intact; its
+**shape** is one step, not three.
+
+**Propagated rather than left self-contradictory.** The stale four-step gradient was quoted verbatim
+in **three** other places — `ai-plus-fidelity.md`, `ai-governance-diffusion.md`, and the site-level
+table inside `diffusion-fidelity.md` §3.2 — so each got a compact pointer with the corrected
+numbers. `industrial-policy-targeting.md:263` was checked and left alone: "subsidy documents are
+mostly issued by Shenzhen districts and departments" is accurate **prose about bodies**, not a level
+claim, and correcting it would have been wrong.
+
+**The method note worth keeping from this tick:** I wrote "the exact medians are being recomputed"
+into the memo and shipped that, rather than estimating from the direction I was confident about.
+Had I estimated, I would have got the city figure roughly right (0.049 vs my implied ~0.045-0.05)
+and **missed the district correction entirely** — which is the larger of the two and changes what
+the finding says.

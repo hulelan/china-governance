@@ -107,6 +107,8 @@ overlap — Haidian district (0.021) elaborates as fully as Jiangsu province (0.
 0.074, city 0.051, department 0.031, district 0.030, with the province as the forwarding tier;
 see `diffusion-fidelity.md` §3.2 and `fidelity-provincial.md` §2.1. The no-gradient reading
 holds for these ten AI+ plans only.)*
+
+*(Level basis corrected 2026-10-08: `department` is not a per-document level — those are Shenzhen municipal bureaus — so the four-step gradient is really three, and today it reads **province 0.063, city 0.049, district 0.046**. The province-to-city step is the real one; below the province it is flat. See `diffusion-fidelity.md` §3.2's correction.)*
 The variation is by **sector**: the single-sector plans (制造 12/24, 交通 11/24, 养老 8/24, 教育
 12/24) reuse **fewer** umbrella terms than the general umbrella-style local plans (16–20/24),
 because they narrow the umbrella's cross-sector agenda to one domain and fill it with
