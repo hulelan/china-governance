@@ -3337,3 +3337,46 @@ outcomes is exactly why each needed measuring rather than a blanket correction.
 withdrawn), the three AI memos (hold, one sharpened eightfold), diffusion-fidelity (shape
 corrected, propagated to three quoting memos), fidelity-provincial (holds, better supported,
 reworded). Nothing is left reading `sites.admin_level` as a tier.
+
+---
+
+## Iteration 101 — the body-tail trim is ready, and the cron is going to skip
+
+**Verified the trim is ready rather than building anything.** `scripts/trim_body_tails.py` already
+exists (33KB, 2026-10-07) with **11 passing tests**, a pure `find_tail` function, and — the part
+that matters for a 33k-row write — `--dry-run` / `--apply` / `--revert`, where revert undoes every
+audited change. Its docstring already carries the reason it exists: the A7 extractor fixes stop new
+crawls at the share/print block, but `backfill_from_html.py` refuses to overwrite a body with a
+shorter one, **so no extractor fix can ever propagate a tail-trim to an existing row**. The tail is
+not inert — a 相关链接 block holds *other documents' titles*, which the citation extractor reads as
+references. A read-only `--dry-run` is running detached to confirm the 33,105 scope.
+
+**Then the scheduling arithmetic turned out to matter more than the trim.**
+
+| fact | value |
+|---|---|
+| now | 2026-10-09 **01:05 UTC** |
+| classifier | 14,600/23,710, **ETA 577 min** → ≈ **10:45 UTC** |
+| lock held since | 2026-10-08 06:00:02 |
+| next cron | **06:00 UTC 2026-10-09** |
+| droplet HEAD | `f86a0cf` — **none of today's code** |
+
+**The 06:00 cron will find the lock held and skip.** The `mkdir` lock exists exactly so a >24h
+classification drain does not get a second classifier piled on it, and it is working correctly. But
+the consequence is that **the next nightly to actually run is 06:00 UTC 10-10** — so every fix
+shipped today (PBC pagination + 沟通交流, the instance-title denylist, `doc_len`, the tracker
+intensity columns, the body ledger) **takes effect a day later than it looks like it will**, unless
+the ~19-hour window after 10:45 UTC is used.
+
+Wrote `docs/working/write-window-plan.md` with the order and, for each step, **why it must precede
+the next**: ledger seed before any crawl (or the first crawl pays the fetches the ledger exists to
+stop), Wuxi merge before `build_doc_identity` (or merged rows get no identity row), trim before the
+BM25 rebuild (one index rebuild, not two), `build_site_stats` before `build_tracker_rollup` (it now
+writes `doc_len`, which the rollup reads). Plus the four pre-registered predictions the window
+tests, including that **P1 and P6 land in the same rebuild so their falls add to ~4,960 edges** and
+neither should be read alone.
+
+**And I ended that doc by saying the window is an optimisation, not a deadline** — every item is
+idempotent or re-runnable, so nothing is lost if it is missed, only delayed a day. Writing that
+explicitly seemed better than letting a run plan imply urgency it does not have; the honest cost is
+one day of Beijing's ~760 wasted nightly fetches and the tracker's new columns sitting empty.
