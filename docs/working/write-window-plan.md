@@ -60,9 +60,41 @@ git pull                       # f86a0cf -> today's HEAD. Nothing below exists w
 
    **1,241 rows (3.8%) lose more than half their body.** "The body really was mostly chrome" and
    "the detector over-reached" produce the *same number*, so these need eyes, not a percentage.
-   `--dump-tsv` emits per-row before/after; read a sample of the ≥90% and 50-90% bands first, and
-   if they look wrong, `--apply` is still safe to run because `--revert` undoes every audited
-   change — but it is better to know beforehand.
+
+   **Hand-checked 2026-10-09 via `--dump-tsv`, and the trim is correct.** Read the 8 most
+   aggressive rows (tail_share 0.97-0.99) with their kept and removed text: every removal is
+   unmistakable CSS/JS (`.m-share{float: left;…}`, `/*分享*/`, `var zcJSON = [{…`) and every kept
+   fragment is real text. `xjboz/900138943` goes 25,234 → 115 chars and the 25k was a JS sidebar
+   tree; five `bjd_tongzhou` rows go ~2,000 → ~58 chars and the 2,000 was a share-widget stylesheet.
+   **Nothing to fix in the detector.**
+
+   ***But the check found something else, and it changes how to run this step.*** The kept bodies in
+   those bands are tiny:
+
+   | band | rows | median kept | **kept < 200 chars** |
+   |---|---|---|---|
+   | ≥90% | 95 | 214 | **43 (45%)** |
+   | 50-90% | 1,148 | 422 | **423 (36%)** |
+   | rest | 31,565 | 1,335 | 1,110 (3%) |
+
+   **~1,576 documents end up with under 200 characters** — `bjd_tongzhou/900092023` keeps only its
+   own title. Those bodies were never real; they were a title wrapped in a stylesheet. After
+   trimming they are **effectively bodiless while still counting as "has a body"**, so neither
+   `backfill_from_html.py` nor the nightly will ever revisit them. **That is exactly the double
+   invisibility that hid 360 attachment-only `pbc` rows** (CLAUDE.md's marker-table, 6th row).
+
+   **Two consequences for this step:**
+   1. **Do NOT pass `--no-reextract`.** I used it in the dry-run for speed, which is why the report
+      says `Re-extraction outcome: not tried=33418`. The script's `reextract` remedy re-reads saved
+      HTML with the site's own extractor and is precisely the fix for a title-only body. Run it as
+      `--apply` plain.
+   2. **The residue after re-extraction belongs in `body_fetch_failures`** as `empty_extraction`,
+      so it is tracked rather than looking fine. The trim script does not write ledger rows today;
+      that is a small, deliberate follow-up (logged below), not something to bolt on mid-window.
+      Top sites in the affected bands: cppcc 312, suzhou 291, bjb_wjw 64, bjd_tongzhou 48,
+      bjd_fangshan 45.
+
+   `--revert` undoes every audited change, so `--apply` is recoverable either way.
 5. **The owed rebuild, in this order** — each reads the previous one's output:
    `build_doc_identity.py --write --force` → `build_instrument_succession.py --write --force` →
    `extract_citations.py` → `build_site_stats.py` (now also writes **`doc_len`**, which step 6

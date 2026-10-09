@@ -3452,3 +3452,40 @@ out to carry aggregates only, so the re-run was needed after all — but I shoul
 first and known that). And a `git commit -m "…"` with unescaped double quotes inside it broke the
 shell and silently left the edit uncommitted while printing four `pathspec` errors; the heredoc
 form I had been using all session is immune, and I went back to it.
+
+**Iteration 101d — the hand-check cleared the trim and found the thing after it.**
+
+Read the 8 most aggressive trims (tail_share 0.97-0.99) with their kept and removed text. **The
+trim is correct.** Every removal is unmistakable CSS/JS — `.m-share{float: left;…}`, `/*分享*/`,
+`var zcJSON = [{…` — and every kept fragment is real text. `xjboz/900138943` goes **25,234 → 115
+chars** and the 25k was a JS sidebar tree; five `bjd_tongzhou` rows go ~2,000 → ~58 and the 2,000
+was a share-widget stylesheet. Nothing to fix in the detector, and the 1,241-row worry from the
+previous tick is discharged.
+
+**But the check found the thing that comes after it.** The kept bodies in those bands are tiny:
+
+| band | rows | median kept | kept < 200 chars |
+|---|---|---|---|
+| ≥90% | 95 | 214 | **43 (45%)** |
+| 50-90% | 1,148 | 422 | **423 (36%)** |
+| rest | 31,565 | 1,335 | 1,110 (3%) |
+
+**~1,576 documents end up under 200 characters** — `bjd_tongzhou/900092023` keeps only its own
+title. Those bodies were never real; they were a title wrapped in a stylesheet. After trimming they
+are **effectively bodiless while still counting as "has a body"**, so `backfill_from_html.py` (which
+refuses to write a shorter body) and the nightly both skip them forever. **That is exactly the
+double invisibility that hid 360 attachment-only `pbc` rows** — recorded as the marker-table's
+seventh instance, and this one was *predicted by the table and then found*, which is the point of
+naming a pattern.
+
+**Two concrete changes.** (1) The window run must **not** pass `--no-reextract` — I used it in the
+dry-run for speed, which is why the report says `Re-extraction outcome: not tried=33418`, and the
+script's `reextract` remedy re-reads saved HTML with the site's own extractor, which is precisely
+the fix for a title-only body. (2) The residue after re-extraction belongs in
+`body_fetch_failures` as `empty_extraction`, which the trim script does not write today.
+
+**I logged (2) as an Open Question rather than implementing it**, and the reason is a measurement:
+**1,110 of the 31,565 small-trim rows are already under 200 chars before any trim**, so a threshold
+chosen carelessly would ledger a large pre-existing population in one stroke. 200 is my eyeball
+from the kept-text samples, not a measured boundary, and picking it properly is its own small
+piece of work rather than something to bolt onto a 33k-row write mid-window.
