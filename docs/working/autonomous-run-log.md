@@ -4728,3 +4728,49 @@ with **+33% on one relation**. Two of the three moves are the pooling improving 
 disturbing a finding, and in every case the number that moved was one a reader could not have
 predicted from the headline that did not.
 
+---
+
+## Iteration 129 — closed a known defect by superseding the method, not patching the floor
+
+Last of the re-base sweep: `citation-network-structure.md`, which CLAUDE.md already flagged as
+carrying a length-floor defect in its OWN analysis code — node pooling by normalized title with a
+**five-character minimum**, where 中华人民共和国民法典 and 中华人民共和国预算法 fold to **three**
+characters once 中华人民共和国 is stripped. So the memo's authority statistics never pooled the
+most-cited texts in the corpus, which are exactly the top nodes its concentration claim rests on.
+
+**The fix was not to patch the floor.** `instrument_inbound`, the production table I built earlier
+this session, is better on three counts: it pools via `doc_identity.instrument_id` with **no
+folded-title floor**; it **drops pool-level self-citations** (8,871 of them — a mirror citing its
+own sibling, which no title-pooled node can detect because `source_id != target_id` holds for every
+such edge); and it carries the shared-文号 override added the same day. So the memo now directs
+readers there and keeps its own method labelled as superseded.
+
+**Re-measured, the Q3 headline is confirmed and slightly STEEPER:**
+
+| | memo | instrument basis |
+|---|---|---|
+| nodes | 239,187 (incl. 11,811 virtual) | **331,152** instruments |
+| top 1% share | 54.5% pooled / **61.6%** corpus-nodes-only | **62.5%** |
+| top 100 | 17.2% | **17.4%** |
+| threshold to enter top 1% | 11 inbound | **12** |
+| median cited node | 1 | **2** |
+| Gini | 0.948 | **0.965** |
+| never cited | 83.9% | **87.7%** |
+
+**What the floor was costing is now visible:** 民法典 holds **413 inbound across 7 copies, of which
+only ONE carried weight** — six copies invisible to the memo's pooling. 预算法 512; 城乡规划法 2,081
+across 2.
+
+**The direction matters more than the magnitude.** Fixing a defect that SUPPRESSED top-node weight
+should concentrate the distribution further, and it does (61.6% → 62.5%). Had the corrected figure
+moved the other way, that would have suggested the defect was load-bearing for the finding rather
+than incidental to it — so the sign is the check, not the size.
+
+**The re-base sweep, complete across four memos:** `fidelity-provincial` robust (relay ratio
+10.3x → 10.1x), `successor-detector` robust in rate with a **+16% correction to the median lag**,
+`instrument-lifespan` unchanged in scope with **+33% on one relation**, `citation-network-structure`
+confirmed and steeper with its bespoke method retired. Three of the four moves are the pooling
+improving linkage; one is a genuine correction to a published number. In every case the number that
+moved was one a reader could not have predicted from the number that did not — which is the whole
+argument for re-basing rather than assuming.
+
