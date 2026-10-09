@@ -3380,3 +3380,40 @@ neither should be read alone.
 idempotent or re-runnable, so nothing is lost if it is missed, only delayed a day. Writing that
 explicitly seemed better than letting a run plan imply urgency it does not have; the honest cost is
 one day of Beijing's ~760 wasted nightly fetches and the tracker's new columns sitting empty.
+
+**Iteration 101, continued — the trim's real justification, quantified.**
+
+The dry-run landed and the number that matters is not a row count. From
+`trim_body_tails.py --dry-run --no-reextract` on the live DB, read-only:
+
+> Outbound citation edges whose reference text occurs **ONLY** inside the tail:
+> **368 edges on 319 documents** — formal 5 resolved / 7 unresolved, llm 106 / 60, named 84 / 106.
+
+So **~195 resolved edges are spurious by construction** — the reference exists nowhere in the
+document's real text, only in a 相关链接 / 上一篇 block listing *other* documents. The trim's
+justification was never tidiness; it is that the citation extractor has been reading a navigation
+widget as a bibliography. Registered as **Prediction 7**.
+
+**Then the three predictions needed reading together, which is the actual risk.** P1 (org-stub
+gate ~4,570), P6 (instance-title denylist ~391) and P7 (~195) are *all* precision fixes that
+**remove** edges, and if the write window is used they land in **one** rebuild:
+
+| fix | resolved edges removed |
+|---|---|
+| P1 org-stub containment gate | ~4,570 |
+| P6 instance-title denylist | ~391 |
+| P7 body-tail trim | ~195 |
+| **total** | **≈5,156** → resolution 52.97% → **≈52.1%** |
+
+**Every previous resolution change in this project was an increase.** So the single most likely
+misreading of the next rebuild is to watch ~5,100 resolved edges vanish and call it a regression.
+And it is worse than that: **P4 (the PBC backfill) raises resolution in the same window**, partially
+offsetting them, so **the net resolution number is not interpretable at all** — only the per-fix
+named checks are. Both `prereg-next-rebuild.md` and `write-window-plan.md` now say that in those
+words, because a number that cannot be interpreted is more dangerous than one that is simply wrong:
+it will look fine.
+
+**Note on my own tooling:** the first dry-run's captured output held only its last 1,458 bytes, so
+the totals had scrolled past and I nearly reported the per-site table as if it were the summary.
+Re-ran with `--report-json` and `setsid nohup … < /dev/null` so the run owns its output and survives
+independently of the ssh session.
