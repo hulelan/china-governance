@@ -16,6 +16,7 @@ What is pinned here:
 Run: python3 -m pytest tests/test_panel.py -v
 """
 import sqlite3
+from datetime import date
 import sys
 from pathlib import Path
 
@@ -23,8 +24,8 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts" / "rnd" / "analysis"))
 
-from panel import (MIN_SERIES_DOCS, RHO_FLOOR, build_panel,  # noqa: E402
-                   classify, _spearman)
+from panel import (MIN_SERIES_DOCS, RHO_FLOOR, YEAR_MAX, YEAR_MIN,  # noqa: E402
+                   build_panel, classify, _spearman)
 
 # Unix timestamps for 1 July of each year, so strftime('%Y') is unambiguous.
 JULY = {2013: 1372636800, 2014: 1404259200, 2015: 1435726800, 2016: 1467345600,
@@ -155,6 +156,40 @@ def test_date_written_is_preferred_when_both_exist():
     assert p.sites == frozenset({"s"}), p.sites
     assert p.denom.get(1999) is None, "date_published must not override date_written"
     assert p.denom[2020] == 40, p.denom
+
+
+def test_an_implausible_year_cannot_break_the_panel():
+    """One bad row must not destroy the instrument.
+
+    Measured 2026-10-09: a SINGLE document whose date_published derived to year 2999
+    set last_year = 2999, making the required complete-year range 2013-2998, which no
+    site covers — so the default panel selected 0 of 466 sites and every series came
+    back THIN. `date_written` was accidentally protective (a bad epoch is still in
+    range); `date_published` is free text and admits every CMS typo.
+    """
+    c = sqlite3.connect(":memory:")
+    c.execute("CREATE TABLE documents (id INTEGER PRIMARY KEY, site_key TEXT, "
+              "date_written INTEGER, date_published TEXT, body_text_cn TEXT)")
+    i = 0
+    for yr in range(2013, 2027):
+        for _ in range(40):
+            i += 1
+            c.execute("INSERT INTO documents VALUES (?,?,?,?,?)",
+                      (i, "s", JULY[yr], f"{yr}-07-01", "body"))
+    # the poison rows, exactly the shapes found in the corpus
+    for bad in ("2999-01-01", "2035-06-01", "0107-03-02", "not a date", ""):
+        i += 1
+        c.execute("INSERT INTO documents VALUES (?,?,?,?,?)", (i, "s", 0, bad, "body"))
+    c.commit()
+    p = build_panel(c, min_per_year=30, first_year=2013)
+    assert p.sites == frozenset({"s"}), p.sites
+    assert p.years[-1] <= YEAR_MAX, p.years
+    assert 2999 not in p.denom and 2035 not in p.denom, sorted(p.denom)
+
+
+def test_the_clamp_bounds_are_sane():
+    assert YEAR_MIN == 1949, "the PRC's founding is the natural floor"
+    assert YEAR_MAX == date.today().year + 1, "one year ahead allows a forward-dated notice"
 
 
 if __name__ == "__main__":

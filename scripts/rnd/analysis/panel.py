@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import sqlite3
+from datetime import date
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -62,10 +63,24 @@ DB = ROOT / "documents.db"
 # diffusion anchor with date_written = 0 still produced sane lags), so this matches the
 # identity layer rather than inventing a third convention. date_written is preferred
 # where it exists because it is the issuance date; date_published is the fallback.
-YEAR_SQL = ("CAST(strftime('%Y', CASE WHEN COALESCE(date_written,0) > 0 "
-            "THEN date_written ELSE strftime('%s', date_published) END, "
-            "'unixepoch') AS INTEGER)")
-HAS_DATE_SQL = "(COALESCE(date_written,0) > 0 OR COALESCE(date_published,'') != '')"
+# A derived year needs a PLAUSIBILITY BOUND at the point of derivation. `date_written`
+# was accidentally protective — a bad epoch is still a number in range — but
+# `date_published` is free text, so parsing it admits every typo in the source CMS.
+# Measured 2026-10-09: 8 implausible buckets over ~1,289 documents — year NULL (683),
+# -4707 (587, strftime on an unparseable string), 107, 2028, 2029, 2030, 2035, and a
+# SINGLE row at 2999. That one row set `last_year = 2999`, which made the required
+# complete-year range 2013-2998, which no site covers, so the default panel selected
+# **0 of 466 sites** and every series came back THIN. One bad row, whole instrument.
+YEAR_MIN = 1949
+YEAR_MAX = date.today().year + 1
+
+_RAW_YEAR = ("CAST(strftime('%Y', CASE WHEN COALESCE(date_written,0) > 0 "
+             "THEN date_written ELSE strftime('%s', date_published) END, "
+             "'unixepoch') AS INTEGER)")
+YEAR_SQL = (f"(CASE WHEN {_RAW_YEAR} BETWEEN {YEAR_MIN} AND {YEAR_MAX} "
+            f"THEN {_RAW_YEAR} ELSE NULL END)")
+# A row whose derived year is out of range counts as UNDATED, not as year zero.
+HAS_DATE_SQL = f"({YEAR_SQL} IS NOT NULL)"
 
 # Below this many panel documents a term gets a count, never a trend. 雪亮工程
 # (173 corpus-wide, a handful of sites) is the motivating case: related-literature.md
