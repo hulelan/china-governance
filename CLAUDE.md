@@ -733,7 +733,15 @@ Three traps, every one of them hit while writing this very section:
    `unterminated triple-quoted string literal`. Use a delimiter that cannot occur in the body,
    which is why the example above says `PYEOF`.
 
-Traps 1 and 3 each cost one attempt here, and **both were caught by trap 2's fix**: the gate
+4. **Two heredocs in one `&&` chain are filled in OPERATOR order, not in the order you typed the
+   bodies.** `python3 - <<'PYEOF' && git commit -F - <<'MSG'` consumes the FIRST body for `PYEOF`
+   and the second for `MSG`, whatever order they appear in below. Writing the commit message first
+   therefore pipes it into `python3 -`, which dies on whatever the message happens to contain — here
+   `SyntaxError: invalid binary literal` on a commit hash `0b1ff96`, a confusing error with no
+   relation to the script. **One heredoc per command**: write the file in one invocation, commit in
+   the next.
+
+Traps 1, 3 and 4 each cost one attempt here, and **all were caught by trap 2's fix**: the gate
 refused to commit, so the only cost was a retry rather than a false commit message.
 
 ## A watcher must not match itself
