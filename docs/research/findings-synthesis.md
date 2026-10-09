@@ -310,6 +310,80 @@ sites. Citation resolution **52.97%**, **310,136** resolved of **585,471** edges
 on this build. Tonight's nightly is in Phase 2 and holds the write lock until roughly 10:00 UTC on
 2026-10-09, so everything that needs a writer is deferred, not forgotten. [measured]
 
+### Added 2026-10-09 (appended, not rewritten — this section's own failure mode is being rewritten from memory)
+
+**All seven "run now" papers in `related-literature.md` now have memos**, closing #4 and #5:
+
+- **`diffusion-intensity-index.md`** (IP&M 2025, #4). Their two dimensions **are** independent —
+  authority × textual intensity at Spearman **−0.085**, and the sign flips to +0.128 under a
+  stricter spec, so the residual is noise. A composite earns its second axis. But **summed over
+  adopters, "hierarchical effectiveness" correlates with the adopter COUNT at +0.957** — use the
+  per-adopter mean, which points the other way (−0.271). New: **breadth costs both authority
+  (2.67 → 2.46) and elaboration (0.99 → 0.81)**, so `diffusion-fidelity.md`'s 88% elaboration is
+  not uniform — it declines with reach.
+- **`authority-invocation.md`** (JCPS 2026, #5), **reframed because the design is unavailable** and
+  the reason is itself a limit worth stating once: the Party hierarchy is nearly absent as an
+  *issuer* (104 provincial party-committee documents against 19,015 government ones) because
+  政府信息公开 obliges administrative organs. No crawl depth fixes that. Measured as *invoked*
+  authority on a fixed 18-site panel, the General-Secretary channel goes **0.0% (2012) → 30-43%
+  (2024)** while the Premier channel sits at **0.0-1.0% at every level in every year** — the claim
+  is an absence, not a ratio. Two things the level dimension adds: the gradient **inverts**
+  (2024 municipal **42.9%** > central 31.7%), and institutional invocation (党中央) keeps the
+  **opposite** gradient (33.0 / 22.0 / 14.6). It **disagrees usefully** with
+  `recentralization-experimentation.md`: authority-borrowing by NAME never reverted after 2017,
+  while borrowing by CITATION did.
+
+**Three new findings outside the replication set:**
+
+- **`local-legislative-devolution.md`** — counting *jurisdictions* rather than documents, distinct
+  **municipal** legislating bodies were flat at ~43/yr through 2015, hit **214 in 2016**, settled
+  ~320. The 2015 立法法 amendment. Not a collection artifact: the pre-2016 issuer set is the legal
+  roster itself (all 23 provincial capitals, all 18 较大的市, the 4 SEZ cities, the autonomous
+  prefectures) and normalises to **79 = 49 + 30**, the roster's own size. A **placebo group**
+  confirms it — autonomous counties legislate under the 民族区域自治法 of **1984** and show
+  **no break** (14-20 before, 18 in 2016, 17 in 2017). A database that merely began collecting in
+  2016 would have lifted both tiers; it lifted one.
+- **`patient-capital-cascade.md`** — the upward channel caught in full, which B2 asked for.
+  耐心资本 appears first sub-nationally (**2019-02**, a Beijing work-report task item with a named
+  lead official), is copied near-verbatim by Heilongjiang in 2022-08 **eleven months before any
+  central use**, is then *observed* by the 国家信息中心 in 2023-07, and reaches the Third Plenum
+  decision **2024-07-21** — 5y5m. **The methodological payoff:** nothing in the chain cites
+  anything. What travels upward is a **phrase**, and citations / `localized_of` / `title_reissue`
+  are all blind to a phrase — so upward flow measured on citations will always read near-zero
+  because **downward travels as instruments and upward as vocabulary.** Extended 2026-10-09 with
+  the state-VC half: the blame-shield (尽职免责, 597 documents) is **older** than patient capital and
+  belongs to **lending** (融资 59%, 银行 50%, 贷款 49%) not funds (引导基金 18%, 耐心资本 9%) — so
+  the state has asked for loss-tolerant capital without extending to fund managers the protection it
+  gave loan officers. A falsifiable forward prediction.
+- **`rmb-coverage.md` + `pbc-fx-position-2026.md`** — the monetary apparatus is the corpus's biggest
+  institutional hole (PBC 31 documents, SAFE 22, no NFRA, against MOF 3,395), and it is a **dialect
+  fix not a vantage problem**: both sites return real content from NYC and the crawler walked page 1
+  only. Fixed the same day (31 → ~541, oldest **1993-01-14**, plus the 沟通交流 section). And the
+  PBC's **2026-10-08 exchange-rate position statement** drops `保持人民币汇率在合理均衡水平上的基本稳定`
+  — a phrase in **111** documents we hold and used by the PBC's own Monetary Policy Committee
+  **thirteen days earlier** — while keeping that readout's other clauses almost verbatim.
+
+**Corrections made the same day, which matter as much as the findings.** `diffusion-fidelity.md`'s
+four-step level gradient was **not reproducible**: `department` is not a per-document level (all 14
+such sites are Shenzhen municipal bureaus), and re-measured on 35,331 scored pairs the gradient is
+**province 0.063 / city 0.049 / district 0.046** — district was 0.030 in the memo, so "districts
+elaborate most" was wrong in emphasis and the province-to-city step is the only real one. Propagated
+to the three memos quoting it. `fidelity-provincial.md`'s relay claim **holds** (and its Guangdong
+share fell 95% → ~64%, so it is better supported than when written) but could not be stated in level
+vocabulary — the real contrast is **city government vs city bureau**, 9.3% against 0.9% relay
+holding tier constant, which is a fact about the **kind of body** on an axis `admin_level_doc` does
+not encode. The three AI memos' central-monopoly claim **survived** and sharpened: sub-national
+*government* citation of the regulatory triad is **11 of 282 distinct citers (3.9%)**, and the
+generative-AI rule's apparently local 45% is **44 media documents**, an eightfold overstatement from
+treating "non-central" as "sub-national".
+
+**Deferred to the write window** (`docs/working/write-window-plan.md`): the identity → succession →
+diffusion → tracker → validate rebuild, the second Wuxi merge, the body-ledger seed, and the
+body-tail trim. Seven predictions are registered **before** that window in
+`prereg-next-rebuild.md`, including the one most likely to be misread: three precision fixes land
+together and **remove ≈5,156 resolved edges**, while the PBC backfill *raises* resolution in the
+same rebuild — so **the net resolution number will not be interpretable**, only the per-fix checks.
+
 ### Two results, not housekeeping
 
 **1. The corpus now holds a 31.4-year single-jurisdiction run.** `crawlers/sz_gazette.py` walks the
