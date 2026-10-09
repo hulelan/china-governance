@@ -4210,3 +4210,34 @@ unnoticed: a labelled report is correct for every label that happens not to coll
 name, and silently prints data for the one that does. Recorded in CLAUDE.md beside the partial-index
 gotcha. The count itself (2,014) was unaffected.
 
+---
+
+## Iteration 120 — the classification drain finished: 3 errors in 23,710
+
+The drain that has blocked every writer for 29 hours is **done**, and it is the classifier fix's
+final verdict:
+
+```
+Done: 23,707/23,710 classified, 3 errors in 90725s
+  content_risk        2 (terminal — never retried)
+  json_unsalvageable  1
+Estimated cost: ~$75.81
+```
+
+**3 errors in 23,710 documents — 0.013%.** Against the **20-37% silent failure rate** that ran every
+night from the 2026-07-25 `deepseek-v4-flash` migration until yesterday's fix, undetected because the
+code treated an empty completion as a content filter and left `classified_at` blank so the document
+was re-sent forever. 25.2 hours, ~$75.81, and the three failures each carry a reason in
+`classify_failures` rather than vanishing.
+
+That is worth stating plainly because the fix was a **one-line ceiling change plus a reason code**:
+`max_tokens` 2,000 → 12,000, because v4-flash is a reasoning model and bills reasoning tokens
+against the same budget, so 19 of 20 sampled calls were returning `finish_reason="length"` with
+empty content. The expensive part was never the fix — it was that nothing measured the failure rate.
+
+**And Phase 2b began at 10:47:48 with today's code.** `extract_citations` (pid 639081) is running the
+org-stub gate **and** the instance-title denylist together, so **Predictions 1 and 6 are being
+decided right now**, against the baseline locked down 13 minutes earlier: 310,136 resolved of
+585,471, 52.9721%, with 政府工作报告 at 283 inbound, 房屋征收补偿决定书 at 95 and 广东省自然资源厅
+at 466 — all three expected to disappear.
+
