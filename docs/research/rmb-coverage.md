@@ -12,6 +12,22 @@ because the two managing institutions are the two thinnest sites in the corpus. 
 
 ## 1. Institutional coverage: the managers are missing
 
+> **SUPERSEDED 2026-10-09 for the PBC specifically.** This section's central claim — that the
+> monetary apparatus was the corpus's biggest institutional hole at **31 PBC documents** — was
+> correct and is now fixed. `crawlers/pbc.py` had its 沟通交流 section capped at 40 pages, and
+> CLAUDE.md's documented historical backfill (`--max-pages 411`) **did not work** because the code
+> read `min(max_pages, cap)` so the cap always won. With an explicit `--max-pages` now overriding
+> the cap, the 411-page walk listed **5,558** documents against 494 before, and **pbc holds 6,099
+> documents** (规范性文件 430, 部门规章 111, 沟通交流 5,558), all with body text.
+>
+> Still missing, so the section's shape holds even where its PBC number does not: **SAFE 22**, and
+> **NFRA absent entirely**. And a defect this section could not have seen: **every pbc, chinatax,
+> csrc, safe and spp document has `date_written = 0`** — those crawlers populate only
+> `date_published` — so until `panel.py` was fixed the same day, these institutions were invisible
+> to every time series regardless of how many documents we held.
+
+
+
 | body | docs | with body | span |
 |---|---|---|---|
 | 国家税务总局 (chinatax) | 5,018 | 4,778 | 1984-09 – 2026-09 |
@@ -90,6 +106,39 @@ requires reading how an exchange-rate or settlement decision was justified is ou
 ---
 
 ## 3. The one real signal, and the structural finding
+
+> **RE-BASED 2026-10-09, and the "flat" half is WITHDRAWN.** Two things changed on the same day.
+> The PBC crawler's cap bug was fixed, taking **pbc from 31 to 6,099 documents** — so §1's
+> "the managers are missing" is itself superseded, and the central bank is now in the panel for the
+> first time. And `panel.py` was keying on `documents.date_written`, which **whole institutions never
+> populate** (pbc 6,099 of 6,099, chinatax 5,018 of 5,018, csrc 272 of 272), so the panel used below
+> structurally could not contain them. On an effective date (written, else published) the default
+> panel is **21 sites including pbc**, with a 2013 denominator of 4,053 rising to 8,950 by 2023.
+>
+> | | 2013 | 2017 | 2023 | 2026 |
+> |---|---|---|---|---|
+> | 美元 panel share | 2.71% | 0.93% | 0.53% | **0.33%** |
+> | 人民币 panel share | 5.95% | 5.04% | 3.49% | 5.58% |
+> | **美元 : 人民币** | **0.455** | **0.185** | **0.152** | **0.059** |
+>
+> **The ratio does not sit flat after 2017 — it keeps falling, another ~3x.** 美元 is SIGN_FLIP with
+> panel-share ρ **−0.952**, close to perfectly monotonic, while 人民币 is roughly flat
+> (ρ −0.538, with a 2023 trough and recovery). So the phenomenon is not a decline in currency talk;
+> it is **dollar-specific reference being progressively displaced while RMB reference holds steady**.
+>
+> **And the comparison is bilateral, not multilateral — which is the sharper finding.** Every other
+> currency is THIN on the same panel: **欧元 16, 港元 8, 日元 2, 本币 20** panel documents, against
+> 美元's **684**. The dollar has roughly **43x** the euro's presence and **340x** the yen's. So the
+> dollar's share falls 8x and **no other currency rises to replace it**. A basket story would show
+> euro or yen share climbing as the dollar's fell; they do not register at all. This is the retreat
+> of a single reference point, not diversification of reference.
+>
+> 汇率 (0.37% → 0.24%, ρ −0.451, trough 0.16% in 2019) and 跨境人民币 (0.67% → peak 1.63% in 2015 →
+> trough 0.23% in 2019 → 0.59% in 2022) are both SIGN_FLIP and both noisy; neither carries a trend
+> this memo would state. Raw counts for all four rise, which is why §4's traps matter: the 2026 raw
+> 美元 count is **4,858** against a panel count of **11**.
+
+
 
 ### Signal: the dollar's relative salience halved, 2013-2017
 
