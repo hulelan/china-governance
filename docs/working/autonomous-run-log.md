@@ -3962,3 +3962,42 @@ demonstration that the gate is the load-bearing part.
 substantially **more careful about levels than my audit implied**. Two of them anticipated the exact
 problem `doc_identity` was later built to fix — one by constructing a fixed-site robustness set, one
 by re-leveling from `publisher` by hand. Neither needed me.
+
+---
+
+## Iteration 113 — extended the literature map instead of re-checking it, and found a third blind spot
+
+With all seven "run now" papers done and the §10 blockers measured, the useful move on the standing
+ask was to look for NBER work **postdating** the map. Two additions.
+
+**`w33741` (Li, Meng, Miller, Yang, 2025) is a genuine new target.** It is built on the
+**一票否决 "One Vote Veto"** rule — promotion strictly barred for missing a target — arguing that
+*enforcement* rather than content made the One Child Policy bite. Feasibility measured rather than
+assumed: **一票否决 appears in 1,019 documents**, inside a dense accountability lexicon (责任追究
+6,101, 绩效考核 5,598, 问责 4,266, 目标责任 3,109, 挂牌督办 1,520, 党政同责 1,408, 军令状 94). The
+paper studies the veto's effect on **one** policy; the document record can ask the complementary
+question — **which targets carry a veto, from when, at what level** — which is the same shape as the
+立法法 devolution and 出口管制 findings: a named institutional device with a datable documentary
+footprint.
+
+**`w32982` (Keller, Shiue, Yan, 2024) is recorded as a method comparator, not a target**, because
+its corpus is Qing-era and ours starts in the 1980s. Kept because its measurement question is
+identical to ours and it is the map's only text-as-data-on-Chinese-*sources* entry rather than on
+firm or trade panels. Labelling it honestly matters more than padding the replication count.
+
+**And the feasibility check turned up a third FTS blind spot, caught by the helper's own zero-flag.**
+`约谈` returned 0 and the helper asked whether that was real — so I checked: **LIKE finds it in 116
+titles**. It is 2 characters (so trigram cannot match it) **and not a jieba token** (so the segmented
+index cannot either), while `问责` is also 2 characters, **does** tokenize, and returns 4,266. **Term
+length alone does not predict this**, which is why the earlier rule ("route by length") was
+necessary but not sufficient.
+
+So `fts.py` gained `like_count()` and `diagnose_zero()`, and `report()` now prints a verdict under
+any zero: *"NOT absent: LIKE finds N titles"* versus *"absent: LIKE finds 0 either"*. **A silent
+zero becomes a diagnosis.** Three tests pin it, including one asserting the 问责/约谈 contrast so the
+rule is recorded as being about tokenization rather than length. 293 → **296 passed, 1 skipped**.
+
+**Worth noting what caught it:** iteration 104 added the zero-flag as a small courtesy — a printed
+question mark next to a suspicious count. It is the thing that surfaced this. The tooling I built to
+stop a known mistake found an unknown one, which is the better argument for building it.
+
