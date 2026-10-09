@@ -765,7 +765,7 @@ spells it `${pipestatus[1]}`).
 
 ## A recurring bug shape: length floors measured on a NORMALIZED string
 
-Four separate bugs this project has shipped are the same mistake (the fourth was predicted
+Five separate bugs this project has shipped are the same mistake (the fourth was predicted
 here before it was found, which is the point of naming a pattern): **a minimum-length guard applied to a string AFTER normalization stripped
 characters from it.** Chinese statute names are the trap, because `中华人民共和国` is 7 characters
 and every normalizer folds it away.
@@ -776,6 +776,8 @@ and every normalizer folds it away.
 | `extract_citations` title index | `WHERE LENGTH(title) >= 8` | 1,661 held titles of 5-7 chars were never candidates at all (广东省公路条例 held 0 citers while sitting in the corpus 4 times) |
 | `build_doc_identity._best_core` | `KEY_MIN = 6` on the folded core | every national statute got NO `instrument_key`, so all copies stayed `instrument_role='unique'` and nothing pooled (found 2026-10-07) |
 | `citation-network-structure.md` Appendix pooling (analysis code, not production) | a 5-char floor on the folded title | 民法典 and 预算法 fold to 3 characters once 中华人民共和国 is stripped, so the memo's own pooled authority statistics never pooled them (found 2026-10-08 during the A1 re-base). Note the resolver's title index is safe here because its `LENGTH(title) >= 5` floor reads the RAW title, 10 characters for 中华人民共和国民法典 |
+
+| `build_doc_identity._best_core` again, on 公告-shaped titles (found 2026-10-09) | `KEY_MIN` on the folded core | **a 商务部公告 does not pool at all.** Five held copies of 商务部公告2026年第11号/第12号 carry five DISTINCT `instrument_id`s (12701728, 12701729, 12704542, 12704543, 12724102), so `instrument_role='unique'` on every copy. Once the normalizer strips the 文号 AND the `公布将20家日本实体列入出口管制管控名单` tail, what is left is under the floor. Consequence measured in `geoeconomic-pressure-instruments.md` §5: an entity count summed over rows read **454** where the deduplicated truth is **338**, because mirrors and news restatements repeat one announcement. The memo works around it with a 文号 parsed from the TITLE; the pooling itself is still broken |
 
 **Rule:** measure a length floor on the string the user wrote, not on the string your
 normalizer produced; or exempt the shapes you know fold short (`法|法典|条例|修正案`) with an
