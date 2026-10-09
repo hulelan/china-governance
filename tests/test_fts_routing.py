@@ -98,6 +98,49 @@ class Routing(unittest.TestCase):
         self.assertIn("build_search_index", str(cm.exception))
 
 
+class ThirdBlindSpot(unittest.TestCase):
+    """A short term jieba does not treat as a word is invisible to BOTH indexes.
+
+    Measured on the live corpus 2026-10-09: 约谈 is 2 characters (so the trigram
+    index cannot match it) and is not a jieba token (so the segmented index cannot
+    either), yet LIKE finds it in 116 titles. 问责 is also 2 characters and DOES
+    tokenize, returning 4,266 — so term length alone does not predict this.
+    A routed zero therefore has to be diagnosed, not trusted.
+    """
+
+    def _db_with_docs(self):
+        c = _db()
+        c.executescript("""
+            CREATE TABLE documents(id INTEGER PRIMARY KEY, title TEXT, body_text_cn TEXT);
+            INSERT INTO documents VALUES (1, '关于开展环保约谈工作的通知', '约谈内容');
+            INSERT INTO documents VALUES (2, '问责办法', '问责');
+        """)
+        # 约谈 is present in the title but NOT a token in the seg index
+        c.commit()
+        return c
+
+    def test_like_count_sees_what_both_indexes_miss(self):
+        c = self._db_with_docs()
+        self.assertEqual(fts.like_count(c, "约谈"), 1)
+        ids, idx = fts.term_ids(c, "约谈")
+        self.assertEqual(ids, set(), "the fixture's seg index has no 约谈 token")
+        self.assertEqual(idx, fts.SEGMENTED)
+
+    def test_diagnose_zero_separates_unmatchable_from_absent(self):
+        c = self._db_with_docs()
+        unmatchable = fts.diagnose_zero(c, "约谈")
+        self.assertIn("NOT absent", unmatchable)
+        self.assertIn("116" if False else "1", unmatchable)   # the fixture has 1
+        absent = fts.diagnose_zero(c, "完全不存在的词")
+        self.assertIn("absent:", absent)
+        self.assertNotIn("NOT absent", absent)
+
+    def test_like_count_rejects_an_arbitrary_column(self):
+        c = self._db_with_docs()
+        with self.assertRaises(ValueError):
+            fts.like_count(c, "约谈", column="site_key")
+
+
 class Comparisons(unittest.TestCase):
     def test_counts_carry_the_index_so_a_blind_zero_is_visible(self):
         c = _db()

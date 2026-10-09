@@ -7,7 +7,8 @@ THE BUG THIS EXISTS TO PREVENT, six times in one session (2026-10-08/09):
 to a different class of term:
 
   doc_search      tokenize='trigram'   -> cannot match fewer than 3 characters
-  doc_search_seg  jieba-segmented      -> cannot match a compound that jieba splits
+  doc_search_seg  jieba-segmented      -> cannot match a compound that jieba splits,
+                                          NOR a short term jieba does not treat as a word
 
 Both failures return a clean **0** rather than an error, so a wrong index does not
 look wrong. Measured on the live corpus:
@@ -16,6 +17,8 @@ look wrong. Measured on the live corpus:
   李强            trigram 0        seg 1,614
   跨境人民币       trigram 587      seg 0        (jieba splits it: 跨境 + 人民币)
   耐心资本         trigram 504      seg 0
+  约谈            trigram 0        seg 0        (2 chars AND not a jieba token --
+                                                 invisible to BOTH; LIKE finds 116 titles)
 
 AND IT CAN REVERSE A COMPARISON, which is worse than hiding a count. Asking
 whether the 尽职免责 blame-shield belongs to lending or to funds, a trigram-only
@@ -78,6 +81,35 @@ def term_ids(conn, term: str, *, index: str = None) -> tuple[set, str]:
         raise
 
 
+def like_count(conn, term: str, *, column: str = "title") -> int:
+    """How many rows contain `term` by LIKE. No length floor and no tokenizer, so
+    this sees what both FTS indexes can miss -- at the cost of a scan.
+
+    Needed because a short term jieba does not treat as a word is invisible to
+    BOTH indexes: 约谈 is 2 chars (so trigram cannot match it) and is not a jieba
+    token (so the segmented index cannot either), yet it is in 116 titles.
+    """
+    if column not in ("title", "body_text_cn"):
+        raise ValueError("column must be 'title' or 'body_text_cn'")
+    return conn.execute(
+        f"SELECT COUNT(*) FROM documents WHERE {column} LIKE ?", (f"%{term}%",)
+    ).fetchone()[0]
+
+
+def diagnose_zero(conn, term: str) -> str:
+    """Explain a zero: is the term absent, or merely unmatchable?
+
+    A clean 0 from the routed index is the dangerous case, so turn it into a
+    verdict instead of leaving it to the reader.
+    """
+    n_title = like_count(conn, term)
+    if n_title:
+        return (f"NOT absent: LIKE finds {n_title:,} titles. {term!r} is "
+                f"unmatchable in both indexes (too short for trigram, not a jieba "
+                f"token for seg) — use like_count(), and expect a scan.")
+    return f"absent: LIKE finds 0 titles either, so the 0 is real."
+
+
 def term_counts(conn, terms) -> list[tuple]:
     """[(term, n_docs, index), …] in the order given. Print the index: a reader
     who cannot see which index answered cannot tell a real 0 from a blind one."""
@@ -93,8 +125,9 @@ def report(conn, terms, *, file=None) -> list[tuple]:
     rows = term_counts(conn, terms)
     width = max((len(t) for t, _n, _i in rows), default=4)
     for t, n, idx in rows:
-        flag = "   <- zero: real, or is the term in the wrong register?" if n == 0 else ""
-        print(f"  {t:<{width}}  {n:>8,}  [{idx}]{flag}", file=file)
+        print(f"  {t:<{width}}  {n:>8,}  [{idx}]", file=file)
+        if n == 0:
+            print(f"  {'':<{width}}  {'':>8}  -> {diagnose_zero(conn, t)}", file=file)
     return rows
 
 

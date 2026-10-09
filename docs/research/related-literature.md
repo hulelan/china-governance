@@ -194,6 +194,27 @@ already hold:
   `recentralization-experimentation.md`: authority-borrowing by NAME did not revert after 2017,
   while borrowing by CITATION did.
 
+**Two papers added to the map 2026-10-09** (searched for work postdating this list rather than
+re-checking it):
+
+- **Bureaucratic Incentives and Effectiveness of the One Child Policy in China** (Li, Meng, Miller,
+  Yang), **NBER w33741**, May 2025. Built on the **一票否决 "One Vote Veto"** rule — promotion
+  strictly barred for missing a target — arguing that enforcement, not the policy's content, is what
+  made it bite. **Corpus fit: A, and feasibility is measured.** 一票否决 appears in **1,019**
+  documents, inside a dense accountability lexicon: 责任追究 6,101, 绩效考核 5,598, 问责 4,266,
+  目标责任 3,109, 挂牌督办 1,520, 党政同责 1,408, 考核问责 400, 终身追责 100, 军令状 94. The paper
+  studies the veto's effect on **one** policy; the document record can ask the complementary
+  question — **which targets carry a veto, from when, and at what level** — i.e. how a
+  promotion-blocking device spread across policy domains. That is the same shape as the
+  `local-legislative-devolution` and 出口管制 findings: a named institutional device with a
+  documentary footprint.
+- **Mining Chinese Historical Sources At Scale: A Machine-Learning Approach to Qing State Capacity**
+  (Keller, Shiue, Yan), **NBER w32982**, 2024. **Method comparator, not a replication target** — its
+  corpus is Qing-era and ours begins in the 1980s. Kept because its measurement question is
+  identical to ours (can state capacity be read off the documentary record at scale?) and because it
+  is the only NBER entry here whose method is text-as-data on Chinese *sources* rather than on
+  firm or trade panels.
+
 **All seven "run now" items now have memos.**
 
 NBER papers in §10 never attempted, with the blocker for each: **w29466 AI-tocracy** and
