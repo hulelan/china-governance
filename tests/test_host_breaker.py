@@ -86,6 +86,39 @@ def test_https_and_http_of_one_host_share_a_count():
     assert b.is_open(A) is True
 
 
+def test_the_progress_guard_survives():
+    """`0 % 25 == 0` is TRUE, so the `processed and` guard is load-bearing.
+
+    Without it the progress line fires on every row before anything is processed.
+    Measured 2026-10-09: combined with a misplaced `continue` it printed 277 KB of
+    identical lines and silently skipped 3,654 of 4,164 rows.
+    """
+    src = (ROOT / "scripts" / "extract_pdf_text.py").read_text(encoding="utf-8")
+    assert "if processed and processed % 25 == 0:" in src, (
+        "the zero-guard on the progress condition is gone; `0 % 25 == 0` is True")
+
+
+def test_there_is_exactly_one_progress_print_site():
+    """The duplication is what let the indentation bug hide.
+
+    Three inline copies of the progress block meant an 8-space anchor
+    `"        processed += 1\n"` could match as a SUBSTRING of the 12-space line
+    inside the breaker block, split it, and steal its `continue` — with no single
+    place to notice. One `_progress()` helper, called from each site.
+    """
+    src = (ROOT / "scripts" / "extract_pdf_text.py").read_text(encoding="utf-8")
+    assert src.count('print(f"  Progress:') == 1, (
+        "more than one progress print site; route them through _progress()")
+    assert src.count("_progress()") >= 4, (
+        "expected the helper plus at least three call sites")
+
+
+def test_zero_modulo_is_why_the_guard_exists():
+    """The arithmetic fact itself, so the reason is readable without the history."""
+    assert 0 % 25 == 0
+    assert not (0 and 0 % 25 == 0)
+
+
 if __name__ == "__main__":
     for fn in list(globals().values()):
         if callable(fn) and getattr(fn, "__name__", "").startswith("test_"):

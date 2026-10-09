@@ -408,6 +408,25 @@ def main():
         return
 
     breaker = HostBreaker()
+
+    def _progress():
+        """Print progress every 25 PROCESSED rows.
+
+        `processed and` is load-bearing: `0 % 25 == 0` is TRUE, so without it this
+        fires on every row before anything has been processed.
+
+        One helper rather than three inline copies, because the duplication is what
+        let an indentation bug hide: an 8-space anchor `"        processed += 1\n"`
+        matched as a SUBSTRING of the 12-space line inside the breaker block, split
+        that block, and stole its `continue`. Combined with the 0 % 25 case it printed
+        277 KB of identical lines and silently skipped 3,654 of 4,164 rows
+        (2026-10-09). Nothing was corrupted; rows were dropped.
+        """
+        if processed and processed % 25 == 0:
+            print(f"  Progress: {processed}/{len(rows)} processed, {extracted} "
+                  f"extracted, {scanned} scanned, {errors} errors, {skipped} skipped"
+                  + (f" | hosts tripped: {', '.join(breaker.report())}"
+                     if breaker.report() else ""))
     processed = 0
     extracted = 0
     scanned = 0
@@ -466,19 +485,11 @@ def main():
             attach_url = urljoin(url, attach_url)
 
         if breaker.is_open(attach_url):
-            # This host has failed HOST_FAIL_LIMIT times in a row; do not pay another
-            # full timeout for it. See HostBreaker.
+            # This host has failed HOST_FAIL_LIMIT consecutive times; do not pay
+            # another full timeout for it. See HostBreaker.
             skipped += 1
             processed += 1
-        # Unconditional: the progress line used to live inside `if text:`, so a
-        # run that extracted nothing printed nothing and looked hung. Measured
-        # 2026-10-09: 27 minutes, 23 s CPU, one ESTAB socket, zero output.
-        if processed % 25 == 0:
-            print(f"  Progress: {processed}/{len(rows)} processed, {extracted} "
-                  f"extracted, {scanned} scanned, {errors} errors, "
-                  f"{skipped} skipped" +
-                  (f" | hosts tripped: {', '.join(breaker.report())}"
-                   if breaker.report() else ""))
+            _progress()
             continue
 
         data = download_attachment(attach_url, base_url)
@@ -486,12 +497,7 @@ def main():
         if not data:
             errors += 1
             processed += 1
-            if processed % 25 == 0:
-                print(f"  Progress: {processed}/{len(rows)} processed, {extracted} "
-                      f"extracted, {scanned} scanned, {errors} errors, "
-                      f"{skipped} skipped" +
-                      (f" | hosts tripped: {', '.join(breaker.report())}"
-                       if breaker.report() else ""))
+            _progress()
             continue
 
         # Detect actual format from magic bytes (overrides extension guess)
@@ -533,6 +539,7 @@ def main():
             scanned += 1
 
         processed += 1
+        _progress()
         time.sleep(0.5)  # Be polite
 
     conn.commit()
