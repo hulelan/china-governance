@@ -4517,3 +4517,68 @@ Robustness note: `instrument_role` is **feature-detected**, not assumed. This bu
 nightly, so an older `doc_identity` lacking that column must degrade to plain earliest-dated rather
 than abort Phase 2c. An existing fixture caught it; a new explicit test pins it. 316 → **322 tests**.
 
+---
+
+## Iteration 125 — found the NBER paper the new data speaks to, then made three errors measuring it
+
+The standing ask is NBER replications *and* trackers, and the UEL series I unlocked last tick is
+novel research rather than a replication — so instead of building a tracker that floats free, I
+searched for NBER work it answers to. **NBER w34020 "Geoeconomic Pressure"** (Clayton, Coppola,
+Maggiori & Schreger, July 2025) is a direct methodological comparator: it uses LLMs over large
+textual corpora to classify pressure episodes by **sender, target, instrument and named firms**, and
+then quantifies its own classification uncertainty across open-weight models and prompt variants.
+Theory companion **w33309** added too. **Both verified from the NBER pages rather than a search
+snippet.**
+
+Their unit of analysis is what we hold for one of the two principals, as **primary instruments**
+rather than news-inferred episodes — a 商务部公告 carries its date, 文号, named firms and an attached
+justification. Their classifier variance is therefore absent, and a different limit applies: an
+instrument is not an economic effect, and we hold none of their firm-level outcomes. **Complement,
+stated as such in the memo's first section**, the same relationship `related-literature.md` already
+draws for AI-tocracy.
+
+**The design point, found by nearly getting it wrong.** A naive extractor over 161 candidates
+reports **278 US entities AND 196 Chinese AND 220 Japanese** — numbers that cannot be summed,
+because Chinese documents also **record foreign measures against Chinese firms**
+(`美国在出口管制"实体清单"中增列40个实体`) and some are plain explainers of the US regime. I was one
+step from adding 美国 278 and 中国 196 as if both were targets of Chinese pressure. Classifying the
+**sender first** gives 57 outbound instruments against 10 inbound — but **37 of 49 inbound documents
+are spokesperson justifications**, which is not a coverage artifact: the issuing state's archive
+holds its own actions as documents and others' actions as commentary on them.
+
+**Result: 338 entities across 28 distinct outbound instruments** — 美国 151 / 日本 120 / 欧盟 49 /
+台湾地区 8, so **81% US-plus-Japan**, consistent with w34020's mutual-pressure finding and adding
+Japan as a clear second target. Plus the UEL pairing: **17 of 22 instruments pair with a
+justification inside 21 days, median lag 0, 71% same-day or next-day** — the explanation ships WITH
+the instrument, unlike the campaign documents where 解读 trails for weeks.
+
+**Three errors inside one piece of work, all kept in the memo rather than quietly fixed.**
+
+1. **The candidate set was contaminated by a term borrowed by unrelated fields.** 反制设备 is
+   counter-DRONE hardware standards (`民用无人驾驶航空器探测反制设备唯一识别码`), 关注名单 is also a
+   Shenzhen soil-conservation watch list, and guancha op-eds carry 反制 in a byline. 22 dropped.
+   Same shape as the resolver's `ORG_TAIL` false positives this morning — and what caught it was
+   **reading the classifier's "none" bucket instead of its counts.**
+2. **I broke an invariant I had written in my own comment.** I hoisted the foreign-actor test above
+   the masthead test; FOREIGN_ACTOR fires on a country appearing in the TARGET phrase of a Chinese
+   instrument (`…将斯凯迪奥公司等11家美国企业列入…` contains `美国企业列入`), so 37 Chinese
+   instruments were reclassified inbound and outbound collapsed **52 → 15**. The comment now says
+   the order is load-bearing and why.
+3. **Entity counts were summed over document ROWS — the THIRD instance today** of summing a
+   per-instrument quantity over copies, after the tracker's `text_median` (one document counted 62
+   times) and `doc_inbound` (weight split across copies). 454 → **338** once deduplicated.
+
+**And the cause of (3) is a new instance of a documented family — the fifth length-floor bug.**
+`doc_identity` does **not** pool these instruments: five held copies of 商务部公告2026年第11号/第12号
+carry five DISTINCT `instrument_id`s (12701728, 12701729, 12704542, 12704543, 12724102), so
+`instrument_role='unique'` on every copy, because stripping the 文号 and the
+`公布将20家日本实体列入出口管制管控名单` tail leaves a core under `_best_core`'s `KEY_MIN`. Recorded
+in CLAUDE.md's length-floor table with its measured consequence. The memo works around it with a
+文号 parsed from the TITLE and does not depend on the pooling being fixed — but the pooling IS
+broken for 公告-shaped titles, which is now the next real piece of work.
+
+**Pleasing convergence worth noting:** the dedup infrastructure that fixes (3) is
+`doc_identity.instrument_id`, which I spent the previous iteration pooling citation weight onto.
+The tool built chasing an unrelated defect was the cure for this one — except that it is itself
+broken for exactly this title shape, which is how the fifth length-floor instance surfaced.
+
