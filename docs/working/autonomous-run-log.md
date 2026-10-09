@@ -4683,3 +4683,48 @@ the Python body fed the commit message to `python3 -` and it died on
 `SyntaxError: invalid binary literal` at `0b1ff96`. The gate meant nothing was written; the fix is
 one heredoc per command.
 
+---
+
+## Iteration 128 — finished the re-base sweep, and found the one number that actually moved
+
+Continued re-basing the memos exposed to the pooling change (10,165 same-site duplicates pooled).
+`successor-detector.md` was next because it **collapses mirrors on `instrument_id` by design** —
+the memo says so in its method — and `instrument-lifespan.md` quotes a succession edge count I had
+invalidated by rebuilding that table. Both re-run with their **own documented commands**.
+
+**`successor-detector.md` — headline survives, slightly strengthens.**
+
+| | memo 2026-10-06 | re-based |
+|---|---|---|
+| pilot universe | 1,271 | **1,244** |
+| successors | 75 | **78** |
+| rate | 5.9% | **6.3%** |
+| ex-mid-flight | 71/1,032 = 6.9% | **73/1,003 = 7.3%** |
+| median lag | **564 d** | **652.5 d** |
+
+The universe SHRANK as duplicate pilots collapsed, which is the fix working. Still five to fifteen
+times the §3b proxy's 0.4-1.2%. Hand-check precision re-ran at **76.0% strict / 86.7% lenient**,
+inside the published 75-85% / 85-95% band, and the qualitative finding replicated **verbatim**:
+among the 12 substantive mature no-successor pilots a successor exists for **9 (75.0%)**.
+
+**But the median lag moved +16%, and that is the real correction of the sweep.** 564 → 652.5 d, new
+quartiles p25 295 / median 652.5 / p75 1306. **A rate can hold while the distribution behind it
+shifts** — pooling removed duplicate pilots and the removed ones were disproportionately short-lag,
+leaving the longer. So wherever the memo compares the detector's lag to the proxy's 738-1,070 d, the
+gap is narrower than published. Nothing in "the rate held" would have told a reader that; it needed
+the distribution re-read, not just the headline.
+
+**`instrument-lifespan.md` — scope identical, one relation moved.** Still 11,450 `sz_gazette`
+documents / 11,204 with body; `revised_edition` 1,050 → 1,048 and `renamed` 49 → 49. But
+`superseded_by_stated` went **374 → 499 (+33%)**, sz_gazette predecessor edges 1,476 → **1,599**,
+total edges 14,624 → **14,985**. That relation is built from body 废止 sentences that NAME a
+predecessor, so pooling made 125 more named predecessors resolvable to a held instrument — the
+pooling working, not a defect. The memo now says to read its repeal-linkage figures as a **floor**
+at the published numbers.
+
+**The sweep's shape, across three memos:** `fidelity-provincial` robust (relay ratio 10.3x → 10.1x),
+`successor-detector` robust in rate but **+16% on the lag**, `instrument-lifespan` unchanged in scope
+with **+33% on one relation**. Two of the three moves are the pooling improving linkage rather than
+disturbing a finding, and in every case the number that moved was one a reader could not have
+predicted from the headline that did not.
+
