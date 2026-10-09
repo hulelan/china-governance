@@ -24,6 +24,25 @@ reading of a measured pattern.
 
 ### 1.1 What already existed
 
+*(**Re-based 2026-10-09** after the instrument-pooling change — a shared numbered 文号 now
+overrides the two-site guard, pooling 10,165 same-site duplicates, so `instrument_succession` was
+rebuilt. The scope is **unchanged** (still 11,450 `sz_gazette` documents, 11,204 with body) and so
+are two of the three relation counts, but one moved materially:*
+
+| | memo | re-based |
+|---|---|---|
+| succession edges, all | 14,624 | **14,985** |
+| edges with an `sz_gazette` predecessor | 1,476 | **1,599** |
+| `revised_edition` | 1,050 | 1,048 |
+| **`superseded_by_stated`** | **374** | **499 (+33%)** |
+| `renamed` | 49 | 49 |
+| `pilot_to_national` | 3 | 3 |
+
+*The `superseded_by_stated` rise is the pooling working rather than a problem: that relation is
+built from body 废止 sentences that NAME a predecessor, so pooling made 125 more of those named
+predecessors resolvable to a held instrument. Read the repeal-linkage figures below as a **floor**
+at the published numbers.)*
+
 `instrument_succession` holds 14,624 instrument-to-instrument edges on the droplet. 1,476 of them have a
 `sz_gazette` predecessor: 1,050 `revised_edition`, 374 `superseded_by_stated`, 49 `renamed`, 3
 `pilot_to_national`. Only the `superseded_by_stated` class is a repeal: a successor's body naming the

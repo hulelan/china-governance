@@ -39,6 +39,22 @@ inference rests on 12 hand-read cases and is stated as a range, not a point.
 
 **Pilot.** A document with `admin_level_doc='central'`, `genre='promulgation'`,
 `date_quality='good'`, dated 2000-2026, whose title carries 试点 | 试验区 | 先行先试 |
+*(**Re-based 2026-10-09**, because this memo collapses mirrors on `instrument_id` and
+`build_doc_identity` then gained a rule letting a shared numbered 文号 override the two-site
+pooling guard — pooling 10,165 same-site duplicate documents. **The headline survives and
+slightly strengthens.** The pilot universe SHRANK 1,271 → **1,244** as duplicate pilots
+collapsed, which is the fix working; successors rose 75 → **78**, the rate 5.9% → **6.3%**, and
+ex-mid-flight 6.9% → **7.3%**. Still five to fifteen times the §3b proxy's 0.4-1.2%. Hand-check
+precision re-ran at **76.0% strict / 86.7% lenient**, inside the published 75-85% / 85-95% band,
+and the qualitative finding replicated verbatim — among the 12 substantive mature no-successor
+pilots, a successor exists in the corpus for **9 (75.0%)**.*
+
+***But the median lag moved 564 → 652.5 days, +16%, and that is a real correction.*** *A rate can
+hold while the distribution behind it shifts: pooling removed duplicate pilots, and the ones it
+removed were disproportionately short-lag, leaving the longer ones. Quartiles on the new build are
+p25 295 / median 652.5 / p75 1306 d, with 59.0% at or under 820 d. Anywhere this memo compares the
+detector's lag to the proxy's 738-1,070 d, the gap is narrower than published.)*
+
 示范区. Mirrors collapse on `instrument_id` (the gov republish of a ministry notice is
 one instrument).
 
@@ -79,6 +95,7 @@ horizon). 239 of 1,271 pilots.
 | Wang & Yang (1980-2020, hand-coded) | 633 experiments | 341 | **53.9%** | n/a | mean duration 2.25 y (~820 d) |
 | Memo §3b title-family proxy | 1,296 themes | 5-16 | 0.4-1.2% | n/a | 738-1,070 d |
 | **Detector, all pilots** | 1,271 | **75** | **5.9%** | 71 / 1,032 = **6.9%** | **564 d** |
+| *Re-based 2026-10-09 after instrument pooling* | *1,244* | ***78*** | ***6.3%*** | *73 / 1,003 = **7.3%*** | ***652.5 d*** |
 | strict core-match only (exact / containment) | 1,271 | 50 | 3.9% | 46 / 1,032 = 4.5% | 615 d |
 | + citation channel (cites the pilot, carries a cue) | 1,271 | 85 | 6.7% | 81 / 1,032 = 7.8% | 564 d |
 | **试点-cued trials, no zone names** | 872 | **70** | **8.0%** | 66 / 696 = **9.5%** | 606 d |
