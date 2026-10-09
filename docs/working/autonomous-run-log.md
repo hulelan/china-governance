@@ -5014,3 +5014,46 @@ trajectory**, and the honest framing was "stalled in a bad stretch, recovery tim
 EQUALS what you expect rather than searching for it, rewrite regions whole, and treat duplication as
 the thing that lets such a bug hide.
 
+---
+
+## Iteration 136 — the PBC backfill lands, and the sampling lesson bites a third time
+
+**PBC historical backfill finished and merged.** 6,099 staged → **6,068 new documents** (31
+duplicates, the 条法司 rows already held). Corpus **348,662 → 354,730**. The fixed cap logic is what
+made it possible: 5,558 沟通交流 documents listed against **494** under the old
+`min(max_pages, cap)`.
+
+**The circuit breaker works.** The extraction log reads
+`hosts tripped: hrss.sz.gov.cn` — 8 consecutive failures, so it stopped paying a 30 s timeout per
+document for a host that had gone unresponsive mid-run (it had extracted 2 of 4 in the earlier
+sample, so this is a host that *went* down, not one that was always down).
+
+**And the sampling lesson bit for the THIRD time today, the same way.** The run reports **400
+processed, 346 scanned, 0 extracted — 86.5% scanned**, the exact inverse of my 7-site sample's 86%
+*extracted*. The sample was `--limit 4` per site: **28 documents standing in for 4,164**, taken in
+id order, and the text-bearing PDFs were concentrated early and have already been harvested
+(~2,393 enriched). Realistic remaining yield is ~14% of 3,764 ≈ **500 more**, not ~3,200.
+
+That is the same trap as the unordered `LIMIT 4000` that gave me a false 68.8% this morning and my
+own `raw_html` audit whose 87.6% measured the average SITE rather than the average row. **`--limit N`
+without `ORDER BY RANDOM()` is not a sample**, and I have now paid for that three times in one day.
+
+**Closed a real gap in the contention guard.** CLAUDE.md says `busy_timeout` "was audited on every
+connection in `crawlers/` and `scripts/`" — true as history, but the automated scan only globs
+`crawlers/*.py`, so a NEW unprotected connection in a pipeline script would never be caught. The
+scan is now extended to the flat `scripts/*.py`, AST-based, with three stated exemptions (a
+`timeout=` kwarg, a read-only `mode=ro` URI, and `officials.db`). `scripts/rnd/**` is deliberately
+out of scope: `rglob` flagged 8 rnd/ files and nothing in the pipeline, and those are hand-run
+one-offs where a lock error reaches the operator immediately. 361 → **362 tests**.
+
+**Two false alarms of mine, both corrected in the same pass.** I worried `merge_db.py` lacked a busy
+timeout before running a 6,068-row merge against a live writer. It is protected on **both** sides —
+`sqlite3.connect(..., timeout=30)` IS the busy handler, and the target comes from `init_db()`. My
+grep for the string `busy_timeout` missed the kwarg idiom. Then my ad-hoc audit script *also*
+reported it unprotected, because its regex `\([^)]*\)` cannot handle nested parens and truncated
+`connect(str(source_path), timeout=30)` at the inner `)`. **The new test is AST-based for exactly
+that reason** — a regex cannot read Python call syntax.
+
+Citations, scores, identity and the search index for the 6,068 merged rows come with tonight's
+nightly, which regenerates them in order.
+
