@@ -62,6 +62,17 @@ tell a fix from a regression:
   the demand list was wrong about what PBC publishes** — the more interesting outcome.
 - **P5**: the instrument-pooling gap (11,891 families / 28,225 documents inside the 400d window)
   either collapses (it was staleness) or holds (a real defect worth real work).
+- **P7**: the body-tail trim removes **~195 resolved edges** whose reference text occurs *only*
+  inside a 相关链接 / 上一篇 tail (368 edges on 319 documents, measured read-only 2026-10-09). These
+  are spurious by construction — the reference exists nowhere in the document's real text.
+
+**The single most likely misreading of this window.** P1 (~4,570), P6 (~391) and P7 (~195) are all
+precision fixes that *remove* edges, and if the window is used they land in **one** rebuild:
+**≈5,156 fewer resolved edges**, resolution 52.97% → ≈52.1%. Every previous resolution change in
+this project was an **increase**, so seeing ~5,100 edges vanish will look like a regression and is
+not one. And P4 (the PBC backfill) *raises* resolution in the same window, partially offsetting
+them — so **the net resolution number is not interpretable at all.** Check each fix by its own named
+test, never by the total.
 
 ## If the window is missed
 

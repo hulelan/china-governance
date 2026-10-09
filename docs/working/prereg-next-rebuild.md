@@ -117,6 +117,42 @@ This lands in the same rebuild as Prediction 1 (the org-stub gate, ~4,570 edges)
 falls add**: expect resolution to drop by roughly 4,960 edges in total, not 4,570. Do not read
 either number alone.
 
+## Prediction 7 — the body-tail trim removes ~195 RESOLVED citation edges
+
+Measured by `trim_body_tails.py --dry-run --no-reextract` on the live DB, 2026-10-09 (read-only).
+The trim's headline justification is not tidiness: a 相关链接 / 上一篇 tail holds **other
+documents' titles**, which the citation extractor reads as references. Quantified:
+
+> Outbound citation edges whose reference text occurs **ONLY** inside the tail:
+> **368 edges on 319 documents** — formal 5 resolved / 7 unresolved, llm 106 / 60,
+> named 84 / 106.
+
+- **~195 resolved edges should disappear** (5 + 106 + 84) at the citations rebuild **after** the
+  trim is applied, plus ~173 unresolved refs leaving the queue.
+- These are **spurious by construction** — the reference exists nowhere in the document's real
+  text — so their removal is a precision gain, not a loss, and it is the third fall in a row.
+- **A rise falsifies it.** Trimming cannot create references.
+
+### Reading the three falls together
+
+P1 (org-stub gate, ~4,570), P6 (instance-title denylist, ~391) and P7 (tail trim, ~195) are all
+**precision fixes that remove edges**, and if the window in `write-window-plan.md` is used they land
+in **one** rebuild:
+
+| fix | resolved edges removed |
+|---|---|
+| P1 org-stub containment gate | ~4,570 |
+| P6 instance-title denylist | ~391 |
+| P7 body-tail trim | ~195 |
+| **expected total** | **≈5,156** |
+
+Against a 310,136 baseline that is resolution **52.97% → ≈52.1%**. **Every previous resolution
+change in this project was an increase**, so the single most likely misreading of the next rebuild
+is to see ~5,100 fewer resolved edges and call it a regression. It is three precision fixes landing
+together. P4 (the PBC backfill, which should *raise* resolution) lands in the same window and
+partially offsets them, so **the net number is not interpretable at all** — only the per-fix checks
+below are.
+
 ## Prediction 5 — how much of the instrument-pooling gap is staleness
 
 Measured on the live (stale) `doc_identity`, 2026-10-08, before the rebuild
