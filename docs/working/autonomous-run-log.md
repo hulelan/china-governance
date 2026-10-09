@@ -3663,3 +3663,38 @@ audit than by the six failures that prompted it.
 
 Recorded in CLAUDE.md beside the trap row, including the LIKE-has-no-floor distinction, so the next
 audit of this kind is bounded in one line instead of extracting 173 candidates.
+
+---
+
+## Iteration 106 — the AI-tocracy line: checked feasibility instead of asserting a blocker
+
+`related-literature.md` had recorded w29466 / w27723 as blocked on "procurement contracts and
+protest data". That was a reasonable claim and it had never been **measured**, so this tick measured
+it — and the answer is more useful than the assertion.
+
+**The causal chain is genuinely out of reach**, now with numbers: `政府采购` ∩ `视频监控` is **285**
+documents (2.9% of 9,664), ∩ `人脸识别` **52**, ∩ `雪亮工程` **29**, and none carry contract values
+or vendor names, which is the paper's unit of analysis. No protest data at all. So the blocker
+stands — but it is now a measured bound rather than an intuition.
+
+**And the deployment half is reachable, which the note did not say.** 视频监控 **2,116** documents,
+智慧城市 2,391, 技防 911, 社会治安防控 644, 人脸识别 578, 雪亮工程 **173**, 公共安全视频 171,
+智慧警务 82. That is a **surveillance-deployment diffusion study**, distinct from the three AI memos
+which are about *regulating* AI rather than deploying it.
+
+**Dogfooded the new routing helper and it earned itself immediately:** `技防` is two characters, and
+`fts.py` routed it to the segmented index for **911** documents where a trigram query — the one I
+would have written by hand last week — reports **0**. First use, first catch.
+
+雪亮工程 has a suggestive shape: 3 documents in 2017 (the first central mention is *in passing*,
+inside 国务院办公厅关于县域创新驱动发展的若干意见, forwarded by Heilongjiang ten days later), a local
+burst in 2018 (12 municipal, 4 district), a level **inversion** by 2021 (1 central / 10 district), a
+peak of **43** in 2022, then decline to 7-12.
+
+**I did not report that shape as a finding, and the reason is the discipline this session kept
+earning.** 173 documents across a handful of sites is too thin for the fixed-site panel every series
+on this corpus needs — the same control whose absence reversed a trend's sign in `rmb-coverage.md` —
+and the post-2022 decline has **two readings the counts cannot separate**: the programme winding
+down, versus the programme maturing past the stage that generates policy documents. So it is
+recorded as *a reachable study with its n stated*, so that whoever runs it starts with the panel
+rather than the headline.

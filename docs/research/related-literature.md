@@ -199,6 +199,32 @@ already hold:
 NBER papers in §10 never attempted, with the blocker for each: **w29466 AI-tocracy** and
 **w27723 Data-intensive Innovation** need procurement contracts and protest data (we hold the
 policy half only — `ai-governance-diffusion.md` is the complement, not the replication);
+
+> **Feasibility checked properly, 2026-10-09, rather than asserted.** The AI-tocracy *causal chain*
+> (unrest → AI procurement → suppression + firm innovation) is out of reach: our procurement
+> documents overlap surveillance only thinly — 政府采购 ∩ 视频监控 **285** documents (2.9% of 9,664),
+> ∩ 人脸识别 **52**, ∩ 雪亮工程 **29** — and none carry contract values or vendor names, which is
+> the paper's unit of analysis. No protest data at all.
+>
+> But the **deployment programs are nameable and datable**, which the regulation memos do not cover:
+> 视频监控 **2,116** documents, 智慧城市 2,391, 技防 911 *(2 chars — segmented index; a trigram query
+> reports 0)*, 社会治安防控 644, 人脸识别 578, 雪亮工程 **173**, 公共安全视频 171, 智慧警务 82, and
+> 天网工程 / 平安城市 / 监控探头 in single or double digits. So a **surveillance-deployment diffusion
+> study** is available where the causal replication is not — distinct from the three AI memos, which
+> are about *regulating* AI rather than deploying it.
+>
+> 雪亮工程 looks traceable and has a suggestive shape: 3 documents in 2017 (the first central mention
+> is in passing, in 国务院办公厅关于县域创新驱动发展的若干意见, forwarded by Heilongjiang ten days
+> later), then a local burst in 2018 (12 municipal, 4 district), a level **inversion** by 2021
+> (1 central / 10 district), a peak of 43 in 2022, and decline to 7-12 since.
+>
+> **That shape is NOT reported as a finding, deliberately.** 173 documents across a handful of
+> sites is too thin for the fixed-site panel that every series on this corpus needs
+> (`rmb-coverage.md` §4 trap 3, where an uncontrolled series reversed a trend's sign), and the
+> post-2022 decline has at least two readings that the counts cannot separate — the programme
+> winding down, versus the programme maturing past the stage that generates policy documents. It is
+> recorded here as **a reachable study with its n stated**, so that whoever runs it starts with the
+> panel rather than the headline.
 **w31676 Exporting the Surveillance State** needs trade data; **w32993 Autocracy 2.0** is a
 framework essay with no single replicable estimate. **w32701** is now started (above) and is the
 only one of the five whose missing half we actually hold.
