@@ -4774,3 +4774,44 @@ improving linkage; one is a genuine correction to a published number. In every c
 moved was one a reader could not have predicted from the number that did not — which is the whole
 argument for re-basing rather than assuming.
 
+---
+
+## Iteration 130 — the write-window queue opens, and a prediction made before the evidence comes good
+
+**Second Wuxi merge, done.** `documents_wuxi.db` held 6,533 rows; `merge_db.py --dry-run` and an
+independent URL comparison agreed **exactly** on **1,707** genuinely new documents (4,826 duplicates
+skipped). Corpus **346,955 → 348,662**. 19s.
+
+**And the merge is what made a documented defect testable.** CLAUDE.md's hand-maintained-table entry
+recorded `localized_of` firing on **2 Wuxi pairs against 44 Suzhou**, and reasoned — *before any
+evidence existed* — that a 20x gap was "impossible as a fact about Wuxi and obvious as a fact about
+a 54-name set". The seed was later changed to `geo.CITY_PROVINCE` (354 prefecture-level divisions),
+and this merge supplied the missing documents. With `doc_identity` rebuilt over the new rows:
+
+| | docs | localized | share |
+|---|---|---|---|
+| wuxi (city) | 3,916 | **42** | **1.07%** |
+| wuxi districts | 2,668 | 15 | 0.56% |
+| suzhou | 4,919 | **55** | **1.12%** |
+
+**The two cities now behave identically** — which is what a real fact about municipal re-issuance
+should look like, and what the entry predicted. Province resolution closed as well: **5,840 of 6,584**
+Wuxi documents resolve to `js`, where 1,163 district documents previously had none and were silently
+dropped from every provincial comparison. So `pair-channels.md`'s renaming-channel floor, flagged
+there as "a floor on the TABLE, not on the corpus", is now re-measurable.
+
+**One self-correction inside the same edit.** I bumped the recurring-bug table's count from "Six
+times" to "Seven", then reverted it: **annotating an existing row with its resolution is not adding
+an instance.** Caught in the same pass rather than left to mislead a future reader.
+
+**Next queue item is gated on a measurement this session already changed.** The body-tail trim's
+open question says to run it WITH re-extraction, not `--no-reextract`. But iteration 124 established
+that the raw-HTML mirror **begins 2026-06-08**, the droplet-migration date — so re-extraction can
+only reach post-migration documents, and for anything older it will silently find nothing and fall
+through. That constraint did not exist when the open question was written, and it has to be measured
+before the trim runs: a dry-run is in flight (it scans bodies, so it exceeded a 600s foreground
+window and moved to background).
+
+Citations, scores and the segmented search index for the merged rows come with tonight's nightly,
+which regenerates them in the correct order — `merge_db.py` deliberately does not merge citations.
+
