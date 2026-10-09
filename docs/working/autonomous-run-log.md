@@ -4448,3 +4448,72 @@ the detail that proved the substitution was single-byte and not our U+FFFD decod
 
 310 → **316 tests**. Deployed; `/research/export-control-regime` serves 200 in 0.14s.
 
+---
+
+## Iteration 124 — answered my own open question, and it cost me two measurement errors
+
+**Ran the cheap check I had logged last tick** (sampled `os.path.exists` over `raw_html_path` by
+site) and the answer is worse than the question implied. **171,777 HTML files on disk against
+289,168 rows claiming a path**, and whole sites at **0/40**: szdp (8,616 rows), jieyang (5,861),
+zhongshan (5,125), suzhou 1/40, mofcom 2/40, sh 4/40.
+
+**The diagnosis is complete and clean: the mirror begins 2026-06-08** — the droplet-migration date
+— and **no file predates it** (7,717 files in June, 42,768 July, 52,566 August, 37,388 September,
+31,338 October). The raw-HTML mirror was never copied from the Mac, and the Mac copy was deleted.
+So every document crawled before the migration has a dangling pointer, and
+`backfill_from_html.py` / `redate_from_html.py` / `trim_body_tails.py --apply` can only reach
+post-migration documents. A **minority** of the dangling is misnaming (`sh` records
+`raw_html/sh/6459.html` for id 12691777 — a pre-`store_document` local id, which is what I had
+guessed for mofcom); the **majority is simple absence**, with the path scheme matching and the file
+just not there.
+
+**My own audit instrument had the denominator bug it exists to catch.** The headline "87.6% exist"
+samples up to 40 rows PER SITE, so it measures "the average site is 87.6% intact", not "87.6% of
+rows are intact". The per-site breakdown is the real shape.
+
+**Then the memo limitation I set out to fix turned out to have the wrong cause.** I had written that
+两用物项出口管制条例 "cannot appear in its own time series". Checking every copy: the instrument IS
+dated (npc canonical 2024-09-29) and `instrument_id` pools all five copies correctly. The real
+defect is that **`doc_inbound` is per DOCUMENT**, so its 107 citations landed on an UNDATED gov
+mirror while the dated canonical read inbound 0. The weight and the date both exist, never on the
+same row.
+
+**Corpus-wide: 22,214 of 44,364 cited documents are undated, carrying 120,361 of 270,695 citations
+— 44.5% of ALL citation weight.** Affected documents are major (城市、镇控制性详细规划编制审批办法
+918, 中国共产党纪律处分条例 488, 粤港澳大湾区发展规划纲要 389). **Checked, not assumed:
+`build_diffusion_events` is fine** — the AI+ anchor is itself `date_written=0` yet carries 228
+events with lags 2-408 d and zero nulls, so the matcher already resolves a date; the exposure is
+`doc_inbound` / `citation_rank` / ad-hoc analysis.
+
+**Shipped the half that infers nothing**: `instrument_inbound`, built inside `build_site_stats.py`
+(3.5s, therefore already nightly via Phase 2c). **Date-readable citations 150,299 (55.5%) →
+168,961 (64.5%), +18,662**, and **8,871 pool-level self-citations removed** — a mirror citing its
+own sibling, which no per-document table can detect because `source_id != target_id` holds for
+every such edge. The concrete case: 政府信息公开条例 pools **19 copies** and shows 1,907 pooled
+inbound against 2,143 on its canonical alone, so **236 of its apparent citers (~11%) were its own
+mirrors**.
+
+**Deliberately did NOT overwrite `date_written` from `date_published`.** They agree 83.1% exactly
+and 92.7% within 7 days over 229,208 pairs, but the gap is a **site convention** (npc/stdaily/
+guancha/bj/miit/xinhua/js all 100% within ±1; `gd` median −3 with 46%) and p1 is **−1,802 days**
+where archives post years after issuance. They are different quantities — posting versus issuance —
+so the design is a derived `date_effective`/`date_source` in `doc_identity` that an analysis opts
+into. Designed, not built.
+
+**Two measurement errors of my own, both now in CLAUDE.md because both will recur.**
+
+1. **An INTEGER 0 counts as "present" against `''`.** `display_publish_time` is
+   `typeof='integer'` on all 116,281 undated rows and integer **0** on 104,776, and SQLite's type
+   ordering makes `0 != ''` TRUE. SQL claimed 116,281 recoverable rows; Python, where `0` is falsy,
+   said **106,732**. Python was right. Sibling of the documented double-quote trap, same cause:
+   SQLite answering a different question cleanly.
+2. **An unordered `LIMIT` is not a sample.** `LIMIT 4000` with no `ORDER BY` gave **68.8%**
+   date agreement and read as "date_published is unreliable"; the full 229,208 pairs agree
+   **83.1%**. SQLite returned rowid order, a slice dominated by low-id sites where `gd` runs at
+   median −3. I had diagnosed a sampling problem as a data problem — the fixed-site panel lesson
+   (`panel.py`, `rmb-coverage.md` §4 trap 3) in a new costume.
+
+Robustness note: `instrument_role` is **feature-detected**, not assumed. This builder runs in the
+nightly, so an older `doc_identity` lacking that column must degrade to plain earliest-dated rather
+than abort Phase 2c. An existing fixture caught it; a new explicit test pins it. 316 → **322 tests**.
+
