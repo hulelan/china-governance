@@ -687,6 +687,22 @@ second instance was the *verification* of the first: `grep -c "<phrase>"` for a 
 replacement text had wrapped, which printed `0` and, because `grep` exits 1 on no match, silently
 truncated the rest of an `&&` chain of checks.
 
+**A third form of the same bug, found 2026-10-09 and the most dangerous so far: an
+indentation-insensitive anchor is a SUBSTRING of every more-deeply-indented copy of the same
+statement.** `"        processed += 1\n"` (8 spaces, loop level) is contained in
+`"            processed += 1\n"` (12 spaces, inside an `if`), so `str.replace(a, b, 1)` aimed at the
+loop level silently rewrote a nested block — splitting it and **stealing its `continue`**. Combined
+with `0 % 25 == 0` being true, the resulting loop printed 277 KB of identical progress lines and
+silently skipped **3,654 of 4,164 rows**. Nothing was corrupted; rows were dropped, which is worse
+than a crash because it looks like a completed run.
+- **Verify the line EQUALS what you expect, do not merely search for it.** Split the file into lines
+  and `assert lines[i] == want` before touching anything, then rewrite the region whole. A
+  `.replace()` on an indented statement cannot distinguish nesting levels.
+- **Duplication is what let it hide.** Three inline copies of the same progress block meant there
+  was no single place to notice a stolen `continue`. Collapsing them into one `_progress()` helper
+  made the structure readable, and `tests/test_host_breaker.py` now asserts there is exactly ONE
+  progress print site — a structural test, not a restated rule.
+
 **Rules.** Read the anchor out of the file (`python3 -c "print(repr(open(f).read().split(chr(10))[N]))"`)
 before writing an edit against it. Verify a landed edit with `grep -cF` on a short **single-line**
 substring, and run each check as its own command, never chained with `&&` after something that can

@@ -4967,3 +4967,50 @@ Extraction found **5,084** documents remaining; the PBC 411-page backfill is now
 fixed cap logic, into the same `documents_pbc.db` as the capped walk's 1,035 rows so one
 `merge_db.py` covers both.
 
+---
+
+## Iteration 135 — I broke the loop with my own edit, and the anchor bug has a third form
+
+**The PBC fix is confirmed.** `totalpage=411`, **5,558** 沟通交流 documents listed against **494**
+before, 588 routine-diplomacy titles dropped by the denylist. CLAUDE.md's documented backfill
+finally does what it claims.
+
+**Then I shipped a bug that silently skipped 88% of a run.** The relaunch processed **0 of 4,164**
+rows and emitted **277 KB** of identical progress lines. Mine, introduced one commit earlier, and it
+is a **third form of the anchor family** — the most dangerous so far.
+
+My anchor was `"        processed += 1\n"` (8 spaces, loop level). `str.replace` matched it as a
+**SUBSTRING of the 12-space line inside the breaker block**, because the 8-space string is contained
+in the 12-space one. That split the block and **stole its `continue`**:
+
+    if breaker.is_open(attach_url):
+        skipped += 1
+        processed += 1          # continue stolen
+    if processed % 25 == 0:     # now LOOP level, every row
+        print(...)
+        continue                # processed == 0, so 0 % 25 == 0 -> every row skipped
+
+Two faults compounding. **Nothing was corrupted and no document was damaged** — rows were dropped,
+which is worse than a crash because it looks like a completed run: "Done: 0 processed, 510 skipped"
+out of 4,164, with 3,654 counted by nothing.
+
+**Fixed by rewriting the region against byte-verified line anchors** (`assert lines[i] == want`
+before touching anything) rather than substring patching, and by collapsing three inline progress
+blocks into one `_progress()` helper — the duplication is what let a stolen `continue` hide. Three
+**structural** tests encode it instead of restating it: the `processed and` zero-guard must be
+present in the source, there must be exactly ONE progress print site with ≥4 `_progress()`
+references, and `0 % 25 == 0` is asserted directly so the reason reads without the history.
+358 → **361 tests**. Verified live: progress now prints real counters (25/4164, 50/4164) and the log
+is **303 bytes** instead of 277 KB.
+
+**And a correction to what I told the user when asking to restart.** I reported "zero progress in 27
+minutes, ~42 h to finish". The stub count has since fallen **6,258 → 5,409** — about **849
+documents** that the killed process enriched after the window I sampled. It was not permanently
+stuck; it was slow through a bad stretch and recovered. The restart was still right (the circuit
+breaker and a working progress line are real improvements) but **I presented a snapshot as a
+trajectory**, and the honest framing was "stalled in a bad stretch, recovery time unknown".
+
+**The anchor lesson is now in CLAUDE.md** as the third form, with its own rules: verify a line
+EQUALS what you expect rather than searching for it, rewrite regions whole, and treat duplication as
+the thing that lets such a bug hide.
+
