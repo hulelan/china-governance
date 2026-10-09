@@ -128,7 +128,53 @@ title-keyed analysis. Recovered by `scripts/rnd/backfill/repair_mofcom_titles.py
 This is the generalizable point, and it is not about encodings: **a corpus can hold a document and
 still not have it.** Any count keyed on titles silently excluded these.
 
-## 7. Limitations
+## 7. The Unreliable Entity List as a paired series
+
+The title recovery in §6 made a sub-series legible that had been half-invisible. The corpus holds
+**39 Unreliable Entity List documents spanning 2020-09-18 to 2025-11-05** — the 2020 规定 that
+created the mechanism, **22 instruments** (listings, investigations, suspensions, adjustments) and
+**15 spokesperson justifications**. 15 of the instrument titles name a specific firm: 洛克希德·马丁,
+雷神, 波音防务, 通用原子航空系统, PVH, 因美纳 (Illumina), 斯凯迪奥 (Skydio), 护盾人工智能 (Shield AI),
+萨罗尼克科技, 环太平洋防务, 特科姆, 海岸间电子, 反无人机技术.
+
+**The instrument and its justification are near-simultaneous.** Pairing each instrument to its
+nearest later justification within 21 days: **17 of 22 pair, median lag 0 days, maximum 8**, and
+**12 of 17 (71%) are same-day or next-day**.
+
+| listing date | lag (d) | firms listed |
+|---|---|---|
+| 2024-05-19 | 7 | 通用原子航空系统 +3, 波音防务 |
+| 2024-09-23 | 6 | PVH (investigation opened) |
+| 2025-01-01 | 1 | 洛克希德·马丁导弹与火控 +10 |
+| 2025-01-13 | 0 | 海岸间电子 +7 |
+| 2025-02-03 | 8 | PVH, 因美纳 |
+| 2025-04-03 | 0 | 斯凯迪奥 +11 |
+| 2025-04-08 | 0 | 护盾人工智能 +6 |
+| 2025-09-24 | 1 | 萨罗尼克科技 +3 |
+| 2025-10-08 | 0 | 反无人机技术 + 外国实体 |
+
+**The lag appears to tighten** — 6-7 days on the 2024 actions, 0-1 on most of 2025 — but this memo
+does **not** call that a finding. n is 17, one 2025 action still lags 8 days, and 5 instruments have
+no justification within 21 days at all. It is recorded as a shape to re-measure, not a trend.
+
+What is solid is the simultaneity itself: on this record the regime does not announce a listing and
+explain it later. The explanation ships with the instrument, which is a different communicative
+posture from the campaign documents in `attention-campaigns.md`, where an instrument is followed by
+a stream of 解读 over weeks.
+
+**A correction to the §6 framing, measured rather than assumed.** I first read the delisted pages as
+documents the portal had removed and we alone retained. That is **too strong**. Checking each
+recovered row against same-window documents shows we already hold the same instruments under full
+descriptive titles from a different crawl path, with **exact 文号 agreement** — 商务部公告2025年第1号,
+第18号, 第21号, 第22号, 不可靠实体清单工作机制公告〔2025〕7号 and 〔2025〕8号 all have a
+fully-titled twin. So no instrument was rescued from oblivion. What the recovery bought is narrower
+and still real: 13 rows that were unsearchable now carry their 文号, which makes them findable and
+links them to their twin by document number — the key `doc_identity.instrument_id` pools on. The
+bodies differ substantially between twin and recovered row (20-char shingle overlap 0.02-0.47), so
+they are variant texts of one instrument rather than byte copies, and which text is fuller is not
+established here.
+
+## 8. Limitations
 
 1. **166 of the 1,071 documents (15.5%) have `date_written = 0`** and are therefore absent from
    every series in §3. They are concentrated on `gov` (73) and they are not marginal documents —

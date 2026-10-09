@@ -25,8 +25,19 @@ write_with_retry, incremental commits, non-zero exit when anything was skipped.
 Safety: only rows whose CURRENT title is mojibake are touched, and a replacement is
 written only if it contains CJK and no 3+ run of "?".
 
+A --body-fallback pass handles what the network cannot. 22 of the 725 pages now return
+the portal SHELL (10,684 bytes of navigation, no `var title`) because the article was
+DELISTED — and those 22 are the regime's sharpest instruments: 7 are 不可靠实体清单工作机制
+公告 (Unreliable Entity List announcements, a near-complete 〔2024〕3号-〔2025〕8号 run), 4
+are entity listings, 2 precursor-chemical controls. We hold their bodies; the live site no
+longer serves them. 13 of the 22 carry their own 【发布文号】 header in the body, which is
+the document's canonical identifier and how Chinese instruments are actually cited, so the
+fallback sets the title from it — recovery from the document's own text, not invention. The
+other 9 keep their mojibake title rather than get a fabricated one.
+
   python3 scripts/rnd/backfill/repair_mofcom_titles.py --dry-run --limit 5
   python3 scripts/rnd/backfill/repair_mofcom_titles.py
+  python3 scripts/rnd/backfill/repair_mofcom_titles.py --body-fallback --dry-run
 """
 from __future__ import annotations
 
@@ -48,6 +59,8 @@ log = logging.getLogger("repair_mofcom_titles")
 
 MOJIBAKE = re.compile(r"\?{3,}")
 CJK = re.compile(r"[一-鿿]")
+# The body header of a delisted 公告: 【发布文号】商务部公告2025年第35号
+BODY_DOCNUM = re.compile(r"\u3010\u53d1\u5e03\u6587\u53f7\u3011\s*([^\n]+?)\s*(?:\n|$)")
 # 'var publishTime' looks like '2026-03-02 08:45:07'
 PUBTIME = re.compile(r"^(\d{4})-(\d{2})-(\d{2})")
 
@@ -73,6 +86,8 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--sleep", type=float, default=0.4, help="politeness delay per fetch")
     ap.add_argument("--commit-every", type=int, default=25)
+    ap.add_argument("--body-fallback", action="store_true",
+                    help="no network: title from the body's own 【发布文号】 header, for\n                          rows whose article page was DELISTED (returns the portal shell)")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
@@ -90,6 +105,35 @@ def main():
 
     stats = base.WriteRetryStats()
     fixed = dated = no_title = failed = 0
+
+    if args.body_fallback:
+        # No fetch: these pages are gone, so the body is the only source left.
+        got = 0
+        for doc_id, url, old, _old_date in rows:
+            body = conn.execute("SELECT COALESCE(body_text_cn,'') FROM documents WHERE id=?",
+                                (doc_id,)).fetchone()[0]
+            m = BODY_DOCNUM.search(body)
+            num = (m.group(1).strip() if m else "")
+            if not num or MOJIBAKE.search(num) or not CJK.search(num):
+                log.info("id=%s no 【发布文号】 in body — leaving the mojibake title", doc_id)
+                no_title += 1
+                continue
+            if args.dry_run:
+                log.info("id=%s\n    old=%r\n    new=%r (from body header)", doc_id, old[:30], num)
+            else:
+                ok = base.write_with_retry(
+                    conn, "UPDATE documents SET title=?, document_number=? WHERE id=?",
+                    (num, num, doc_id), stats=stats, what=f"body-fallback id={doc_id}")
+                if not ok:
+                    continue
+            got += 1
+        if not args.dry_run:
+            base.commit_with_retry(conn, stats=stats)
+        conn.close()
+        log.info("body-fallback: %d titles set from 【发布文号】 | %d left mojibake "
+                 "(no header) | write-skipped %d", got, no_title, stats.skipped)
+        return 1 if stats.skipped else 0
+
     for n, (doc_id, url, old, old_date) in enumerate(rows, 1):
         try:
             html = base.fetch(url, timeout=25)
