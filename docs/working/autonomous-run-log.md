@@ -3906,3 +3906,40 @@ Across the whole re-base: two needed nothing, four got stronger or survived, one
 corrected, one of my own claims was overstated tenfold, and one completeness claim of mine was
 simply false. Nothing in the volume now reads `sites.admin_level` as a tier **among the memos I have
 checked**, which is the claim I should have made the first time.
+
+---
+
+## Iteration 112 — the sweep genuinely closes, and my audit instrument was the weakest link
+
+**`citation-network-structure` needs nothing, and the reason is the best thing in this sweep.** My
+grep flagged it hardest (18 level claims, 4 re-base notes). Reading it: lines 85-91 **re-level the
+28,184 npc 地方法规 from `publisher`** — 省/自治区/直辖市 人大 → provincial (11,290), 市/州/县 人大 →
+municipal (12,570), the remaining 2,886 stay central — and line 414 prints the **uncorrected**
+matrix beside the corrected one "for comparison", noting that the two corrections move it in
+opposite directions. **It built its own per-document re-leveling before `doc_identity` existed.**
+
+**Final, true scope of the sweep.** Of seven memos flagged, **three were genuinely on
+`sites.admin_level`** and all three held or improved:
+
+| memo | outcome |
+|---|---|
+| `recentralization-experimentation` | **held** — 2013 step +16.1 pt per-document vs +17.9 site-based, despite **23.7%** of edges having an endpoint reclassified |
+| `attention-campaigns` | **strengthened** — central campaign share 0.21→1.00% site-based becomes **0.28→1.31%**, twice any other level instead of modestly ahead |
+| `joint-issuance` | **headline immune** (its fixed set excludes npc); all-central variant +6 to +7.5 pt |
+
+**Four needed nothing**: `diffusion-atlas` and `fidelity-jiangsu` inherit `admin_level_doc` through
+`diffusion_events`; `bottom-up-channel` queries it directly; `citation-network-structure` corrects
+itself.
+
+**And the lesson is about my own instrument, not the memos.** I made a completeness claim
+("nothing is left reading `sites.admin_level` as a tier"), then audited it with a **grep counting
+mentions of level words**, which flagged seven and was right about three. So I was **first too
+confident and then too alarmed**, and both errors mis-stated how much work remained. The correct
+instrument is to grep for the **SQL shape** — `s.admin_level` inside a FROM/WHERE — not for prose
+mentions of "central". Recorded in CLAUDE.md so the next audit of this kind starts with the right
+query.
+
+**The substantive conclusion is reassuring and worth stating plainly:** the volume's memos were
+substantially **more careful about levels than my audit implied**. Two of them anticipated the exact
+problem `doc_identity` was later built to fix — one by constructing a fixed-site robustness set, one
+by re-leveling from `publisher` by hand. Neither needed me.
