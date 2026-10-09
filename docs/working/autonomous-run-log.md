@@ -4896,3 +4896,42 @@ two-writer lock. 45 s in: 规范性文件 430 docs listed, pager totalpage=22.
 Both jobs are `nice -n 19` and network-bound, so the 2-vCPU box is not the constraint, and the
 nightly is ~11 h away.
 
+---
+
+## Iteration 133 — a documented command that did not work, caught by counting its output
+
+**PDF extraction is progressing.** Stubs **7,802 → 6,301**; per-site hrss 872 → 693, szlhq
+601 → 498, jtys 530 → 469. szdp is slow exactly as predicted (1,846 → 1,794) because its PDFs are
+scans — large to download, nothing to extract.
+
+**I was wrong about why it looked stalled, and the correction is worth keeping.** The stub count sat
+flat for ~23 minutes and I hypothesised it was stuck on the hosts CLAUDE.md lists as blackholed from
+the droplet IP. Measured: the download timeout is **30 s** with an https→http retry, and only **5 of
+6,301** stubs are on blocked hosts (0.1%) — five documents cannot cost 23 minutes. The real
+explanation fits every signal (flat count, live socket, 43 s CPU over 55 min elapsed): szdp's
+**scanned** PDFs are image files, so they are slow to fetch and yield no text, which produces
+exactly a flat count with busy network and idle CPU.
+
+**Then the real find: CLAUDE.md documents a command that did not work.** The 沟通交流 historical
+backfill is written up as "a deliberate `--max-pages 411` run (~8,200 docs)". The code read
+`min(max_pages, cap) if cap else max_pages`, so the **40-page cap always won** and `--max-pages 411`
+silently performed the ordinary nightly walk. **Caught by counting the output against expectation:**
+the run listed **494** 沟通交流 documents where 411 pages is ~8,200. It was accepted, it ran, it
+exited **0**.
+
+**That is the second flag today with this exact shape** — `--hops P2M` matched no hop, wrote 0 rows,
+and also exited 0. Both were invisible to the exit status and visible only in a count. The lesson is
+not "check exit codes"; it is **check that the output size matches what the flag claims**.
+
+**Fixed by encoding the cap's own rationale.** Its docstring says "40 pages keeps the nightly on
+current material" — it guards the NIGHTLY, not the operator. So `section_pages()` applies the cap on
+the default path and ignores it when `--max-pages` was passed explicitly, which is detectable now
+that the argparse default is `None`. 5 tests, including the two beyond the headline: an explicit
+value BELOW the cap is still respected (overriding must not silently RAISE a deliberately small
+request), and the `SECTIONS` table still carries exactly one capped section — if a second appears,
+the backfill story needs revisiting. 339 → **344 tests**.
+
+The running backfill is doing the capped walk (881 staged rows: 规范性文件 430, 沟通交流 340,
+部门规章 111) and is being **left to finish rather than killed**, per the standing rule; the real
+411-page run follows on the fixed code.
+
