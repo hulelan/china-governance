@@ -6,3 +6,9 @@ jinja2==3.1.6
 python-multipart>=0.0.6
 jieba>=0.42  # Chinese word segmentation for the BM25 search index (query-time)
 markdown>=3.5  # /research memo reader (docs/research/*.md → HTML; tables + fenced code)
+
+# PDF attachment text extraction (scripts/extract_pdf_text.py). NOT installed on the
+# droplet until 2026-10-09, which is why ZERO of the 6,013 PDF-attachment documents had
+# ever been enriched: the script was written when the Mac held the database and has been
+# silently unimportable since the June 2026 migration.
+PyMuPDF>=1.24
