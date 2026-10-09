@@ -143,8 +143,48 @@ it sits inside a broad contraction of the whole accountability vocabulary on a f
 **What remains unexplained is therefore narrower and sharper than before.** Not "why did the veto
 retreat" but **"why did the entire promotion-pressure vocabulary contract after 2022"** — with
 基层减负 ruled out as the documentary driver (§4) even though its own usage grows in that window.
-That is a better question than the one this memo started with, and it is the one to take to a
-fixed-panel series over a longer horizon.
+§6 answers it, on the same panel.
+
+## 6. The register rotated: from pressure and procedure to aspiration
+
+Same fixed 17-site panel, same per-1,000 basis. Change from 2018-22 to 2023-25:
+
+| vocabulary | 2008-12 | 2013-17 | 2018-22 | 2023-25 | change |
+|---|---|---|---|---|---|
+| **accountability** | | | | | |
+| 一票否决 | 12.36 | 9.97 | 5.35 | 1.96 | **−63%** |
+| 目标责任 | 47.62 | 32.60 | 13.43 | 5.24 | **−61%** |
+| 绩效考核 | 33.39 | 51.18 | 43.84 | 20.29 | −54% |
+| 挂牌督办 | 14.23 | 12.97 | 8.77 | 4.74 | −46% |
+| 约谈 | 7.97 | 30.97 | 33.47 | 18.71 | −44% |
+| 问责 | 19.68 | 38.27 | 34.46 | 26.61 | −23% |
+| **procedural reform** | | | | | |
+| 简政放权 | 4.92 | 51.34 | 17.22 | 1.75 | **−90%** |
+| 放管服 | 0.00 | 12.60 | 67.61 | 11.45 | **−83%** |
+| 一网通办 | 0.00 | 1.94 | 25.06 | 14.07 | −44% |
+| 政务服务 | 9.02 | 34.65 | 82.36 | 65.72 | −20% |
+| **developmental** | | | | | |
+| **高质量发展** | 0.29 | 0.94 | 182.99 | **384.93** | **+110%** |
+| **新质生产力** | 0.00 | 0.00 | 0.00 | **64.35** | **new** |
+| 数字化转型 | 0.70 | 0.37 | 15.02 | 32.94 | +119% |
+| 免申即享 | 0.00 | 0.00 | 3.79 | 6.22 | +64% |
+| 营商环境 | 4.16 | 26.19 | 93.24 | 102.15 | +10% |
+
+**It is not accountability giving way to service delivery.** The procedural-reform vocabulary falls
+as hard as the accountability one, and harder in places — 简政放权 **−90%**, 放管服 **−83%**. Both
+the language of **pressure** and the language of **procedure** recede together.
+
+**What occupies the space is developmental goal language.** 高质量发展 reaches **384.93 per 1,000**,
+i.e. **38.5% of every document on the panel**, and 新质生产力 goes from **exactly zero** to 64.35 in
+a single period. That is the rotation: from *how cadres will be held to targets* and *how procedures
+will be simplified*, to *what the economy is becoming*.
+
+***A caveat that is also a finding.*** *A phrase in 38.5% of all documents is not a policy signal,
+it is a **register** — closer to a letterhead than to an instruction. So §6 should be read as a
+change in the **idiom** of the documentary record, not as evidence that the state stopped applying
+promotion pressure. The honest claim is about what documents* say*, and the natural follow-up is
+whether the pressure moved into instruments that do not announce themselves in titles or bodies at
+all — which this corpus, by construction, cannot see.*
 
 ---
 

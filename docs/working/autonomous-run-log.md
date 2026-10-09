@@ -4081,3 +4081,42 @@ body for it and `fts.term_ids` for the rest — the mixed path the helper exists
 Without iteration 113's diagnosis, `约谈` would have read **0** and the substitution window, which
 is the whole middle of this finding, would have been invisible.
 
+---
+
+## Iteration 116 — the register rotated, and the saturation is itself the caveat
+
+Answered the question iteration 115 sharpened — *why did the whole promotion-pressure vocabulary
+contract after 2022?* — on the same fixed 17-site panel. Change 2018-22 → 2023-25, per 1,000 panel
+documents:
+
+| accountability | | procedural reform | | developmental | |
+|---|---|---|---|---|---|
+| 一票否决 | **−63%** | 简政放权 | **−90%** | **高质量发展** | **+110%** → 384.93 |
+| 目标责任 | **−61%** | 放管服 | **−83%** | **新质生产力** | **0.00 → 64.35** |
+| 绩效考核 | −54% | 一网通办 | −44% | 数字化转型 | +119% |
+| 挂牌督办 | −46% | 政务服务 | −20% | 免申即享 | +64% |
+| 约谈 | −44% | | | 营商环境 | +10% |
+| 问责 | −23% | | | | |
+
+**It is not accountability giving way to service delivery**, which was my working guess. The
+procedural-reform vocabulary falls **as hard or harder** — 简政放权 −90%, 放管服 −83%. Both the
+language of **pressure** and the language of **procedure** recede together, and what occupies the
+space is **developmental goal language**: 高质量发展 reaches **384.93 per 1,000** and 新质生产力 goes
+from **exactly zero** to 64.35 in one period.
+
+So the rotation is from *how cadres will be held to targets* and *how procedures will be simplified*
+to *what the economy is becoming*.
+
+**And the saturation is the caveat, which I put in the memo rather than in a footnote.** 高质量发展
+appears in **38.5% of every document on the panel**. A phrase in nearly two documents in five is not
+a policy signal — it is a **register**, closer to a letterhead than an instruction. So §6 claims a
+change in the **idiom** of the documentary record, explicitly **not** that the state stopped
+applying promotion pressure. The natural follow-up is whether the pressure moved into instruments
+that never announce themselves in a title or body, which this corpus **by construction cannot see**
+— and saying so is more useful than a finding that over-reads its own evidence.
+
+**Three ticks, three narrowings.** Iteration 114 found the veto retreating and could not explain it;
+115 found substitution for 2013-22 but not after; 116 found the register rotation that covers the
+post-2022 fall and immediately bounded what that can mean. Each step answered the previous question
+and produced a smaller one, which is the shape a measurement sequence should have.
+
