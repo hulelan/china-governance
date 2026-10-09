@@ -56,6 +56,23 @@ reproduces it:*
 | prefecture-city governments | 6,705 | 0.083 | **9.3%** |
 | Shenzhen municipal bureaus | 699 | 0.037 | **0.9%** |
 
+*(**Re-checked 2026-10-09 after an instrument-pooling change, and it holds.** `build_doc_identity`
+gained a rule letting a shared numbered 文号 override the two-site pooling guard, which pooled
+10,165 same-site duplicate documents — concentrated on exactly these Guangdong municipal portals,
+so this was the published finding most exposed to it. Re-running the memo's own documented command
+(`pairs.py --csv`, then the same split):*
+
+| within `municipal` | pairs | median overlap | relay |
+|---|---|---|---|
+| prefecture-city governments | 7,007 | 0.082 | **8.8%** |
+| Shenzhen municipal bureaus | 689 | 0.037 | **0.9%** |
+
+*The bureau median is unchanged to three decimals and the **relay ratio moves 10.3x → 10.1x**, so
+the claim — a tenfold relay gap between a city GOVERNMENT and a city BUREAU, holding tier constant
+— is robust. Worth recording that pooling **increased** scored pairs (7,404 → 7,696) where
+deduplication should reduce them: 17,834 pairs are now dropped as `same_instrument`, but pooling
+also made more parents resolve to a framework instrument, so more pairs qualified. Net +292.)*
+
 *A **tenfold** difference in relay, holding tier constant. So the distinction is not between tiers
 at all — it is between a **city government** and a **city bureau**, which is a fact about the
 **kind of body**, an axis `admin_level_doc` deliberately does not encode. The memo's claim was

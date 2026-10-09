@@ -4644,3 +4644,42 @@ the direction pooling predicts.
 331 tests. The first validation run was on a stale `diffusion_events`, which passed and would have
 been easy to call done; re-running after the rebuild is what makes 15/15 mean something.
 
+---
+
+## Iteration 127 — re-based the most exposed published finding, and it held
+
+The pooling change consolidated 10,165 same-site duplicates concentrated on Guangdong municipal
+portals, so `fidelity-provincial.md`'s headline was the published claim most exposed to it. CLAUDE.md
+already carries the precedent (the mirror-determinism fix relabelled every topic aggregate), so the
+rule is **re-base after an identity change, do not assume only the counts moved.**
+
+Re-ran the memo's **own documented** reproduction command (`pairs.py --report` / `--csv`, 160 s,
+read-only) and re-derived its bespoke by-kind split:
+
+| within `municipal` | memo 2026-10-08 | now |
+|---|---|---|
+| prefecture-city governments | 6,705 pairs, median 0.083, relay **9.3%** | 7,007, 0.082, **8.8%** |
+| Shenzhen municipal bureaus | 699 pairs, median 0.037, relay **0.9%** | 689, 0.037, **0.9%** |
+| relay ratio | **10.3x** | **10.1x** |
+
+**The finding is robust.** The bureau median is unchanged to three decimals. So "a tenfold relay gap
+between a city GOVERNMENT and a city BUREAU, holding tier constant" stands.
+
+**An expectation of mine was wrong, and the report itself explained it.** I expected deduplication
+to REDUCE pairs; scored P→M pairs went 7,404 → **7,696**. The drop counts show why: **17,834** pairs
+are now discarded as `same_instrument` (source and parent resolved to one instrument — exactly the
+spurious "a document diffusing to its own duplicate" pairs the pooling was meant to kill), while
+pooling simultaneously made more parents resolve to a framework instrument, so more pairs qualified
+the framework gate. Net +292. Two opposite effects, and only the net is visible in the headline —
+the same lesson as the aggregate predictions I keep getting wrong.
+
+**Three process notes.** `--hops P2M` silently matched nothing because the hop names carry a real
+arrow (`P→M`); the run completed, wrote 0 rows and exited 0, so only `wc -l` caught it. The by-kind
+split is not in `--report` at all — it is a bespoke cut over `--csv`, which is why the memo
+documenting its reproduction command mattered: without it this would have been a reconstruction
+rather than a replication. And a new instance of the heredoc trap already in CLAUDE.md: **two
+heredocs in one `&&` chain are filled in OPERATOR order**, so writing the commit-message body before
+the Python body fed the commit message to `python3 -` and it died on
+`SyntaxError: invalid binary literal` at `0b1ff96`. The gate meant nothing was written; the fix is
+one heredoc per command.
+
