@@ -25,6 +25,7 @@ Usage:
 """
 
 import argparse
+import json
 import os
 import re
 import sqlite3
@@ -34,6 +35,48 @@ import time
 import urllib.request
 
 import fitz  # PyMuPDF
+
+
+ATTACH_EXTS = (".pdf", ".doc", ".docx", ".xls", ".xlsx")
+
+
+def attachment_url_from_json(attachments_json: str) -> tuple[str, str] | None:
+    """-> (absolute url, ext) from `documents.attachments_json`, or None.
+
+    Why this exists (measured 2026-10-09): this script finds attachment URLs by
+    PARSING SAVED RAW HTML, and the raw-HTML mirror begins 2026-06-08 (the droplet
+    migration) — so for anything crawled earlier the HTML is simply not on disk and
+    the document was skipped forever. 7,802 documents have a body under 400 chars
+    saying 详见附件 / 文件下载链接, 6,731 of them carry `attachments_json`, 6,013 name a
+    PDF, and ZERO had been enriched. The url was in the database the whole time,
+    alongside `name`, `mime` and `size`.
+
+    The stored url is absolute and often `https://`, which fails on most Shenzhen
+    hosts with `SSL: BAD_ECPOINT` (an OpenSSL elliptic-curve parse error — these
+    hosts serve certificates OpenSSL cannot handle, very likely SM2). That is already
+    handled downstream: `download_attachment` retries `https` -> `http`, and forcing
+    http succeeded on 8 of 8 probes with valid %PDF- magic.
+    """
+    if not attachments_json or attachments_json in ("[]", "null"):
+        return None
+    try:
+        arr = json.loads(attachments_json)
+    except Exception:
+        return None
+    items = arr if isinstance(arr, list) else [arr]
+    # Prefer a PDF; fall back to any office format we can read.
+    for wanted in (".pdf",), ATTACH_EXTS:
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            u = (it.get("url") or "").strip()
+            if not u:
+                continue
+            low = u.lower()
+            for ext in wanted:
+                if low.endswith(ext) or ext in low:
+                    return u, ext
+    return None
 
 
 def find_attachment_url(html: str) -> tuple[str, str] | None:
@@ -271,7 +314,8 @@ def main():
     limit_clause = f" LIMIT {args.limit}" if args.limit else ""
 
     rows = conn.execute(
-        f"SELECT id, raw_html_path, body_text_cn, url, site_key "
+        f"SELECT id, raw_html_path, body_text_cn, url, site_key, "
+        f"COALESCE(attachments_json, '') "
         f"FROM documents {where}{limit_clause}",
         params,
     ).fetchall()
@@ -279,9 +323,11 @@ def main():
     print(f"Found {len(rows)} attachment-only documents to process")
 
     if args.dry_run:
-        for doc_id, html_path, body, url, site_key in rows[:20]:
-            exists = "Y" if os.path.exists(html_path) else "N"
-            print(f"  [{site_key}] {doc_id}: html={exists} | {body[:50]}")
+        for doc_id, html_path, body, url, site_key, att_json in rows[:20]:
+            exists = "Y" if html_path and os.path.exists(html_path) else "N"
+            from_json = attachment_url_from_json(att_json)
+            print(f"  [{site_key}] {doc_id}: html={exists} "
+                  f"json_url={'Y' if from_json else 'N'} | {body[:44]}")
         if len(rows) > 20:
             print(f"  ... and {len(rows) - 20} more")
         return
@@ -292,7 +338,7 @@ def main():
     errors = 0
     skipped = 0
 
-    for doc_id, html_path, body, url, site_key in rows:
+    for doc_id, html_path, body, url, site_key, att_json in rows:
         # Get HTML: from saved file, or live fetch for CAC
         html = None
         if html_path and os.path.exists(html_path):
@@ -318,11 +364,11 @@ def main():
                 errors += 1
                 continue
 
-        if not html:
-            skipped += 1
-            continue
-
-        result = find_attachment_url(html)
+        # The HTML may be absent (the raw_html mirror begins 2026-06-08) or may
+        # carry no link; `attachments_json` holds the url either way.
+        result = find_attachment_url(html) if html else None
+        if not result:
+            result = attachment_url_from_json(att_json)
         if not result:
             skipped += 1
             continue

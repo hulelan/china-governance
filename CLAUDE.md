@@ -976,8 +976,32 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   gated on confirming listing pages are reverse-chronological, dept-group rotation in 3
   chunks (which would *increase* coverage), and 2-wide parallelism (bounded by the
   2-writer SQLite rule). Together those would take Phase 1 to roughly 100 min.
-- **(2026-10-09) Should `trim_body_tails.py` write `body_fetch_failures` rows for the bodies it
-  leaves under ~200 characters?** Measured before applying it: the trim is correct (hand-checked on
+- **(ANSWERED 2026-10-09, and it is a different population than the question assumed.) The
+  short-bodied documents are overwhelmingly ATTACHMENT-ONLY, not extraction failures — and
+  ~6,013 of them are reachable right now over plain `http://`.** Chasing the trim question below
+  found that **7,802** documents have a body under 400 chars saying 详见附件 / 文件下载链接, of which
+  **6,731 (86%) carry `attachments_json`** and **6,013 name a PDF**, across 45 sites (szdp 958,
+  szlhq 563, szeb 438, hrss 428, jtys 412, swj 313). **Zero** have been enriched. These are not
+  bodies that failed to extract; the content is in a PDF, so the tool is `extract_pdf_text.py`
+  and neither the trim nor HTML re-extraction.
+  - **Two blockers, both avoidable.** (a) `extract_pdf_text.py` finds the attachment URL by
+    PARSING SAVED RAW HTML, and the raw-HTML mirror begins **2026-06-08** (see the Open Question
+    below), so it cannot see the URL for most of these — but **`attachments_json` already holds
+    the url**, with `name`, `mime` and `size`. (b) Fetching over the stored `https://` URL fails
+    on **5 of 6** sampled sites with `SSL: BAD_ECPOINT`, an OpenSSL elliptic-curve parse error —
+    these hosts serve certificates OpenSSL cannot handle (very likely SM2, the Chinese national
+    standard). **Not a firewall and not a WAF.**
+  - **The fix is one line of protocol.** Forcing `http://` succeeded on **8 of 8** probes with
+    valid `%PDF-` magic, including all 6 that failed over https. This GENERALIZES what CLAUDE.md
+    already recorded as a `sz_gazette` parenthetical — "byte-checked; http only, https fails from
+    Python" — from one crawler's quirk to a property of Shenzhen government hosts. Any crawler or
+    tool hitting `*.sz.gov.cn` and its bureau subdomains should try `http://` before concluding a
+    host is unreachable.
+  - **What remains:** teach `extract_pdf_text.py` to prefer `attachments_json`'s url over
+    re-parsing HTML, and to retry `https` → `http` on a TLS error. ~6,013 documents of budget,
+    final-accounts and procurement text (部门预算 / 部门决算 / 询价公告) would gain real bodies.
+- **(2026-10-09, SUPERSEDED by the entry above) Should `trim_body_tails.py` write
+  `body_fetch_failures` rows for the bodies it leaves under ~200 characters?** Measured before applying it: the trim is correct (hand-checked on
   its 8 most aggressive rows — every removal is pure CSS/JS) but it leaves **~1,576 documents with
   under 200 chars** — **but only 163 of those are content-free** (measured 2026-10-09 by stripping
   the title AND the metadata boilerplate, then asking whether anything remains; the other ~1,400 are
