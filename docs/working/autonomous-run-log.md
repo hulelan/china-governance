@@ -4037,3 +4037,47 @@ Limits stated: co-occurrence is not attribution; 96-278 documents per period so 
 swings carry weight; 2026 is composition-inflated; and at 1,019 documents the series is too thin for
 the fixed-site panel every series here wants, so the periodisation is descriptive.
 
+---
+
+## Iteration 115 — the substitution test: yes, then no, and a sharper question
+
+Ran the checkable candidate from `one-vote-veto.md` §4 — did the promotion system substitute other
+instruments as the veto retreated? — on a **fixed 17-site panel**, which §1's periodisation lacked.
+Rates per 1,000 panel documents:
+
+| instrument | 2008-12 | 2013-17 | 2018-22 | 2023-25 |
+|---|---|---|---|---|
+| **一票否决** | 12.36 | 9.97 | 5.35 | **1.96** |
+| 目标责任 | **47.62** | 32.60 | 13.43 | **5.24** |
+| 挂牌督办 | 14.23 | 12.97 | 8.77 | 4.74 |
+| **约谈** | 7.97 | **30.97** | **33.47** | 18.71 |
+| 问责 | 19.68 | **38.27** | 34.46 | 26.61 |
+| 绩效考核 | 33.39 | **51.18** | 43.84 | 20.29 |
+
+**Three results, and the third is the useful one.**
+
+**The veto's decline is real** — 12.36 → 1.96, an **84%** fall on a fixed panel, so §1's retreat is
+not a composition artifact. 目标责任 falls 89%. That is worth having: my §1 periodisation had no
+panel and I had flagged it as descriptive only.
+
+**There was a substitution window, 2013-22.** `约谈` **quadruples** (7.97 → 30.97) in exactly the
+period the veto starts falling and holds at 33.47; 问责 nearly doubles; 绩效考核 peaks. So the
+**hard, promotion-blocking** devices give way to **softer, conversational** ones — being summoned
+for a talk rather than barred from promotion. §4's third candidate is answered: **yes.**
+
+**But 2023-25 is a general retreat that substitution cannot cover.** Every instrument is below its
+own peak, *including the substitutes* — 约谈 halves, 绩效考核 −54%, 问责 −23%. So the veto's latest
+decline is not substitution; it sits inside a broad contraction of the entire accountability
+vocabulary on a fixed panel.
+
+**So the open question got narrower and better.** Not "why did the veto retreat" but **"why did the
+whole promotion-pressure vocabulary contract after 2022"**, with 基层减负 already ruled out as the
+documentary driver even though its own usage *grows* in that window. A question that starts as
+"explain this one series" and ends as "explain this co-movement" is a question that has been
+measured rather than guessed at.
+
+**Dogfooding note:** `约谈` is invisible to both FTS indexes, so this run used `LIKE` over title and
+body for it and `fts.term_ids` for the rest — the mixed path the helper exists to make safe.
+Without iteration 113's diagnosis, `约谈` would have read **0** and the substitution window, which
+is the whole middle of this finding, would have been invisible.
+

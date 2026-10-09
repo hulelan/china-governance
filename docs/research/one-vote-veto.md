@@ -104,12 +104,47 @@ The tempting story is the **基层减负** ("reduce the grassroots burden") camp
 - The two series are not even synchronised. 基层减负 runs 1 (2015) · 2 (2018) · 16 · 42 · 46 · 45 ·
   37 · 106 · 246 · **403 (2026)** — it **grows hardest after** the veto has already declined.
 
-So the veto's retreat is visible and its cause is **not in the documents we hold**. Three candidates
-this corpus cannot separate: a central instruction we do not hold (plausibly internal); the device
-simply following its domains out as family planning and poverty alleviation concluded; or the
-promotion system shifting to instruments we are not counting (约谈, 挂牌督办, 终身追责). **That third
-one is checkable and is the obvious next step** — and note that `约谈` needs `LIKE`, being invisible
-to both FTS indexes (CLAUDE.md's third blind spot).
+So the 基层减负 explanation fails. Of the three remaining candidates — a central instruction we do
+not hold (plausibly internal); the device following its domains out; or the promotion system
+**substituting** other instruments — the third was checkable, and §5 checks it.
+
+## 5. There was substitution, and then a general retreat
+
+Measured on a **fixed 17-site panel** (sites with ≥40 bodied documents in every year 2012-2024),
+which the periodisation in §1 lacks and which matters because the raw series is composition-driven.
+Rates per **1,000 panel documents**:
+
+| instrument | 2008-12 | 2013-17 | 2018-22 | 2023-25 |
+|---|---|---|---|---|
+| **一票否决** (veto) | 12.36 | 9.97 | 5.35 | **1.96** |
+| 目标责任 (target responsibility) | **47.62** | 32.60 | 13.43 | **5.24** |
+| 挂牌督办 (listed supervision) | 14.23 | 12.97 | 8.77 | 4.74 |
+| 终身追责 (lifetime accountability) | 0.00 | 0.94 | 0.69 | 0.60 |
+| **约谈** (regulatory talks) | 7.97 | **30.97** | **33.47** | 18.71 |
+| 问责 (accountability) | 19.68 | **38.27** | 34.46 | 26.61 |
+| 绩效考核 (performance appraisal) | 33.39 | **51.18** | 43.84 | 20.29 |
+| *panel documents* | *17,073* | *19,050* | *33,281* | *18,336* |
+
+**First, the veto's decline is real.** On a fixed panel it falls **12.36 → 1.96**, an **84%**
+decline, so §1's retreat is not a composition artifact. The same is true of 目标责任 (−89%).
+
+**Second, there was a substitution window, 2013-22.** `约谈` **quadruples** (7.97 → 30.97) in exactly
+the period the veto begins falling, and holds at 33.47 through 2018-22. 问责 nearly doubles
+(19.68 → 38.27) and 绩效考核 peaks at 51.18. So the **hard, promotion-blocking** devices (一票否决,
+目标责任) give way to **softer, conversational and procedural** ones (约谈 — being summoned for a
+talk — and 问责 / 绩效考核). That is a change in the *form* of accountability, not its disappearance,
+and it is the answer to §4's third candidate: **yes, substitution happened.**
+
+**Third, and this is what the substitution story cannot cover: 2023-25 is a general retreat.** Every
+instrument in the table is below its own peak, including the substitutes — 约谈 halves (33.47 →
+18.71), 绩效考核 falls 54%, 问责 falls 23%. So the veto's *latest* decline is **not** substitution;
+it sits inside a broad contraction of the whole accountability vocabulary on a fixed panel.
+
+**What remains unexplained is therefore narrower and sharper than before.** Not "why did the veto
+retreat" but **"why did the entire promotion-pressure vocabulary contract after 2022"** — with
+基层减负 ruled out as the documentary driver (§4) even though its own usage grows in that window.
+That is a better question than the one this memo started with, and it is the one to take to a
+fixed-panel series over a longer horizon.
 
 ---
 
