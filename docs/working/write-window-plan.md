@@ -39,6 +39,30 @@ git pull                       # f86a0cf -> today's HEAD. Nothing below exists w
    Must precede `build_doc_identity`, or the merged rows get no identity row.
 4. **`python3 scripts/trim_body_tails.py --dry-run`** then `--apply`. Must precede the BM25 rebuild
    (trim first, then ONE index rebuild, not two). `--revert` undoes every audited change.
+
+   **Scope, measured read-only 2026-10-09** (306s over 62,591 prefiltered bodies): **33,418 carry a
+   trailing chrome block** → `trim=32,808`, `flagged=610`. The 610 are *all-chrome* bodies (nothing
+   but widget text) and are **flagged, not trimmed**, which is the right call — a body that is
+   entirely chrome needs re-extraction or a ledger entry, not truncation to empty.
+
+   **The safety case is the marker census.** All 16 markers are unambiguously page furniture, none
+   overlapping document content: 扫一扫在手机打开当前页 22,922 · CODE(js/css) 11,083 · 分享到 6,004 ·
+   相关解读 3,157 · 网站导航 2,802 · 微博 1,473 · 相关文档 1,308 · 打印本页 1,261 · 【关闭】 1,032 ·
+   下一篇 779 · 微信 457 · 上一篇 367 · 【打印】 266 · 关闭窗口 190 · 相关链接 151 · QQ空间 4.
+   Concentrated in `gov` (12,763 of the 扫一扫 rows), `js` (5,231), `suzhou` (3,741), `most` (1,059).
+
+   **The part to hand-check before `--apply`.** Trim size is overwhelmingly small — 20,227 of
+   32,808 remove under 5% of the body — but the tail of the distribution is not:
+
+   | removed share | <2% | 2-5% | 5-10% | 10-25% | 25-50% | **50-90%** | **≥90%** |
+   |---|---|---|---|---|---|---|---|
+   | suffix rows | 13,743 | 6,484 | 3,854 | 3,912 | 3,574 | **1,147** | **94** |
+
+   **1,241 rows (3.8%) lose more than half their body.** "The body really was mostly chrome" and
+   "the detector over-reached" produce the *same number*, so these need eyes, not a percentage.
+   `--dump-tsv` emits per-row before/after; read a sample of the ≥90% and 50-90% bands first, and
+   if they look wrong, `--apply` is still safe to run because `--revert` undoes every audited
+   change — but it is better to know beforehand.
 5. **The owed rebuild, in this order** — each reads the previous one's output:
    `build_doc_identity.py --write --force` → `build_instrument_succession.py --write --force` →
    `extract_citations.py` → `build_site_stats.py` (now also writes **`doc_len`**, which step 6
