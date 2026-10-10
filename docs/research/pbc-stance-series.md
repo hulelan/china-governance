@@ -81,10 +81,29 @@ element and the monetary posture is the variable one, not the other way round.
 appears in exactly 10 readouts, **2023-09 through 2025-12**, and is absent from 2026-03 onward. It
 arrives and departs without reference to the stance change that happened in the middle of its run.
 
-**以我为主 ("primarily based on our own conditions") never appears.** It is widely quoted as a PBOC
-formulation on policy autonomy, and it is **not committee language** — a negative result only a
-complete series can establish, and one a sampled or keyword-searched approach would likely have
-reported as present from a non-committee source.
+**以我为主 ("primarily based on our own conditions") never appears in a readout — and that is a
+genre boundary inside one institution, not an absence.** Checked against the wider population rather
+than banked as a negative: the phrase appears in **35 PBC documents** (and 42 on `gov`), 2010 onward,
+but in **spokesperson Q&A, press conferences and governor speeches** — never in the committee's
+formal quarterly readout:
+
+> 2010-06 新闻发言人就进一步推进人民币汇率形成机制改革答记者问 — *…按照主动性、渐进性、可控性原则
+> **以我为主**有序推进…*
+> 2019-09 新闻发布会 — *…我们货币政策主要是服务国内经济，所以我们决定货币政策也主要是**以我为主**…*
+> 2015-05 周小川 专题党课 — *…按照**以我为主**、循序渐进的方针…*
+
+So the **autonomy claim** is made where a human speaks and takes questions, while the readout confines
+itself to **objective language** (合理均衡, 双向浮动). "It never appears" would have been true and
+uninteresting; "35 times in this bank's documents and zero times in its committee readouts" is a fact
+about **where a claim is permitted to be made**.
+
+**A caveat on the sibling series, recorded because it looked usable and is not.** The corpus also
+holds **71 货币政策执行报告** (the bank's long quarterly Monetary Policy Report), 2009-02 to 2026-08 —
+but their bodies are **announcement stubs**: median **80 characters**, maximum 2,325, and **zero of 71
+above 5,000**. Only 25 carry more than 200 characters. The reports themselves are PDF attachments, so
+**no text finding can rest on them**; the 以我为主 counts above come from the whole `pbc` site, not
+from the reports. (The attachment-only shape is the same one `extract_pdf_text.py` addresses
+elsewhere.)
 
 ## 4. What this is not
 
