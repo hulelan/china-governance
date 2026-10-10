@@ -5603,3 +5603,65 @@ drop roughly that many resolved edges, which is the *intended* effect since a �
 other documents' titles. And the background wrapper reported exit 1 while the trim's own log said
 APPLIED cleanly — the "it ran vs it worked" distinction, inverted, so the result was verified from
 the work's own output rather than the wrapper's status.
+
+---
+
+## P2 iteration 148 — the PDF gate, a stall diagnosed rather than guessed, and w29466's deployment half
+
+**1. The PDF candidate gates were excluding the rows the pipeline existed for** (`31f7475`).
+CLAUDE.md listed two things as remaining (prefer `attachments_json`'s url; retry https → http for
+the SM2 certificates Shenzhen hosts serve) and both were already in place. The missing piece was
+the **selection**: the marker gate required 附件/点击/下载 in the body, and CLAUDE.md's own seventh
+bug-shape is a body carrying none of them *because the body IS the attachment's filename*. That
+hid **1,100** rows; `raw_html_path != ''` cost **~511** more, although `attachment_url_from_json`
+needs no HTML and that column is a dangling pointer for all 725 mofcom rows.
+
+Verified on a named target, not an aggregate — `--site jieyang`: **23 of 24 PDFs extracted, 0
+download errors, 0 skipped for "no HTML or no attachment URL"**, every one of those rows having
+`html=N` so the old gate could not see them. `207337` 揭阳市2016年市本级决算草案报告 went **87 →
+14,352 characters** of the 财政局局长's final-accounts report to the municipal 人大; `208476` →
+23,069; `211697` → 5,530. The one failure is a scanned PDF. Writing the tests caught a bug in my
+own fixture: row 5's body read 没有**附件**标记 and therefore contained the marker, so the test
+failed on its own prose.
+
+**2. A bounded 800-document run stalled, and the diagnosis is the lesson** (`2653392`). It
+enriched 160 in 57 minutes then wrote nothing for 32. Three facts settled it — **43 s of CPU**, a
+**WAL frozen byte-identical**, and an **ESTABLISHED socket whose fd timestamp kept advancing** —
+so it was *cycling* through unresponsive hosts, not stuck on one. `HostBreaker`'s logic was fine;
+the **cost per trip** was not: https then http at 30 s each means a dead row costs 60 s and
+retiring one host takes `HOST_FAIL_LIMIT × 60 s` = **eight minutes**.
+
+The fix needed no tuned constant. CLAUDE.md records exactly why the http fallback exists — the SM2
+`BAD_ECPOINT` failure — and **a timeout is not a TLS failure**, so `_is_timeout(exc)` now gates
+the retry and halves every dead-host cost. 10 tests pin both directions, because a true SM2 error
+must still retry, plus a self-referential `URLError.reason` that would otherwise hang the crawler
+inside the predicate. Stopping the run was put to the user (the standing ask-before-killing rule)
+and authorized; the 160 rows persisted because the tool commits per document.
+
+**Two new forms of known failure families, both recorded in CLAUDE.md.** (a) `nohup CMD &` inside
+ssh leaves a **`bash -c` wrapper** whose command line contains the full command, so
+`pgrep -f "[e]xtract_pdf_text.py" | head -1` returned the WRAPPER and the socket check built on it
+reported **zero sockets** for a run that held an ESTABLISHED connection — the evidence said "not
+downloading" when it was. The bracket trick cannot help; the string is in a *different* process.
+(b) A backgrounded Python redirected to a file is **block-buffered and unobservable**, and the
+buffer is **lost on kill** — twice today a working run looked dead behind an empty log, and
+progress had to be read from the database instead.
+
+**3. w29466's deployment half, which the scoping note had left with an instruction attached**
+(`738e97a`, `surveillance-deployment.md`). The AI-tocracy causal chain stays out of reach and was
+not attempted. The instruction was *"start with the panel rather than the headline"*, and doing so
+paid: **three of eight deployment terms sign-flip** — 视频监控 +0.93 raw and **−0.58** on the
+fixed-panel share, 社会治安防控 −0.49, 智慧城市 −0.31 — so most of the vocabulary that looks like
+expanding surveillance is the corpus growing. Only 技防 (+0.67) and 人脸识别 (+0.37) rise. 技防 is
+**2 characters**, the largest usable series here, and a trigram query returns a clean 0 for it.
+
+The finding: **the state regulates AI centrally and deploys it locally.** Deployment vocabulary is
+**57-86% sub-national government**, regulation vocabulary **6-37%**, and the distributions barely
+overlap. Crucially this is ONE measure on both sides — the AI memos report *cascade* shares, a
+different unit, so the regulation side is re-measured identically inside the tool rather than
+borrowed. 雪亮工程 is reported `thin` (82 panel docs) with no trend asserted, as asked. And
+生成式人工智能 is **48% media**, the highest share on either table and above its own central share.
+
+**One recurring self-inflicted annoyance, third time today:** scp'ing a repo-path script to the
+droplet for testing blocks the next `git pull` as an untracked-file collision. Probes belong in
+`/root/`, not in the repo tree; a script that lives in the repo should be committed and pulled.
