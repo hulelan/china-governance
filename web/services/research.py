@@ -53,6 +53,7 @@ CURATED: list[tuple[str, list[str]]] = [
         "pbc-stance-series",
         "mandarin-capitalism",
         "ai-governance-diffusion", "ai-regulatory-web", "ai-plus-fidelity",
+        "surveillance-deployment",
         "industrial-policy-targeting", "export-control-regime",
         "geoeconomic-pressure-instruments", "attention-campaigns",
     ]),
