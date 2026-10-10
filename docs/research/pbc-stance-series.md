@@ -4,6 +4,26 @@
 backfill. Companion to `rmb-coverage.md` (which measures how much the corpus *holds* on the RMB)
 and `pbc-fx-position-2026.md` (which reads one position statement closely).
 
+## 0. The literature this speaks to
+
+**NBER w34626, "The Ins & Outs of Chinese Monetary Policy Transmission"** (Miranda-Agrippino,
+Nenova & Rey, January 2026) builds a **novel indicator of the PBOC's monetary policy stance** and
+estimates a policy rule for a **dual price-stability mandate — domestic inflation and the exchange
+rate** — allowing for the evolution of the operating framework. Its abstract does not state how the
+indicator is constructed.
+
+**This memo tests their premise rather than replicating their estimate**, which is a different and
+cheaper contribution. They assume the dual mandate; the committee's own readouts say whether it is
+symmetric. §3 finds it is **not**: the exchange-rate leg is invariant across sixteen years and both
+stance regimes while the domestic leg is the only thing that moves. And §2 gives their regime
+changes an **external, public date** — 2010-12 and 2025-03, each preceded by one overlap quarter —
+against which an econometric indicator can be checked.
+
+Related, and consistent: **NBER w35562, "Monetary Policy in Mandarin Capitalism"** (Chang & Xiong,
+July 2026) argues the regime is oriented to production rather than demand — credit sustains output
+and firm balance sheets instead of generating inflation. A stance *word* that changes while the FX
+frame holds fits that reading, though nothing here tests it.
+
 ## 1. The object
 
 The corpus now holds **70 quarterly readouts** of the PBC Monetary Policy Committee
