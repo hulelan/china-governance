@@ -5251,3 +5251,43 @@ to catch.
 Extraction at **3,025/4,164 with 1,487 extracted** (49%), droplet 00:14 UTC, on course to finish
 ~01:20 against a 06:00 nightly.
 
+---
+
+## Iteration 141 — checked my own negative result and it got better
+
+Went looking for a second PBC quarterly series and found **two things, one a caveat and one a
+sharper finding**.
+
+**The caveat, recorded because the series looked usable and is not.** The corpus holds **71
+货币政策执行报告** (the bank's long quarterly Monetary Policy Report), 2009-02 to 2026-08 — but their
+bodies are **announcement stubs**: median **80 characters**, maximum 2,325, and **zero of 71 above
+5,000**. Only 25 carry more than 200 characters. The reports themselves are PDF attachments, the same
+attachment-only shape `extract_pdf_text.py` addresses elsewhere. **No text finding can rest on them**,
+and the memo now says so, because 71 apparent quarterly reports that are really 71 links is exactly
+the kind of thing a future reader would build on.
+
+**The sharper finding came from doubting my own negative.** Last iteration I wrote that 以我为主
+"never appears" and called it a negative result only a complete series can establish. True of the
+readouts — but checking the WIDER population rather than banking it: the phrase appears in **35 PBC
+documents** (and 42 on `gov`) from 2010 onward, in **spokesperson Q&A, press conferences and governor
+speeches**:
+
+> 2010-06 新闻发言人就人民币汇率形成机制改革答记者问 — *按照主动性、渐进性、可控性原则**以我为主**有序推进*
+> 2019-09 新闻发布会 — *我们货币政策主要是服务国内经济，所以我们决定货币政策也主要是**以我为主***
+> 2015-05 周小川 专题党课 — *按照**以我为主**、循序渐进的方针*
+
+So it is a **genre boundary inside one institution**: the **autonomy claim** is made where a human
+speaks and takes questions, while the committee's formal readout confines itself to **objective
+language** (合理均衡, 双向浮动). "It never appears" would have been true and uninteresting;
+**"35 times in this bank's documents and zero times in its committee readouts" is a fact about where a
+claim is permitted to be made.**
+
+**The transferable lesson.** A negative result is the easiest kind to bank and the easiest to
+overstate. The check that improved it was trivial — run the same term against the whole site instead
+of the one genre — and it converted an absence into a structural finding. Worth doing to every
+negative before it is published, because an absence is only interesting against a presence somewhere
+else.
+
+Extraction at **3,600/4,164 with 1,928 extracted — 53.6% yield**, three hosts correctly tripped
+(ga, hrss, samr). Droplet 00:42 UTC, finishing ~01:07 against the 06:00 nightly.
+
