@@ -8,6 +8,26 @@ the individual studies.*
 
 ---
 
+## What changed on 2026-10-09 (read this first)
+
+A single day's work corrected or withdrew several figures below. Each is annotated in place; this is
+the index so a reader landing mid-memo is not misled.
+
+| claim | status |
+|---|---|
+| export control "**steps and holds**" after 2021 | **WITHDRAWN.** The panel was keyed on `date_written`, which whole institutions never populate, so it ran on 5 central sites with a 2018 denominator of 370 instead of 8 sites and 3,847. Corrected, 出口管制 **keeps climbing** (2.84% → 4.45%, ρ share +0.738 → **+0.952**). The internal control (出口许可 steps ~1.9x against ~7.3x) survives. |
+| RMB ratio "**sits flat for eight years**" | **WITHDRAWN.** 美元:人民币 keeps falling after 2017, 0.185 → **0.059**. And the comparison is **bilateral**: 欧元 16, 港元 8, 日元 2 panel documents against 美元's 684, so no currency replaces the dollar. |
+| top 1% hold **54.5%** of inbound | **Re-measured 62.5%** on production instrument pooling (Gini 0.965, never-cited 87.7%). Confirmed and steeper. |
+| successor rate **5.9%**, lag **564 d** | **Re-based 6.3% / 652.5 d.** Rate holds, **lag +16%**. |
+| province→city relay **9.3% vs 0.9%** | **Re-run 8.8% vs 0.9%**, ratio 10.1x. Holds. |
+| "PBC 31 documents" as the biggest institutional hole | **SUPERSEDED.** 6,099 documents after a cap-bug fix; SAFE 22 and an absent NFRA stand. |
+| *new* | `pbc-stance-series.md` — 70 MPC quarterly readouts; the stance word changed exactly twice in 16 years while the FX framework never changed. |
+
+**The common cause of the two withdrawals is worth stating once**: both were panel figures, and the
+panel was keyed on a date column that `pbc`, `chinatax`, `csrc`, `safe` and `spp` never populate —
+116,282 of 354,730 documents. A series is only as honest as its denominator, and a denominator is
+only as honest as the column it counts.
+
 ## The through-line
 
 One finding recurs across every diffusion and central-local study, independently derived each
@@ -68,6 +88,10 @@ methodological contribution.
 - **Authority and genre** (`citation-network-structure.md`, Q3+Q8; the IT-policy-citation-
   network method on 248k edges vs their 3,150). Authority is heavy-tailed: the top 1% of nodes
   hold 54.5% of resolved inbound citations (Gini 0.947; 84% of documents are never cited); of
+  *(Re-measured 2026-10-09 on the PRODUCTION instrument pooling, `instrument_inbound`, which has
+  no folded-title floor and drops pool-level self-cites: top 1% **62.5%**, Gini **0.965**, never
+  cited **87.7%**, top 100 17.4%. Confirmed and slightly steeper; this memo's own title-based
+  5-char pooling never pooled 民法典 or 预算法. See `citation-network-structure.md` appendix.)*
   the top 100, 80 are central and 75 are regulations or laws. The genre source/sink split holds
   and survives age control: regulations receive 7.3 / emit 1.6, explainers 0.1 / 2.0; 62.5% of
   edges target a framework genre, 13.7% originate from one. Cross-level flow: up 46%, same-level
@@ -225,6 +249,10 @@ Wuxi exactly on it) and chain descent (79.3 to 98.0, median 93.5) are stable acr
   is mostly measurement. A scored successor detector (core similarity + topic + generalization
   cue + issuer + citation, 76-87% precision) lifts the rate from ~1% to 5.9% raw / 6.9%
   ex-mid-flight (8-9.5% on 试点 trials only), median lag 564 days, inside W&Y's 820-day mean.
+  *(Re-based 2026-10-09 after an instrument-pooling change: **6.3% raw / 7.3% ex-mid-flight**,
+  pilot universe 1,271 → 1,244 as duplicate pilots collapsed, and **median lag 564 → 652.5 d** —
+  still inside W&Y's 820-day mean, but +16%, so any comparison against the §3b proxy's 738-1,070 d
+  is narrower than stated. `successor-detector.md`.)*
   Hand-classifying the pilots with no successor: 40% are zone designations that "scale" as
   more zones, 23% scaled under a RENAMED or absorbing instrument (海南自贸试验区 → 自贸港方案,
   刑事速裁试点 → the 2018 刑诉法 amendment), 20% are mid-flight, 7% never scaled. Of 12 mature
@@ -357,6 +385,12 @@ on this build. Tonight's nightly is in Phase 2 and holds the write lock until ro
   gave loan officers. A falsifiable forward prediction.
 - **`rmb-coverage.md` + `pbc-fx-position-2026.md`** — the monetary apparatus is the corpus's biggest
   institutional hole (PBC 31 documents, SAFE 22, no NFRA, against MOF 3,395), and it is a **dialect
+  *(SUPERSEDED for the PBC 2026-10-09: the cap bug was real and is fixed — the documented
+  `--max-pages 411` backfill could not work because `min(max_pages, cap)` always chose the cap.
+  **pbc now holds 6,099 documents**, 1993-2026, including 70 MPC quarterly readouts
+  (`pbc-stance-series.md`). SAFE 22 and an absent NFRA still stand. And a defect this line could
+  not see: pbc/chinatax/csrc/safe/spp populate only `date_published`, so they were invisible to
+  every time series until `panel.py` was fixed the same day.)*
   fix not a vantage problem**: both sites return real content from NYC and the crawler walked page 1
   only. Fixed the same day (31 → ~541, oldest **1993-01-14**, plus the 沟通交流 section). And the
   PBC's **2026-10-08 exchange-rate position statement** drops `保持人民币汇率在合理均衡水平上的基本稳定`
@@ -371,6 +405,8 @@ elaborate most" was wrong in emphasis and the province-to-city step is the only 
 to the three memos quoting it. `fidelity-provincial.md`'s relay claim **holds** (and its Guangdong
 share fell 95% → ~64%, so it is better supported than when written) but could not be stated in level
 vocabulary — the real contrast is **city government vs city bureau**, 9.3% against 0.9% relay
+*(Re-run 2026-10-09 after the pooling change, on the memo's own documented command: **8.8% against
+0.9%**, 7,007 vs 689 pairs, relay ratio 10.3x → **10.1x**. The claim holds.)*
 holding tier constant, which is a fact about the **kind of body** on an axis `admin_level_doc` does
 not encode. The three AI memos' central-monopoly claim **survived** and sharpened: sub-national
 *government* citation of the regulatory triad is **11 of 282 distinct citers (3.9%)**, and the
