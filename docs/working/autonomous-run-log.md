@@ -5414,3 +5414,46 @@ not be cited as a finding.
 
 Segmented rebuild at 346,000 of 354,730, droplet 01:56 UTC, finishing well inside the 06:00 nightly.
 
+---
+
+## Iteration 145 — infrastructure arc closed, everything consistent and validated
+
+The segmented index rebuild finished clean: **354,730 inserted in 3,647 s**, `indexed = 354,730`,
+and the WAL truncated to **0 bytes** by the builder's own final checkpoint — the behaviour CLAUDE.md
+describes, confirmed rather than assumed.
+
+**Full parity across the stack**, 3.5 h before the 06:00 nightly:
+
+| | |
+|---|---|
+| documents | **354,730** |
+| `doc_search_seg` | **354,730** |
+| `doc_search_seg_state` | **354,730** |
+| `contentless_delete=1` on the live table | **set** (migration succeeded) |
+| `validate_cascades.py` | **PASS 15/15**, `corpus_stats` drift 0.00% |
+
+**The day's infrastructure arc, in order, because each step was found by asking what the previous one
+had actually accomplished:**
+
+1. PBC cap bug → **+6,068 documents** (the documented `--max-pages 411` could not work).
+2. `attachments_json` fallback + PyMuPDF installed → **1,950 PDFs extracted**; the real blocker was
+   that a documented ACTIVE script had never been runnable on the droplet.
+3. Crash resilience + a per-host breaker → the run survives an encrypted PDF and a dead host.
+4. "What did that make **searchable**?" → the BM25 index never re-indexed a changed body, so ~3,945
+   documents still carried their 20-character stub in the ranking layer.
+5. Change detection + `contentless_delete=1` → and the fix needed its own fix, because contentless
+   FTS5 refuses DELETE.
+6. End-to-end verified: a document that went **20 → 13,726 characters** is findable by relevance.
+
+**The pattern worth keeping from all six**: every defect was found by asking what the *previous* step
+had actually delivered, not whether it had run. A crawler that exits 0 having listed 494 of 8,200. An
+extractor that cannot import. A run that "finished" by crashing. An index that holds text the corpus
+replaced. **"It ran" and "it worked" are different questions, and only the second one has a number
+attached.**
+
+Research produced alongside: `pbc-stance-series.md` (70 MPC quarterly readouts; the stance word
+changed twice in 16 years while the FX frame never did), the RMB re-base (the dollar's retreat is
+bilateral and ongoing), two NBER papers added with their premises tested rather than their estimates
+replicated, four memo re-bases, one withdrawn claim corrected in both the memo and the synthesis, and
+`sangong-feasibility.md` kept at 160 validated rows rather than written up as a dataset.
+
