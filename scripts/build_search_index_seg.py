@@ -79,6 +79,59 @@ def status(conn):
     return bool(have), docs, idx
 
 
+# The incremental path used to skip every rowid already present, so a document whose
+# BODY CHANGED was never re-indexed: its old text stayed in the BM25 index while the
+# database held the new one. Measured 2026-10-09 — extract_pdf_text.py moved ~3,945
+# documents from a ~20-character "详见附件" stub to thousands of characters (one went
+# 20 -> 13,726), and all of them kept their stub in doc_search_seg. The trigram index
+# is fine because it has an AFTER UPDATE trigger; this one is rebuilt by a script, so
+# it needs its own change detection. And because search_documents() tries the
+# segmented index FIRST and only falls through on zero hits, a stale row ranks on text
+# the corpus no longer holds.
+#
+# Body LENGTH is the fingerprint: cheap (SQLite answers LENGTH() from the record
+# header), and it catches exactly the stub-to-full-text case this exists for. It will
+# miss a same-length edit, which is why --rebuild remains the authority.
+STATE_DDL = """
+CREATE TABLE IF NOT EXISTS doc_search_seg_state (
+    doc_id   INTEGER PRIMARY KEY,
+    body_len INTEGER NOT NULL
+);
+"""
+
+
+def stale_and_done(conn):
+    """-> (set of rowids to SKIP, count of changed rows being re-indexed).
+
+    A rowid is skipped only when it is indexed AND its recorded body length still
+    matches. Anything indexed with a different length is deleted from the index so the
+    main loop re-inserts it.
+    """
+    conn.executescript(STATE_DDL)
+    indexed = {r[0] for r in conn.execute("SELECT rowid FROM doc_search_seg")}
+    if not indexed:
+        return set(), 0
+    recorded = dict(conn.execute("SELECT doc_id, body_len FROM doc_search_seg_state"))
+    current = dict(conn.execute(
+        "SELECT id, LENGTH(COALESCE(body_text_cn,'')) FROM documents"))
+    changed = {d for d in indexed
+               if d in recorded and recorded[d] != current.get(d, recorded[d])}
+    # Rows indexed before the state table existed have no record; treat them as fresh
+    # rather than re-indexing the whole corpus, and record their length now.
+    unknown = [d for d in indexed if d not in recorded]
+    if unknown:
+        conn.executemany("INSERT OR REPLACE INTO doc_search_seg_state VALUES (?,?)",
+                         [(d, current.get(d, 0)) for d in unknown])
+        conn.commit()
+        print(f"state: recorded body length for {len(unknown):,} pre-existing rows")
+    if changed:
+        conn.executemany("DELETE FROM doc_search_seg WHERE rowid = ?",
+                         [(d,) for d in changed])
+        conn.commit()
+        print(f"stale: {len(changed):,} indexed rows have a changed body — re-indexing")
+    return indexed - changed, len(changed)
+
+
 def existing_rowids(conn):
     return {r[0] for r in conn.execute("SELECT rowid FROM doc_search_seg")}
 
@@ -108,9 +161,15 @@ def main():
     conn.executescript(CREATE)
     conn.commit()
 
-    done = set() if args.rebuild else existing_rowids(conn)
+    if args.rebuild:
+        conn.executescript(STATE_DDL)
+        conn.execute("DELETE FROM doc_search_seg_state")
+        conn.commit()
+        done, n_stale = set(), 0
+    else:
+        done, n_stale = stale_and_done(conn)
     if done:
-        print(f"incremental: {len(done):,} already indexed, skipping those")
+        print(f"incremental: {len(done):,} already indexed and unchanged, skipping those")
 
     read = conn.cursor()
     read.execute(
@@ -125,6 +184,7 @@ def main():
     n = 0
     skipped = 0
     batch = []
+    state = []          # (doc_id, body_len) fingerprints for stale_and_done
     for row in read:
         doc_id = row[0]
         if doc_id in done:
@@ -139,18 +199,29 @@ def main():
             segment_index(abstract),
             segment_index(body),
         ))
+        # Record the fingerprint so the NEXT incremental run can tell this row apart
+        # from one whose body has since changed (see stale_and_done).
+        state.append((doc_id, len(body or "")))
         if len(batch) >= args.batch:
             _commit_batch(conn, ins_sql, batch)
+            conn.executemany(
+                "INSERT OR REPLACE INTO doc_search_seg_state VALUES (?,?)", state)
+            conn.commit()
+            state.clear()
             n += len(batch)
             batch.clear()
             rate = n / max(time.time() - t0, 1e-6)
             print(f"  indexed {n:,} (+{rate:.0f}/s, {time.time()-t0:.0f}s)", flush=True)
     if batch:
         _commit_batch(conn, ins_sql, batch)
+        conn.executemany(
+            "INSERT OR REPLACE INTO doc_search_seg_state VALUES (?,?)", state)
+        conn.commit()
+        state.clear()
         n += len(batch)
 
-    print(f"segmented+inserted {n:,} docs (skipped {skipped:,} already present) "
-          f"in {time.time()-t0:.0f}s")
+    print(f"segmented+inserted {n:,} docs ({n_stale:,} of them re-indexed after a body "
+          f"change; skipped {skipped:,} unchanged) in {time.time()-t0:.0f}s")
     conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     have, docs, idx = status(conn)
     print(f"after:  table={have} docs={docs:,} indexed={idx:,}")
