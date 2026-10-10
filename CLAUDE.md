@@ -838,6 +838,27 @@ exiting 0 over nine crashed sites, `$?` after a pipe). Two more for the list, bo
 bash-ism** — under zsh it expands to empty, so a guard built on it silently never fires (zsh
 spells it `${pipestatus[1]}`).
 
+**A second form of the self-match, found 2026-10-10 and it sent a diagnosis to the wrong**
+**process.** `nohup CMD > log 2>&1 &` inside `ssh '...'` leaves a **`bash -c` wrapper** alive whose
+own command line contains the full command text. So `pgrep -f "[e]xtract_pdf_text.py" | head -1`
+returned the WRAPPER, not the Python process, and the `ss -tnp | grep "pid=$P"` built on it showed
+**zero sockets** for a run that in fact held an ESTABLISHED connection — i.e. the evidence said
+"not downloading" when it was. The bracket trick does not help here, because the string being
+matched is in a *different* process. **Resolve the pid by the interpreter, not by the script**
+(`pgrep -f "python3 scripts/extract_pdf_text.py"`), or read `/proc/<pid>/cmdline` and check it
+starts with the interpreter before trusting anything derived from that pid. The tell: the wrapper
+shows `00:00:00` CPU and `wchan = do_wait`, which is a process waiting on a child, never a worker.
+
+**And a backgrounded Python redirected to a file is UNOBSERVABLE unless you unbuffer it.**
+Twice on 2026-10-10 a run looked dead — an empty log after 15 and then 32 minutes — while it was
+working, because `print()` block-buffers when stdout is not a tty. Worse, **the buffer is lost
+when the process is killed**, so the diagnostic output never arrives at all. Progress had to be
+measured from the DATABASE (counting candidate rows that had left the work set) rather than from
+the log. Pass `python3 -u`, or set `PYTHONUNBUFFERED=1`, or `print(..., flush=True)` on the
+progress line — `extract_pdf_text.py` now does the last. And when a long run looks stalled, the
+three cheap facts that actually distinguish stalled from silent are **CPU time** (`ps -o time`),
+**WAL size** (frozen bytes = no commits) and `/proc/<pid>/wchan`; an empty log proves nothing.
+
 ## A recurring bug shape: length floors measured on a NORMALIZED string
 
 Four separate bugs this project has shipped are the same mistake (the fourth was predicted
@@ -1080,11 +1101,21 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
     final-accounts report to the municipal 人大; `208476` → 23,069; `211697` → 5,530. The one
     failure, `204269`, is the scanned PDF. So the yield is real primary fiscal text
     (部门预算 / 部门决算 / 预算执行情况), not boilerplate.
-  - **Still to do:** the corpus-wide drain. The tool's DEFAULT `--max-body-len` finds **3,364**
-    candidates where a 400-char threshold finds **16,882**, so `--max-body-len 400` is the fuller
-    sweep and jieyang alone still has 568 rows under 400 chars. At ~1.9 s/document a full pass is
-    1-3 h, which must NOT overlap the 06:00 nightly (the 2-writer rule) — run it in bounded
-    `--limit` chunks.
+  - **The corpus-wide drain is STILL TO DO, and the first attempt taught the economics.** A bounded
+    `--limit 800` run enriched **160** documents in 57 minutes and then wrote nothing for 32. It was
+    not stuck: 43 s of CPU, a frozen WAL and an ESTABLISHED socket whose fd timestamp kept advancing
+    showed it CYCLING through unresponsive hosts. `HostBreaker`'s logic was fine; the cost per trip
+    was not — `download_attachment` tried https then http at 30 s each, so a dead row cost 60 s and
+    retiring one host took `HOST_FAIL_LIMIT` x 60 s = **eight minutes**. Fixed in `2653392` without a
+    tuned constant: the http fallback exists ONLY for the SM2 `BAD_ECPOINT` failure above, and a
+    timeout is not a TLS failure, so `_is_timeout(exc)` now gates the retry and halves every
+    dead-host cost. `--fetch-timeout` was added for the same reason (default 30; use **~10** for a
+    bulk pass — a healthy host answered in ~1.9 s over 24 documents).
+  - **Sizing for whoever runs it:** the DEFAULT `--max-body-len` finds **3,364** candidates where a
+    400-char threshold finds **16,882**, so `--max-body-len 400` is the fuller sweep and jieyang
+    alone still has 568 rows under 400 chars. Run it in bounded `--limit` chunks that end before
+    06:00 UTC (the 2-writer rule), with `--fetch-timeout 10`, and read progress from the DATABASE
+    (candidate rows leaving the work set) rather than the log unless you pass `python3 -u`.
 - **(RESOLVED 2026-10-10) `trim_body_tails.py` has RUN, and its pre-registered prediction was a
   hit.** `--apply` changed **32,934 bodies** (663 flagged, 0 skipped because the body changed since
   the scan, 0 lock retries); reversible via `--revert`, audit in `body_tail_trims`. The question was
