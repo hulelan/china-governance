@@ -1064,9 +1064,27 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
     Python" — from one crawler's quirk to a property of Shenzhen government hosts. Any crawler or
     tool hitting `*.sz.gov.cn` and its bureau subdomains should try `http://` before concluding a
     host is unreachable.
-  - **What remains:** teach `extract_pdf_text.py` to prefer `attachments_json`'s url over
-    re-parsing HTML, and to retry `https` → `http` on a TLS error. ~6,013 documents of budget,
-    final-accounts and procurement text (部门预算 / 部门决算 / 询价公告) would gain real bodies.
+  - **SHIPPED and verified 2026-10-10 (`31f7475`).** All three parts are now in place: the
+    `attachments_json` url, the `https` → `http` retry, and — the piece that was still missing —
+    the **candidate gates**, which excluded the very rows the other two fixes were for. Two gates,
+    each costing a measured population: the MARKER gate (body must say 附件 / 点击 / 下载) hid
+    **1,100** rows whose body carries none of them because the body IS the attachment's filename
+    (hrss 238, jieyang 175, zhuhai 112, jiangmen 84); and `raw_html_path != ''` cost **~511** more,
+    although `attachment_url_from_json` needs no HTML and that column is a dangling pointer for all
+    725 mofcom rows. The predicate is now `candidate_where(body_threshold, site)`, exercised as real
+    SQL against fixture rows in `tests/test_pdf_candidate_gate.py` (9 cases).
+  - **End-to-end result on a named target**, `--site jieyang`: **24 processed, 23 PDFs with text,
+    1 scanned (no text layer), 0 download errors, 0 skipped for "no HTML or no attachment URL"** —
+    and every one of those rows had `html=N`, so the old gate could not see them at all. Document
+    `207337` 揭阳市2016年市本级决算草案报告 went **87 → 14,352 characters** of the 财政局局长's
+    final-accounts report to the municipal 人大; `208476` → 23,069; `211697` → 5,530. The one
+    failure, `204269`, is the scanned PDF. So the yield is real primary fiscal text
+    (部门预算 / 部门决算 / 预算执行情况), not boilerplate.
+  - **Still to do:** the corpus-wide drain. The tool's DEFAULT `--max-body-len` finds **3,364**
+    candidates where a 400-char threshold finds **16,882**, so `--max-body-len 400` is the fuller
+    sweep and jieyang alone still has 568 rows under 400 chars. At ~1.9 s/document a full pass is
+    1-3 h, which must NOT overlap the 06:00 nightly (the 2-writer rule) — run it in bounded
+    `--limit` chunks.
 - **(RESOLVED 2026-10-10) `trim_body_tails.py` has RUN, and its pre-registered prediction was a
   hit.** `--apply` changed **32,934 bodies** (663 flagged, 0 skipped because the body changed since
   the scan, 0 lock retries); reversible via `--revert`, audit in `body_tail_trims`. The question was
