@@ -1067,22 +1067,38 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   - **What remains:** teach `extract_pdf_text.py` to prefer `attachments_json`'s url over
     re-parsing HTML, and to retry `https` → `http` on a TLS error. ~6,013 documents of budget,
     final-accounts and procurement text (部门预算 / 部门决算 / 询价公告) would gain real bodies.
-- **(2026-10-09, SUPERSEDED by the entry above) Should `trim_body_tails.py` write
-  `body_fetch_failures` rows for the bodies it leaves under ~200 characters?** Measured before applying it: the trim is correct (hand-checked on
-  its 8 most aggressive rows — every removal is pure CSS/JS) but it leaves **~1,576 documents with
-  under 200 chars** — **but only 163 of those are content-free** (measured 2026-10-09 by stripping
-  the title AND the metadata boilerplate, then asking whether anything remains; the other ~1,400 are
-  short but genuine). **The threshold question is now answered, and the answer is that there is no
-  usable threshold:** the content-free set spans **26-158 chars** and any cutoff capturing it also
-  captures **758 rows that do have content**, so the criterion must be **functional** — nothing left
-  after removing the title and the metadata — not a length. The real 163 are gov.cn news stubs
-  (`习近平同阿塞拜疆总统阿利耶夫通电话` + date + 来源：新华社 + 字号 widgets) whose body never
-  extracted. **What remains open is only whether it is worth wiring**: such a row counts as "has a
-  body", so `backfill_from_html.py` (which refuses to write a shorter body) and the nightly both skip
-  it forever — the invisibility is real — but 163 rows is small, and re-extraction (`--apply`
-  **without** `--no-reextract`) may rescue most of them before any ledger row is needed. Re-measure
-  after the trim runs; if the residue is still ~150 it is a 20-line change, and if it is ~10 it is
-  not worth doing.
+- **(RESOLVED 2026-10-10) `trim_body_tails.py` has RUN, and its pre-registered prediction was a
+  hit.** `--apply` changed **32,934 bodies** (663 flagged, 0 skipped because the body changed since
+  the scan, 0 lock retries); reversible via `--revert`, audit in `body_tail_trims`. The question was
+  whether to write `body_fetch_failures` rows for the content-free residue, and the registered
+  prediction was ~163 rows measured **functionally** (nothing left after removing the title AND the
+  metadata boilerplate — never a length cutoff, because the content-free set spanned 26-158 chars
+  while any cutoff capturing it also caught 758 rows that do have content). **Measured: 135.** So
+  the rule it carried ("~150 → wire it, a 20-line change") resolves to *worth wiring*.
+  **The first telling of that measurement was wrong, and it is the aggregate-vs-named trap again.**
+  A whole-corpus scan finds **3,789** content-free rows under 200 chars, which against a prediction
+  of 163 reads as 23x off. Wrong denominator: joined against `body_tail_trims.doc_id`, **3,654 of
+  the 3,789 were already under 200 characters before the trim**, so only 135 belong to the
+  prediction's population. **Compute a prediction's own denominator, not the convenient one.**
+  **The residue is mostly the population the entry above already identified**, and bigger than that
+  entry's framing implied: of the 3,654 pre-existing rows, **3,520 are `title_only`** (the body is
+  the title and nothing else) and **251 are attachment stubs** (`2014年度汕尾市人民政府办公室部门决算.pdf`),
+  concentrated in hrss 980, bjd_xicheng 239, mzj 235, pbc 223, szlhq 170. All count as "has a body",
+  so `backfill_from_html.py` and the nightly skip them forever. The `extract_pdf_text.py` work above
+  (prefer `attachments_json`'s url, retry https → http) is the fix for the attachment share; the
+  3,520 title-only rows are a separate and larger question, and whether to fix them per-site at the
+  extractor (as `pbc` was) or once centrally is now the open part.
+  **Two smaller findings from the same run.** (a) **18** rows still carry a tail marker after the
+  trim, all shaped `<title>.pdf相关解读` on a single line — a gap in the inline rule. (b) The
+  staleness bookkeeping works: exactly **32,934** `doc_search_seg_state` rows now mismatch on
+  `body_len`, so Phase 2c re-segments precisely the changed bodies. Had that been 0, the trim would
+  have been invisible to relevance search.
+  **Pre-registered and still pending** (`docs/working/prereg-next-rebuild.md`): **276 named citation
+  edges** whose `target_ref` survives only in a removed tail (167 resolved) must be absent after the
+  next Phase 2b rebuild — including two *reciprocal* pairs (3504171↔3504176, 3950035↔3950045) and a
+  **self-citation** (4644962→4644962), which are the signature of a 相关链接 widget read as
+  references. The net resolved count is explicitly NOT predicted, because the classifier drain adds
+  `llm` edges in the same window.
 - **(2026-10-08) Why do 55% of newly-authorized cities' regulations fall outside the three
   domains the 2015 立法法 amendment confined them to?** `local-legislative-devolution.md` measures
   the confinement as real but leaky: the 283 cities that gained legislative power in 2015-17 do

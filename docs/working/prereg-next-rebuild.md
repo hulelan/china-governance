@@ -268,3 +268,69 @@ sqlite3 "file:documents.db?mode=ro" "
 python3 scripts/validate_cascades.py        # expect 15/15
 python3 scripts/body_ledger.py --stats
 ```
+
+---
+
+# Prereg 2026-10-10 — the body-tail trim's effect on the citation graph
+
+`scripts/trim_body_tails.py --apply` changed **32,934 bodies** (663 flagged, 0 skipped, 0 lock
+retries), removing page-chrome tails: share widgets, print/close buttons, and — the part that
+matters here — **相关链接 / 相关解读 / 上一篇 blocks, which hold OTHER documents' titles that the
+citation extractor reads as references.**
+
+## The named targets (these decide it)
+
+Measured from `body_tail_trims.removed_tail`: **276 edges in `citations` whose `target_ref` occurs
+in a removed tail and NOWHERE in the surviving body**, of which **167 are resolved** (have a
+`target_id`). After the next Phase 2b citation rebuild, each must be **absent**.
+
+| source_id | target_id | type | why it is an artifact |
+|---|---|---|---|
+| 3504171 | 3504176 | named | **mutual pair** with the row below — each document "cites" the other through its 相关链接 widget |
+| 3504176 | 3504171 | named | the other half of that pair |
+| 3950035 | 3950045 | named | second mutual pair, same shape |
+| 3950045 | 3950035 | named | |
+| 4644962 | 4644962 | named | **self-citation** — the document's own title sat in its own tail |
+| 2601932 | *(unresolved)* | named | 广东省农业农村厅…通知, a link-list entry |
+| 5410727 | *(unresolved)* | named | 南山"法英汇"青年律师扶持试行办法 |
+| 9919843 | *(unresolved)* | named | 南山区妇女发展规划（2021-2030年） |
+
+**Reciprocal pairs and self-citations are the signature of a navigation block**, and they are
+nameable, which is the whole point: a count of 276 is a prediction about everything happening at
+once, while "edge 4644962 → 4644962 is gone" is a prediction about this change alone.
+
+Check after the rebuild:
+
+```sql
+-- every one of these must return 0
+SELECT COUNT(*) FROM citations WHERE source_id=3504171 AND target_id=3504176;
+SELECT COUNT(*) FROM citations WHERE source_id=3504176 AND target_id=3504171;
+SELECT COUNT(*) FROM citations WHERE source_id=3950035 AND target_id=3950045;
+SELECT COUNT(*) FROM citations WHERE source_id=4644962 AND target_id=4644962;
+```
+
+## The aggregate, and why it will NOT be interpretable
+
+Total resolved edges may move in either direction and should not be read as a verdict. The
+2026-10-09 lesson applies verbatim: that prereg predicted resolved edges would fall and they
+**rose** 310,136 → 344,049, because a classification drain was adding `llm` reference edges at
+60.4% resolution in the same window. The same confound is live now — Phase 2's classifier is
+unbounded and had 23,710 documents queued at the last nightly. So:
+
+* **Expected, directionally:** ~167 resolved edges and ~109 unresolved ones disappear; `doc_inbound`
+  falls slightly for the targets of those 167; `citation_rank` for 3504171/3504176/3950035/3950045
+  loses its reciprocal inbound edge.
+* **Not predicted:** the net resolved count, the resolution percentage, or `cxgh_edges`.
+* **Must not change:** `validate_cascades.py` stays **15/15**. The trim touched bodies, not
+  identity, pooling or the tracker tables, so a failure there means something else moved.
+
+## Also pending verification from the same change
+
+* **`doc_search_seg` staleness.** 32,934 bodies changed, so `doc_search_seg_state.body_len` should
+  now mismatch for those rows and Phase 2c should re-segment exactly them. If the stale count is
+  **0**, the trim is invisible to relevance search and the staleness fix regressed.
+* **The content-free residue.** CLAUDE.md's open question predicted ~163 rows with nothing left
+  after removing the title and metadata, with the decision rule "~150 → wire `body_fetch_failures`
+  (a 20-line change); ~10 → not worth doing". The criterion is **functional, not a length** — the
+  content-free set spanned 26-158 chars and any cutoff capturing it also caught 758 rows that do
+  have content. Re-measure post-trim and resolve the open question either way.
