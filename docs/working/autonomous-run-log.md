@@ -5291,3 +5291,49 @@ else.
 Extraction at **3,600/4,164 with 1,928 extracted — 53.6% yield**, three hosts correctly tripped
 (ga, hrss, samr). Droplet 00:42 UTC, finishing ~01:07 against the 06:00 nightly.
 
+---
+
+## Iteration 142 — the extraction finished, and asking what it made SEARCHABLE found the next defect
+
+**Extraction done, with exact accounting**: **3,654 processed → 1,950 PDFs with text extracted**, 957
+scanned (no text layer), 100 download errors, 1,157 skipped. 1,950 + 957 + 100 + 1,157 = **4,164**,
+the row count exactly. Across all of today's runs the see-attachment stub population fell
+**7,802 → 3,857** (−3,945), and bodies over 400 characters are now **248,046 of 354,730 (69.9%)**.
+One document went from a 20-character stub to **13,726** characters of departmental budget.
+
+(The `pgrep` I used said ALIVE while the run was finished, because the pattern matched my own SSH
+command line — the self-match trap CLAUDE.md documents and I have now hit three times. The `Done:`
+block is the authority.)
+
+**Then I asked what the extraction actually made searchable, and the answer was: not much.**
+`doc_search_seg`, the BM25 index, rebuilt incrementally by **skipping every rowid already present** —
+so all ~3,945 documents kept their ~20-character stub in the ranking index while the database held
+thousands of characters. The trigram index was never affected (it has an `AFTER UPDATE` trigger);
+this one is script-built and needed its own change detection. **And it matters more than it sounds**,
+because `search_documents()` tries the segmented index FIRST and falls through only on zero hits, so
+a stale row ranks on text the corpus no longer holds. Extracted, stored, and unfindable by relevance.
+
+Fixed with `doc_search_seg_state(doc_id, body_len)`: a rowid is skipped only when indexed **and** its
+recorded length still matches. Body length is deliberate — SQLite answers `LENGTH()` from the record
+header, so it is cheap, and it catches exactly the stub-to-full-text case. A same-length edit is
+missed **by design**, and there is a test that says so, so `--rebuild` remains the authority.
+
+**Then running the test where it could actually run caught a second defect in my own fix.**
+`cannot DELETE from contentless fts5 table` — delete-then-reinsert is invalid on the live index,
+created with `content=''` and without `contentless_delete=1`. New tables now set it; on a table that
+cannot delete, `stale_and_done` **reports and skips rather than raising**, because it must neither
+crash the nightly nor silently skip — invisible staleness is the defect it exists to fix.
+
+**And the reason that was catchable at all is worth keeping.** jieba lives on the droplet; the droplet
+has no pytest. So the test could only ever SKIP on the Mac and run nowhere — five green-looking tests
+that would have failed the first time the nightly met a changed body. Making the pytest import
+optional so the standalone `__main__` path works is what let me verify it. **A test that can only
+skip is not a test.** 7 tests now, all verified on the droplet.
+
+A one-time `--rebuild` is running (pid 705124) to migrate the live table and refresh all 354,730
+rows; search degrades to the trigram path meanwhile, which is the documented behaviour when
+`doc_search_seg` is absent. Droplet 00:55 UTC against a 06:00 nightly.
+
+Also rebuilt after the extraction: `site_stats` (354,730), `doc_inbound`, `instrument_inbound`
+(40,574) and `doc_identity` (354,730 rows, 5.1s).
+
