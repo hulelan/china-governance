@@ -1,3 +1,9 @@
+> **SUPERSEDED (2026-10-09)** by `sangong-dataset.md`. The table-aware parser this
+> note calls for was built: **1,775 accounting-validated rows**, not 160. Two claims
+> below are now known wrong — the 2012 campaign is **not** testable (disclosure is
+> post-2020), and an intermediate run reporting 3,643 rows with 因公出国 at 32% was
+> half phantoms built from table enumerators. Read the dataset note instead.
+
 # 三公经费 as a panel: feasible, not yet built
 
 **Status: FEASIBILITY RESULT, not a finding.** Measured 2026-10-09 after
