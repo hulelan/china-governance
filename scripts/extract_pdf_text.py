@@ -28,11 +28,14 @@ import argparse
 import json
 import os
 import re
+import socket
 import sqlite3
+import ssl
 import sys
 import tempfile
 import time
 import urllib.request
+from urllib.error import URLError
 
 import fitz  # PyMuPDF
 
@@ -287,6 +290,25 @@ def extract_text_from_doc(data: bytes) -> str:
     return text if len(text) > 20 else ""
 
 
+def _is_timeout(exc: BaseException) -> bool:
+    """Is this failure a timeout rather than a protocol/TLS/HTTP error?
+
+    `urllib` surfaces a read timeout as `socket.timeout` (an alias of `TimeoutError`),
+    and wraps a connect timeout in `URLError` whose `.reason` is that same exception.
+    An `ssl.SSLError` is NEVER a timeout, which matters because the http fallback exists
+    only for TLS failures.
+    """
+    seen = set()
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        if isinstance(exc, ssl.SSLError):
+            return False
+        if isinstance(exc, (socket.timeout, TimeoutError)):
+            return True
+        exc = getattr(exc, "reason", None) if isinstance(exc, URLError) else None
+    return False
+
+
 def download_attachment(url: str, base_url: str = "", timeout: int = 30) -> bytes | None:
     """Download an attachment from URL. Returns bytes or None on failure.
 
@@ -310,8 +332,17 @@ def download_attachment(url: str, base_url: str = "", timeout: int = 30) -> byte
         )
         resp = urllib.request.urlopen(req, timeout=timeout)
         return resp.read()
-    except Exception:
-        # For gkmlpt sites, try HTTP fallback
+    except Exception as exc:                        # noqa: BLE001
+        # THE HTTP FALLBACK IS FOR TLS, NOT FOR SILENCE. It exists because Shenzhen
+        # government hosts serve certificates OpenSSL cannot parse (`SSL: BAD_ECPOINT`,
+        # very likely SM2) — see CLAUDE.md. A TIMEOUT is not a TLS failure, so retrying
+        # over http after one pays a second full `timeout` for a reason that cannot
+        # apply. Measured 2026-10-10: a dead row cost 2 x 30 s, so HostBreaker needed
+        # 8 x 60 s = 8 MINUTES to retire each unresponsive host, and a 57-minute run
+        # enriched 160 of 800 documents while cycling through several of them. Skipping
+        # the retry on a timeout halves every dead-host cost.
+        if _is_timeout(exc):
+            return None
         if url.startswith("https://"):
             try:
                 http_url = url.replace("https://", "http://")
@@ -381,6 +412,12 @@ def main():
     )
     parser.add_argument("--site", type=str, help="Only process this site_key")
     parser.add_argument(
+        "--fetch-timeout", type=int, default=30,
+        help="Seconds per attachment fetch (default 30). A healthy government host "
+             "answered in ~1.9 s over 24 documents, so a BULK pass should use ~10: "
+             "each unresponsive row costs the full timeout, and HostBreaker needs "
+             "HOST_FAIL_LIMIT of them before it retires the host.")
+    parser.add_argument(
         "--limit", type=int, default=0, help="Max documents to process (0=all)"
     )
     parser.add_argument(
@@ -449,7 +486,8 @@ def main():
             print(f"  Progress: {processed}/{len(rows)} processed, {extracted} "
                   f"extracted, {scanned} scanned, {errors} errors, {skipped} skipped"
                   + (f" | hosts tripped: {', '.join(breaker.report())}"
-                     if breaker.report() else ""))
+                     if breaker.report() else ""),
+                  flush=True)
     processed = 0
     extracted = 0
     scanned = 0
@@ -515,7 +553,8 @@ def main():
             _progress()
             continue
 
-        data = download_attachment(attach_url, base_url)
+        data = download_attachment(attach_url, base_url,
+                                  timeout=args.fetch_timeout)
         breaker.record(attach_url, bool(data))
         if not data:
             errors += 1
