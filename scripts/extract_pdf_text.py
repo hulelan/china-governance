@@ -40,6 +40,42 @@ import fitz  # PyMuPDF
 ATTACH_EXTS = (".pdf", ".doc", ".docx", ".xls", ".xlsx")
 
 
+# A PDF named in `attachments_json`, regardless of what the body says. Two gates used to
+# hide these rows from this tool, and both are now wrong:
+#
+#  1. The MARKER gate required 附件 / 点击 / 下载 in the body. CLAUDE.md's seventh
+#     bug-shape is a body that carries NONE of them because it is just the attachment's
+#     filename, so it reads like prose — 3,520 title-only rows and 251 filename stubs
+#     measured 2026-10-10. Widening to "markers OR json names a PDF" adds 1,100 rows,
+#     among them 揭阳市2016年市本级决算草案报告, whose body is the title plus a stray \r.
+#  2. `raw_html_path != ''` was needed when the URL came from PARSING saved HTML.
+#     `attachment_url_from_json` needs no HTML, and raw_html_path is a dangling pointer
+#     for all 725 mofcom rows — so requiring it excluded ~511 rows we can serve.
+_PDF_IN_JSON = ("(COALESCE(attachments_json,'') LIKE '%.pdf%' "
+                " OR COALESCE(attachments_json,'') LIKE '%.PDF%')")
+_BODY_MARKERS = ("(body_text_cn LIKE '%附件%' OR body_text_cn LIKE '%点击%' "
+                 " OR body_text_cn LIKE '%下载%')")
+
+
+def candidate_where(body_threshold: int, site: str | None) -> tuple[str, list]:
+    """The candidate predicate, as a pure function so the gates are testable.
+
+    A row qualifies when its body is short AND it either carries an attachment marker
+    or names a PDF in `attachments_json`. Saved raw HTML is required only for rows whose
+    URL must be parsed out of it, i.e. those with no PDF in the json.
+    """
+    where = ("WHERE body_text_cn != '' AND LENGTH(body_text_cn) < ? "
+             f"AND ({_BODY_MARKERS} OR {_PDF_IN_JSON}) ")
+    params: list = [body_threshold]
+    if site:
+        where += " AND site_key = ?"
+        params.append(site)
+    # CAC fetches the live page to find downloadfile.jsp links, so it never needed HTML.
+    if site != "cac":
+        where += f" AND (raw_html_path != '' OR {_PDF_IN_JSON})"
+    return where, params
+
+
 def attachment_url_from_json(attachments_json: str) -> tuple[str, str] | None:
     """-> (absolute url, ext) from `documents.attachments_json`, or None.
 
@@ -370,21 +406,8 @@ def main():
     if args.site == "cac" and body_threshold <= 100:
         body_threshold = 500
 
-    where = (
-        "WHERE body_text_cn != '' AND LENGTH(body_text_cn) < ? "
-        "AND (body_text_cn LIKE '%附件%' OR body_text_cn LIKE '%点击%' "
-        "     OR body_text_cn LIKE '%下载%') "
-    )
-    params: list = [body_threshold]
+    where, params = candidate_where(body_threshold, args.site)
 
-    if args.site:
-        where += " AND site_key = ?"
-        params.append(args.site)
-
-    # For CAC, we can also process docs without saved raw HTML
-    # (we'll fetch the live page to find downloadfile.jsp links)
-    if args.site != "cac":
-        where += " AND raw_html_path != ''"
 
     limit_clause = f" LIMIT {args.limit}" if args.limit else ""
 
