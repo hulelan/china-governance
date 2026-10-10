@@ -5541,3 +5541,65 @@ were checked rather than assumed: 942 documents declare 万元, exactly **1** de
 
 Nothing here was found by a better aggregate. 1,775 looked like a clean dataset; what broke it was
 a synthetic test case, then reading four exemplar segments, then one `GROUP BY` on the value tuple.
+
+---
+
+## P2 iteration 147 — two NBER replications, one of them a negative, and the body-tail trim applied
+
+The standing request names NBER replications and trackers. The NBER material lives in
+`docs/research/related-literature.md` (~20 papers, each with a replication-status row pointing at
+the memo that does the work, live at `/research/related-literature`). Two gaps closed.
+
+**w35562, Chang & Xiong, "Monetary Policy in Mandarin Capitalism"** — the only paper rated fit
+**B** with no replication. New memo `docs/research/mandarin-capitalism.md`, tool
+`scripts/rnd/analysis/mandarin_capitalism.py`, 4 invariant tests.
+
+Their claim: credit booms produce no lasting inflation because the regime is oriented to
+PRODUCTION. The inflation half needs macro series we lack and was not attempted. The premise is a
+document fact, and the first way I tested it was the wrong way:
+
+* **Marginal test, weak yes.** Among 信贷 documents, 61.0% mention a production term vs 40.8% a
+  demand term — but the corpus baseline is P(production)/P(demand) = **1.23**, so the
+  credit-conditional tilt is only 1.50. Both families lift 3-6x; credit documents are simply more
+  economic. And the most striking number, 社会融资规模 ↔ 实体经济 at **85%**, is a **tautology**:
+  社融 is officially defined as 实体经济从金融体系获得的资金总额. Reported, then excluded.
+* **Conditional on PURPOSE, decisive.** Policy purposes sort monotonically by financing —
+  以旧换新 fiscal:credit **1.83**, 促消费 1.50, 技术改造 1.04, 产能 0.98, 实体经济 **0.60**. A
+  3x swing, no inversion across five purposes, purest at the ends. **Demand is paid for from the
+  budget, production with credit** — so a credit boom has no instrument that reaches consumers.
+  That is a sharper premise than the paper's own framing needs.
+* **But the attention moved the other way, and only the panel shows it.** 信贷 (panel ρ −0.72)
+  and 产能 (−0.77) are FALLING in fixed-site share while reading as rising (+0.80, +0.58) raw —
+  two sign_flips. 实体经济 (+0.80), 以旧换新 (+0.72), 设备更新 (+0.70) genuinely rise. So the
+  claim is about the **channel**, not about where attention goes.
+* The 2024 campaign pair shares one instrument title (大规模设备更新和消费品以旧换新) yet
+  co-occurs in only **35.1%** of 以旧换新 documents: the centre pairs demand relief with
+  capital-goods renewal, the sub-national record splits the halves again.
+
+Every term here that carries the comparison — 消费 内需 产能 信贷 贷款 — is **two characters** and
+invisible to the trigram index. Without `fts.py` routing this memo's headline would have been a
+row of clean silent zeros.
+
+**w22775, Trebbi et al., "Factions in Nondemocracies"** — rated fit C *without anyone looking*,
+and `officials.db` (2,181 CC members, 17,727 career records, 5,121 overlaps) had never been touched
+by the research layer. Measured it. `docs/working/factions-feasibility.md`.
+
+**The rating holds and the stated reason was wrong.** The biographical half is in good shape
+(`cc_congresses` parses 2,181/2,181, `home_province` complete). The blocker is the tie table:
+its largest "organization" is **中央政治局 with 1,327 of 5,121 edges (26%)** — co-membership in the
+body a balance test is trying to explain, so partly circular. Removing deliberative-body
+co-membership leaves 1,625 working pairs but **47 of 145 Politburo members with any tie, 13 of 45
+PSC, and 13 working ties between two Politburo members**. Thirteen cannot carry a structural claim.
+A third red flag in the CLAUDE.md family: five autonomous regions plus 黑龙江 supply more ties than
+every ministry combined, which is a fact about the extraction path, not about co-service — and
+which of two candidate causes is untested. Stated positively: the 15th-20th CC cohort panel is
+usable now for descriptive entry questions that need no ties.
+
+**Body-tail trim applied** (the pending item): `32,934 bodies changed, 663 flagged, 0 skipped
+because the body changed since the scan, 0 lock retries`. Reversible via `--revert`. Two
+consequences worth watching: **408 outbound citation edges exist only inside the removed tails**
+(226 of them currently RESOLVED — 6 formal, 132 llm, 88 named), so the next citation rebuild should
+drop roughly that many resolved edges, which is the *intended* effect since a 相关链接 block holds
+other documents' titles. And the background wrapper reported exit 1 while the trim's own log said
+APPLIED cleanly — the "it ran vs it worked" distinction, inverted, so the result was verified from
+the work's own output rather than the wrapper's status.
