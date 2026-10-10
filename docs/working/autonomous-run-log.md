@@ -5370,3 +5370,47 @@ six affected claims would have read as current.
 Segmented index rebuild at 146,000 of 354,730 (~91/s), finishing ~02:05 UTC against the 06:00
 nightly; the fingerprint table is populating as designed.
 
+---
+
+## Iteration 144 — the day's extraction verified end to end, and a feasibility result kept honest
+
+**The chain is confirmed working.** doc `12662773` — the 龙华区统计局 budget that went from a
+**20-character stub to 13,726 characters** — is in the rebuilt segmented index and matches both 预算
+and 拨款 under `MATCH`. So: PDF fetched → text extracted → body stored → BM25 index rebuilt →
+**findable by relevance**. That is the end-to-end test of the whole day's extraction work.
+
+**And I walked into a trap my own CLAUDE.md entry describes.** My first check queried `部门预算` and
+got **0 rows**, which I briefly read as an index failure. jieba segments it `部门/预算`, so the
+compound is not a token — exactly what the CLAUDE.md FTS entry says ("`doc_search_seg` fails the
+other way, returning 0 for a jieba-splittable compound like 跨境人民币 or 耐心资本"). **Knowing a trap
+is written down is not the same as remembering it at the moment of use**, which is precisely the
+argument for `fts.py` routing over prose rules — and I did not route this query through it.
+
+**Then a research opportunity, kept at its honest size.** The extraction put body text on **2,327
+departmental budget / final-account documents** (100% carry money figures, 100% carry budget section
+headers), and **4,378** documents now mention **三公经费** across 2014-2026 — the canonical Chinese
+fiscal-transparency metric and the explicit target of the post-2012 austerity campaign.
+
+**The data carries its own validator**, which is the genuinely useful part: the documents assert
+**因公出国 + 公务用车 + 公务接待 = the disclosed total**. Applying it to a naive regex extraction —
+identity **holds on 160** rows, all four numbers found but **disagreeing on 187**, and a number
+**missing on 4,031**. So 46% of rows with all four numbers are self-consistent.
+
+**160 rows is a demonstration, not a dataset, and it is recorded that way** —
+`docs/working/sangong-feasibility.md`, a working note rather than a research memo. Writing it up as a
+finding would be the overclaim this project keeps catching in itself.
+
+The 4,031 failures are **diagnosed, not guessed**: narrative 预算草案 reports are prose carrying
+dozens of unrelated figures (one row parsed 公务接待 **equal to** the total; another gave a component
+**larger than** the total), and the real figures live in budget tables that PDF extraction renders as
+flowed text with the columns gone. **So the fix is table-aware parsing against the published 表一…表九
+schema, not a better regex** — and the structured 部门决算 documents already extract to the cent
+(gd 省府办公厅 2014 validates exactly), so the schema is reachable.
+
+What the validated rows already show, flagged as illustration: 韶关市人民政府办公室's own disclosed
+figures go **164.14 → 65.88 → 43.14 → 26.00 万元** across 2015-2023 — a **74% fall in two years**.
+The austerity campaign in one office's accounts, at n=1 office, which the note says explicitly must
+not be cited as a finding.
+
+Segmented rebuild at 346,000 of 354,730, droplet 01:56 UTC, finishing well inside the 06:00 nightly.
+
