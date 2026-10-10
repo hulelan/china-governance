@@ -65,10 +65,29 @@ LABELS = (
 )
 # A figure adjacent to a label: allow thousands separators and 0-2 decimals.
 FIG = re.compile(r"-?\d[\d,]*(?:\.\d{1,4})?")
+# A COLUMN-NUMBER RUN ends a layout-A header: "… 小计 公务用车购置费 公务用车运行费
+# 1 2 3 4 5 6 7 8 9 10 11 12". The identity is happy to build 7 == 1 + 3 + 3 out of it
+# (合计 = 出国 + 用车小计 + 接待 read as INDICES), and the resulting row `7.0 1.0 3.0
+# 3.0` recurs verbatim across 江门市政府办公室, 大鹏新区发展和财政局, 深圳市住房和建设局
+# and 广州市人民政府办公厅 — unrelated units cannot coincidentally spend identical
+# amounts, so the numbers are the SCHEMA, not money. Figures are taken after the run.
+MARKER_RUN = re.compile(
+    r'(?<![\d.])1\s+2\s+3\s+4(?:\s+5)?(?:\s+6)?(?:\s+7)?(?:\s+8)?'
+    r'(?:\s+9)?(?:\s+10)?(?:\s+11)?(?:\s+12)?(?![\d.])')
 TOL = 0.05
 MAX_WANYUAN = 100_000      # 10亿元 — a plausibility bound; the identities alone do not
                            # bound SCALE (0+0+0 and x+0+0 both balance), and the first
                            # version accepted a row reading 3,439,824.70万元.
+
+# AND A GRANULARITY BOUND. Published 三公 figures carry two decimals by convention, while
+# a positional marker never does. 109 surviving rows had all four figures whole and <= 12 —
+# the 公开07 column indices (7 == 1 + 3 + 3) and narrative item numbers (1.因公出国… 2.公务
+# 接待… 3.公务用车). The tell they are not money: 广州市人民政府机关事务管理局 — the body
+# that manages the government car fleet — came out at 3.0万元, and 韶关市人民政府办公室 at
+# 10.0 against 83.6 in a year that parsed cleanly. The cost of the bound is a genuine unit
+# reporting a whole <= 12万元 in every field at once, which the two-decimal convention makes
+# rare; rows under 12万元 WITH decimals are untouched (p25 of the panel is 4.85万元).
+MARKER_MAX = 12
 
 FIELDS = ("total", "out", "car", "host", "buy", "run")
 
@@ -77,7 +96,7 @@ def _f(s):
     return float(s.replace(",", ""))
 
 
-def _figs_after(seg, pos, n=4, window=120):
+def _figs_after(seg, pos, n=4, window=120, floor=0):
     """The first n figures within `window` characters after an IN-SEG offset.
 
     NOTE the coordinate system: `pos` must be an offset into `seg`, not into the full
@@ -85,6 +104,7 @@ def _figs_after(seg, pos, n=4, window=120):
     rows — `mt.end()` is a full-body offset, and used as a seg index it looked past the
     end of a 700-character slice for every label beyond position 700.
     """
+    pos = max(pos, floor)
     out = []
     for x in FIG.findall(seg[pos:pos + window]):
         try:
@@ -132,13 +152,18 @@ def parse(body: str):
                        if (m := lab.search(seg, tot_off))
                        and m.start() < _ff.start()) >= 2:
             continue
-        tot_cands = _figs_after(seg, tot_off, n=6, window=200)
+        # Past any column-number run (see MARKER_RUN), for BOTH the total and the
+        # per-field candidates — the run sits between the header labels and the first
+        # data row, so every field would otherwise read the schema.
+        _mr = MARKER_RUN.search(seg)
+        floor = _mr.end() if _mr else 0
+        tot_cands = _figs_after(seg, tot_off, n=6, window=200, floor=floor)
         if not tot_cands:
             continue
         cands = {}
         for key, lab in LABELS:
             ml = lab.search(seg)
-            cands[key] = _figs_after(seg, ml.end(), n=3) if ml else []
+            cands[key] = _figs_after(seg, ml.end(), n=3, floor=floor) if ml else []
         if not all(cands.get(k) for k in ("out", "car", "host")):
             continue
         hit = None
@@ -166,6 +191,9 @@ def parse(body: str):
                                     break
                             if split:
                                 break
+                        if all(v == int(v) and v <= MARKER_MAX
+                                   for v in (tot, o, c, h)):
+                            continue        # positional markers, not money
                         hit = {"total": tot, "out": o, "car": c, "host": h,
                                "buy": split[0] if split else None,
                                "run": split[1] if split else None}

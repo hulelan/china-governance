@@ -739,8 +739,10 @@ reasoned that this made a label grab trustworthy: "a wrong number essentially ne
 does, because **the identity is scale-free**. `3 == 1 + 1 + 1` satisfies it exactly, so a parse
 built from the table's own **column numbers** (`1 2 3`) or its `一、二、三` enumerators validates
 perfectly. 1,317 of 1,868 bad rows had `out == car == host`, and a run I had already reported as a
-dataset (3,643 rows, composition 公务用车 60% / 因公出国 32%) was about **half phantoms**; the true
-composition is 78% / 12%. I had even patched the *year*-shaped version of the same hole (excluding
+dataset (3,643 rows, composition 公务用车 60% / 因公出国 32%) was about **half phantoms**. Four
+further cleanup rounds — a header-row guard, a column-number-run floor, a granularity bound —
+took it to **1,640 rows at 74% / 16%**, and every intermediate version passed the identity on
+every row it emitted. I had even patched the *year*-shaped version of the same hole (excluding
 bare integers in [1990, 2035]) and concluded the hole was closed — the enumerators sit **below**
 that window.
 
@@ -748,6 +750,17 @@ that window.
 labels sitting between the anchor and the first figure means the anchor is a **header row**, whose
 labels then point at the *next* row's figures. The bar is two and not one because a real layout
 prints exactly one (`一、因公出国（境）支出 300 …`).
+
+**And the proof that a row is an artifact was REPETITION, not the identity.** `7.0 1.0 3.0 3.0`
+appeared verbatim for 江门市政府办公室, 大鹏新区发展和财政局, 深圳市住房和建设局 and
+广州市人民政府办公厅. Unrelated units cannot coincidentally spend identical amounts, so the
+numbers had to be the 公开07 schema read as indices (合计 = 出国 + 用车小计 + 接待, i.e.
+7 = 1 + 3 + 3). **An exactly-repeated row across unrelated entities is a schema, not data** —
+a cheap test worth running on any extracted panel: `GROUP BY` the full value tuple and look at
+what recurs. The complementary bound is **granularity**: published 三公 figures carry two
+decimals by convention and an index never does, so "all four figures whole and <= 12" rejects
+markers while leaving genuine small rows (7.14万元) alone. A bound on granularity is not a
+bound on scale, and this family of bug needs both.
 
 **Rule:** a validator that checks a relation *among extracted values* says nothing about whether
 the extraction picked the right values. Before trusting one, ask what degenerate input satisfies it

@@ -145,3 +145,57 @@ def test_no_anchor_is_distinguished_from_no_balancing_row():
     assert parse("") == (None, "no_anchor")
     assert parse('"三公"经费合计 100.00 因公出国（境）费 1.00 '
                  '公务用车购置及运行费 1.00 公务接待费 1.00')[1] == "no_balancing_row"
+
+
+COLUMN_NUMBERS = """"三公"经费支出决算表 公开07 表
+部门：深圳市大鹏新区建筑工务局 金额单位：万元
+预算数 决算数
+合计 因公出国（境）费 公务用车购置及运行费 公务接待费 合计 因公出国（境）费 公务用车购置及运行费 公务接待费
+小计 公务用车购置费 公务用车运行费 小计 公务用车购置费 公务用车运行费
+1 2 3 4 5 6 7 8 9 10 11 12
+45.60 6.00 33.60 20.00 13.60 6.00 40.10 5.00 29.10 18.00 11.10 6.00
+"""
+
+
+def test_a_column_number_run_is_not_money():
+    """7 == 1 + 3 + 3 reads the 公开07 schema's INDICES as 万元.
+
+    The row `7.0 1.0 3.0 3.0` appeared verbatim for 江门市政府办公室, 大鹏新区发展和财政局,
+    深圳市住房和建设局 and 广州市人民政府办公厅 — unrelated units cannot coincidentally
+    spend identical amounts, which is what proved these were the table header.
+    """
+    rows, err = parse(COLUMN_NUMBERS)
+    assert err is None, err
+    for r in rows:
+        assert (r["total"], r["out"], r["car"], r["host"]) != (7.0, 1.0, 3.0, 3.0)
+        # nothing in a real 三公 row is a bare index
+        assert r["total"] > 12, r
+
+
+def test_figures_are_read_from_the_data_row_after_the_run():
+    rows, _ = parse(COLUMN_NUMBERS)
+    assert any(abs(r["total"] - 45.60) <= 0.05 for r in rows), rows
+
+
+def test_narrative_item_numbers_are_not_money():
+    """A 预算 narrative enumerates its items, and 6 == 2 + 1 + 3 reads the numbering.
+
+    广州市人民政府机关事务管理局 — the body that manages the government car fleet —
+    parsed at 3.0万元 this way, and 韶关市人民政府办公室 at 10.0 against 83.6 in a year
+    that parsed cleanly. Published figures carry two decimals; markers never do.
+    """
+    body = ('"三公"经费财政拨款预算情况 '
+            '1.因公出国(境)费用 2 2.公务用车购置及运行维护费 1 3.公务接待费 3 '
+            '"三公"经费合计 6')
+    rows, err = parse(body)
+    assert rows is None, rows
+    assert err == "no_balancing_row"
+
+
+def test_a_small_total_with_decimals_is_kept():
+    """The bound is on GRANULARITY, not scale — p25 of the real panel is 4.85万元."""
+    body = ('"三公"经费合计 7.14 因公出国（境）费 0.00 '
+            '公务用车购置及运行费 7.14 公务接待费 0.00')
+    rows, err = parse(body)
+    assert err is None
+    assert rows[0]["total"] == 7.14

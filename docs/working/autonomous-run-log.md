@@ -5503,3 +5503,41 @@ balancing pair won and could swap the two components. Now takes the nearest-to-l
 1,775 rows in ten Shenzhen-area sites), 预算 and 决算 are captured but not yet separated (the
 austerity question worth asking — restraint as lower plans, or as underspending against plan —
 needs no new extraction, only a split), and 6 residual rows still carry equal components.
+
+**Iteration 146b — four more rounds of the same phantom, and what finally proved it.**
+
+Continuing to probe the dataset I had just committed turned up three more defects, each certified
+by the accounting identity on every row it emitted:
+
+| round | rows | defect |
+|---|---|---|
+| committed as the dataset | 1,775 | — |
+| header guard evaded | 1,715 | a layout-A header whose first figure is the `07` of 公开07 表, so the guard's "labels before the first figure" test never fired. 241 of 1,775 rows had all four figures whole and ≤ 12 |
+| column-number-run floor | 1,640 | **narrative** item numbers: `1.因公出国(境)费用 … 2.公务接待费 … 3.公务用车` in a 预算 说明, where 6 = 2 + 1 + 3 |
+| granularity bound `MARKER_MAX = 12` | **1,640** | final |
+
+**What proved they were artifacts was not the identity — it was repetition.** `7.0 1.0 3.0 3.0`
+appeared **verbatim** for 江门市政府办公室, 大鹏新区发展和财政局, 深圳市住房和建设局 and
+广州市人民政府办公厅. Unrelated units cannot coincidentally spend identical amounts, so the
+numbers had to be the 公开07 schema read as indices. The confirming instance: 广州市人民政府
+机关事务管理局 — the body that manages the government car fleet — parsed at **3.0万元**.
+
+**Two robustness checks run because the ambiguity demanded them, not because they were planned.**
+80.3% of anchor segments admit more than one balancing combination, so `parse()` taking the first
+in document order is a positional assumption — the exact thing the candidate-search design was
+meant to avoid. First-pick gives −5.1% on the fixed panel; last-pick gave **+51.6%**. First-pick
+is nevertheless right, on evidence: under last/max the panel's median is **exactly 100.00** in
+four consecutive years (execution-rate percentage columns), and the table's **independent** second
+identity (`car == buy + run`) confirms first-pick **2.3×** more often than last-pick.
+
+**The finding survived all of it and the magnitude did not.** Fixed-unit 2020-2024 went +0.2% →
+−5.1% across the cleanups while unbalanced went −16% → −31%. So the *contrast* is the robust
+object and the point estimate is not, which is now what the note quotes.
+
+**Also closed honestly:** the planned-vs-executed gap, the substantive question here, is **not**
+reachable by tagging documents (1,658 执行 rows vs 78 计划, only 14 unit-years with both, mean
+ratio 4.4). It needs the column-aware parser, because the two halves are two *columns*. And units
+were checked rather than assumed: 942 documents declare 万元, exactly **1** declares 元.
+
+Nothing here was found by a better aggregate. 1,775 looked like a clean dataset; what broke it was
+a synthetic test case, then reading four exemplar segments, then one `GROUP BY` on the value tuple.
