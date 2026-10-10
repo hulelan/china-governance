@@ -5212,3 +5212,42 @@ switch. Fired twice in sixteen years, right once.
 Extraction at **2,375/4,164 with 1,018 extracted** — yield now 43%, still climbing as it clears the
 szdp scan block.
 
+---
+
+## Iteration 140 — the stance series finds its paper, and it tests a premise rather than an estimate
+
+Searched for the NBER work the new PBC material answers to, as with the export-control swap, instead
+of assuming the literature map was current. Found a precise comparator and verified both papers from
+the NBER pages rather than search snippets.
+
+**NBER w34626, "The Ins & Outs of Chinese Monetary Policy Transmission"** (Miranda-Agrippino, Nenova
+& Rey, **January 2026**) builds a **novel indicator of the PBOC's monetary policy stance** and
+estimates a policy rule for a **dual price-stability mandate — domestic inflation AND the exchange
+rate** — allowing for the evolution of the operating framework. **Its abstract does not state how the
+indicator is constructed**; the acknowledgements credit a co-builder at PBC School of Finance.
+
+**That makes the right contribution a test of their PREMISE, not a replication of their estimate** —
+different and much cheaper. They *assume* the dual mandate; the committee's own 70 quarterly readouts
+say whether it is symmetric. **It is not.** The exchange-rate leg is invariant (合理均衡 in 60 of 70,
+continuous from 2010-12 through the 2025 reversal; 双向浮动 in 33) while the domestic stance leg is
+the only moving part, and it moved exactly twice in sixteen years. The series also gives their regime
+changes an **external, public date** — 2010-12 and 2025-03, each preceded by one overlap quarter —
+against which an undisclosed econometric indicator can be checked.
+
+**NBER w35562, "Monetary Policy in Mandarin Capitalism"** (Chang & Xiong, July 2026) added as related
+and consistent: the regime is oriented to production rather than demand, credit sustaining output and
+balance sheets instead of generating inflation. A stance word changing while the FX frame holds fits
+that reading — and the memo says plainly that **nothing in it tests that**, which is the distinction
+`consistency-review.md` exists to keep.
+
+**A pattern worth naming across today's two literature additions.** For w34020 (geoeconomic pressure)
+and now w34626, the same relationship holds: the paper builds an **inferred measure** (LLM-classified
+episodes; an econometric stance indicator) and we hold the **primary document** the measure is a
+proxy for. In both cases the right move was a **complement that tests a premise or supplies a date**,
+not a claim to have replicated an estimate we cannot compute. Stating that explicitly each time is
+what keeps the volume honest — the alternative is the relabelling `consistency-review.md` was written
+to catch.
+
+Extraction at **3,025/4,164 with 1,487 extracted** (49%), droplet 00:14 UTC, on course to finish
+~01:20 against a 06:00 nightly.
+
