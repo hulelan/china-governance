@@ -731,6 +731,37 @@ your inventory of everything happening at once. A named target is a prediction a
 change**. Register both if you like, but let the named one decide. `docs/working/prereg-next-rebuild.md`
 is the worked example.
 
+## A scale-free validator cannot catch a consistently wrong extraction
+
+Measured 2026-10-09 on the 三公经费 parser (`docs/working/sangong-dataset.md`). The 公开07 表
+asserts its own accounting identity — `total == out + car + host`, and `car == buy + run` — and I
+reasoned that this made a label grab trustworthy: "a wrong number essentially never balances." It
+does, because **the identity is scale-free**. `3 == 1 + 1 + 1` satisfies it exactly, so a parse
+built from the table's own **column numbers** (`1 2 3`) or its `一、二、三` enumerators validates
+perfectly. 1,317 of 1,868 bad rows had `out == car == host`, and a run I had already reported as a
+dataset (3,643 rows, composition 公务用车 60% / 因公出国 32%) was about **half phantoms**; the true
+composition is 78% / 12%. I had even patched the *year*-shaped version of the same hole (excluding
+bare integers in [1990, 2035]) and concluded the hole was closed — the enumerators sit **below**
+that window.
+
+**The fix was never a wider number filter.** It was reading table **geometry**: two or more field
+labels sitting between the anchor and the first figure means the anchor is a **header row**, whose
+labels then point at the *next* row's figures. The bar is two and not one because a real layout
+prints exactly one (`一、因公出国（境）支出 300 …`).
+
+**Rule:** a validator that checks a relation *among extracted values* says nothing about whether
+the extraction picked the right values. Before trusting one, ask what degenerate input satisfies it
+— for any homogeneous relation, the all-equal and all-zero cases do — and add a bound that is
+**not** expressible in the relation (a scale bound, a plausibility range, or the source's layout).
+Then test the degenerate case explicitly: `tests/test_sangong_table.py` asserts that a row reading
+`2022 = 2022 + 0 + 0` is rejected while `2022.00` with a decimal is still money.
+
+*Related:* "Pre-register a named test, not an aggregate" above. The aggregate here (3,643 rows,
+which looked like 23x the naive regex) is exactly what hid the defect; the thing that exposed it was
+a **named** synthetic case written while testing — a header row whose components happened to sum to
+its total.
+
+
 ## An edit script must be able to fail its own commit
 
 Twice (2026-10-08, 2026-10-09) a commit message described a file change the commit did not contain.

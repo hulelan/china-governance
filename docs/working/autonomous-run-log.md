@@ -5457,3 +5457,49 @@ bilateral and ongoing), two NBER papers added with their premises tested rather 
 replicated, four memo re-bases, one withdrawn claim corrected in both the memo and the synthesis, and
 `sangong-feasibility.md` kept at 160 validated rows rather than written up as a dataset.
 
+
+---
+
+## P2 iteration 146 — the 三公 dataset, and a validator I trusted too much
+
+**Built** `scripts/rnd/analysis/sangong_table.py` (the table-aware parser the feasibility note
+asked for) + `tests/test_sangong_table.py` (11 cases) + `docs/working/sangong-dataset.md`.
+Commit `a9503e6`.
+
+**The deliverable:** 1,775 accounting-validated rows, 1,366 documents, 470 units, 2011-2026.
+Composition 公务用车 78% / 因公出国 12% / 公务接待 10%; median 13.74万元.
+
+**The finding needs its control to exist at all.** On 38 units present in every year of
+2020-2024 the series is **flat (+0.2%)**, with the median *rising* 20.07 → 23.09万元 and 19 of
+38 units up. The same data read as "all disclosures per year" has means falling **16%**. The
+decline is composition: 三公 disclosure propagated downward through the 2020s, so each year adds
+small units whose budgets are a fraction of a bureau's, and an unbalanced mean measures
+**compliance**, not spending. Third time this session the fixed-unit control changed a sign.
+
+**Two things I had already reported that were wrong, and how they were caught.**
+
+1. Last turn I reported **3,643 rows** and a composition of 公务用车 60% / 因公出国 32%, and
+   explicitly called that composition a confirmed falsifiable prediction. It was **half
+   phantoms**. A header-row guard removed 1,868 rows, **1,317 with `out == car == host`**, built
+   from the table's own column numbers and 一、二、三 enumerators — because the accounting
+   identity is **scale-free** and `3 == 1 + 1 + 1` satisfies it exactly. The removed set reads
+   "因公出国 91%". Worse: I had already patched the **year**-shaped version of this hole and
+   written in the module that the identity was now "strong enough that a parse either IS the
+   table or is rejected." The enumerators sit *below* the year window I had excluded.
+2. The **2012 austerity campaign is not testable** — the step the feasibility note itself named.
+   2011-2019 holds 237 rows against 1,501 for 2020-2024. The pre-period is *absent*, not thin.
+
+**What actually caught it was not a better aggregate.** 3,643 looked like a triumph next to the
+naive regex's 160. The defect surfaced because a *synthetic* test case — a layout-C header row
+whose components happened to sum to its total — failed, and chasing that one named row exposed
+1,868 real ones. Logged in CLAUDE.md as a new named shape: **a scale-free validator cannot catch
+a consistently wrong extraction**; ask what degenerate input satisfies your relation (for any
+homogeneous one, all-equal and all-zero do) and add a bound the relation cannot express.
+
+**Also found by writing the tests:** the 购置/运行 split loops had no `break`, so the *last*
+balancing pair won and could swap the two components. Now takes the nearest-to-label pair.
+
+**Stated honestly in the note rather than smoothed over:** this is a **Shenzhen** panel (1,401 of
+1,775 rows in ten Shenzhen-area sites), 预算 and 决算 are captured but not yet separated (the
+austerity question worth asking — restraint as lower plans, or as underspending against plan —
+needs no new extraction, only a split), and 6 residual rows still carry equal components.
