@@ -5337,3 +5337,36 @@ rows; search degrades to the trigram path meanwhile, which is the documented beh
 Also rebuilt after the extraction: `site_stats` (354,730), `doc_inbound`, `instrument_inbound`
 (40,574) and `doc_identity` (354,730 rows, 5.1s).
 
+---
+
+## Iteration 143 — the synthesis memo was showing figures the day had already withdrawn
+
+`findings-synthesis.md` is the volume's **"start here"** memo, so a reader landing on it was being
+shown numbers today's work had corrected or withdrawn. Audited it against the day's changes and
+annotated each in place, plus a **top-level index** — the memo is 620 lines and a reader may land
+anywhere, so scattered inline notes alone would not have been enough.
+
+**Withdrawn (2):** export control "steps and holds" after 2021 — it keeps climbing, ρ share
++0.738 → **+0.952**; and the RMB ratio "sits flat for eight years" — it keeps falling,
+0.185 → **0.059**, and the comparison is **bilateral** (欧元 16, 港元 8, 日元 2 against 美元's 684).
+
+**Re-based but holding (3):** top 1% of nodes **54.5% → 62.5%** on production instrument pooling
+(Gini 0.965, never-cited 87.7%); successor rate **5.9% → 6.3%** with median lag **564 → 652.5 d**, so
+the rate holds and the **lag** moved; province→city relay **9.3% → 8.8%** against 0.9%, ratio 10.1x.
+
+**Superseded (1):** "PBC 31 documents" as the biggest institutional hole — **6,099** after the cap
+fix, with SAFE 22 and an absent NFRA still standing. **New (1):** `pbc-stance-series.md`.
+
+**The index states the common cause once, because both withdrawals share it.** Both were *panel*
+figures, and the panel was keyed on a date column that `pbc`, `chinatax`, `csrc`, `safe` and `spp`
+never populate — **116,282 of 354,730 documents**. *A series is only as honest as its denominator,
+and a denominator only as honest as the column it counts.*
+
+**Worth noting what this iteration is.** Nothing was discovered; the day's findings were already
+measured. The work was making sure the memo a reader meets first does not contradict the memos it
+summarises. On a volume that re-bases as often as this one, that upkeep is not optional — four of the
+six affected claims would have read as current.
+
+Segmented index rebuild at 146,000 of 354,730 (~91/s), finishing ~02:05 UTC against the 06:00
+nightly; the fingerprint table is populating as designed.
+
