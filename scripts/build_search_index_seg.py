@@ -44,6 +44,11 @@ CREATE = """
 CREATE VIRTUAL TABLE IF NOT EXISTS doc_search_seg USING fts5(
     title, document_number, keywords, abstract, body_text_cn,
     content='',
+    -- contentless_delete=1 (SQLite 3.43+) is what lets stale_and_done() remove a
+    -- row whose body changed. Without it DELETE raises
+    -- "cannot DELETE from contentless fts5 table" — which is how the live table
+    -- behaves, since it predates this. A one-time --rebuild migrates it.
+    contentless_delete=1,
     tokenize='unicode61 remove_diacritics 2'
 );
 """
@@ -125,10 +130,22 @@ def stale_and_done(conn):
         conn.commit()
         print(f"state: recorded body length for {len(unknown):,} pre-existing rows")
     if changed:
-        conn.executemany("DELETE FROM doc_search_seg WHERE rowid = ?",
-                         [(d,) for d in changed])
-        conn.commit()
-        print(f"stale: {len(changed):,} indexed rows have a changed body — re-indexing")
+        try:
+            conn.executemany("DELETE FROM doc_search_seg WHERE rowid = ?",
+                             [(d,) for d in changed])
+            conn.commit()
+            print(f"stale: {len(changed):,} indexed rows have a changed body "
+                  "— re-indexing")
+        except sqlite3.OperationalError as e:
+            # The live table was created before contentless_delete=1, so DELETE is
+            # refused. Do NOT crash and do NOT silently skip: report it, because the
+            # whole point of this function is that staleness used to be invisible.
+            conn.rollback()
+            print(f"stale: {len(changed):,} indexed rows have a changed body but this "
+                  f"table cannot DELETE ({e}). Their OLD text remains in the BM25 "
+                  "index. Run with --rebuild once to migrate the table to "
+                  "contentless_delete=1 and refresh everything.")
+            return indexed, 0
     return indexed - changed, len(changed)
 
 

@@ -15,13 +15,21 @@ import sqlite3
 import sys
 from pathlib import Path
 
-import pytest
+# jieba lives on the DROPLET, not on the Mac, so this test can only really run there —
+# and the droplet has no pytest. Both paths must therefore work: skip politely under
+# pytest when jieba is absent, and run standalone (`python3 tests/<file>.py`) where it
+# is present, which is the project's existing assert-based convention.
+try:
+    import pytest
+except ImportError:                                  # standalone, no pytest installed
+    pytest = None
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-pytest.importorskip("jieba", reason="build_search_index_seg needs jieba")
+if pytest is not None:
+    pytest.importorskip("jieba", reason="build_search_index_seg needs jieba")
 from build_search_index_seg import CREATE, STATE_DDL, stale_and_done  # noqa: E402
 
 
@@ -91,6 +99,38 @@ def test_a_same_length_edit_is_missed_and_that_is_documented():
     done, n_stale = stale_and_done(c)
     assert done == {1}, "a same-length edit is NOT detected, by design"
     assert n_stale == 0
+
+
+def test_a_table_that_cannot_delete_reports_instead_of_crashing():
+    """The LIVE table predates contentless_delete=1, so DELETE is refused there.
+
+    The function must neither crash the nightly nor silently skip — staleness being
+    invisible is the defect it exists to fix. It reports and returns everything as
+    skipped, so --rebuild is the stated remedy.
+    """
+    c = sqlite3.connect(":memory:")
+    c.execute("CREATE TABLE documents (id INTEGER PRIMARY KEY, title TEXT, "
+              "document_number TEXT, keywords TEXT, abstract TEXT, body_text_cn TEXT)")
+    # the OLD DDL: contentless, no contentless_delete
+    c.execute("CREATE VIRTUAL TABLE doc_search_seg USING fts5("
+              "title, document_number, keywords, abstract, body_text_cn, "
+              "content='', tokenize='unicode61 remove_diacritics 2')")
+    c.executescript(STATE_DDL)
+    c.execute("INSERT INTO documents VALUES (1,'t','','','','详见附件。')")
+    c.execute("INSERT INTO doc_search_seg(rowid, title, document_number, keywords, "
+              "abstract, body_text_cn) VALUES (1,'t','','','','详见附件。')")
+    c.execute("INSERT INTO doc_search_seg_state VALUES (1, 5)")
+    c.commit()
+    c.execute("UPDATE documents SET body_text_cn = ? WHERE id = 1", ("x" * 9000,))
+    c.commit()
+    done, n_stale = stale_and_done(c)          # must not raise
+    assert done == {1}, done
+    assert n_stale == 0
+
+
+def test_the_create_ddl_enables_contentless_delete():
+    """A new table must support removing a changed row."""
+    assert "contentless_delete=1" in CREATE
 
 
 if __name__ == "__main__":
