@@ -136,8 +136,13 @@ one. `tests/test_ingest_urls.py` pins 16 real brief URLs **and** the negative ca
 
 ## Result of the first run
 
-62 URLs from the 21 Oct – 4 Nov briefs: **50 stored, 7 already held, 5 blocked.** Corpus
-377,895 → **377,945**, across 29 sites and 3 admin levels (central 10, media 14, foreign 5).
+62 URLs from the 21 Oct – 4 Nov briefs: **50 stored, 7 already held, 5 blocked**, across 29 sites
+and 3 admin levels (central 10, media 14, foreign 5).
+
+**Combined with the crawls, the whole exercise added 1,136 documents** and took the corpus
+377,895 → **379,031**: the ingest 50, tier 1 **784** (ce 312, jjckb 95, yicai 377 — all with 0
+no-date), tier 2 **302** (jiemian 98 all undated, eeo 76, huxiu 70, tmtpost 58 — 0 no-date except
+jiemian).
 
 Only **7 of 62** were already held, and the misses are informative:
 `www.news.cn` contributed **0 of 6** despite the corpus holding **6,080** documents from that
@@ -209,16 +214,23 @@ vocabulary of the case that started the whole exercise.
 
 ## huxiu needs curl_cffi FIRST, measured on the tier-2 run
 
-`huxiu` is not "occasionally" slow, which is how the first run described it. Measured on the
-2026-11-05 tier-2 crawl: **every** article times out on urllib **twice** (`The read operation
-timed out`, two retries) and then succeeds through the `curl_cffi` fallback — `curl_cffi fallback
-OK (102055B)`, `(120102B)`. The cost is ~**2.5 minutes per article**, so 72 discovered URLs take
-roughly 3 hours, against 58 tmtpost articles in 4 minutes and 76 eeo in 3.
+`huxiu` is not "occasionally" slow, which is how the first run described it: on the 2026-11-05
+tier-2 crawl a large share of articles time out on urllib **twice** (`The read operation timed
+out`, two retries) and then succeed through the `curl_cffi` fallback — `curl_cffi fallback OK
+(102055B)`, `(120102B)`.
 
-**The consequence for the nightly is that huxiu can never catch up.** Under the 600s
-`run_crawler_t` cap it will fetch about four articles a night, so it accrues a permanent backlog.
-This is not a reason to raise the cap — Phase 1 is already 240-271 min for ~250 documents — it is
-a reason to stop paying for two doomed urllib attempts. `base.fetch` already has the curl_cffi
+**The cost, now that the run has finished rather than been extrapolated from mid-run:** 70
+documents in **52 minutes** (01:39 → 02:31), about **45 seconds per article**. An earlier note
+here said ~2.5 min/article and ~3 hours for the site; that was taken from the worst stretch of the
+log while the run was still going and **was too pessimistic by a factor of three** — plenty of
+articles do answer on the first attempt. The comparison still holds and is the point: tmtpost did
+58 articles in 4 minutes and eeo 76 in 3, so huxiu costs roughly **10x per article**, not 30x.
+
+**The consequence for the nightly is a slow backlog, not an impossible one.** Under the 600s
+`run_crawler_t` cap huxiu gets through roughly 13 articles a night, so at ~70 new articles per
+crawl window it falls behind gradually rather than catastrophically. That is not a reason to raise
+the cap — Phase 1 is already 240-271 min for ~250 documents — it is a reason to stop paying for
+two doomed urllib attempts on the articles that need the fallback. `base.fetch` already has the curl_cffi
 path (it defeats fingerprint WAFs that reject urllib's ClientHello, which is evidently what huxiu
 runs); what is missing is a way for a site to say "go there first". A per-site
 `impersonate_first` hint in the registry, honoured by a thin wrapper around `fetch`, would cut
