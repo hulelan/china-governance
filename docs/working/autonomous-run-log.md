@@ -5765,12 +5765,31 @@ operators over 算法备案 and 数据安全 failures — precisely the enforcem
 portal publishes. Note 约谈 is 2 characters **and** not a jieba token, so it sits in the
 both-indexes blind spot and is findable only by `LIKE`.
 
-**7. Two findings that are really questions, now logged.** `www.news.cn` contributed **0 of 6**
-brief URLs while the corpus holds **6,080** documents from that host — and since `ingest_urls`
-parses those pages fine, that is a **discovery** gap in `crawlers/xinhua.py`, not a fetch or
-extraction one. It should be settled before anyone trusts a Xinhua-denominated attention measure.
-And the ontology validator **failed** on the 16 new site keys, which is the guardrail working:
-two leaves were added — `media_financial` (ownership deliberately not encoded, since the leaf
+**7. One finding, one wrong diagnosis of it, and the correction — which is the useful part.**
+`www.news.cn` contributed **0 of 6** brief URLs while the corpus held **6,080** documents from
+that host, the missing six including the **二十届五中全会公报**. I wrote that up as "missing a
+whole path family" and then measured it, which says otherwise: grouping every held `xinhua` URL
+into shapes shows **all six shapes are already present** — `/tech/` 2,246, bare `/<YMD>/` 5,785,
+`/politics/` 249 — and the crawler is current, 10-39 rows/day with no gap.
+
+The real mechanism is the **discovery surface**. `SECTIONS` has five entries: `tech` and `fortune`
+are JSON datasources and therefore paginated and complete; `politics/zywj` appears twice; and
+`general` is a **scrape of the xinhuanet.com homepage**. All 5,785 bare-path documents come from
+that scrape, and a homepage has no pagination and no archive — anything that scrolls off between
+nightly runs is gone **permanently**. Xinhua publishes hundreds of items a day; we capture 10-39.
+Two channels have no entry at all: `/politics/` (distinct from `politics/zywj`) holds 249
+documents, all incidental, and `/info/` holds **1**. The 五中全会公报 sat in `/politics/`.
+
+**The consequence is a validity claim, not a coverage complaint.** Any Xinhua-denominated
+attention or share measure is computed over a sample whose selection rule is *Xinhua's own
+front-page editorial choice at ~06:00 UTC*. That is a defensible instrument for "what the agency
+foregrounded" and **not** one for "what the agency published", and nothing currently records which
+of the two a given memo assumed. "Missing a path family" would not have told a reader any of that,
+which is the argument for measuring a diagnosis before writing it down.
+
+**And one guardrail that worked.** The ontology validator **failed** on the 16 new site keys, as
+its own header promises for a new media source.
+Two leaves were added — `media_financial` (ownership deliberately not encoded, since the leaf
 spans central Party papers, state-group titles and private ones) and `media_foreign` (under
 `media` so "exclude news" catches them, but its own leaf, because folding them into
 `media_commercial` would repeat one level out the error that read 47 of 105 documents as

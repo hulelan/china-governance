@@ -1203,13 +1203,32 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   same residential/HK vantage as the MIIT stubs. A cheaper partial route: the 备案 (filing-for-
   review) records, if any source publishes which municipal regulations were returned or amended
   on review.
-- **(2026-11-05) `www.news.cn` contributed 0 of 6 brief URLs while the corpus holds 6,080
-  documents from that host** — so `crawlers/xinhua.py` is missing a whole path family, not a
-  few documents. The six that were absent span `/info/`, `/politics/`, `/tech/` and bare
-  `/YYYYMMDD/<hex>/c.html`, and they include the **二十届五中全会公报** (4,728 CJK). What we
-  know: `scripts/ingest_urls.py` fetches and parses them fine, so this is a DISCOVERY gap
-  (which listing pages the crawler walks), not a fetch or extraction gap. Worth resolving
-  before trusting any Xinhua-denominated attention measure.
+- **(2026-11-05, and the first diagnosis of this was WRONG — kept here because the correction is
+  the useful part.) The Xinhua tier is a DAILY SAMPLE of Xinhua, not Xinhua.** `www.news.cn`
+  contributed **0 of 6** brief URLs while the corpus held 6,080 documents from that host,
+  including a missing **二十届五中全会公报** (4,728 CJK). I first recorded that as "missing a whole
+  path family". It is not: grouping every held `xinhua` URL into shapes shows all six shapes are
+  already present — `/tech/<YMD>/<HEX>/c.html` **2,246**, bare `/<YMD>/<HEX>/c.html` **5,785**,
+  `/politics/<YMD>/<HEX>/c.html` **249**. The crawler reaches those paths and is current (newest
+  non-ingested row 2026-11-04, 10-39 rows/day without a gap).
+  - **The actual mechanism is the DISCOVERY SURFACE.** `SECTIONS` has five entries: `tech` and
+    `fortune` (JSON datasources, so paginated and complete), `politics/zywj` twice (central
+    documents), and `general` — which is a **scrape of the xinhuanet.com homepage**. Every one of
+    those 5,785 bare-path documents comes from that homepage scrape, and a homepage has no
+    pagination and no archive: anything that scrolls off between nightly runs is lost
+    **permanently**. Xinhua publishes hundreds of items a day and we capture 10-39.
+  - **Two channels have no section entry at all.** `/politics/` — the main politics channel,
+    distinct from `politics/zywj` — holds 249 documents, all incidental homepage catches, and
+    `/info/` holds **1** (the row this ingest added). The 五中全会公报 sat in `/politics/`.
+  - **Consequence for the research, which is why this is not cosmetic:** any Xinhua-denominated
+    attention or share measure is computed over a homepage sample whose selection is *Xinhua's own
+    front-page editorial choice at ~06:00 UTC*, not over Xinhua's output. That is a defensible
+    instrument for "what the agency foregrounded" and NOT one for "what the agency published", and
+    nothing currently records which of the two a given memo assumed.
+  - **Fix, in cost order:** add `/politics/` and `/info/` as JSON datasources the way `tech` and
+    `fortune` already work (their `ds_<id>.json` ids are discoverable from each channel's page),
+    which converts the biggest channels from snapshot to paginated. Leave `general` as a
+    supplement rather than the backbone.
 - **(2026-11-05) 《智能体发展自律公约》 is still 0 titles.** The corpus holds only coverage
   (`guancha` 900206803, `yicai`), because its publisher CAICT (`caict.ac.cn`) returns **412**
   from the droplet. Same for the full 18-point text of 《携手构建全球开放人工智能行动倡议》:
