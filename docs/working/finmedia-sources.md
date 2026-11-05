@@ -51,12 +51,27 @@ homepage, and the body column is CJK characters of extracted prose.
 `relation='body=paywall_teaser'`, because a 600-character lede is real signal and passing it off
 as a body would silently corrupt every length-, coverage- and body-keyed measure downstream.
 
-**界面 has no server-rendered date** for its current template. Older articles (7-digit ids) carry
-a Unix timestamp in `<span class="date">`; current ones (8-digit) carry nothing in either the
-desktop or mobile host, and mobile/desktop bodies are byte-identical in CJK count (2678 = 2678),
-so there is no second host to try. Its rows store an **empty** `date_published`, which
-`doc_identity.date_quality` flags as `missing`. **Deliberately not inferred from the crawl day** —
-that is precisely the `crawl_stamped` failure CLAUDE.md devotes a section to.
+**界面 has no server-rendered date, and this is now PROVEN rather than inferred.** Older articles
+(7-digit ids) carry a Unix timestamp in `<span class="date">`; current ones (8-digit) carry
+nothing. The page's own JS object literal reads **`publish_time: ''`** — the field exists and is
+empty in the delivered source — and the only 10-digit numbers in the document are `data-id`
+attributes on nav elements, *identical across different articles* (1641195066, 1796714275), so
+they are element ids and not timestamps. Mobile and desktop bodies are byte-identical in CJK
+count (2678 = 2678), so there is no second host to try either. The date is fetched client-side
+and there is nothing to parse.
+
+Its rows therefore store an **empty** `date_published`, which `doc_identity.date_quality` flags
+as `missing`. **Deliberately not inferred from the crawl day** — that is precisely the
+`crawl_stamped` failure CLAUDE.md devotes a section to. The measured cost: the first run stored
+**98 jiemian rows, all 98 undated**, so at a nightly cadence this accumulates.
+
+**The one legitimate route, not yet built.** The listing page carries the publisher's **own** date
+label beside each headline (times like `08:25` for same-day items). Capturing that label *at
+discovery* is materially different from crawl-stamping: it records the site's stated date rather
+than assuming our fetch day. It needs the listing's semantics for older items established first
+(does a section page show a full date, or only a time?), which is why it is written down here
+instead of guessed at. Until then jiemian is a high-quality-body, no-date source — fine for text
+analysis, unusable in the tracker.
 
 ## Four extraction defects, all found by measuring rather than reviewing
 
@@ -191,6 +206,29 @@ documents, so the ratios above are directional, not estimates. Re-run it after t
 backfill take the financial tier past a few thousand rows. The two terms that would settle it —
 行政立案 and 刑事立案 — are at ~0 on BOTH sides, so this corpus cannot yet speak to the specific
 vocabulary of the case that started the whole exercise.
+
+## huxiu needs curl_cffi FIRST, measured on the tier-2 run
+
+`huxiu` is not "occasionally" slow, which is how the first run described it. Measured on the
+2026-11-05 tier-2 crawl: **every** article times out on urllib **twice** (`The read operation
+timed out`, two retries) and then succeeds through the `curl_cffi` fallback — `curl_cffi fallback
+OK (102055B)`, `(120102B)`. The cost is ~**2.5 minutes per article**, so 72 discovered URLs take
+roughly 3 hours, against 58 tmtpost articles in 4 minutes and 76 eeo in 3.
+
+**The consequence for the nightly is that huxiu can never catch up.** Under the 600s
+`run_crawler_t` cap it will fetch about four articles a night, so it accrues a permanent backlog.
+This is not a reason to raise the cap — Phase 1 is already 240-271 min for ~250 documents — it is
+a reason to stop paying for two doomed urllib attempts. `base.fetch` already has the curl_cffi
+path (it defeats fingerprint WAFs that reject urllib's ClientHello, which is evidently what huxiu
+runs); what is missing is a way for a site to say "go there first". A per-site
+`impersonate_first` hint in the registry, honoured by a thin wrapper around `fetch`, would cut
+huxiu to roughly one third of its current cost without touching any other crawler's path.
+
+Note this is the same economics as the PDF `_is_timeout` fix (CLAUDE.md, `2653392`): there, two
+30-second attempts per dead row made retiring one host cost eight minutes, and the fix was to
+stop making the second attempt when the first failure could not be the one the fallback exists
+for. Here the fallback is the one that WORKS and the first attempt is the doomed one, so the
+asymmetry runs the other way — but it is the same question, *which attempt is paying for itself*.
 
 ## Still outstanding
 
