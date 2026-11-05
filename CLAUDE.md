@@ -324,6 +324,48 @@ python3 -m crawlers.elsewhere                    # elsewhere.news 别处 (VC/AI-
 python3 -m crawlers.chinalawtranslate           # English translations of Chinese laws (~1,100 posts via WP API)
 python3 -m crawlers.chinalawtranslate --category internet  # One category only
 python3 scripts/match_clt_translations.py       # Link CLT posts to native docs by source URL
+
+# Financial / business / tech press (2026-11-05). ONE module, a site registry —
+# the corpus had 15 media sites and NO financial press, which is why a query for
+# the 中国高科 corporate-governance case returned zero: a SOURCE gap, not a query
+# bug. Government sites publish the instrument, not the enforcement, the dispute
+# or the firm-side reaction, and that is the layer the replications need.
+python3 -m crawlers.finmedia --list-sites
+python3 -m crawlers.finmedia --site jiemian --probe   # measure extraction, write NOTHING
+python3 -m crawlers.finmedia --tier 1                 # ce, jjckb, yicai
+python3 -m crawlers.finmedia --site ce --max-docs 400
+# Tiers are by MEASURED reachability from the droplet, reasons in the module
+# docstring and docs/working/finmedia-sources.md:
+#   tier 1  ce (中国经济网/经济日报), jjckb (经济参考报/新华社), yicai (第一财经)
+#   tier 2  jiemian (界面), eeo (经济观察报), tmtpost (钛媒体), huxiu (虎嗅)
+#   tier 3  caixin — reachable but HARD PAYWALLED. Its article <p> content is 8
+#           paragraphs / 484-658 CJK, i.e. the lede teaser, so rows carry
+#           relation='body=paywall_teaser' rather than passing a teaser off as a
+#           body. NOT configured: thepaper 403 (WAF), cls needs a request
+#           signature (errno 10012 签名错误), stcn is a TCP blackhole, and caict is
+#           412 — which MATTERS, because CAICT publishes 《智能体发展自律公约》, so
+#           that document can only arrive via media coverage (still 0 titles).
+# 界面 server-renders NO date on its current template (neither host; mobile and
+# desktop bodies are byte-identical in CJK count), so its rows store an EMPTY
+# date_published, which date_quality flags `missing`. Deliberately NOT inferred
+# from the crawl day — that is the crawl_stamped failure documented above.
+
+# Ingest the URLs a research brief cites, one row each. The lever: the next brief
+# is one command, not another hunt. Provenance lands in
+# relation='ingest=url_list;tag=<tag>'. First run: 62 URLs from the 21 Oct - 4 Nov
+# briefs → 50 stored / 7 held / 5 blocked.
+python3 scripts/ingest_urls.py --urls-file brief_urls.txt --dry-run
+python3 scripts/ingest_urls.py --urls-file brief_urls.txt --tag brief-2026-11-04
+python3 scripts/ingest_urls.py --list-hosts
+# Host resolution is an EXPLICIT netloc->site_key table. A fuzzy `root in base_url`
+# lookup resolved www.gov.cn to szpsq/sz/stic, because "gov.cn" is a substring of
+# "szpsq.sz.gov.cn" — the hand-maintained-table bug shape again. An unmapped host
+# is a LOUD refusal naming it; --allow-new is the explicit opt-in.
+# Foreign sources store admin_level='foreign_media' and sit in the ontology leaf
+# media_foreign: jurisdiction and publication type on SEPARATE axes, so folding
+# them into `media` cannot repeat the eightfold overstatement that cut caused.
+# NOTE www.news.cn contributed 0 of 6 held against 6,080 corpus documents from
+# that host — crawlers/xinhua.py is missing a path family (Open Question below).
 ```
 
 ### English Translations
@@ -653,6 +695,7 @@ the rule barely touches.
 |---|---|---|---|
 | `build_doc_identity` crawl-stamped dates (A4) | two Jiangsu sites | 76 sites, mostly shallow archives | "74 sites / 27,915 docs crawl-stamped" — the rule was detecting shallow archives, not stamped dates |
 | `base.BODY_GRAPHIC_TITLE` → terminal `image_only` | `gov` (10 → 0 false matches) and `miit` (15 → 2) | **`bj`, ~93% of the class**: 1,268 bodiless vs 107 has-body rows carry the cue | a single transient extraction failure permanently retired a text-bearing document (found and fixed 2026-10-08) |
+| the `finmedia`/`ingest_urls` extractor's CJK thresholds | Chinese article pages, where every rule fired correctly | **every non-Chinese page**: Business Recorder, Zhong Lun, Bloomberg Law, govinfo | `extract_title` required >= 4 CJK so NO English page could ever yield a title (277 KB fetched, perfectly usable `<title>`, returned `""`), and `extract_body` gated paragraphs on CJK alone so 15 English `<p>` of ~250 chars and 170 of up to 1,260 both extracted to ZERO. 15 of 62 brief URLs failed; after the fix 5, all hard WAF/paywall blocks (2026-11-05) |
 
 **Rule:** before trusting a flag's precision, run `GROUP BY site_key` (or by jurisdiction, or by
 whatever the rule's population is) on *where the flag fires*, and hand-check the largest bucket,
@@ -1160,6 +1203,19 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
   same residential/HK vantage as the MIIT stubs. A cheaper partial route: the 备案 (filing-for-
   review) records, if any source publishes which municipal regulations were returned or amended
   on review.
+- **(2026-11-05) `www.news.cn` contributed 0 of 6 brief URLs while the corpus holds 6,080
+  documents from that host** — so `crawlers/xinhua.py` is missing a whole path family, not a
+  few documents. The six that were absent span `/info/`, `/politics/`, `/tech/` and bare
+  `/YYYYMMDD/<hex>/c.html`, and they include the **二十届五中全会公报** (4,728 CJK). What we
+  know: `scripts/ingest_urls.py` fetches and parses them fine, so this is a DISCOVERY gap
+  (which listing pages the crawler walks), not a fetch or extraction gap. Worth resolving
+  before trusting any Xinhua-denominated attention measure.
+- **(2026-11-05) 《智能体发展自律公约》 is still 0 titles.** The corpus holds only coverage
+  (`guancha` 900206803, `yicai`), because its publisher CAICT (`caict.ac.cn`) returns **412**
+  from the droplet. Same for the full 18-point text of 《携手构建全球开放人工智能行动倡议》:
+  the WIC page we now hold is the committee's *announcement*, which describes the 18 items
+  across four themes without enumerating them. Both need a non-datacenter vantage or a mirror
+  on a reachable host — the same residential/HK question as the MIIT stubs and the npc bodies.
 - **(2026-10-08) Three stale watcher chains are sleeping on the droplet** (pids 244667/244669,
   3259309, 3772407), each stuck on the self-matching `pgrep` described above. They consume nothing
   but a 15-30s sleep, and one is holding an unexecuted `build_site_stats.py`, so `site_stats` /
@@ -1278,6 +1334,37 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
     under full descriptive titles from another crawl path, with exact 文号 agreement
     (商务部公告2025年第1号/第18号/第21号/第22号, 不可靠实体清单工作机制公告〔2025〕7号/〔2025〕8号).
     What the recovery bought is searchability and 文号 linkage to the twin, not rescue.
+- **(2026-11-05) THE SAME FAILURE CLASS BY A DIFFERENT ROUTE, and this time our decoding WAS
+  the cause.** `base._decode` hardcoded `raw.decode("utf-8", errors="replace")` and never
+  consulted the page's declared charset, so **every GBK/GB18030-served page became U+FFFD
+  mojibake**. Measured on `hn.chinanews.com.cn`: 2,538 characters of which **10** were CJK,
+  title included. The entry above was careful to clear our decoding for mofcom (that
+  corruption is an ASCII `?` served by the listing endpoint) — which is exactly why this one
+  survived so long. **Two different causes, one consequence**, and the consequence is the
+  sentence above: a mojibake title is invisible to BOTH FTS indexes, can never be a citation
+  target, can never match a `title_reissue` edge.
+  - **Fixed** in `_decode_text`, and deliberately conservative because all 48 crawlers share
+    it: utf-8 is tried **first** and its result kept unless replacement characters exceed a
+    stray-byte rate (`max(8, len//2000)`); only then is the declared charset, then gb18030,
+    then big5 consulted, and an alternative is accepted **only if it strictly reduces** the
+    replacement count. `tests/test_finmedia_extract.py` pins the safety property directly —
+    *a page that decoded cleanly before decodes identically now* — plus a stray-bad-byte case
+    that must NOT trigger a re-decode.
+  - **Live proof**: `decoded as gb2312 (3133 → 0 bad chars)` recovered
+    湖南省网信办集中约谈某文化传媒公司等4家大模型运营单位 — a 网信办 **约谈** of four
+    large-model operators over 算法备案 and 数据安全 failures, i.e. precisely the enforcement
+    layer no government portal publishes. Note 约谈 is 2 characters AND not a jieba token, so
+    it sits in the both-indexes blind spot documented above and is findable only by `LIKE`.
+  - **Swept the same day, and the back-catalogue damage is SMALL.** The fix only helps rows
+    crawled from now on, so: **38 documents have a U+FFFD in the TITLE** (`yueyang` 32, `36kr` 4,
+    `people` 2) and **572 have a body that is >= 5% replacement characters** (`people` 540,
+    `yueyang` 30, `hunan` 2), out of 377,945. `yueyang` (岳阳, a Hunan prefecture city) is the
+    one site whose titles are wholly destroyed — `ȫ���ܶ���Ⱦ�������ι���ר����Ȼ��ٿ�` — and it
+    is GBK-served, so a re-crawl now repairs all 32 titles and 30 bodies. `people`'s 540 are
+    PARTIAL (2 titles affected, so most bodies carry a few bad characters in otherwise sound
+    text) and need a per-row look before any repair; `36kr`'s are single words mid-sentence
+    (`大产品���位`). **Do not read 572 as 572 lost documents** — only the 38 title cases are
+    title-keyed-invisible, which is the consequence that actually matters.
 - **Broken/unreliable gkmlpt sites** (Dongguan, Foshan, Bao'an, Shantou, Zhaoqing,
   Zhanjiang, Chaozhou, Yantian, gd-partial): the authoritative list with per-site
   reasons now lives in code — `crawlers/gkmlpt.py` → `KNOWN_BROKEN`. A bulk
