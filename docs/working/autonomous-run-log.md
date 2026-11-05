@@ -5665,3 +5665,120 @@ borrowed. 雪亮工程 is reported `thin` (82 panel docs) with no trend asserted
 **One recurring self-inflicted annoyance, third time today:** scp'ing a repo-path script to the
 droplet for testing blocks the next `git pull` as an untracked-file collision. Probes belong in
 `/root/`, not in the repo tree; a script that lives in the repo should be committed and pulled.
+
+---
+
+## Iteration 149 (2026-11-05) — the source fill: financial press, a URL ingest, and a decode bug
+
+**Asked for, in this order:** "can we do the source fill", then "pull the docs from this" with a
+China AI brief attached, then 62 bare URLs from the 21 Oct – 4 Nov briefs. All three are the same
+job from different ends, so they were done as one: the sources, the tool that uses them, and the
+documents.
+
+**1. What the gap actually was.** The 2026-10-30 verdict — that the 中国高科 case was a SOURCE gap,
+not a query bug — held up and was narrower than "no financial press". Probed from the droplet with
+byte checks on real **article** pages, 8 of 10 candidate hosts are reachable and 6 yield clean
+bodies and dates. `crawlers/finmedia.py` configures them as one module with a site registry, the
+shape `govcms`/`gkmlpt` already use, rather than seven near-identical crawlers.
+
+The tier-3 row is the one worth keeping: **财新 is reachable and useless for bodies.** Its article
+`<p>` content measures 8 paragraphs / **484–658 CJK** across three samples — the lede teaser. Its
+rows carry `relation='body=paywall_teaser'`, because a 600-character lede is real signal and
+passing it off as a body would corrupt every length-, coverage- and body-keyed measure downstream.
+Three more are declined with the measured reason rather than a guess: 澎湃 403, 财联社 needs a
+request signature (`errno 10012 签名错误`), **信通院 412** — which matters, because CAICT publishes
+《智能体发展自律公约》, so that document can only arrive as coverage.
+
+**2. A generic date fallback is a false-positive factory, and this nearly shipped.** The first
+version carried loose patterns including `(\d{4})/(\d{1,2})/(\d{1,2})`. Measured, it read
+**2024-05-20** off tmtpost's CDN image path and **2016-07-20** off huxiu's — a date two to ten
+YEARS wrong on a current article. There is now **no** generic fallback: every pattern is per-site
+and measured against that site's live HTML, and a site with no match is counted in a `no-date`
+tally. The asymmetry is the point: **a wrong date is worse than a missing one**, because
+`date_quality` flags the missing one and nothing flags the wrong one. Related: a windowed search
+(`html[:20000]`) silently returned no date for tmtpost (span at ~byte 82k) and huxiu
+(`article:published_time` past 20k), so `extract_date` reads the whole document.
+
+界面 is the honest loss. Its current template server-renders **no date at all** — not in the
+desktop host, not in mobile, and mobile/desktop bodies are byte-identical in CJK count (2678 =
+2678), so there is no second host to try. Its rows store an **empty** date. Deliberately not
+inferred from the crawl day; that is the `crawl_stamped` failure CLAUDE.md devotes a section to.
+
+**3. `scripts/ingest_urls.py` — the lever, and what it found by failing.** 62 brief URLs across 36
+hosts; only **7 were already held**. The first dry run failed on **15**, and the pattern was one
+mistake wearing four hats: **every threshold in the extractor counts CJK characters**, so rules
+validated on Chinese pages returned nothing at all on everything else. `extract_title` required
+≥4 CJK, so **no English page could ever yield a title** — Business Recorder fetched at 277 KB with
+a perfectly usable `<title>` and returned `""`. `extract_body` gated paragraphs on CJK alone, so
+15 English `<p>` of ~250 chars and 170 of up to 1,260 both extracted to **zero**. Some pages carry
+no prose in `<p>` whatsoever (`npc.gov.cn` 2 paragraphs, `nda.gov.cn` 1) while their flattened text
+holds 1,531 and 777 CJK in long lines. **15 failures → 5**, and all 5 survivors are hard WAF or
+paywall blocks (NYT 403, Reuters 401, Investing.com 403 ×3).
+
+Host resolution is an **explicit** netloc→site_key table because the fuzzy version resolved
+`www.gov.cn` to `szpsq`/`sz`/`stic` — "gov.cn" is a substring of "szpsq.sz.gov.cn", the
+hand-maintained-table bug shape arriving by yet another route. An unmapped host is a loud refusal
+naming it.
+
+**4. The fourth defect was upstream of everything and had been there all along.**
+`base._decode` hardcoded `raw.decode("utf-8", errors="replace")` and never consulted the page's
+declared charset, so **every GBK-served page became U+FFFD mojibake**: `hn.chinanews.com.cn` gave
+2,538 characters of which **10** were CJK, title included. This is the failure class CLAUDE.md
+already records for the 725 `mofcom` rows — and that entry was careful to **clear** our decoding,
+because mofcom's corruption is an ASCII `?` from the listing endpoint. Two different causes, one
+consequence, and clearing one is exactly why the other survived. `_decode_text` is deliberately
+conservative since all 48 crawlers share it: utf-8 first, its result kept unless replacement
+characters exceed a stray-byte rate, alternatives accepted only if they strictly reduce the count,
+and a test pins that a page which decoded cleanly before decodes identically now.
+
+**The sweep that entry asked for was run the same day rather than filed as an open question**, and
+the back-catalogue damage is **small**: 38 documents carry a U+FFFD in the TITLE (`yueyang` 32,
+`36kr` 4, `people` 2) and 572 have a body ≥5% replacement characters (`people` 540, `yueyang` 30)
+out of 377,945. Recorded explicitly that **572 is not 572 lost documents** — only the 38 title
+cases are title-keyed-invisible, and `yueyang` is GBK-served so a re-crawl repairs all 32.
+
+**5. Fixing the fallback introduced a bug the tests caught before it shipped.** The long-line
+fallback first reused `_flat`, which **deletes** tags — right inside one paragraph, wrong across a
+document: `首页 更多 分享到：` ran together with the first real paragraph as a **single line**, so no
+length filter could separate them and nav text would have landed in bodies corpus-wide.
+`test_short_nav_paragraphs_are_dropped` failed on it. `_lines` now flattens a document with every
+tag becoming a break; `_flat` keeps its single-element contract.
+
+**6. Result.** Ingest: **50 stored / 7 held / 5 blocked**, corpus 377,895 → 377,945 across 29 sites
+and 3 levels. Crawl (tier 1, in flight at time of writing): `ce` **312 new, 0 no-date**, `jjckb`
+**95 new, 0 no-date**, `yicai` running. Suite **408 → 460 passed**, 2 skipped.
+
+Documents recovered that the corpus did not have, named rather than aggregated:
+**《携手构建全球开放人工智能行动倡议》** (previously 0 titles / 0 bodies — though note the WIC page
+is the committee's *announcement*, describing the 18 items across four themes without enumerating
+them, so the full text is still outstanding); **中办、国办《关于推动科技创新和产业创新深度融合的意见》
+full text**; **《产业基础能力提升"十五五"规划》**; **中央网信委《国家信息化"十五五"规划》**;
+**国务院办公厅《…就业友好型发展方式的意见》**; the **二十届五中全会公报** (4,728 CJK);
+**国家数据集团 组建公告** plus 丁薛祥's attendance; **李强's WIC keynote from `mfa`** — the
+authoritative central copy, where the corpus previously held it only via `jcgov`, a **Shanxi
+prefecture-city portal**; and Business Recorder's five-row RMB fixing series, all previously lost
+to the English-title bug.
+
+The row that justifies the whole exercise is **湖南省网信办集中约谈某文化传媒公司等4家大模型运营单位**
+(2026-10-25), recovered *only* because of the decode fix: a 网信办 **约谈** of four large-model
+operators over 算法备案 and 数据安全 failures — precisely the enforcement layer no government
+portal publishes. Note 约谈 is 2 characters **and** not a jieba token, so it sits in the
+both-indexes blind spot and is findable only by `LIKE`.
+
+**7. Two findings that are really questions, now logged.** `www.news.cn` contributed **0 of 6**
+brief URLs while the corpus holds **6,080** documents from that host — and since `ingest_urls`
+parses those pages fine, that is a **discovery** gap in `crawlers/xinhua.py`, not a fetch or
+extraction one. It should be settled before anyone trusts a Xinhua-denominated attention measure.
+And the ontology validator **failed** on the 16 new site keys, which is the guardrail working:
+two leaves were added — `media_financial` (ownership deliberately not encoded, since the leaf
+spans central Party papers, state-group titles and private ones) and `media_foreign` (under
+`media` so "exclude news" catches them, but its own leaf, because folding them into
+`media_commercial` would repeat one level out the error that read 47 of 105 documents as
+sub-national diffusion when 44 were media). `VALIDATION: PASS`, and **"Other / Unclassified" went
+26 → 0** — every site key in the corpus now resolves to a leaf.
+
+**One self-inflicted repeat, and one avoided.** Repeated: an anchor reconstructed instead of read
+cost three attempts — once on a literal U+3000 the anchor spelled as an escape, once on a raw-string
+backslash-`t`, once on an off-by-one line index — though the all-or-nothing gate meant nothing was
+written each time. Avoided: the probe scripts went to `/tmp` on the droplet rather than the repo
+tree, so no `git pull` was blocked this iteration.
