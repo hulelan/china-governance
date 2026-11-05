@@ -243,6 +243,22 @@ done
 # Guancha runs in --deep mode to pick up section pages + columnists
 run_crawler "guancha" python3 -m crawlers.guancha --deep
 
+# Financial / business press (2026-11-05). finmedia iterates its own site registry,
+# so each call covers a whole tier — 7 sites across two crawler slots, not seven.
+# Split by tier on purpose: a tier-2 site going bad (huxiu occasionally times out on
+# TLS) must not eat the tier-1 budget, and run_crawler_t isolates each timeout.
+# --max-docs 150 per site bounds it: these are daily-publishing outlets, so a cap
+# well above their daily output keeps the nightly incremental (the url-dedup check
+# makes a re-run cheap) while refusing to turn into an unbounded archive walk.
+# 600s cap, not the 1800s default: Phase 1 already runs 240-271 min for ~250 new
+# documents (docs/working/nightly-phase1-timing.md) and a new source should not add
+# to that budget on the strength of a guess. Measured first run: 784 documents in
+# 16 min across tier 1, which is the walk from EMPTY; a nightly diff is far smaller.
+# caixin (tier 3) is deliberately excluded — it yields only a paywall lede.
+run_crawler_t 600 "finmedia (7 financial/business sites)" \
+    python3 -m crawlers.finmedia --tier 1 --max-docs 150
+run_crawler_t 600 "finmedia tier 2" \
+    python3 -m crawlers.finmedia --tier 2 --max-docs 150
 # Location-specific crawlers
 if [ "$IS_MAC" = "true" ]; then
     # These gkmlpt sites are unreachable from the Singapore droplet
