@@ -151,11 +151,50 @@ tree:
         label_zh: 官方媒体
         # qstheory = 求是网, the CPC Central Committee's theory journal: official
         # media (commentary/articles), not a research body.
-        site_keys: [xinhua, newscn, people, peopleapp, cctv, cnr, stdaily, qstheory]
+        site_keys:
+          [xinhua, newscn, people, peopleapp, cctv, cnr, stdaily, qstheory,
+           xinhua_en, xinhua_lw, people_rmrb, chinanews, chinanews_hn]
       - id: media_commercial
         label_en: Commercial & Tech Media
         label_zh: 商业与科技媒体
-        site_keys: [guancha, ifeng, thepaper, qbitai, 36kr, latepost, elsewhere]
+        site_keys: [guancha, ifeng, thepaper, qbitai, 36kr, latepost, elsewhere, qqnews]
+      - id: media_financial
+        label_en: Financial & Business Press
+        label_zh: 财经媒体
+        # Added 2026-11-05. The corpus had 15 media sites and NO financial press,
+        # which is why a query for the 中国高科 corporate-governance case returned
+        # zero: a SOURCE gap, not a query bug. Government sites publish the
+        # instrument; they do not publish the enforcement, the dispute or the
+        # firm-side reaction, which is the layer the political-economy
+        # replications need.
+        #
+        # OWNERSHIP IS NOT A SOURCE TYPE and is deliberately not encoded here.
+        # These range from central Party papers (ce = 经济日报, jjckb = 新华社
+        # 经济参考报) through state-group titles (yicai/SMG, jiemian/上海报业,
+        # 21jingji/南方报业) to private ones (eeo, caixin, tmtpost, huxiu). Mixing
+        # ownership into the type tree would make this leaf mean two things at
+        # once — the same mistake as reading `sites.admin_level='department'` as a
+        # tier. `sites.name` carries the publisher; keep ownership on its own axis.
+        #
+        # caixin is PAYWALLED: its rows carry relation='body=paywall_teaser' and
+        # hold the lede only (measured 484-658 CJK), never a full body.
+        site_keys:
+          [ce, jjckb, yicai, jiemian, 21jingji, eeo, tmtpost, huxiu, caixin,
+           cnfin, guandian]
+      - id: media_foreign
+        label_en: Foreign & English-language Media
+        label_zh: 境外媒体
+        # Under `media` on purpose, so "exclude news" catches these — they ARE
+        # news. But a leaf of their own, because folding them into
+        # media_commercial would repeat, one level out, the error CLAUDE.md
+        # records for `media` inside "non-central": that cut read 47 of 105
+        # documents as sub-national diffusion when 44 were media, an eightfold
+        # overstatement. These sites also carry admin_level='foreign_media', so
+        # jurisdiction and publication type stay on separate axes and either can
+        # be split without contaminating the other.
+        site_keys:
+          [reuters, nytimes, brecorder, investing, bloomberglaw, govinfo,
+           zhonglun, chinaon]
 
   # ── RESEARCH / THINK-TANK / OTHER ─────────────────────────────────────
   - id: research
