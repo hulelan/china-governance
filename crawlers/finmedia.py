@@ -75,7 +75,10 @@ BROWSER_UA = {
 CST = timezone(timedelta(hours=8))
 
 MIN_PARA_CJK = 12       # a <p> below this is nav/promo/caption, not prose
+MIN_PARA_CHARS = 60     # ...unless it is long non-Chinese prose (see extract_body)
 MIN_BODY_CJK = 80       # below this the extraction failed; record no body
+MIN_BODY_CHARS = 400    # the non-Chinese equivalent
+MIN_LINE_CHARS = 40     # fallback: a flattened line this long is a paragraph
 MAX_TITLE = 300
 
 SITES = {
@@ -220,25 +223,56 @@ def _cjk(s: str) -> int:
 
 
 def _flat(frag: str) -> str:
+    """Flatten ONE element's inner HTML: tags are deleted, not separated."""
     frag = re.sub(r'(?i)<br\s*/?>', '\n', frag)
     return re.sub(r'[ \t　]+', ' ', H.unescape(_TAGS.sub('', frag))).strip()
 
+def _lines(html: str) -> str:
+    """Flatten a WHOLE document: every tag becomes a line break.
+
+    Not _flat. _flat deletes tags, which is right inside one paragraph and wrong
+    across a document - it ran the nav strings together with the first real
+    paragraph as a single line, so no length filter could separate them and nav
+    text landed in the body. Caught by tests/test_finmedia_extract.py.
+    """
+    html = re.sub(r'(?i)<br\\s*/?>', '\\n', html)
+    return re.sub(r'[ \\t]+', ' ', H.unescape(_TAGS.sub('\\n', html)))
+
 
 def extract_body(html: str) -> str:
-    """Keep the <p> blocks that carry prose. One rule for every site.
+    """Keep the <p> blocks that carry prose, with a long-line fallback.
 
-    Nav links, share widgets and captions live in short <p> elements; article
-    paragraphs do not. Thresholding on CJK count therefore separates them
-    without naming a container, which is what lets one rule serve seven sites
-    with different markup.
+    The <p>-density rule serves seven different Chinese markups, but it was
+    CJK-ONLY and so could not see non-Chinese prose at all: Business Recorder has
+    15 paragraphs of ~250 English characters and Zhong Lun 170 of up to 1,260,
+    and both extracted to zero. A paragraph therefore qualifies on CJK count OR
+    on raw length.
+
+    Some pages put no prose in <p> whatsoever — npc.gov.cn had 2 paragraphs and
+    nda.gov.cn 1, while their flattened text held 1,531 and 777 CJK in long
+    lines. When the <p> pass comes back thin, fall back to those long flattened
+    lines, which measurement showed ARE the body paragraphs.
     """
     clean = _COMMENT.sub(' ', _STRIP.sub(' ', html))
     paras = []
     for frag in _PARA.findall(clean):
         txt = _flat(frag)
-        if _cjk(txt) >= MIN_PARA_CJK:
+        if _cjk(txt) >= MIN_PARA_CJK or len(txt) >= MIN_PARA_CHARS:
             paras.append(txt)
-    return re.sub(r'\n\s*\n+', '\n', "\n".join(paras)).strip()
+    body = re.sub(r'\n\s*\n+', '\n', "\n".join(paras)).strip()
+    if _cjk(body) >= MIN_BODY_CJK or len(body) >= MIN_BODY_CHARS:
+        return body
+
+    flat = _lines(clean)
+    lines, seen = [], set()
+    for line in flat.split("\n"):
+        line = line.strip()
+        if len(line) < MIN_LINE_CHARS or line in seen:
+            continue
+        seen.add(line)
+        lines.append(line)
+    fallback = "\n".join(lines).strip()
+    return fallback if len(fallback) > len(body) else body
 
 
 def extract_title(html: str) -> str:
@@ -249,7 +283,9 @@ def extract_title(html: str) -> str:
         t = _flat(m.group(1))
         # news <title> is usually "headline_section_outlet"
         t = re.split(r'[_|｜]\s*', t)[0].strip()
-        if _cjk(t) >= 4:
+        # A CJK-only floor made every English page titleless: Business Recorder
+        # fetched at 277 KB with a usable <title> and still returned "".
+        if _cjk(t) >= 4 or len(t) >= 15:
             return t[:MAX_TITLE]
     return ""
 

@@ -715,7 +715,43 @@ def _decode(resp, raw):
                 raw = zlib.decompress(raw, -zlib.MAX_WBITS)
             except Exception:
                 pass
-    return raw.decode("utf-8", errors="replace")
+    return _decode_text(raw)
+
+
+def _decode_text(raw: bytes) -> str:
+    """Decode a response body, honoring the page's declared charset.
+
+    This used to be a bare `raw.decode("utf-8", errors="replace")`, which turns
+    every GBK/GB18030-served page into U+FFFD mojibake. Measured 2026-11-05 on
+    hn.chinanews.com.cn: 2,538 characters of which 10 were CJK, title included.
+    That is the failure class CLAUDE.md records for the 725 mofcom rows — a
+    mojibake title is invisible to BOTH FTS indexes, can never be a citation
+    target and can never match a title_reissue edge, so the corpus holds the
+    document without having it.
+
+    Deliberately conservative: utf-8 is still tried FIRST and its result is kept
+    unless it produced replacement characters well beyond a stray-byte rate, so a
+    page that decodes cleanly today decodes identically after this change. Only
+    then is the declared charset (then gb18030, then big5) consulted, and an
+    alternative is accepted only if it strictly reduces the replacement count.
+    """
+    txt = raw.decode("utf-8", errors="replace")
+    bad = txt.count("\ufffd")
+    if bad <= max(8, len(txt) // 2000):
+        return txt
+    m = re.search(rb'charset\s*=\s*["\']?\s*([A-Za-z0-9_-]{2,20})', raw[:4096], re.I)
+    declared = m.group(1).decode("ascii", "ignore").lower() if m else ""
+    for enc in (declared, "gb18030", "big5"):
+        if not enc or enc.replace("-", "") in ("utf8",):
+            continue
+        try:
+            alt = raw.decode(enc, errors="replace")
+        except (LookupError, UnicodeDecodeError):
+            continue
+        if alt.count("\ufffd") < bad:
+            log.info(f"  decoded as {enc} ({bad} → {alt.count(chr(0xfffd))} bad chars)")
+            return alt
+    return txt
 
 
 def _fetch_impersonate(url: str, timeout: int, headers: dict = None) -> str | None:
