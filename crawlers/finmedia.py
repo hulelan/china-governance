@@ -4,9 +4,16 @@ Chinese financial / business / tech media crawler (one module, a site registry).
 WHY THIS EXISTS. The corpus had 15 `admin_level='media'` sites and none of them
 were financial press: a query for the 中国高科 corporate-governance case
 (2026-10-30) returned zero, and the reason was a SOURCE gap, not a query bug.
-Government sites publish the instrument; they do not publish the enforcement,
-the dispute, or the firm-side reaction. That implementation layer is where the
-political-economy replications need evidence, so it has to be crawled.
+Government sites publish the instrument and, it turns out, plenty of
+ADMINISTRATIVE enforcement too. What they do not publish is investor-side and
+private-law conflict. Measured 2026-11-05 against 793 financial-press rows and
+317,301 government rows (docs/working/finmedia-sources.md): the press runs
+5.65x on 索赔, 3.24x on 立案调查 and 1.55x on 起诉, while GOVERNMENT runs 5.9x
+on 整改 (8.0% vs 1.4%), 3.5x on 行政处罚 and 11x on 约谈 — because a
+行政处罚决定书 is itself a government document. So the layer this buys is the
+dispute and the firm-side reaction, not "enforcement" broadly, and the first
+framing of it was too strong. The test is also underpowered at n=793, where 1%
+is ~8 documents; re-run it once the tier passes a few thousand rows.
 
 The sources split into three tiers by what a NYC datacenter IP can actually get
 (probed 2026-11-05 from the droplet; see `docs/working/finmedia-sources.md`):

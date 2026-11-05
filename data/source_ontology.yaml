@@ -164,9 +164,11 @@ tree:
         # Added 2026-11-05. The corpus had 15 media sites and NO financial press,
         # which is why a query for the 中国高科 corporate-governance case returned
         # zero: a SOURCE gap, not a query bug. Government sites publish the
-        # instrument; they do not publish the enforcement, the dispute or the
-        # firm-side reaction, which is the layer the political-economy
-        # replications need.
+        # instrument and plenty of ADMINISTRATIVE enforcement; what they do not
+        # publish is investor-side and private-law conflict. Measured: the press
+        # runs 5.65x on 索赔 and 3.24x on 立案调查, while government runs 5.9x on
+        # 整改 and 11x on 约谈. See docs/working/finmedia-sources.md — the first
+        # framing of this ("they do not publish the enforcement") was too strong.
         #
         # OWNERSHIP IS NOT A SOURCE TYPE and is deliberately not encoded here.
         # These range from central Party papers (ce = 经济日报, jjckb = 新华社

@@ -328,8 +328,14 @@ python3 scripts/match_clt_translations.py       # Link CLT posts to native docs 
 # Financial / business / tech press (2026-11-05). ONE module, a site registry —
 # the corpus had 15 media sites and NO financial press, which is why a query for
 # the 中国高科 corporate-governance case returned zero: a SOURCE gap, not a query
-# bug. Government sites publish the instrument, not the enforcement, the dispute
-# or the firm-side reaction, and that is the layer the replications need.
+# bug. What the tier buys was TESTED and the first framing was too strong:
+# government portals carry ADMINISTRATIVE enforcement MORE than the press does
+# (整改 8.0% vs 1.4%, 行政处罚 3.9% vs 1.1%, 约谈 1.4% vs 0.1%) — obvious in
+# hindsight, since a 行政处罚决定书 IS a government document. What they do not
+# publish is investor-side and private-law conflict: the press runs 5.65x on
+# 索赔, 3.24x on 立案调查, 1.55x on 起诉. Underpowered at n=793 (1% is ~8 rows),
+# and 行政立案/刑事立案 are ~0 on BOTH sides, so the corpus cannot yet speak to
+# the case that prompted this. Full table: docs/working/finmedia-sources.md.
 python3 -m crawlers.finmedia --list-sites
 python3 -m crawlers.finmedia --site jiemian --probe   # measure extraction, write NOTHING
 python3 -m crawlers.finmedia --tier 1                 # ce, jjckb, yicai

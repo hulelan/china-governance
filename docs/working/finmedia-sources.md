@@ -160,6 +160,38 @@ error that read 47 of 105 documents as sub-national diffusion when 44 were media
 `VALIDATION: PASS`, and **"Other / Unclassified" went 26 → 0** — every site key in the corpus
 now resolves to a leaf.
 
+## Did the fill buy the layer it was meant to? A named test, measured — and it SPLIT
+
+The justification written into this work was "government sites publish the instrument; they do not
+publish the enforcement, the dispute, or the firm-side reaction." Tested directly against the 793
+financial-press rows and 317,301 government rows (counted by `LIKE`, which has no length floor —
+约谈 and 立案 are 2 characters and invisible to both FTS indexes):
+
+| term | financial press | government | ratio |
+|---|---|---|---|
+| 索赔 (damages claim) | 1.0% | 0.2% | **5.65x** |
+| 立案调查 (case opened / investigation) | 0.8% | 0.2% | **3.24x** |
+| 起诉 (sue) | 1.4% | 0.9% | 1.55x |
+| 维权 (rights defence) | 1.5% | 1.3% | 1.14x |
+| 行政处罚 (administrative penalty) | 1.1% | 3.9% | **0.29x** |
+| 整改 (rectification) | 1.4% | 8.0% | **0.17x** |
+| 约谈 (summoned for talks) | 0.1% | 1.4% | **0.09x** |
+| 行政立案 / 刑事立案 / 败诉 | ~0 | ~0 | — |
+
+**The original claim was too strong and is corrected here.** Government portals carry
+*administrative* enforcement vocabulary far MORE than the financial press does — 整改 at 8.0%,
+行政处罚 at 3.9%, 约谈 at 1.4% — which in hindsight is obvious, because a 行政处罚决定书 or a
+整改通知 **is** a government document. The defensible version of the claim is narrower: what the
+financial press adds is **investor-side and private-law conflict** — damages claims, securities
+investigations, litigation — which no government portal publishes, and which is exactly what the
+中国高科 case (行政立案与刑事立案下的两地博弈) is made of.
+
+**And the test is underpowered**, which has to be said plainly: at n=793 a 1.0% rate is about 8
+documents, so the ratios above are directional, not estimates. Re-run it after tier 2 and a
+backfill take the financial tier past a few thousand rows. The two terms that would settle it —
+行政立案 and 刑事立案 — are at ~0 on BOTH sides, so this corpus cannot yet speak to the specific
+vocabulary of the case that started the whole exercise.
+
 ## Still outstanding
 
 1. **《智能体发展自律公约》 is still 0 titles.** The corpus holds only coverage — `guancha`
