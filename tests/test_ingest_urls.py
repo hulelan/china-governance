@@ -101,3 +101,43 @@ def test_read_urls_dedupes_and_strips_markdown_fences():
     finally:
         sys.stdin = sys.__stdin__
     assert got == ["https://www.news.cn/a", "https://www.cac.gov.cn/b"]
+
+
+# --- the ingest path itself, with a fake network -----------------------------
+# Added 2026-11-06 with --date. Until now every test here was a pure function,
+# so the thing that actually writes a row was never exercised.
+
+_PAGE = (
+    "<html><head><title>电信设备进网管理办法</title></head><body>"
+    "<p>（2001年5月10日中华人民共和国信息产业部令第11号公布。）</p>"
+    "<p>第一条 为了保证公用电信网的安全畅通，加强电信设备进网管理，维护电信用户"
+    "和电信业务经营者的合法权益，根据《中华人民共和国电信条例》，制定本办法。</p>"
+    "<p>第二条 本办法所称电信设备是指电信终端设备、无线电通信设备和涉及网间互联"
+    "的设备，连接在公用电信网末端为用户提供发送和接收信息功能。</p>"
+    "</body></html>"
+)
+_URL = "https://www.gov.cn/zhengce/2022-08/23/content_5722718.htm"
+
+
+def _ingest_one(tmp_path, monkeypatch, **kw):
+    monkeypatch.setattr(iu, "fetch", lambda url, **_: _PAGE)
+    conn = iu.init_db(str(tmp_path / "t.db"))
+    tally = iu.ingest(conn, [_URL], tag="t", dry_run=False, allow_new=False, **kw)
+    row = conn.execute(
+        "SELECT date_published, title FROM documents WHERE url=?", (_URL,)
+    ).fetchone()
+    return tally, row
+
+
+def test_date_override_is_what_lands_in_the_row(tmp_path, monkeypatch):
+    """A 2001 令 reposted by gov.cn in 2022 must not be dated 2022."""
+    tally, row = _ingest_one(tmp_path, monkeypatch, date="2001-05-10")
+    assert tally["stored"] == 1
+    assert row[0] == "2001-05-10"
+    assert row[1] == "电信设备进网管理办法"
+
+
+def test_without_the_override_the_url_date_still_wins(tmp_path, monkeypatch):
+    """The override is opt-in: the default path is unchanged."""
+    _, row = _ingest_one(tmp_path, monkeypatch)
+    assert row[0] == "2022-08-23"

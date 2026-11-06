@@ -176,7 +176,8 @@ def resolve(url: str) -> tuple | None:
     return HOSTS.get(urlparse(url).netloc.lower())
 
 
-def ingest(conn, urls: list, *, tag: str, dry_run: bool, allow_new: bool) -> dict:
+def ingest(conn, urls: list, *, tag: str, dry_run: bool, allow_new: bool,
+           date: str = "") -> dict:
     unmapped = sorted({urlparse(u).netloc.lower() for u in urls if not resolve(u)})
     if unmapped and not allow_new:
         log.error("UNMAPPED HOSTS — add them to HOSTS or pass --allow-new:")
@@ -209,7 +210,9 @@ def ingest(conn, urls: list, *, tag: str, dry_run: bool, allow_new: bool) -> dic
 
         title = extract_title(html)
         body = extract_body(html)
-        date_pub = url_date(url) or meta_date(html)
+        # An operator-asserted --date wins: a URL date is the page's posting
+        # date, which for a reposted instrument is not its promulgation date.
+        date_pub = date or url_date(url) or meta_date(html)
         if not title:
             tally["failed"] += 1
             log.warning(f"  NOTITLE {url}")
@@ -256,6 +259,9 @@ def main():
     ap.add_argument("--allow-new", action="store_true",
                     help="create a site for an unmapped host instead of refusing")
     ap.add_argument("--list-hosts", action="store_true")
+    ap.add_argument("--date", default="",
+                    help="YYYY-MM-DD to store for every URL in this run, overriding "
+                         "the URL/meta date (use for an instrument reposted later)")
     ap.add_argument("--db")
     args = ap.parse_args()
 
@@ -270,7 +276,11 @@ def main():
         return
     log.info(f"{len(urls)} unique URLs")
     conn = init_db(args.db) if args.db else init_db()
-    t = ingest(conn, urls, tag=args.tag, dry_run=args.dry_run, allow_new=args.allow_new)
+    if args.date and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.date):
+        log.error(f"--date must be YYYY-MM-DD, got {args.date!r}")
+        return
+    t = ingest(conn, urls, tag=args.tag, dry_run=args.dry_run,
+               allow_new=args.allow_new, date=args.date)
     log.info(f"RESULT: {json.dumps(t, ensure_ascii=False)}")
     if not args.dry_run and t.get("stored"):
         show_stats(conn)
