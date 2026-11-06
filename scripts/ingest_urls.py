@@ -93,6 +93,7 @@ HOSTS = {
     "www.cnfin.com":         ("cnfin",    "China Financial Information / 中国金融信息网", CN_MEDIA),
     "news.qq.com":           ("qqnews",   "Tencent News / 腾讯新闻", CN_MEDIA),
     "www.guandian.cn":       ("guandian", "Guandian / 观点网 (real estate)", CN_MEDIA),
+    "finance.eastmoney.com": ("eastmoney", "East Money / 东方财富网", CN_MEDIA),
     "cn.wicinternet.org":    ("wic",      "World Internet Conference / 世界互联网大会", CN_GOV),
     "www.wicinternet.org":   ("wic",      "World Internet Conference / 世界互联网大会", CN_GOV),
     # --- foreign / English-language: separate admin_level on purpose ---
@@ -117,6 +118,7 @@ URL_DATE = (
     r'/t(\d{4})(\d{2})(\d{2})_\d+',                     # npc, ce, mfa
     r'/(\d{4})/(\d{2})-(\d{2})/\d+\.shtml',             # chinanews
     r'/article/(\d{4})(\d{2})(\d{2})/',                 # 21jingji, guandian
+    r'/a/(\d{4})(\d{2})(\d{2})\d{8,}\.html',             # eastmoney /a/202611063924849165.html
     r'/detail/(\d{4})(\d{2})(\d{2})/',                  # cnfin
     r'FR-(\d{4})-(\d{2})-(\d{2})',                      # govinfo Federal Register
     r'/(\d{4})/(\d{2})/(\d{2})/',                       # nytimes

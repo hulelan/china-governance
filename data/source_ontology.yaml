@@ -182,7 +182,7 @@ tree:
         # hold the lede only (measured 484-658 CJK), never a full body.
         site_keys:
           [ce, jjckb, yicai, jiemian, 21jingji, eeo, tmtpost, huxiu, caixin,
-           cnfin, guandian]
+           cnfin, guandian, eastmoney]
       - id: media_foreign
         label_en: Foreign & English-language Media
         label_zh: 境外媒体
