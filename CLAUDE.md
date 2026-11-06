@@ -363,6 +363,15 @@ python3 -m crawlers.finmedia --site ce --max-docs 400
 python3 scripts/ingest_urls.py --urls-file brief_urls.txt --dry-run
 python3 scripts/ingest_urls.py --urls-file brief_urls.txt --tag brief-2026-11-04
 python3 scripts/ingest_urls.py --list-hosts
+# --date YYYY-MM-DD overrides the URL/meta date for every URL in the run. Built
+# 2026-11-06 for 《电信设备进网管理办法》: gov.cn reprints 信息产业部令第11号 (2001-05-10,
+# amended 工信部令第28号 2014-09-23) at /zhengce/2022-08/23/, so the URL date is the
+# REPOST and storing it would misplace a 2001 regulation in 2022 — in every time
+# series, in instrument_succession's strict date ordering, and in localized_of's
+# ±7d parent window. A flag and NOT a smarter dater on purpose: inferring the date
+# from the first 年月日 in the body is the crawl_stamped / CDN-path-as-date failure
+# shape again. Validated against YYYY-MM-DD so a typo refuses loudly.
+python3 scripts/ingest_urls.py --urls-file f.txt --tag legal-basis --date 2001-05-10
 # Host resolution is an EXPLICIT netloc->site_key table. A fuzzy `root in base_url`
 # lookup resolved www.gov.cn to szpsq/sz/stic, because "gov.cn" is a substring of
 # "szpsq.sz.gov.cn" — the hand-maintained-table bug shape again. An unmapped host
@@ -1390,6 +1399,45 @@ Guide: `docs/implementation/new-province-crawler-guide.md`
     text) and need a per-row look before any repair; `36kr`'s are single words mid-sentence
     (`大产品���位`). **Do not read 572 as 572 lost documents** — only the 38 title cases are
     title-keyed-invisible, which is the consequence that actually matters.
+- **(2026-11-06) A THIRD route to the same consequence, and the biggest: 42,942 citations
+  resolve to a target with NO BODY while a full-text copy of the same instrument is held.**
+  Full write-up: `docs/working/citation-target-has-no-text.md`. Two defects, found by ordering
+  ONE document's six cited authorities by citation count.
+  - **The small one: a zero-width space makes a title unmatchable.** `12694197` is titled
+    `'\u200b中华人民共和国网络安全法'`. U+200B defeats **two** steps of `_norm_title` — `\s` does
+    not match it (`'\u200b'.isspace()` is `False`; U+200B is category `Cf`), and because the
+    string then no longer *starts with* 中华人民共和国 the PRC-prefix strip is skipped too. So
+    the 11,047-char statute normalizes to `'\u200b中华人民共和国网络安全法'` while the 2,256-char
+    新华社 wire copy normalizes to `'网络安全法'`, takes the exact match, and holds all **696**
+    citers. Measured: **559** of 381,983 titles carry an invisible character (U+200B 523,
+    U+200C 32, U+200D 6, U+00AD 1; `bj` 133, `stdaily` 79, `cac` 58, `guancha` 52), **73**
+    law-shaped. Folding them would make only **29** documents competing candidates.
+  - **The large one: the tie-break has no notion of having a text.** `TitleMatcher`'s mirror
+    selection is `(genre_rank, level_rank, id)` with **no body term**. The `npc` tier is
+    metadata-only (0 of 31,070 rows carry text) and is `central`, so npc systematically wins
+    the representative slot for national statutes. **719** normalized titles have a cited copy
+    with 0 body while a ≥1,000-char sibling is held, carrying **42,942** citations: 道路交通安全法
+    2,290 (full text on `gdyjt`, 15,969ch), 行政处罚法 1,138, 安全生产法 953, 行政许可法 800,
+    食品安全法 631, **民法典 470 while `mzj` holds 219,440 chars of it**.
+  - **State the consequence precisely — this is NOT a graph defect.** The edge exists and
+    pointing a 民法典 reference at the npc record of 民法典 is arguably the right IDENTITY
+    choice. What is broken is that the representative carrying that identity has no text while
+    a text-bearing copy of the same instrument sits in the corpus. Analyses that only COUNT
+    edges are unaffected; anything that follows an edge to the target's TEXT (content
+    co-citation, citer/cited similarity, "what does the cited provision say", any stem or
+    fidelity measure against the target body) gets an empty string for ~43k edges, and nothing
+    records which kind a given memo is.
+  - **NEITHER IS FIXED, on purpose.** The zero-width fold is correct in principle but its only
+    material effect is to redirect 696 citations onto a different **edition** (the 2025-12-29
+    amended 网络安全法), and which edition a 2017 citation should point at is a research decision.
+    The tie-break fix is a ~43k-edge change to the core analytical layer. Preferred direction is
+    to keep the identity and resolve TEXT through `doc_identity.instrument_id` the way
+    `instrument_inbound` already does — a read-path change in analysis code that cannot move an
+    edge. Decision pending.
+  - **Method, and it is the transferable part:** this was found by **ordering a six-row table by
+    citation count**, not by an audit and not by any aggregate. The 2026-10-01 proxy-target bug
+    surfaced the same way. Both are arguments for building more single-document views; the
+    dossier that produced this one is `docs/working/public-single-page.md`.
 - **Broken/unreliable gkmlpt sites** (Dongguan, Foshan, Bao'an, Shantou, Zhaoqing,
   Zhanjiang, Chaozhou, Yantian, gd-partial): the authoritative list with per-site
   reasons now lives in code — `crawlers/gkmlpt.py` → `KNOWN_BROKEN`. A bulk

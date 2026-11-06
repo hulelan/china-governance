@@ -334,3 +334,43 @@ unbounded and had 23,710 documents queued at the last nightly. So:
   (a 20-line change); ~10 → not worth doing". The criterion is **functional, not a length** — the
   content-free set spanned 26-158 chars and any cutoff capturing it also caught 758 rows that do
   have content. Re-measure post-trim and resolve the open question either way.
+
+---
+
+# Registered 2026-11-06 — 《电信设备进网管理办法》 becomes resolvable
+
+Written **before** the next Phase 2b citation rebuild, so the prediction can fail.
+
+The target did not exist in the corpus until today. `900210854` (gov.cn's reprint of
+信息产业部令第11号, stored under its real promulgation date **2001-05-10**, not the 2022
+repost date) now supplies it.
+
+## Named predictions — these decide it
+
+* **The 4 edges out of the MIIT notice resolve.** `900210802`, `900210803`, `900210811`
+  and `900210844` each carry one `UNRESOLVED | named | 电信设备进网管理办法`. All four
+  must point at **`900210854`** after the rebuild.
+* **Corpus-wide unresolved refs to that title go 11 → 0.**
+  `SELECT COUNT(*) FROM citations WHERE target_id IS NULL AND target_ref LIKE '%电信设备进网管理办法%'`
+  reads **11** now and must read **0**.
+* **The 2013 twin gains an outbound edge to it.** `12760612`
+  (工信部电管〔2013〕120号) cites 《电信设备进网管理办法》 in its own 依据 clause, so it
+  must also resolve to `900210854`. This one is the better test: it was crawled long
+  ago and has nothing to do with today's ingest, so if only the four new rows resolve
+  and the 2013 row does not, the matcher is keying on something about the new rows
+  rather than on the title.
+
+## Deliberately not predicted
+
+* The net resolved count and the resolution percentage. The classification drain adds
+  `llm` edges in the same window, which is exactly what made the 2026-10-09 aggregate
+  prediction wrong while its named targets were exact.
+* `900210854` ends with **11+ inbound citers** — stated as a floor, not a figure,
+  because `doc_inbound` drops self-cites and the 11 unresolved refs may not all be
+  distinct citing documents.
+
+## Must not change
+
+* The 696 citers on `12694498` (网络安全法's truncated wire copy) stay put. The
+  zero-width fold described in `citation-target-has-no-text.md` is **not** applied, so
+  if that number moves, something else did.
