@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Terminals Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#edeae1; --panel:#f6f3ec; --raised:#fbf9f4;
+  --ink:#23201b; --muted:#6f685c; --faint:#8d8578;
+  --accent:#6d2b2b; --accent-soft:#f0e4e0;
+  --teal:#1f4e46; --teal-soft:#e2ebe7;
+  --rule:#c7c0b0; --hair:#ded8c9; --chip:#e5e0d0;
+  --warn:#8a5a14; --warn-soft:#f6ecd8;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --han:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC","Source Han Serif CN",
+        "Noto Serif CJK SC","SimSun",serif;
+  --col:46rem;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#15130f; --panel:#1d1a15; --raised:#24201a;
+    --ink:#e7e2d5; --muted:#9c9385; --faint:#847b6d;
+    --accent:#d29086; --accent-soft:#33231f;
+    --teal:#74b0a2; --teal-soft:#1b2a27;
+    --rule:#3c3730; --hair:#2c2823; --chip:#2b2720;
+    --warn:#d2a359; --warn-soft:#2e2517;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15130f; --panel:#1d1a15; --raised:#24201a;
+  --ink:#e7e2d5; --muted:#9c9385; --faint:#847b6d;
+  --accent:#d29086; --accent-soft:#33231f;
+  --teal:#74b0a2; --teal-soft:#1b2a27;
+  --rule:#3c3730; --hair:#2c2823; --chip:#2b2720;
+  --warn:#d2a359; --warn-soft:#2e2517;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.5;
+}
+a{color:var(--accent)}
+:where(a,button,[tabindex]):focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px; border-radius:2px;
+}
+
+/* ─── masthead ─────────────────────────────────────────────── */
+header.mast{
+  border-bottom:1px solid var(--rule); background:var(--panel);
+  padding:1.1rem clamp(1rem,3vw,2rem) .9rem;
+}
+.mast-row{display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap}
+.mast-id{
+  font-family:var(--mono); font-size:.74rem; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--accent); margin:0 0 .35rem;
+}
+.mast h1{
+  font-family:var(--han); font-size:clamp(1.15rem,2.6vw,1.6rem);
+  font-weight:600; line-height:1.3; margin:0 0 .2rem; text-wrap:balance;
+}
+.mast h2{
+  font-size:clamp(.84rem,1.5vw,.95rem); font-weight:400; font-style:italic;
+  color:var(--muted); margin:0; max-width:52rem; text-wrap:balance;
+}
+.mast-meta{
+  margin:.6rem 0 0; display:flex; flex-wrap:wrap; gap:.3rem 1.1rem;
+  font-family:var(--mono); font-size:.72rem; color:var(--muted);
+}
+.mast-meta b{font-weight:500; color:var(--ink)}
+.mast-side{margin-left:auto; display:flex; gap:.4rem; align-items:center}
+
+.btn{
+  font:inherit; font-size:.74rem; font-family:var(--mono);
+  background:var(--raised); color:var(--muted); cursor:pointer;
+  border:1px solid var(--rule); border-radius:3px; padding:.3rem .55rem;
+}
+.btn:hover{color:var(--ink); border-color:var(--accent)}
+
+/* ─── toolbar ──────────────────────────────────────────────── */
+.bar{
+  position:sticky; top:0; z-index:20; background:var(--paper);
+  border-bottom:1px solid var(--rule);
+  padding:.5rem clamp(1rem,3vw,2rem);
+  display:flex; gap:.75rem 1.25rem; align-items:center; flex-wrap:wrap;
+}
+.seg{display:inline-flex; border:1px solid var(--rule); border-radius:3px; overflow:hidden}
+.seg button{
+  font:inherit; font-size:.72rem; font-family:var(--mono);
+  background:transparent; color:var(--muted); border:0; cursor:pointer;
+  padding:.33rem .62rem; border-right:1px solid var(--rule);
+}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent); color:var(--paper)}
+.bar-lbl{
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--faint);
+}
+
+/* ─── shell ────────────────────────────────────────────────── */
+.shell{display:flex; align-items:flex-start}
+main.reader{flex:1 1 auto; min-width:0; padding:1.6rem clamp(1rem,3vw,2rem) 5rem}
+
+/* ─── parallel text ────────────────────────────────────────── */
+.doc{max-width:100rem}
+.blk{padding:.1rem 0 .95rem}
+.doc[data-mode="parallel"] .blk{
+  display:grid; grid-template-columns:1fr 1fr; gap:.15rem 2.4rem;
+  align-items:start;
+}
+.doc[data-mode="parallel"] .blk>.chip{grid-column:1/-1}
+.doc[data-mode="inter"] .blk{display:block; max-width:var(--col)}
+.doc[data-mode="inter"] .en{
+  margin-top:.4rem; padding-left:.85rem; border-left:2px solid var(--teal-soft);
+}
+.doc[data-mode="cn"] .en,.doc[data-mode="en"] .cn{display:none}
+.doc[data-mode="cn"] .blk,.doc[data-mode="en"] .blk{display:block; max-width:var(--col)}
+
+/* Not justified: a statute name is an unbreakable inline run, and in the
+   narrow reference column justify stretched the surrounding characters to
+   fill the line. Left-aligned CJK is conventional and has no such failure. */
+.cn{font-family:var(--han); font-size:1.01rem; line-height:1.95}
+.en{font-size:.925rem; line-height:1.62; color:var(--ink)}
+.cn p,.en p{margin:0 0 .55rem}
+.cn p:last-child,.en p:last-child{margin-bottom:0}
+.en:lang(en){hyphens:auto}
+
+.chip{
+  font-family:var(--mono); font-size:.7rem; letter-spacing:.04em;
+  color:var(--accent); padding:.55rem 0 .3rem; display:flex;
+  gap:.5rem; align-items:baseline;
+}
+.chip .zh{font-family:var(--han); font-size:.82rem}
+.chip .sep{color:var(--hair)}
+.chip .en-no{color:var(--faint)}
+
+.blk.is-chapter{padding-top:1.9rem}
+.blk.is-chapter .chap{
+  grid-column:1/-1; border-top:2px solid var(--rule); padding-top:.7rem;
+  display:flex; flex-wrap:wrap; gap:.2rem 1rem; align-items:baseline;
+}
+.chap .zh{font-family:var(--han); font-size:1.05rem; font-weight:600}
+.chap .la{font-size:.8rem; color:var(--muted); font-variant:small-caps; letter-spacing:.05em}
+.blk.is-section .chap{border-top:1px solid var(--hair); padding-top:.5rem}
+.blk.is-section .chap .zh{font-size:.95rem; font-weight:500}
+
+.blk.is-head .cn{font-size:.95rem; color:var(--muted); line-height:1.8}
+.blk.is-head .en{font-size:.86rem; color:var(--muted); font-style:italic}
+.blk.is-sign{margin-top:1.4rem}
+.blk.is-sign .cn,.blk.is-sign .en{text-align:right; color:var(--muted)}
+.doc[data-mode="inter"] .blk.is-sign .en{border-left:0; padding-left:0}
+
+details.toc{
+  grid-column:1/-1; margin:.5rem 0 1rem; border:1px solid var(--hair);
+  border-radius:3px; background:var(--panel); padding:.45rem .7rem;
+}
+details.toc summary{
+  cursor:pointer; font-family:var(--mono); font-size:.7rem;
+  letter-spacing:.06em; text-transform:uppercase; color:var(--muted);
+}
+details.toc .cn{font-size:.9rem; line-height:1.8; margin-top:.5rem}
+
+.ref{
+  /* A <button> is inline-block and centres its own text, so a statute name
+     could not break across lines and a wrapped one centred its last word.
+     The control has to flow like the sentence it sits in. */
+  display:inline; text-align:inherit;
+  color:var(--accent); background:var(--accent-soft); cursor:pointer;
+  border:0; border-bottom:1px solid currentColor; padding:0 .08em;
+  font:inherit; line-height:inherit; border-radius:2px;
+}
+.ref:hover{background:var(--accent); color:var(--paper)}
+.ref.is-absent{
+  color:var(--warn); background:var(--warn-soft); cursor:help;
+  border-bottom-style:dotted;
+}
+
+/* ─── drawer ───────────────────────────────────────────────── */
+aside.drawer{
+  flex:0 0 clamp(21rem,31vw,33rem); position:sticky; top:2.9rem;
+  align-self:flex-start; height:calc(100dvh - 2.9rem);
+  border-left:1px solid var(--rule); background:var(--panel);
+  display:flex; flex-direction:column; min-width:0;
+}
+.dw-head{
+  padding:.75rem .95rem .6rem; border-bottom:1px solid var(--rule);
+  display:flex; flex-direction:column; gap:.5rem;
+}
+.dw-top{display:flex; gap:.5rem; align-items:center}
+.dw-title{
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--faint); flex:1; min-width:0;
+}
+.dw-body{overflow-y:auto; padding:.9rem .95rem 3rem; flex:1}
+
+.chain{list-style:none; margin:0; padding:0; display:grid; gap:.1rem}
+.chain li{border-bottom:1px solid var(--hair)}
+.chain button{
+  width:100%; text-align:left; background:transparent; border:0; cursor:pointer;
+  font:inherit; color:inherit; padding:.7rem .15rem .75rem; display:grid; gap:.18rem;
+}
+.chain button:hover{background:var(--raised)}
+.chain .zh{font-family:var(--han); font-size:.94rem; font-weight:600; line-height:1.4}
+.chain .la{font-size:.8rem; color:var(--muted); line-height:1.4}
+.chain .role{font-size:.8rem; color:var(--teal); font-style:italic}
+.chain .nums{
+  font-family:var(--mono); font-size:.68rem; color:var(--faint);
+  display:flex; gap:.15rem .8rem; flex-wrap:wrap; margin-top:.1rem;
+}
+
+.dw-doc-head{margin:0 0 .9rem; padding-bottom:.75rem; border-bottom:1px solid var(--rule)}
+.dw-doc-head .zh{font-family:var(--han); font-size:1.08rem; font-weight:600; line-height:1.35}
+.dw-doc-head .la{font-size:.85rem; color:var(--muted); margin-top:.2rem; line-height:1.4}
+.dw-doc-head .nums{
+  font-family:var(--mono); font-size:.68rem; color:var(--faint);
+  margin-top:.5rem; display:flex; gap:.15rem .8rem; flex-wrap:wrap;
+}
+.note{
+  border-left:2px solid var(--teal); background:var(--teal-soft);
+  padding:.6rem .75rem; margin:0 0 .9rem; border-radius:0 3px 3px 0;
+}
+.note h4{
+  font-family:var(--mono); font-size:.66rem; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--teal); margin:0 0 .35rem; font-weight:500;
+}
+.note p{margin:0 0 .5rem; font-size:.875rem; line-height:1.6}
+.note p:last-child{margin-bottom:0}
+.note.is-data{border-left-color:var(--warn); background:var(--warn-soft)}
+.note.is-data h4{color:var(--warn)}
+
+.cov{
+  font-family:var(--mono); font-size:.66rem; color:var(--faint);
+  display:flex; align-items:center; gap:.4rem;
+}
+.cov-bar{
+  width:3.2rem; height:.3rem; background:var(--chip); border-radius:2px; overflow:hidden;
+}
+.cov-bar i{display:block; height:100%; background:var(--teal)}
+
+.scrim{display:none}
+
+/* ─── narrow ───────────────────────────────────────────────── */
+@media (max-width:62rem){
+  .doc[data-mode="parallel"] .blk{grid-template-columns:1fr; gap:.3rem}
+  .doc[data-mode="parallel"] .en{
+    padding-left:.85rem; border-left:2px solid var(--teal-soft);
+  }
+  aside.drawer{
+    position:fixed; inset:0 0 0 auto; width:min(34rem,100%); height:100dvh;
+    z-index:40; transform:translateX(101%); transition:transform .22s ease;
+    border-left:1px solid var(--rule); box-shadow:-8px 0 28px rgba(0,0,0,.18);
+  }
+  body.dw-open aside.drawer{transform:none}
+  body.dw-open .scrim{
+    display:block; position:fixed; inset:0; z-index:35; background:rgba(0,0,0,.42);
+  }
+  main.reader{padding-bottom:4rem}
+}
+@media (prefers-reduced-motion:reduce){
+  aside.drawer{transition:none}
+}
+@media (max-width:30rem){
+  body{font-size:14.5px}
+  header.mast,.bar,main.reader{padding-left:1rem; padding-right:1rem}
+  .cn{font-size:.98rem; line-height:1.9}
+}
+.sr{
+  position:absolute; width:1px; height:1px; overflow:hidden;
+  clip:rect(0 0 0 0); white-space:nowrap;
+}
+footer.foot{
+  border-top:1px solid var(--rule); background:var(--panel);
+  padding:1.1rem clamp(1rem,3vw,2rem) 2rem; font-size:.8rem; color:var(--muted);
+}
+footer.foot p{margin:0 0 .5rem; max-width:60rem; line-height:1.6}
+footer.foot code{font-family:var(--mono); font-size:.92em; color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-row">
+    <div style="min-width:0">
+      <p class="mast-id" id="m-docnum"></p>
+      <h1 id="m-title"></h1>
+      <h2 id="m-title-en"></h2>
+      <div class="mast-meta" id="m-meta"></div>
+    </div>
+    <div class="mast-side">
+      <button class="btn" id="theme" type="button" aria-label="Switch colour theme">◐ theme</button>
+    </div>
+  </div>
+</header>
+
+<div class="bar">
+  <span class="bar-lbl">Text</span>
+  <div class="seg" role="group" aria-label="Main text display mode">
+    <button type="button" data-mode="parallel" aria-pressed="true">parallel</button>
+    <button type="button" data-mode="inter" aria-pressed="false">alternating</button>
+    <button type="button" data-mode="cn" aria-pressed="false">中文</button>
+    <button type="button" data-mode="en" aria-pressed="false">english</button>
+  </div>
+  <span class="bar-lbl" style="margin-left:auto">English</span>
+  <span class="cov" id="m-cov"></span>
+  <button class="btn" id="open-dw" type="button">authorities ▸</button>
+</div>
+
+<div class="shell">
+  <main class="reader">
+    <div class="doc" id="doc" data-mode="parallel"></div>
+  </main>
+
+  <aside class="drawer" id="drawer" aria-label="Referenced documents">
+    <div class="dw-head">
+      <div class="dw-top">
+        <button class="btn" id="dw-back" type="button" hidden>◂ chain</button>
+        <span class="dw-title" id="dw-title">Cited authorities</span>
+        <button class="btn" id="dw-close" type="button" aria-label="Close panel">✕</button>
+      </div>
+      <div class="dw-top" id="dw-tools" hidden>
+        <div class="seg" role="group" aria-label="Reference display mode">
+          <button type="button" data-dmode="parallel" aria-pressed="false">parallel</button>
+          <button type="button" data-dmode="inter" aria-pressed="true">alternating</button>
+          <button type="button" data-dmode="cn" aria-pressed="false">中文</button>
+        </div>
+        <span class="cov" id="dw-cov" style="margin-left:auto"></span>
+      </div>
+    </div>
+    <div class="dw-body" id="dw-body"></div>
+  </aside>
+</div>
+<div class="scrim" id="scrim"></div>
+
+<footer class="foot">
+  <p><b>Sources.</b> Every Chinese text on this page is reproduced from the project
+  corpus, which holds it as crawled from the issuing body or an official gazette. The
+  document identifier beside each one (<code>id</code>, <code>site</code>) is its row in
+  that corpus, so any figure here can be traced back to a specific stored document.
+  These are official documents of PRC state organs. Press coverage of the notice is
+  linked, never reproduced.</p>
+  <p><b>Translation.</b> The English is an original working translation prepared for this
+  reader, not an official or authoritative one, and no existing translation was used as a
+  source. Where a document is only partly translated the coverage figure says so
+  explicitly; untranslated articles render in Chinese alone rather than being silently
+  omitted.</p>
+</footer>
+
+<script src="data.js"></script>
+<script>
+(function(){
+"use strict";
+var D = window.DOSSIER;
+if(!D){ document.getElementById("doc").textContent = "data.js failed to load."; return; }
+
+/* ── escaping and reference linking ───────────────────────── */
+function esc(s){
+  return String(s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];
+  });
+}
+
+/* Build the reference index ONCE: Chinese title (as 《X》) and English label,
+   each mapped to the document key the corpus actually holds. A name with no
+   key is still marked up, as an absent reference — that gap is information. */
+var REFS = [];
+Object.keys(D.docs).forEach(function(k){
+  var d = D.docs[k];
+  if(k === D.main) return;
+  REFS.push({pat:"《" + d.title_cn + "》", key:k, lang:"cn"});
+  if(d.label_en) REFS.push({pat:d.label_en, key:k, lang:"en"});
+});
+/* Cited by name but not held as its own text in this reader. */
+[["《全国人民代表大会常务委员会关于加强网络信息保护的决定》","npcdecision","cn"],
+ ["《电信设备进网审批管理办法》",null,"cn"]
+].forEach(function(r){ REFS.push({pat:r[0], key:r[1], lang:r[2]}); });
+REFS.sort(function(a,b){ return b.pat.length - a.pat.length; });
+
+function linkify(html, lang){
+  REFS.forEach(function(r){
+    if(r.lang !== lang) return;
+    var needle = esc(r.pat), at = 0;
+    for(;;){
+      var i = html.indexOf(needle, at);
+      if(i < 0) break;
+      /* never nest a link inside a link */
+      if(html.lastIndexOf("<button", i) > html.lastIndexOf("</button>", i)){
+        at = i + needle.length; continue;
+      }
+      var attr = r.key
+        ? ' class="ref" data-ref="' + r.key + '" type="button"'
+        : ' class="ref is-absent" type="button" title="Cited by name; repealed and not held as a separate text here"';
+      var tag = "<button" + attr + ">" + needle + "</button>";
+      html = html.slice(0, i) + tag + html.slice(i + needle.length);
+      at = i + tag.length;
+    }
+  });
+  return html;
+}
+
+function paras(text, lang){
+  var out = String(text).split(/\n+/).filter(function(p){ return p.trim(); })
+    .map(function(p){ return "<p>" + linkify(esc(p.trim()), lang) + "</p>"; }).join("");
+  return out || "";
+}
+
+function artNoEn(n){ return n ? "Art. " + n : ""; }
+
+/* ── block rendering ──────────────────────────────────────── */
+function renderBlocks(doc){
+  var html = "", n = doc.blocks.length;
+  doc.blocks.forEach(function(b, i){
+    if(b.t === "chapter" || b.t === "section"){
+      html += '<div class="blk is-' + b.t + '"><div class="chap">'
+            + '<span class="zh">' + esc(b.cn) + "</span>"
+            + (b.en ? '<span class="la">' + esc(b.en) + "</span>" : "")
+            + "</div></div>";
+      return;
+    }
+    if(b.t === "toc"){
+      html += '<div class="blk"><details class="toc"><summary>目录 &middot; contents</summary>'
+            + '<div class="cn">' + paras(b.cn.replace(/^目\s*录\s*/, ""), "cn")
+            + "</div></details></div>";
+      return;
+    }
+    var cls = "blk", chip = "";
+    if(b.t === "art"){
+      var cn = b.cn.indexOf(b.no) === 0 ? b.cn.slice(b.no.length).replace(/^[\s　]+/, "") : b.cn;
+      var en = String(b.en || "").replace(/^Article\s+\d+\s*/, "");
+      chip = '<div class="chip"><span class="zh">' + esc(b.no) + "</span>"
+           + '<span class="sep">/</span><span class="en-no">' + artNoEn(b.n) + "</span></div>";
+      html += '<div class="' + cls + '" id="a-' + doc.key + "-" + (b.n || i) + '">' + chip
+            + '<div class="cn" lang="zh-Hans">' + paras(cn, "cn") + "</div>"
+            + '<div class="en" lang="en">' + (en ? paras(en, "en") : "") + "</div></div>";
+      return;
+    }
+    if(b.t === "appendix"){
+      html += '<div class="blk is-chapter"><div class="chap">'
+            + '<span class="zh">附</span><span class="la">Appendix</span></div>'
+            + '<div class="cn" lang="zh-Hans">' + paras(b.cn.replace(/^附\s*/, ""), "cn") + "</div>"
+            + '<div class="en" lang="en">' + (b.en ? paras(b.en, "en") : "") + "</div></div>";
+      return;
+    }
+    /* plain paragraph: the two notices and the NPCSC decision */
+    if(i === 0 || (i === 1 && /^（/.test(b.cn))) cls += " is-head";
+    if(i >= n - 2) cls += " is-sign";
+    html += '<div class="' + cls + '">'
+          + '<div class="cn" lang="zh-Hans">' + paras(b.cn, "cn") + "</div>"
+          + '<div class="en" lang="en">' + (b.en ? paras(b.en, "en") : "") + "</div></div>";
+  });
+  return html;
+}
+
+function covHTML(doc){
+  var c = doc.cov || [0, 0], pct = c[1] ? Math.round(100 * c[0] / c[1]) : 0;
+  return '<span class="cov-bar"><i style="width:' + pct + '%"></i></span>'
+       + "<span>" + c[0] + "/" + c[1] + (doc.n_art ? " art." : " ¶") + "</span>";
+}
+
+/* ── masthead ─────────────────────────────────────────────── */
+var main = D.docs[D.main];
+document.getElementById("m-docnum").textContent = main.docnum || "";
+document.getElementById("m-title").textContent = main.title_cn;
+document.getElementById("m-title-en").textContent = main.label_en || "";
+document.getElementById("m-meta").innerHTML = [
+  ["issued", main.issuer_cn + " · " + main.issuer_en],
+  ["signed", main.signed], ["published", main.published],
+  ["corpus", "id " + main.id + " · " + main.site + " · " + main.chars + " ch"]
+].map(function(p){ return "<span><b>" + esc(p[0]) + "</b> " + esc(p[1]) + "</span>"; }).join("");
+document.getElementById("m-cov").innerHTML = covHTML(main);
+
+var docEl = document.getElementById("doc");
+docEl.innerHTML = renderBlocks(main);
+
+/* ── display modes ────────────────────────────────────────── */
+function wireSeg(sel, attr, apply){
+  var btns = document.querySelectorAll(sel + " button");
+  Array.prototype.forEach.call(btns, function(b){
+    b.addEventListener("click", function(){
+      Array.prototype.forEach.call(btns, function(o){
+        o.setAttribute("aria-pressed", String(o === b));
+      });
+      apply(b.getAttribute(attr));
+    });
+  });
+}
+wireSeg('.bar .seg', "data-mode", function(m){
+  docEl.setAttribute("data-mode", m);
+  try{ localStorage.setItem("pr-mode", m); }catch(e){}
+});
+try{
+  var saved = localStorage.getItem("pr-mode");
+  if(saved){
+    docEl.setAttribute("data-mode", saved);
+    Array.prototype.forEach.call(document.querySelectorAll('.bar .seg button'), function(b){
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-mode") === saved));
+    });
+  }
+}catch(e){}
+
+/* ── theme ────────────────────────────────────────────────── */
+var themeBtn = document.getElementById("theme");
+function setTheme(t){
+  if(t) document.documentElement.setAttribute("data-theme", t);
+  else document.documentElement.removeAttribute("data-theme");
+  try{ t ? localStorage.setItem("pr-theme", t) : localStorage.removeItem("pr-theme"); }catch(e){}
+}
+try{ var st = localStorage.getItem("pr-theme"); if(st) setTheme(st); }catch(e){}
+themeBtn.addEventListener("click", function(){
+  var cur = document.documentElement.getAttribute("data-theme");
+  var dark = window.matchMedia("(prefers-color-scheme:dark)").matches;
+  setTheme(cur ? (cur === "dark" ? "light" : "dark") : (dark ? "light" : "dark"));
+});
+
+/* ── drawer ───────────────────────────────────────────────── */
+var dwBody  = document.getElementById("dw-body"),
+    dwTitle = document.getElementById("dw-title"),
+    dwBack  = document.getElementById("dw-back"),
+    dwTools = document.getElementById("dw-tools"),
+    dwCov   = document.getElementById("dw-cov");
+var dwMode = "inter";
+
+function openDrawer(){ document.body.classList.add("dw-open"); }
+function closeDrawer(){ document.body.classList.remove("dw-open"); }
+
+function chainHTML(){
+  var html = '<div class="note"><h4>The authority chain</h4>'
+    + "<p>The notice names six instruments as its legal basis, in the order below, and "
+    + "cites them wholesale rather than by article. Each one is held in the corpus as its "
+    + "own text. Open any of them to read it beside the notice.</p>"
+    + "<p>The 2013 notice at the foot of the list is not cited by the 2026 one. It is its "
+    + "structural predecessor: the same ministry, the same licence, the same three levers "
+    + "of testing, disclosure and filing, applied to pre-installed apps rather than to "
+    + "pre-installed agents.</p></div>";
+  html += '<ul class="chain">';
+  D.authOrder.concat(["twin2013"]).forEach(function(k){
+    var d = D.docs[k], f = d.facts, c = d.cov || [0, 0];
+    html += '<li><button type="button" data-ref="' + k + '">'
+      + '<span class="zh">' + esc(d.title_cn) + "</span>"
+      + '<span class="la">' + esc(d.label_en || "") + "</span>"
+      + (d.annot ? '<span class="role">' + esc(d.annot.role) + "</span>" : "")
+      + '<span class="nums">'
+      + "<span>" + esc(d.kind_en || "notice") + "</span>"
+      + "<span>" + esc(d.date) + "</span>"
+      + "<span>" + d.chars + " ch</span>"
+      + (d.n_art ? "<span>" + d.n_art + " art.</span>" : "")
+      + (f && f.inbound ? "<span>" + f.inbound + " citers</span>" : "")
+      + "<span>EN " + (c[1] ? Math.round(100 * c[0] / c[1]) : 0) + "%</span>"
+      + "</span></button></li>";
+  });
+  return html + "</ul>";
+}
+
+function showChain(){
+  dwTitle.textContent = "Cited authorities";
+  dwBack.hidden = true;
+  dwTools.hidden = true;
+  dwBody.innerHTML = chainHTML();
+  dwBody.scrollTop = 0;
+}
+
+function showDoc(key){
+  var d = D.docs[key];
+  if(!d) return;
+  dwTitle.textContent = d.label_en || d.title_cn;
+  dwBack.hidden = false;
+  dwTools.hidden = false;
+  dwCov.innerHTML = covHTML(d);
+  var html = '<div class="dw-doc-head">'
+    + '<div class="zh">' + esc(d.title_cn) + "</div>"
+    + '<div class="la">' + esc(d.label_en || "") + "</div>"
+    + '<div class="nums">'
+    + "<span>" + esc(d.kind_en || d.docnum || "") + "</span>"
+    + "<span>" + esc(d.date) + "</span>"
+    + "<span>" + d.chars + " ch</span>"
+    + (d.n_art ? "<span>" + d.n_art + " articles</span>" : "")
+    + "<span>id " + d.id + " · " + d.site + "</span>"
+    + "</div></div>";
+  if(d.annot){
+    html += '<div class="note"><h4>' + esc(d.annot.role) + "</h4>"
+          + "<p>" + esc(d.annot.note) + "</p></div>";
+    if(d.annot.corpus){
+      html += '<div class="note is-data"><h4>In the corpus</h4><p>'
+            + esc(d.annot.corpus) + "</p></div>";
+    }
+  }
+  html += '<div class="doc" data-mode="' + dwMode + '">' + renderBlocks(d) + "</div>";
+  dwBody.innerHTML = html;
+  dwBody.scrollTop = 0;
+}
+
+wireSeg("#dw-tools .seg", "data-dmode", function(m){
+  dwMode = m;
+  var inner = dwBody.querySelector(".doc");
+  if(inner) inner.setAttribute("data-mode", m);
+});
+
+document.addEventListener("click", function(ev){
+  var r = ev.target.closest("[data-ref]");
+  if(r){
+    var k = r.getAttribute("data-ref");
+    if(D.docs[k]){ showDoc(k); openDrawer(); }
+    return;
+  }
+  if(ev.target.closest("#open-dw")){ showChain(); openDrawer(); return; }
+  if(ev.target.closest("#dw-back")){ showChain(); return; }
+  if(ev.target.closest("#dw-close") || ev.target.id === "scrim"){ closeDrawer(); }
+});
+document.addEventListener("keydown", function(ev){
+  if(ev.key === "Escape") closeDrawer();
+});
+
+showChain();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+ "cybersec": {
+  "role": "Network and data security of the product itself",
+  "note": "The notice’s security vocabulary is borrowed from here. What this statute supplies to an agent-terminal rule is the premise that a networked product is a regulated object in its own right — that its operator owes duties of secure operation, incident handling and record-keeping, and that the State may set mandatory requirements for network products and services before they reach a user. That premise is what lets a ministry treat a pre-installed agent as something testable at the point of network access rather than as software the market sorts out. The 2025 amendment, which is the edition reproduced here, extends the statute’s reach and raised its penalty ceilings.",
+  "corpus": "Held 7 times, 4 with body text; the fullest copy runs 11,047 characters. The citation resolver nonetheless points 697 edges at a 2,256-character wire-service summary rather than at the statute. The cause is a single invisible character — see the data note."
+ },
+ "dsl": {
+  "role": "The data an agent moves, not the device",
+  "note": "An agent that perceives, remembers and acts generates and transports data continuously, which is the gap this statute fills in the chain. It defines data and data processing broadly enough to cover that activity, imposes a tiered and categorised protection duty keyed to how important the data is, and assigns sectoral regulators responsibility for data security in their own industry. Article 6 is the load-bearing one for this notice: it names the telecommunications authorities among the departments that carry data-security supervision duties for their sector, which is the jurisdictional hook MIIT needs.",
+  "corpus": "Held 5 times, 3 with body text; the fullest copy runs 5,926 characters."
+ },
+ "pipl": {
+  "role": "Consent, notice, and the user’s ability to refuse",
+  "note": "The two consent mechanics in this notice are this statute’s. First, the adaptation-verification list a developer must publish on the settings page is a transparency duty of exactly the kind the statute requires of a processor. Second, and more pointedly, the requirement that an app developer affirmatively consent by electronic signature before an agent may invoke their app — and that absent consent the agent may not compel it — is a consent architecture lifted from personal-information law and applied between two commercial parties. The statute’s rules on automated decision-making are the nearest thing in PRC law to a direct constraint on an autonomous agent acting on a person’s behalf.",
+  "corpus": "Held 6 times, 3 with body text; the fullest copy runs 9,390 characters."
+ },
+ "antifraud": {
+  "role": "Why a terminal is tested for fraud capability before it ships",
+  "note": "This is the authority behind the notice’s most unusual requirement: an ex ante anti-fraud capability evaluation, performed during network-access testing, before the device is sold. The statute builds its regime around duties placed on telecommunications operators, financial institutions and internet service providers, and it is the instrument that makes fraud resistance a product-admission question rather than only a matter of after-the-fact enforcement. An agent that can place calls, send messages and operate apps on a user’s behalf is, from this statute’s point of view, a new delivery channel for exactly the conduct it targets.",
+  "corpus": "Held 4 times, 3 with body text; the fullest copy runs 8,780 characters — and it is NOT the copy the citation graph uses. All 63 inbound edges resolve to a metadata-only record holding zero characters. See the data note."
+ },
+ "telecom": {
+  "role": "The source of the network-access licence itself",
+  "note": "This is where the licence comes from. The State Council’s telecommunications regulation establishes that terminal equipment connected to the public telecommunications network requires network access to be licensed, and it is the regulation under which the 2001 ministerial Measures were in turn promulgated. Every obligation in the 2026 notice ultimately attaches to that one administrative act: the manufacturer wants a licence, the licence is conditional on passing network-access testing, and so whatever the ministry adds to that test becomes a condition of selling the device. The notice adds agent adaptation verification to the test. That is the whole mechanism.",
+  "corpus": "Held twice, 1 with body text, 11,322 characters. The appendix classifying basic and value-added telecommunications services is reproduced with it."
+ },
+ "rwjg": {
+  "role": "The rule the notice actually amends in substance",
+  "note": "A notice cannot change a ministerial rule, but it can specify how the rule’s test is conducted — and that is what this one does. These Measures create the network-access licence, its three-year term, its testing requirements and, in Article 23, the consistency duty: equipment must be the same after it is licensed as it was before. The 2026 notice restates that duty verbatim for agent terminals and then does something the 2001 drafters could not have contemplated, by extending it across an over-the-air update. Article 12 already required re-testing after a technical modification; the notice decides that pushing a new agent version to a licensed handset is such a modification, and requires a filed upgrade plan and a post-hoc report assessed by experts before users may be served.",
+  "corpus": "Held once — and it was absent from the corpus entirely until 6 November 2026, despite 11 citations pointing at it. Ingested from the State Council’s reprint and dated to its real promulgation, 10 May 2001, not to the 2022 repost."
+ }
+}

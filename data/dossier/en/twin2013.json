@@ -1,0 +1,22 @@
+{
+ "blocks": [
+  "Notice of the Ministry of Industry and Information Technology on Strengthening the Administration of Network Access of Mobile Smart Terminals",
+  "MIIT, Telecommunications Administration, Document No. 120 (2013)",
+  "To all relevant entities:",
+  "In order to safeguard the security of users’ personal information and their lawful rights and interests, to ensure network and information security, and to promote the healthy development of the industry, and in accordance with the Decision of the Standing Committee of the National People’s Congress on Strengthening the Protection of Online Information and the Telecommunications Regulations of the People’s Republic of China, and pursuant to the relevant provisions of the Measures for the Administration of Network Access of Telecommunications Equipment, the requirements for strengthening the administration of network access of mobile smart terminals are further clarified as follows:",
+  "I. “Mobile smart terminal” in this Notice means a mobile communications terminal product that connects to a public mobile communications network, has an operating system, and on which users may install application software themselves.",
+  "II. A mobile smart terminal for which a network access licence is applied for shall conform to the basic requirements of the communications industry standards concerning the security of mobile smart terminals, and testing bodies shall test against the relevant standards when conducting network‑access testing.",
+  "III. When a manufacturer applies for a network access licence for a mobile smart terminal, it shall provide in its application materials the operating system version and the basic configuration information of the pre-installed application software.",
+  "IV. A manufacturer may not pre-install on a mobile smart terminal application software of any of the following kinds:",
+  "(1) software that collects or alters a user’s personal information without authorisation, absent express notice to and the consent of the user;",
+  "(2) software that invokes the terminal’s communications functions without authorisation, absent express notice to and the consent of the user, thereby causing adverse consequences such as data consumption, financial loss or information leakage;",
+  "(3) software that impairs the normal functioning of the mobile smart terminal or the secure operation of the communications network;",
+  "(4) software containing information content whose publication or dissemination is prohibited by the Telecommunications Regulations of the People’s Republic of China;",
+  "(5) other software that infringes the security of a user’s personal information or their lawful rights and interests, or endangers network and information security.",
+  "V. Where a mobile smart terminal that has obtained a network access licence adds pre-installed application software, or where a change arising from an operating system upgrade affects the basic terminal security requirement items in network‑access testing, the manufacturer shall file a report with the Ministry of Industry and Information Technology.",
+  "VI. A manufacturer shall mark, in a conspicuous position on a licensed product or its packaging, the website address prescribed by the Ministry of Industry and Information Technology for verifying the network access licence mark.",
+  "VII. This Notice takes effect on 1 November 2013.",
+  "Ministry of Industry and Information Technology",
+  "11 April 2013"
+ ]
+}
