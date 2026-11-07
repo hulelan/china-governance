@@ -372,6 +372,18 @@ python3 scripts/ingest_urls.py --list-hosts
 # from the first 年月日 in the body is the crawl_stamped / CDN-path-as-date failure
 # shape again. Validated against YYYY-MM-DD so a typo refuses loudly.
 python3 scripts/ingest_urls.py --urls-file f.txt --tag legal-basis --date 2001-05-10
+# Parallel Chinese-English reader for ONE document and the instruments it cites
+# (scripts/rnd/dossier/, built 2026-11-06 for 工信厅信管〔2026〕42号). Three columns:
+# Chinese, English, and a panel holding each cited authority's full text plus an
+# annotation; both toggle between parallel columns and alternating lines.
+python3 scripts/rnd/dossier/dump_texts.py     # ON THE DROPLET -> /tmp/dossier_cn.json
+python3 scripts/rnd/dossier/measure_auth.py   # ON THE DROPLET -> /tmp/dossier_facts.json
+python3 scripts/rnd/dossier/build_dossier.py  # locally, after scp -> artifact/data.js
+# English lives in data/dossier/en/<key>.json keyed by ARTICLE NUMBER (第十二条), never
+# by list index, so a later translation pass cannot shift the alignment of what is
+# already done; an untranslated article renders Chinese-only and counts against the
+# coverage badge the page prints. Add a document by adding its id to dump_texts.IDS.
+# See scripts/rnd/dossier/README.md for the three defects building it exposed.
 # Host resolution is an EXPLICIT netloc->site_key table. A fuzzy `root in base_url`
 # lookup resolved www.gov.cn to szpsq/sz/stic, because "gov.cn" is a substring of
 # "szpsq.sz.gov.cn" — the hand-maintained-table bug shape again. An unmapped host
@@ -976,6 +988,24 @@ standing in for it. A guard that ignores the better evidence it already has will
 in the cases where that evidence exists. **Rule: when a heuristic and an identifier disagree,
 the identifier wins; and check whether the identifier was already computed upstream before
 reaching for the heuristic at all.**
+
+**A third instance, 2026-11-06, in TEXT structure rather than in SQL.** Splitting a statute
+body on `第N条` over-counts badly, because statutes cross-reference their own articles
+mid-sentence (`违反第二十一条规定`): 网络安全法 split to **109** blocks against its real 81,
+电信条例 to **98** against 80. Whitespace is not the discriminator — these bodies are
+flattened extractions with no reliable paragraph breaks. The document's own **numbering**
+is: a real article header is the first `第一条` and every later one is exactly prev+1, which
+a backward reference can never satisfy. After the fix every count matches the published
+total (数据安全法 55, 个人信息保护法 74, 反电信网络诈骗法 50). `scripts/rnd/dossier/dump_texts.py`.
+
+**And its sibling, from the same sitting: a relevance rule that selects 95% of a statute is
+not selecting.** Choosing "the articles this notice relies on" by matching the notice's own
+operative terms kept **64 of 81** articles of 网络安全法 and **71 of 74** of 个人信息保护法 — a
+measure describing the measure. It was also answering a question the source does not pose:
+the notice cites its authorities wholesale (`依据…等相关法律法规规章`) and names no article,
+so a "relied-on set" would have invented precision the document does not carry. **When a
+selection rule keeps almost everything, check whether the thing you are selecting for exists
+in the source at all before tuning the rule.**
 
 ## SQLite Concurrency Rules
 
