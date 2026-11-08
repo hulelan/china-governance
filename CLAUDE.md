@@ -384,6 +384,23 @@ python3 scripts/rnd/dossier/build_dossier.py  # locally, after scp -> artifact/d
 # already done; an untranslated article renders Chinese-only and counts against the
 # coverage badge the page prints. Add a document by adding its id to dump_texts.IDS.
 # See scripts/rnd/dossier/README.md for the three defects building it exposed.
+# Dreaming: distil our Claude Code session transcripts into the memory store
+# (~/.claude/projects/<slug>/memory/). A local adaptation of the Managed Agents
+# dreaming cookbook, whose API export cannot read Claude Code sessions. Run from
+# the Mac, where the transcripts live. Nothing writes to memory/ until --apply-plan.
+python3 scripts/rnd/dream/export_transcripts.py --out /tmp/dream/transcripts  # redacts; audit exits 1 on a leak
+python3 scripts/rnd/dream/verify_memory.py --out /tmp/dream/staleness.md     # ok / stale / unchecked
+python3 scripts/rnd/dream/dream.py --work /tmp/dream --staleness /tmp/dream/staleness.md --analyze-only
+python3 scripts/rnd/dream/organize.py --work /tmp/dream                       # plans into a COPY
+#   review /tmp/dream/plan.diff and /tmp/dream/decisions.md, then:
+python3 scripts/rnd/dream/dream.py --work /tmp/dream --apply-plan             # backs up first, never deletes
+# First run 2026-11-08: 233 transcripts, $7.14 analyze + $2.84 stage-1 organize;
+# 506 proposals -> 34 new memories, 226 merges, 27 drops (mostly "CLAUDE.md already
+# records it"); store 18 -> 59 files. Incremental by default (state.json), so later
+# runs read only new transcripts. Secrets are redacted by a denylist of literal
+# values PARSED from .env and the settings files, not by shape patterns: the
+# first run leaked the Railway password, which appeared as a bare `git log -S`
+# argument with no label. Pre-dream store: ~/.claude/projects/<slug>/memory_backup_20261108_predream.
 # Host resolution is an EXPLICIT netloc->site_key table. A fuzzy `root in base_url`
 # lookup resolved www.gov.cn to szpsq/sz/stic, because "gov.cn" is a substring of
 # "szpsq.sz.gov.cn" — the hand-maintained-table bug shape again. An unmapped host
