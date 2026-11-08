@@ -87,6 +87,29 @@ def load_state(f: Path) -> dict:
         return {"analyzed": {}}
 
 
+def apply_plan(plan_store: Path, memory: Path, work: Path) -> int:
+    """Copy a reviewed plan over the store. Never deletes: the organizer retires a
+    file as a `MOVED TO` stub, so a file missing from the plan is reported, not
+    removed."""
+    if not plan_store.is_dir():
+        print(f"no plan at {plan_store}; run --organize-only --plan first")
+        return 1
+    backup = work / f"memory_backup_{time.strftime('%Y%m%d_%H%M%S')}"
+    shutil.copytree(memory, backup)
+    written = 0
+    for f in sorted(plan_store.glob("*.md")):
+        dst = memory / f.name
+        if not dst.exists() or dst.read_bytes() != f.read_bytes():
+            shutil.copy2(f, dst)
+            written += 1
+            print(f"  wrote {f.name}")
+    gone = sorted({p.name for p in memory.glob("*.md")} - {p.name for p in plan_store.glob("*.md")})
+    for n in gone:
+        print(f"  NOT DELETED (absent from plan): {n}")
+    print(f"applied: {written} file(s) written; backup at {backup}")
+    return 0
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -105,6 +128,10 @@ def main() -> None:
     ap.add_argument("--analyze-only", action="store_true")
     ap.add_argument("--organize-only", action="store_true")
     ap.add_argument("--dry-run", action="store_true", help="print the plan, spend nothing")
+    ap.add_argument("--plan", action="store_true",
+                    help="organizer edits a COPY of the store; writes plan.diff for review, touches nothing")
+    ap.add_argument("--apply-plan", action="store_true",
+                    help="copy the reviewed plan_store over the real store (backs it up first), spend nothing")
     args = ap.parse_args()
 
     work = args.work
@@ -165,6 +192,10 @@ def main() -> None:
         print(f"work dir: {work}\nmemory:   {args.memory}")
         return
 
+    plan_store = work / "plan_store"
+    if args.apply_plan:
+        sys.exit(apply_plan(plan_store, args.memory, work))
+
     cost = 0.0
     failures: list[tuple[str, str]] = []
 
@@ -207,15 +238,31 @@ def main() -> None:
                   f"Memory directory (read-write): `{args.memory}`\n"
                   + (f"Staleness report: `staleness.md`\n" if (work / 'staleness.md').exists()
                      else "Staleness report: none supplied this run.\n"))
-        print(f"\norganize: 1 x {args.model_organizer} over {len(props)} proposals", flush=True)
+        target = args.memory
+        if args.plan:
+            # Review the CHANGE, not a description of it: the organizer edits a
+            # copy, and plan.diff against the live store is exactly what
+            # --apply-plan will write.
+            shutil.rmtree(plan_store, ignore_errors=True)
+            shutil.copytree(args.memory, plan_store)
+            target = plan_store
+            prompt = prompt.replace(str(args.memory), str(plan_store))
+        print(f"\norganize: 1 x {args.model_organizer} over {len(props)} proposals"
+              f"{' (PLAN: editing a copy)' if args.plan else ''}", flush=True)
         res = run_claude(prompt, work, ORGANIZER_TOOLS, args.model_organizer,
-                         add_dirs=(args.memory,), timeout=3600)
+                         add_dirs=(target,), timeout=3600)
         cost += res.get("total_cost_usd") or 0.0
         if res.get("is_error"):
             print(f"ORGANIZER FAILED: {res.get('subtype')}: {str(res.get('result'))[:400]}")
             failures.append(("organizer", str(res.get("subtype"))))
         else:
             print(f"organizer said: {str(res.get('result'))[:800]}")
+            if args.plan:
+                d = subprocess.run(["diff", "-ruN", str(args.memory), str(plan_store)],
+                                   capture_output=True, text=True).stdout
+                (work / "plan.diff").write_text(d, encoding="utf-8")
+                print(f"plan: {work / 'plan.diff'} ({d.count(chr(10)):,} lines) — "
+                      f"review, then --apply-plan")
 
     print(f"\ntotal ${cost:.4f}")
     print(f"GATE: {'FAIL' if failures else 'PASS'} ({len(failures)} failure(s))")
