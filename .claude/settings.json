@@ -47,5 +47,18 @@
       "Bash(kill:*)",
       "Bash(rm -rf:*)"
     ]
+  },
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/rnd/dream/session_end.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }

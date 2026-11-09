@@ -188,7 +188,8 @@ def main() -> None:
 
     if args.dry_run:
         print(f"\nwould run {len(todo)} x {args.model_analyzer} analyzers "
-              f"(concurrency {args.concurrency}), then 1 x {args.model_organizer} organizer")
+              f"(concurrency {args.concurrency})"
+              + ("" if args.analyze_only else f", then 1 x {args.model_organizer} organizer"))
         print(f"work dir: {work}\nmemory:   {args.memory}")
         return
 

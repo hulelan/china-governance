@@ -40,12 +40,12 @@ Chinese government document corpus + web app. Crawls policy documents from centr
 - **Research layer (2026-08-22 — pivot from crawl-volume to analysis).** Goal
   clarified: political-science research on China as a bureaucracy (institutional /
   comparative governance). See `memory/project_research_pivot.md`. Shipped:
-  - **Policy Lens** — `/lens` (`web/services/lens.py`, `templates/lens.html`): a
+  - **Policy Lens** — `/lens` (`web/services/lens.py`, `web/templates/lens.html`): a
     topic/document dossier. `?q=<topic>` → attention timeline, admin-level &
     genre & issuer breakdowns, most-cited anchor docs (title-match only, no body
     scans, 1h cache). `?doc=<id>` → outbound/inbound citation neighborhood.
   - **Policy Tracker (2026-10-01)** — `/tracker?topic=<area>&weeks=<n>`
-    (`web/services/tracker.py`, `templates/tracker.html`): the LIVE daily/weekly
+    (`web/services/tracker.py`, `web/templates/tracker.html`): the LIVE daily/weekly
     layer (`docs/research/daily-tracker-concept.md`). Reads only two nightly
     precomputed tables, so pages render in ~0.03s: `diffusion_events` (the
     auto-matcher — each sub-national doc → the central instrument it implements,
@@ -190,7 +190,7 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     after ANY resolver/matcher/identity change.
   - **Research memo reader (2026-10-01)** — `/research` (index, curated by the
     volume's structure) and `/research/<slug>` (`web/services/research.py`,
-    `templates/research.html`, `research_doc.html`): renders `docs/research/*.md`
+    `web/templates/research.html`, `research_doc.html`): renders `docs/research/*.md`
     via python-markdown (tables, fenced code; `name.md` cross-links rewritten to
     `/research/<name>`), 1h cache keyed by mtime, slug locked to `^[a-z0-9-]+$`
     inside `docs/research/` (traversal → 404). The research memos are committed
@@ -401,6 +401,12 @@ python3 scripts/rnd/dream/dream.py --work /tmp/dream --apply-plan             # 
 # values PARSED from .env and the settings files, not by shape patterns: the
 # first run leaked the Railway password, which appeared as a bare `git log -S`
 # argument with no label. Pre-dream store: ~/.claude/projects/<slug>/memory_backup_20261108_predream.
+# AUTOMATIC since 2026-11-08: a SessionEnd hook (.claude/settings.json ->
+# scripts/rnd/dream/session_end.sh) runs export + audit + analyze, DETACHED, capped at
+# --limit 20, into the persistent work dir ~/.claude/projects/<slug>/dream/ (log:
+# session_end.log there). It writes PROPOSALS only; organize + --apply-plan stay manual,
+# pointed at that same --work dir. DREAM_CHILD stops the analyzers' own `claude -p`
+# sessions from re-triggering it. Transcripts over 400 KB (long sessions) are skipped.
 # Host resolution is an EXPLICIT netloc->site_key table. A fuzzy `root in base_url`
 # lookup resolved www.gov.cn to szpsq/sz/stic, because "gov.cn" is a substring of
 # "szpsq.sz.gov.cn" — the hand-maintained-table bug shape again. An unmapped host
@@ -592,7 +598,8 @@ Mac (dev only, OPTIONAL): git push code; pull a DB copy when developing locally.
   (crawlers, classifier) inherit `DEEPSEEK_API_KEY`.
 - Web app caches heavy queries (stats, sites, categories) for 1 hour in-memory;
   the Phase 3 restart clears that cache so new docs appear.
-- SSL via Let's Encrypt (certbot auto-renews). Expires July 4, 2026.
+- SSL via Let's Encrypt (certbot auto-renews, ~every 60 days). No expiry date is kept here because
+  it goes stale on each renewal; check with `ssh root@104.236.88.45 certbot certificates`.
 - The Mac's local `documents.db` is now a stale snapshot. To develop locally,
   pull fresh: `rsync -az root@104.236.88.45:/root/china-governance/documents.db ./`
 - **Railway Postgres removed (June 2026).** The web app is SQLite-only; all the
@@ -1086,8 +1093,8 @@ Then: `python3 -m crawlers.gkmlpt --site newcity`
 
 ## Adding a New Ministry/Province
 
-Requires a new crawler module. See `crawlers/mof.py` or `crawlers/mee.py` as templates.
-Guide: `docs/implementation/new-province-crawler-guide.md`
+Requires a new crawler module. See `crawlers/mof.py` or `crawlers/mee.py` as templates,
+or add a site to the generic `crawlers/govcms.py` registry when its CMS matches a known dialect.
 
 ## Open Questions / Unknowns
 
