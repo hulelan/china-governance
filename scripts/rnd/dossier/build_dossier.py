@@ -1,61 +1,39 @@
 # -*- coding: utf-8 -*-
-"""Merge Chinese text + authored English + measured corpus facts -> data.js.
+"""Merge Chinese text + authored English + measured corpus facts -> one reader.
 
+    python3 scripts/rnd/dossier/build_dossier.py --set agent-terminals \
+        --cn dossier_cn.json --facts dossier_facts.json --out-dir <dir>
+
+Everything specific to one dossier (ids, labels, drawer copy, English, notes)
+lives in data/dossier/<set>/; this file and parallel-reader.html are shared.
 The merge is keyed on the ARTICLE NUMBER, never on a list index, so adding an
 English article later cannot shift the alignment of the ones already done. A
 block with no English renders Chinese-only and counts against the coverage
 badge, which is why partial translation is safe to ship.
 """
-import json, os, re, sys
+import argparse, html, json, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-cn = json.load(open(os.path.join(HERE, "dossier_cn.json")))
-facts = json.load(open(os.path.join(HERE, "dossier_facts.json")))
+REPO = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+
+ap = argparse.ArgumentParser()
+ap.add_argument("--set", required=True)
+ap.add_argument("--cn", required=True, help="output of dump_texts.py")
+ap.add_argument("--facts", default=None, help="output of measure_auth.py (optional)")
+ap.add_argument("--out-dir", required=True)
+args = ap.parse_args()
+
+SET = os.path.join(REPO, "data", "dossier", args.set)
+M = json.load(open(os.path.join(SET, "meta.json")))
+cn = json.load(open(args.cn))
+facts = json.load(open(args.facts)) if args.facts else {}
+_annot_p = os.path.join(SET, "annotations.json")
+ANNOT = json.load(open(_annot_p)) if os.path.exists(_annot_p) else {}
 
 
 def load_en(key):
-    p = os.path.join(HERE, "en", key + ".json")
+    p = os.path.join(SET, "en", key + ".json")
     return json.load(open(p)) if os.path.exists(p) else {}
-
-
-# Order is the notice's OWN citation order, not alphabetical and not by size.
-AUTH_ORDER = ["cybersec", "dsl", "pipl", "antifraud", "telecom", "rwjg"]
-
-META = {
-  "notice": {
-    "label_en": "Notice on Strengthening Network-Access Administration of Agent Terminal Equipment",
-    "docnum": "工信厅信管〔2026〕42号",
-    "issuer_cn": "工业和信息化部办公厅",
-    "issuer_en": "General Office, Ministry of Industry and Information Technology",
-    "signed": "2026-10-24", "published": "2026-11-06",
-  },
-  "npcdecision": {
-    "label_en": "Decision of the NPC Standing Committee on Strengthening the Protection of Online Information",
-    "kind_cn": "\u5168\u56fd\u4eba\u5927\u5e38\u59d4\u4f1a\u51b3\u5b9a",
-    "kind_en": "NPC Standing Committee decision",
-  },
-  "twin2013": {
-    "label_en": "Notice on Strengthening Network-Access Administration of Mobile Smart Terminals",
-    "docnum": "工信部电管〔2013〕120号",
-    "issuer_cn": "工业和信息化部",
-    "issuer_en": "Ministry of Industry and Information Technology",
-    "signed": "2013-04-11", "published": "2013-04-11",
-  },
-  "cybersec": {"label_en": "Cybersecurity Law of the People’s Republic of China",
-               "kind_cn": "法律", "kind_en": "Statute (NPC Standing Committee)"},
-  "dsl":      {"label_en": "Data Security Law of the People’s Republic of China",
-               "kind_cn": "法律", "kind_en": "Statute (NPC Standing Committee)"},
-  "pipl":     {"label_en": "Personal Information Protection Law of the People’s Republic of China",
-               "kind_cn": "法律", "kind_en": "Statute (NPC Standing Committee)"},
-  "antifraud":{"label_en": "Anti‑Telecom and Online Fraud Law of the People’s Republic of China",
-               "kind_cn": "法律", "kind_en": "Statute (NPC Standing Committee)"},
-  "telecom":  {"label_en": "Telecommunications Regulations of the People’s Republic of China",
-               "kind_cn": "行政法规", "kind_en": "Administrative regulation (State Council)"},
-  "rwjg":     {"label_en": "Measures for the Administration of Network Access of Telecommunications Equipment",
-               "kind_cn": "部门规章", "kind_en": "Ministerial rule (MIIT / former MII)"},
-}
-
-ANNOT = json.load(open(os.path.join(HERE, "annotations.json")))
 
 
 def chapter_en(key, zh):
@@ -87,14 +65,14 @@ def build_doc(key):
             blocks.append({"t": "art", "no": b["no"], "n": b.get("n"),
                            "cn": b["cn"], "en": e, "ch": cur_chapter})
         else:
-            # Documents with no 第N条 structure (both notices) key English by index.
-            idx = len([x for x in blocks if x["t"] in ("para", "head")])
-            seq = en.get("blocks", [])
-            blocks.append({"t": "para", "cn": b["cn"],
-                           "en": seq[idx] if idx < len(seq) else en.get("_head", "")})
-    # For the notices, English is keyed by block index over ALL blocks.
+            blocks.append({"t": "para", "cn": b["cn"], "en": ""})
+    # Paragraph documents (notices, a plan) carry no article numbers, so their
+    # English is a list over ALL blocks. A length mismatch means the Chinese
+    # split changed under a finished translation: refuse rather than misalign.
     if "blocks" in en:
         seq = en["blocks"]
+        if len(seq) > len(blocks):
+            raise SystemExit(f"{key}: {len(seq)} English blocks for {len(blocks)} Chinese")
         for i, blk in enumerate(blocks):
             blk["en"] = seq[i] if i < len(seq) else ""
     elif en.get("_head") and blocks and blocks[0]["t"] == "para":
@@ -106,38 +84,48 @@ def build_doc(key):
         "chars": src["chars"], "blocks": blocks,
         "n_art": n_art, "n_art_en": n_art_en,
     }
-    doc.update(META.get(key, {}))
+    doc.update(M.get("meta", {}).get(key, {}))
     if key in facts:
         doc["facts"] = facts[key]
     if key in ANNOT:
         doc["annot"] = ANNOT[key]
+    if "cited_by" in src:
+        doc["cited_by"] = src["cited_by"]
     return doc
 
 
-ALL = ["notice", "twin2013", "npcdecision"] + AUTH_ORDER
+ALL = M["order"]
 data = {
     "docs": {k: build_doc(k) for k in ALL},
-    "main": "notice",
-    "authOrder": AUTH_ORDER,             # the notice's own citation order
-    "twinRefs": ["npcdecision", "telecom", "rwjg"],   # what the 2013 twin cites
-    "built": "2026-11-06",
+    "main": M["main"],
+    "chain": M.get("chain", []),
+    "chainTitle": M.get("chainTitle", "Cited authorities"),
+    "chainIntro": M.get("chainIntro", []),
+    "drawerLabel": M.get("drawerLabel", "references"),
+    "extraRefs": M.get("extraRefs", []),
+    "citedByIntro": M.get("citedByIntro", []),
+    "footNote": M.get("footNote", ""),
+    "built": M.get("built", ""),
 }
 
 # Coverage, printed so a partial pass is never reported as complete.
 print("%-12s %-44s %7s %6s %6s %5s" % ("key", "title", "chars", "blocks", "en", "pct"))
-rows = [data["docs"][k] for k in ALL]
-for d in rows:
+for k in ALL:
+    d = data["docs"][k]
     n = d["n_art"] or len([b for b in d["blocks"] if b["t"] == "para"])
     ne = d["n_art_en"] or len([b for b in d["blocks"] if b["t"] == "para" and b["en"]])
     d["cov"] = [ne, n]
     print("%-12s %-44s %7d %6d %6d %4d%%"
-          % (d["key"], d["title_cn"][:42], d["chars"], n, ne,
-             round(100 * ne / n) if n else 0))
+          % (k, d["title_cn"][:42], d["chars"], n, ne, round(100 * ne / n) if n else 0))
 
-out = os.path.join(HERE, "artifact", "data.js")
-os.makedirs(os.path.dirname(out), exist_ok=True)
-with open(out, "w") as f:
+os.makedirs(args.out_dir, exist_ok=True)
+js = os.path.join(args.out_dir, "data.js")
+with open(js, "w") as f:
     f.write("window.DOSSIER = ")
     json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     f.write(";\n")
-print("\nWROTE %s (%d bytes)" % (out, os.path.getsize(out)))
+page = open(os.path.join(HERE, "parallel-reader.html")).read()
+assert page.count("__PAGE_TITLE__") == 1
+page = page.replace("__PAGE_TITLE__", html.escape(M.get("page_title", "Parallel Reader")))
+open(os.path.join(args.out_dir, "parallel-reader.html"), "w").write(page)
+print("\nWROTE %s (%d bytes) + parallel-reader.html" % (js, os.path.getsize(js)))

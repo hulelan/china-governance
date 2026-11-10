@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agent Terminals Reader</title>
+<title>__PAGE_TITLE__</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -213,6 +213,17 @@ aside.drawer{
   font-family:var(--mono); font-size:.68rem; color:var(--faint);
   display:flex; gap:.15rem .8rem; flex-wrap:wrap; margin-top:.1rem;
 }
+.cby-h{
+  font-family:var(--mono); font-size:.7rem; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--muted); margin:1.2rem 0 .3rem; display:flex; justify-content:space-between;
+}
+.cby{list-style:none; margin:0; padding:0}
+.cby li{border-bottom:1px solid var(--hair); padding:.5rem .15rem .55rem; display:grid; gap:.15rem}
+.cby a{font-family:var(--han); font-size:.9rem; line-height:1.45; color:var(--ink); text-decoration:none}
+.cby a:hover{color:var(--accent); text-decoration:underline}
+.cby .nums{font-family:var(--mono); font-size:.68rem; color:var(--faint); display:flex; gap:.15rem .8rem; flex-wrap:wrap}
+.cby .g{color:var(--teal)}
+.cby .g.is-impl{color:var(--accent); font-weight:500}
 
 .dw-doc-head{margin:0 0 .9rem; padding-bottom:.75rem; border-bottom:1px solid var(--rule)}
 .dw-doc-head .zh{font-family:var(--han); font-size:1.08rem; font-weight:600; line-height:1.35}
@@ -342,8 +353,7 @@ footer.foot code{font-family:var(--mono); font-size:.92em; color:var(--ink)}
   corpus, which holds it as crawled from the issuing body or an official gazette. The
   document identifier beside each one (<code>id</code>, <code>site</code>) is its row in
   that corpus, so any figure here can be traced back to a specific stored document.
-  These are official documents of PRC state organs. Press coverage of the notice is
-  linked, never reproduced.</p>
+  These are official documents of PRC state organs. <span id="foot-note"></span></p>
   <p><b>Translation.</b> The English is an original working translation prepared for this
   reader, not an official or authoritative one, and no existing translation was used as a
   source. Where a document is only partly translated the coverage figure says so
@@ -376,9 +386,9 @@ Object.keys(D.docs).forEach(function(k){
   if(d.label_en) REFS.push({pat:d.label_en, key:k, lang:"en"});
 });
 /* Cited by name but not held as its own text in this reader. */
-[["《全国人民代表大会常务委员会关于加强网络信息保护的决定》","npcdecision","cn"],
- ["《电信设备进网审批管理办法》",null,"cn"]
-].forEach(function(r){ REFS.push({pat:r[0], key:r[1], lang:r[2]}); });
+(D.extraRefs || []).forEach(function(r){
+  REFS.push({pat:r[0], key:r[1], lang:r[2], why:r[3] || "Cited by name; not held as a separate text here"});
+});
 REFS.sort(function(a,b){ return b.pat.length - a.pat.length; });
 
 function linkify(html, lang){
@@ -394,7 +404,7 @@ function linkify(html, lang){
       }
       var attr = r.key
         ? ' class="ref" data-ref="' + r.key + '" type="button"'
-        : ' class="ref is-absent" type="button" title="Cited by name; repealed and not held as a separate text here"';
+        : ' class="ref is-absent" type="button" title="' + esc(r.why) + '"';
       var tag = "<button" + attr + ">" + needle + "</button>";
       html = html.slice(0, i) + tag + html.slice(i + needle.length);
       at = i + tag.length;
@@ -447,8 +457,10 @@ function renderBlocks(doc){
       return;
     }
     /* plain paragraph: the two notices and the NPCSC decision */
-    if(i === 0 || (i === 1 && /^（/.test(b.cn))) cls += " is-head";
-    if(i >= n - 2) cls += " is-sign";
+    if(doc.plainBody !== true){
+      if(i === 0 || (i === 1 && /^（/.test(b.cn))) cls += " is-head";
+      if(i >= n - 2) cls += " is-sign";
+    }
     html += '<div class="' + cls + '">'
           + '<div class="cn" lang="zh-Hans">' + paras(b.cn, "cn") + "</div>"
           + '<div class="en" lang="en">' + (b.en ? paras(b.en, "en") : "") + "</div></div>";
@@ -468,10 +480,10 @@ document.getElementById("m-docnum").textContent = main.docnum || "";
 document.getElementById("m-title").textContent = main.title_cn;
 document.getElementById("m-title-en").textContent = main.label_en || "";
 document.getElementById("m-meta").innerHTML = [
-  ["issued", main.issuer_cn + " · " + main.issuer_en],
-  ["signed", main.signed], ["published", main.published],
+  ["issued", main.issuer_cn ? main.issuer_cn + " · " + main.issuer_en : ""],
+  ["signed", main.signed], ["published", main.published || main.date],
   ["corpus", "id " + main.id + " · " + main.site + " · " + main.chars + " ch"]
-].map(function(p){ return "<span><b>" + esc(p[0]) + "</b> " + esc(p[1]) + "</span>"; }).join("");
+].filter(function(p){ return p[1]; }).map(function(p){ return "<span><b>" + esc(p[0]) + "</b> " + esc(p[1]) + "</span>"; }).join("");
 document.getElementById("m-cov").innerHTML = covHTML(main);
 
 var docEl = document.getElementById("doc");
@@ -528,17 +540,53 @@ var dwMode = "inter";
 function openDrawer(){ document.body.classList.add("dw-open"); }
 function closeDrawer(){ document.body.classList.remove("dw-open"); }
 
+/* Who cites the main document, grouped by the identity layer's per-document
+   level. Media is its own group on purpose: folding it into "non-central"
+   reads press coverage as sub-national uptake. */
+var LEVEL_GROUP = {central:"Central bodies", provincial:"Sub-national government",
+  municipal:"Sub-national government", district:"Sub-national government",
+  department:"Sub-national government", media:"Media"};
+var GROUP_ORDER = ["Central bodies", "Sub-national government", "Media", "Other"];
+
+function citedByHTML(list){
+  var groups = {}, impl = 0;
+  list.forEach(function(c){
+    var g = LEVEL_GROUP[c.level] || "Other";
+    (groups[g] = groups[g] || []).push(c);
+    if(c.genre === "implementing") impl++;
+  });
+  var html = '<div class="note is-data"><h4>Cited by ' + list.length + " documents</h4>"
+    + "<p>" + GROUP_ORDER.filter(function(g){ return groups[g]; }).map(function(g){
+        return groups[g].length + " " + g.toLowerCase(); }).join(", ")
+    + ". " + impl + " of the " + list.length + " " + (impl === 1 ? "is" : "are")
+    + " typed <code>implementing</code> by the identity layer.</p>"
+    + (D.citedByIntro || []).map(function(p){ return "<p>" + esc(p) + "</p>"; }).join("")
+    + "</div>";
+  GROUP_ORDER.forEach(function(g){
+    if(!groups[g]) return;
+    html += '<div class="cby-h"><span>' + esc(g) + "</span><span>" + groups[g].length + "</span></div>"
+          + '<ul class="cby">';
+    groups[g].forEach(function(c){
+      html += "<li>" + (c.url
+          ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer">' + esc(c.title) + "</a>"
+          : '<span class="zh">' + esc(c.title) + "</span>")
+        + '<span class="nums"><span>' + esc(c.date || "undated") + "</span><span>" + esc(c.site) + "</span>"
+        + '<span class="g' + (c.genre === "implementing" ? " is-impl" : "") + '">' + esc(c.genre || "?") + "</span>"
+        + "<span>" + c.chars + " ch</span></span></li>";
+    });
+    html += "</ul>";
+  });
+  return html;
+}
+
 function chainHTML(){
-  var html = '<div class="note"><h4>The authority chain</h4>'
-    + "<p>The notice names six instruments as its legal basis, in the order below, and "
-    + "cites them wholesale rather than by article. Each one is held in the corpus as its "
-    + "own text. Open any of them to read it beside the notice.</p>"
-    + "<p>The 2013 notice at the foot of the list is not cited by the 2026 one. It is its "
-    + "structural predecessor: the same ministry, the same licence, the same three levers "
-    + "of testing, disclosure and filing, applied to pre-installed apps rather than to "
-    + "pre-installed agents.</p></div>";
+  var html = (D.chainIntro || []).length
+    ? '<div class="note"><h4>' + esc(D.chainTitle) + "</h4>"
+      + D.chainIntro.map(function(p){ return "<p>" + esc(p) + "</p>"; }).join("") + "</div>"
+    : "";
+  if(!D.chain.length) return html + (main.cited_by ? citedByHTML(main.cited_by) : "");
   html += '<ul class="chain">';
-  D.authOrder.concat(["twin2013"]).forEach(function(k){
+  D.chain.forEach(function(k){
     var d = D.docs[k], f = d.facts, c = d.cov || [0, 0];
     html += '<li><button type="button" data-ref="' + k + '">'
       + '<span class="zh">' + esc(d.title_cn) + "</span>"
@@ -553,11 +601,11 @@ function chainHTML(){
       + "<span>EN " + (c[1] ? Math.round(100 * c[0] / c[1]) : 0) + "%</span>"
       + "</span></button></li>";
   });
-  return html + "</ul>";
+  return html + "</ul>" + (main.cited_by ? citedByHTML(main.cited_by) : "");
 }
 
 function showChain(){
-  dwTitle.textContent = "Cited authorities";
+  dwTitle.textContent = D.chainTitle;
   dwBack.hidden = true;
   dwTools.hidden = true;
   dwBody.innerHTML = chainHTML();
@@ -615,6 +663,8 @@ document.addEventListener("keydown", function(ev){
   if(ev.key === "Escape") closeDrawer();
 });
 
+document.getElementById("open-dw").textContent = D.drawerLabel + " \u25b8";
+document.getElementById("foot-note").textContent = D.footNote || "";
 showChain();
 })();
 </script>

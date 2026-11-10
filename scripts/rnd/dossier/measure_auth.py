@@ -4,16 +4,13 @@ Normalises the title the way the resolver does NOT (folding the zero-width
 space), so all copies of one statute are counted together regardless of which
 one the resolver picked as representative.
 """
-import json, sqlite3
+import argparse, json, sqlite3
 
-TITLES = {
-    "cybersec":  "中华人民共和国网络安全法",
-    "pipl":      "中华人民共和国个人信息保护法",
-    "dsl":       "中华人民共和国数据安全法",
-    "antifraud": "中华人民共和国反电信网络诈骗法",
-    "telecom":   "中华人民共和国电信条例",
-    "rwjg":      "电信设备进网管理办法",
-}
+ap = argparse.ArgumentParser()
+ap.add_argument("--meta", required=True, help="data/dossier/<set>/meta.json")
+ap.add_argument("--out", default="/tmp/dossier_facts.json")
+args = ap.parse_args()
+TITLES = json.load(open(args.meta)).get("facts_titles", {})
 
 conn = sqlite3.connect("file:documents.db?mode=ro", uri=True)
 out = {}
@@ -52,5 +49,5 @@ for key, title in TITLES.items():
                 "rep_chars": repchars, "rep_edges": repedges,
                 "all": [{"id": r[0], "site": r[1], "chars": r[2]} for r in rows]}
 
-json.dump(out, open("/tmp/dossier_facts.json", "w"), ensure_ascii=False, indent=1)
-print("\nWROTE /tmp/dossier_facts.json")
+json.dump(out, open(args.out, "w"), ensure_ascii=False, indent=1)
+print(f"\nWROTE {args.out}")

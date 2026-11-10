@@ -5,22 +5,35 @@ the instruments it cites. Built 2026-11-06 for 工信厅信管〔2026〕42号.
 
 ## Pipeline
 
-```bash
-# 1. ON THE DROPLET — pull the bodies, split them into articles
-python3 scripts/rnd/dossier/dump_texts.py          # -> /tmp/dossier_cn.json
-python3 scripts/rnd/dossier/measure_auth.py        # -> /tmp/dossier_facts.json
-scp root@104.236.88.45:/tmp/dossier_{cn,facts}.json <workdir>/
+One folder per reader: `data/dossier/<set>/` holds `meta.json` (ids, labels, the
+drawer copy, carrier-stripping and cited-by options), `annotations.json` and `en/`.
+The scripts and `parallel-reader.html` are shared, so a new reader is a new folder,
+never an edit to them. Sets so far: `agent-terminals` (工信厅信管〔2026〕42号 and its six
+authorities) and `ai-governance-plan` (《人工智能全球治理行动计划》 and its 26 citers).
 
-# 2. LOCALLY — merge with the authored English and annotations
-python3 scripts/rnd/dossier/build_dossier.py       # -> artifact/data.js
+```bash
+# 1. ON THE DROPLET — read-only: bodies split into blocks (+ citers if meta asks)
+python3 scripts/rnd/dossier/dump_texts.py   --meta data/dossier/<set>/meta.json --out /tmp/<set>_cn.json
+python3 scripts/rnd/dossier/measure_auth.py --meta data/dossier/<set>/meta.json --out /tmp/<set>_facts.json
+# 2. LOCALLY — merge with the authored English; writes data.js + the titled page
+python3 scripts/rnd/dossier/build_dossier.py --set <set> --cn <set>_cn.json \
+    [--facts <set>_facts.json] --out-dir <dir>
 ```
 
-`dump_texts.py` holds the id map; add a document there to add it to the reader.
-English lives in `data/dossier/en/<key>.json`, keyed by **article number**
+English lives in `data/dossier/<set>/en/<key>.json`, keyed by **article number**
 (`第十二条`) and never by list index, so a later translation pass cannot shift the
-alignment of the articles already done. A block with no English renders Chinese
+alignment of the articles already done. A document with no article numbers (a
+notice, a plan) carries `{"blocks": [...]}` instead, and the build REFUSES when
+there are more English blocks than Chinese ones, because that means the split
+changed under a finished translation. A block with no English renders Chinese
 alone and counts against the coverage badge the page prints, which is why a
 partial translation is safe to ship.
+
+`meta.json` `clean.<key>` strips a reprint's carrier: `lede_until` drops a wire
+lede through its marker (`新华社…全文如下：`) and `drop_title_line` a first line that
+only repeats the title. `cited_by: [key]` dumps every distinct citer with the
+identity layer's per-document level and genre; the page groups media separately,
+because folding press coverage into "non-central" reads it as sub-national uptake.
 
 ## Three things building it found
 

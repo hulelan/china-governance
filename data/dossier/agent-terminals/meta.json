@@ -1,0 +1,131 @@
+{
+ "page_title": "Agent Terminals Reader",
+ "built": "2026-11-06",
+ "ids": {
+  "notice": 900210802,
+  "rwjg": 900210854,
+  "cybersec": 12694197,
+  "pipl": 12694426,
+  "dsl": 12694435,
+  "telecom": 12694530,
+  "antifraud": 900084102,
+  "twin2013": 12760612,
+  "npcdecision": 12694519
+ },
+ "main": "notice",
+ "order": [
+  "notice",
+  "twin2013",
+  "npcdecision",
+  "cybersec",
+  "dsl",
+  "pipl",
+  "antifraud",
+  "telecom",
+  "rwjg"
+ ],
+ "authOrder": [
+  "cybersec",
+  "dsl",
+  "pipl",
+  "antifraud",
+  "telecom",
+  "rwjg"
+ ],
+ "twinRefs": [
+  "npcdecision",
+  "telecom",
+  "rwjg"
+ ],
+ "chain": [
+  "cybersec",
+  "dsl",
+  "pipl",
+  "antifraud",
+  "telecom",
+  "rwjg",
+  "twin2013"
+ ],
+ "chainTitle": "Cited authorities",
+ "drawerLabel": "authorities",
+ "chainIntro": [
+  "The notice names six instruments as its legal basis, in the order below, and cites them wholesale rather than by article. Each one is held in the corpus as its own text. Open any of them to read it beside the notice.",
+  "The 2013 notice at the foot of the list is not cited by the 2026 one. It is its structural predecessor: the same ministry, the same licence, the same three levers of testing, disclosure and filing, applied to pre-installed apps rather than to pre-installed agents."
+ ],
+ "extraRefs": [
+  [
+   "《全国人民代表大会常务委员会关于加强网络信息保护的决定》",
+   "npcdecision",
+   "cn",
+   ""
+  ],
+  [
+   "《电信设备进网审批管理办法》",
+   null,
+   "cn",
+   "Cited by name; repealed and not held as a separate text here"
+  ]
+ ],
+ "footNote": "Press coverage of the notice is linked, never reproduced.",
+ "facts_titles": {
+  "cybersec": "中华人民共和国网络安全法",
+  "pipl": "中华人民共和国个人信息保护法",
+  "dsl": "中华人民共和国数据安全法",
+  "antifraud": "中华人民共和国反电信网络诈骗法",
+  "telecom": "中华人民共和国电信条例",
+  "rwjg": "电信设备进网管理办法"
+ },
+ "meta": {
+  "notice": {
+   "label_en": "Notice on Strengthening Network-Access Administration of Agent Terminal Equipment",
+   "docnum": "工信厅信管〔2026〕42号",
+   "issuer_cn": "工业和信息化部办公厅",
+   "issuer_en": "General Office, Ministry of Industry and Information Technology",
+   "signed": "2026-10-24",
+   "published": "2026-11-06"
+  },
+  "npcdecision": {
+   "label_en": "Decision of the NPC Standing Committee on Strengthening the Protection of Online Information",
+   "kind_cn": "全国人大常委会决定",
+   "kind_en": "NPC Standing Committee decision"
+  },
+  "twin2013": {
+   "label_en": "Notice on Strengthening Network-Access Administration of Mobile Smart Terminals",
+   "docnum": "工信部电管〔2013〕120号",
+   "issuer_cn": "工业和信息化部",
+   "issuer_en": "Ministry of Industry and Information Technology",
+   "signed": "2013-04-11",
+   "published": "2013-04-11"
+  },
+  "cybersec": {
+   "label_en": "Cybersecurity Law of the People’s Republic of China",
+   "kind_cn": "法律",
+   "kind_en": "Statute (NPC Standing Committee)"
+  },
+  "dsl": {
+   "label_en": "Data Security Law of the People’s Republic of China",
+   "kind_cn": "法律",
+   "kind_en": "Statute (NPC Standing Committee)"
+  },
+  "pipl": {
+   "label_en": "Personal Information Protection Law of the People’s Republic of China",
+   "kind_cn": "法律",
+   "kind_en": "Statute (NPC Standing Committee)"
+  },
+  "antifraud": {
+   "label_en": "Anti‑Telecom and Online Fraud Law of the People’s Republic of China",
+   "kind_cn": "法律",
+   "kind_en": "Statute (NPC Standing Committee)"
+  },
+  "telecom": {
+   "label_en": "Telecommunications Regulations of the People’s Republic of China",
+   "kind_cn": "行政法规",
+   "kind_en": "Administrative regulation (State Council)"
+  },
+  "rwjg": {
+   "label_en": "Measures for the Administration of Network Access of Telecommunications Equipment",
+   "kind_cn": "部门规章",
+   "kind_en": "Ministerial rule (MIIT / former MII)"
+  }
+ }
+}

@@ -1,0 +1,70 @@
+{
+ "page_title": "AI Governance Action Plan Reader",
+ "built": "2026-11-08",
+ "ids": {
+  "plan": 900140933
+ },
+ "main": "plan",
+ "order": [
+  "plan"
+ ],
+ "chain": [],
+ "cited_by": [
+  "plan"
+ ],
+ "clean": {
+  "plan": {
+   "lede_until": "全文如下：",
+   "drop_title_line": true
+  }
+ },
+ "chainTitle": "What it cites, and who cites it",
+ "drawerLabel": "citations",
+ "chainIntro": [
+  "The plan names two instruments, and neither is a Chinese government document. The Pact for the Future (《未来契约》) and the Global Digital Compact (《全球数字契约》) were adopted by the UN General Assembly at the Summit of the Future in September 2024, the Compact as an annex to the Pact. The corpus holds neither, so both are marked as absent references in the text.",
+  "The plan cites no domestic law, regulation or prior Chinese policy by name. Its verbs are 呼吁, 鼓励, 支持 and 倡导 (call on, encourage, support, advocate), addressed to governments, international organisations, firms, research bodies, civil-society organisations and individuals alike. The one 应 (should) is in point 9, and it binds public sectors.",
+  "Point 2 borrows a domestic slogan, “人工智能+” (AI+), in quotation marks and without a citation. The State Council’s own instrument of that name, 《国务院关于深入实施“人工智能+”行动的意见》, is dated 21 August and was published 26 August 2025 (corpus id 12650908, gov), a month after this plan. The international text used the label before the domestic one existed."
+ ],
+ "citedByIntro": [
+  "Every row below is a document in the corpus whose citation edge resolves to the plan. Level and genre come from the per-document identity layer, not from the publishing site, so a provincial portal reposting a Xinhua readout counts as a sub-national readout, not as a central one.",
+  "Read the genre column before the level column. A document that cites the plan is not thereby implementing it."
+ ],
+ "extraRefs": [
+  [
+   "《全球数字契约》",
+   null,
+   "cn",
+   "UN Global Digital Compact (2024); not held in the corpus"
+  ],
+  [
+   "《未来契约》",
+   null,
+   "cn",
+   "UN Pact for the Future (2024); not held in the corpus"
+  ],
+  [
+   "Global Digital Compact",
+   null,
+   "en",
+   "UN Global Digital Compact (2024); not held in the corpus"
+  ],
+  [
+   "Pact for the Future",
+   null,
+   "en",
+   "UN Pact for the Future (2024); not held in the corpus"
+  ]
+ ],
+ "footNote": "Press coverage that cites the plan is linked, never reproduced.",
+ "meta": {
+  "plan": {
+   "label_en": "Global AI Governance Action Plan",
+   "docnum": "",
+   "issuer_cn": "2025世界人工智能大会暨人工智能全球治理高级别会议",
+   "issuer_en": "2025 World AI Conference and High-Level Meeting on Global AI Governance",
+   "published": "2025-07-26",
+   "plainBody": true,
+   "title_cn": "人工智能全球治理行动计划"
+  }
+ }
+}

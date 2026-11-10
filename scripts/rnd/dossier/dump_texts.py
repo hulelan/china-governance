@@ -5,19 +5,10 @@ Chinese text (第N条 at the start of a line or after a full stop), and the Engl
 translation has to be keyed to the SAME boundaries or the two columns drift.
 Splitting once, server-side, makes the key the article number rather than an index.
 """
-import json, re, sqlite3, sys
+import argparse, json, re, sqlite3, sys
 
-IDS = {
-    "notice":   900210802,   # 工信厅信管〔2026〕42号
-    "rwjg":     900210854,   # 电信设备进网管理办法
-    "cybersec": 12694197,    # 网络安全法 (2025 amended, full text)
-    "pipl":     12694426,    # 个人信息保护法
-    "dsl":      12694435,    # 数据安全法
-    "telecom":  12694530,    # 电信条例
-    "antifraud": 900084102,  # 反电信网络诈骗法 (npc copy has no body)
-    "twin2013": 12760612,    # 工信部电管〔2013〕120号
-    "npcdecision": 12694519, # 2012 NPCSC Decision (npc copy 12748155 has no body)
-}
+# The id map lives in data/dossier/<set>/meta.json, one folder per reader, so a
+# second dossier is a new folder and never an edit to this file.
 
 # A literal &#xa0; survived HTML-entity escaping on the miit page; strip the
 # entity text itself, not just U+00A0.
@@ -174,22 +165,59 @@ def para_split(body):
     return [{"no": None, "cn": c} for c in chunks]
 
 
+def strip_carrier(body, opt):
+    """A reprint's carrier text is not the document. `lede_until` drops the
+    wire lede through its marker (新华社…发表《X》。全文如下：), and
+    `drop_title_line` drops a first line that only repeats the title."""
+    if opt.get("lede_until"):
+        i = body.find(opt["lede_until"])
+        if 0 <= i < 400:
+            body = body[i + len(opt["lede_until"]):].lstrip()
+    if opt.get("drop_title_line"):
+        first, _, rest = body.partition("\n")
+        if len(first) <= 40 and rest:
+            body = rest.lstrip()
+    return body
+
+
+def cited_by(conn, doc_id):
+    """Every distinct document whose citation edge resolves to doc_id, with the
+    identity layer's per-DOCUMENT level and genre (never sites.admin_level)."""
+    rows = conn.execute(
+        "SELECT d.id, d.site_key, d.title, d.date_published, d.url, "
+        "       i.admin_level_doc, i.genre, LENGTH(d.body_text_cn) "
+        "FROM (SELECT DISTINCT source_id FROM citations "
+        "      WHERE target_id=? AND source_id!=?) c "
+        "JOIN documents d ON d.id=c.source_id "
+        "LEFT JOIN doc_identity i ON i.doc_id=d.id "
+        "ORDER BY d.date_published, d.id", (doc_id, doc_id)).fetchall()
+    return [{"id": r[0], "site": r[1], "title": clean(r[2]), "date": (r[3] or "")[:10],
+             "url": r[4], "level": r[5] or "", "genre": r[6] or "", "chars": r[7] or 0}
+            for r in rows]
+
+
+ap = argparse.ArgumentParser()
+ap.add_argument("--meta", required=True, help="data/dossier/<set>/meta.json")
+ap.add_argument("--out", default="/tmp/dossier_cn.json")
+args = ap.parse_args()
+META = json.load(open(args.meta))
+
 conn = sqlite3.connect("file:documents.db?mode=ro", uri=True)
 out = {}
-for key, doc_id in IDS.items():
+for key, doc_id in META["ids"].items():
     row = conn.execute(
         "SELECT id, site_key, title, date_published, url, body_text_cn, relation "
         "FROM documents WHERE id=?", (doc_id,)).fetchone()
     if not row:
         print(f"MISSING {key} {doc_id}", file=sys.stderr)
         continue
-    body = clean(row[5])
+    body = strip_carrier(clean(row[5]), META.get("clean", {}).get(key, {}))
     arts = split_articles(body)
     if sum(1 for a in arts if a["no"]) < 2:
         arts = para_split(body)
     head = arts[0] if arts and not arts[0].get("no") else None
-    if head and re.search(r'\u76ee\s*\u5f55\s*\n', head["cn"]):
-        m = re.search(r'\u76ee\s*\u5f55\s*\n', head["cn"])
+    if head and re.search(r'目\s*录\s*\n', head["cn"]):
+        m = re.search(r'目\s*录\s*\n', head["cn"])
         pre_txt, toc_txt = head["cn"][:m.start()].strip(), head["cn"][m.start():].strip()
         arts[0] = {"no": None, "cn": toc_txt, "toc": True}
         if pre_txt:
@@ -200,8 +228,12 @@ for key, doc_id in IDS.items():
         "chars": len(body), "articles": arts,
         "n_articles": sum(1 for a in arts if a["no"]),
     }
+    if key in META.get("cited_by", []):
+        out[key]["cited_by"] = cited_by(conn, doc_id)
     print(f"{key:10s} {row[0]:>10} {len(body):>6}ch  "
-          f"{out[key]['n_articles']:>3} articles  {len(arts):>3} blocks", file=sys.stderr)
+          f"{out[key]['n_articles']:>3} articles  {len(arts):>3} blocks"
+          + (f"  {len(out[key]['cited_by'])} citers" if "cited_by" in out[key] else ""),
+          file=sys.stderr)
 
-json.dump(out, open("/tmp/dossier_cn.json", "w"), ensure_ascii=False, indent=1)
-print("WROTE /tmp/dossier_cn.json", file=sys.stderr)
+json.dump(out, open(args.out, "w"), ensure_ascii=False, indent=1)
+print(f"WROTE {args.out}", file=sys.stderr)

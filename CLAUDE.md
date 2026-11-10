@@ -376,13 +376,15 @@ python3 scripts/ingest_urls.py --urls-file f.txt --tag legal-basis --date 2001-0
 # (scripts/rnd/dossier/, built 2026-11-06 for 工信厅信管〔2026〕42号). Three columns:
 # Chinese, English, and a panel holding each cited authority's full text plus an
 # annotation; both toggle between parallel columns and alternating lines.
-python3 scripts/rnd/dossier/dump_texts.py     # ON THE DROPLET -> /tmp/dossier_cn.json
-python3 scripts/rnd/dossier/measure_auth.py   # ON THE DROPLET -> /tmp/dossier_facts.json
-python3 scripts/rnd/dossier/build_dossier.py  # locally, after scp -> artifact/data.js
-# English lives in data/dossier/en/<key>.json keyed by ARTICLE NUMBER (第十二条), never
-# by list index, so a later translation pass cannot shift the alignment of what is
-# already done; an untranslated article renders Chinese-only and counts against the
-# coverage badge the page prints. Add a document by adding its id to dump_texts.IDS.
+# One folder per reader, data/dossier/<set>/ (meta.json + annotations.json + en/);
+# the scripts and page are shared. Sets: agent-terminals, ai-governance-plan.
+python3 scripts/rnd/dossier/dump_texts.py --meta data/dossier/<set>/meta.json --out /tmp/<set>_cn.json   # DROPLET
+python3 scripts/rnd/dossier/measure_auth.py --meta data/dossier/<set>/meta.json --out /tmp/<set>_facts.json # DROPLET
+python3 scripts/rnd/dossier/build_dossier.py --set <set> --cn <cn.json> [--facts <facts.json>] --out-dir <dir>
+# English is keyed by ARTICLE NUMBER (第十二条), never by list index, so a later pass
+# cannot shift what is done; paragraph documents use {"blocks": [...]} and the build
+# refuses a block-count mismatch. Untranslated blocks render Chinese-only and count
+# against the coverage badge. A new reader is a new folder, not a code edit.
 # See scripts/rnd/dossier/README.md for the three defects building it exposed.
 # Dreaming: distil our Claude Code session transcripts into the memory store
 # (~/.claude/projects/<slug>/memory/). A local adaptation of the Managed Agents
