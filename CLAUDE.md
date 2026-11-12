@@ -156,6 +156,14 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     New memos: `fidelity-jiangsu` (nested findings replicate on Jiangsu, on one city),
     `policy-tempo` (B7: the tracker is an instrument for burstiness and level timing, not yet
     for cross-area tempo), `bottom-up-channel`, `pair-channels`.
+    **(2026-11-12) `province` now STORES the site fallback**, with `province_source` = `doc` |
+    `site` | NULL: a reader of the raw column (the global-discourse concept scan) had seen
+    40,612 of 70,017 post-2025-07 sub-national docs as province-less, 40,531 of them on a site
+    with a known province. The two in-house consumers already did `iprov or province_of(site)`,
+    so their output only moves where a site label was WRONG: `suzhou_ah` is named 宿州 (Anhui)
+    but crawls www.suzhou.gov.cn, 苏州 (Jiangsu) — now overridden to `js` in `_PROV_EXACT`, and
+    `contradicted_sites()` withholds the fallback (loudly) on any site whose own per-document
+    provinces mostly disagree with its label. Per-doc only: `WHERE province_source='doc'`.
   - **Instrument succession (2026-10-06)** — `instrument_succession(instrument_id,
     successor_id, relation, confidence, evidence, lag_days)` (`scripts/build_instrument_succession.py
     --write --force`, Phase 2b right after doc_identity, ~70s). Relations: superseded_by_stated
@@ -1342,6 +1350,16 @@ or add a site to the generic `crawlers/govcms.py` registry when its CMS matches 
   share the pattern is **unmeasured**. A cheap check is a sampled `os.path.exists` over
   `raw_html_path` grouped by `site_key` — worth running before anyone relies on the raw-HTML
   mirror again.
+- **(2026-11-12) Central news hosted on a city portal is levelled as the city.** `jcgov`
+  (晋城) carries 814 rows in `/dtxx/gnyw/` (国内要闻) and `/dtxx/gwyyw/` (国务院要闻), all
+  `admin_level_doc='municipal'`: Xi speeches, 中央纪委 notices, State Council readouts. The
+  province fix's hand-check found every one of its post-fix errors here (55/60 correct overall),
+  so the defect is the LEVEL layer, not province. Unmeasured: how many other city portals carry
+  a national-news section. A section-path rule or a 新华社/来源 cue would catch most.
+- **(2026-11-12) `suzhou_ah` crawls 苏州 (Jiangsu), not 宿州 (Anhui).** Its host is
+  www.suzhou.gov.cn, the same as `suzhou`; the real 宿州 site is `ahsz`. Overridden to `js` in
+  `_PROV_EXACT` and `site_selection_gdp.py`; `docs/working/china-admin-coverage.csv` and
+  `gov-website-catalogue.csv` still say 宿州. Unmeasured: duplicate rows between the two keys.
 - **(2026-11-12) Guancha multi-page articles are stored as page 1 only.** Found while
   building the disputes: 900200671, 900090984, 12725981, 900175926 and 900065595 hold page 1 of
   2+ (the 王旭东 piece's own title sentence is on page 2). Unmeasured: how many guancha rows are

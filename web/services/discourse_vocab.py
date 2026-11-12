@@ -20,13 +20,13 @@ prefilter cannot silently drop matches.
 import re
 
 # --- speaker type -----------------------------------------------------------
-PARTY = {"qstheory", "dangyuan"}
+PARTY = {"qstheory", "dangyuan", "qiushi", "hongqi", "studytimes", "gmrb_theory", "rmlt"}
 STATE = {"xinhua", "people", "ce", "jjckb", "stdaily", "cnr", "cctv", "chinanews", "people_rmrb",
          "peopleapp", "newscn", "xinhua_lw", "xinhua_en"}
 COMM = {"guancha", "ifeng"}
 BIZ = {"yicai", "jiemian", "36kr", "latepost", "qbitai", "eeo", "huxiu", "tmtpost", "elsewhere",
        "21jingji", "cnfin", "eastmoney", "guandian", "qqnews", "thepaper"}
-RES = {"cass", "amr", "tsinghua_aiig", "cast", "isc"}
+RES = {"cass", "amr", "tsinghua_aiig", "cast", "isc", "cssn"}
 SUBNATIONAL_LEVELS = ("provincial", "municipal", "district", "department")
 
 SPEAKERS = ["central", "party_theory", "diplomacy", "state_media", "commentary",

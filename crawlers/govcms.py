@@ -471,7 +471,10 @@ SITES = {
     "weihai": {"name": "Weihai (威海市)", "base_url": "https://www.weihai.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col/col102604/"]},
     "linxia": {"name": "Linxia Hui Prefecture (临夏回族自治州)", "base_url": "https://www.linxia.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/lxz/zwgk/fdzdgknr/lzyj/gfxwj/", "/lxz/ywdt/tzgg/"]},
     "pingliang": {"name": "Pingliang (平凉市)", "base_url": "https://www.pingliang.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zfxxgk/fdzdgknr/lzyj/zcwj/", "/xwzx/tzgg/"]},
-    "suzhou_ah": {"name": "Suzhou, Anhui (宿州市)", "base_url": "https://www.suzhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col/col168035/"]},
+    # NB: despite the key, www.suzhou.gov.cn is 苏州 (Jiangsu); 宿州 (Anhui) is `ahsz`. The key is
+    # kept (its documents are stored under it); the name only seeds a FRESH sites row, since
+    # store_site never updates `name` — build_diffusion_events._PROV_EXACT maps it to js.
+    "suzhou_ah": {"name": "Suzhou, Jiangsu (苏州市)", "base_url": "https://www.suzhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/col/col168035/"]},
     "yushu": {"name": "Yushu (玉树藏族自治州)", "base_url": "http://www.yushu.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/xxgk/qwfb/gsgg/"]},
     "shuozhou": {"name": "Shuozhou (朔州市)", "base_url": "http://szxxgk.shuozhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/szfxxgk/fdzdgknr/gzwj/gfxwj/", "/szfxxgk/fdzdgknr/gzwj/zfwj/", "/szfxxgk/fdzdgknr/zcjd/"]},
     "quanzhou": {"name": "Quanzhou (泉州市)", "base_url": "http://www.quanzhou.gov.cn", "admin_level": "municipal", "group": "city", "sections": ["/zfb/xxgk/zfxxgkzl/qzdt/qzyw/"]},

@@ -154,6 +154,19 @@ tree:
         site_keys:
           [xinhua, newscn, people, peopleapp, cctv, cnr, stdaily, qstheory,
            xinhua_en, xinhua_lw, people_rmrb, chinanews, chinanews_hn]
+      - id: media_party_theory
+        label_en: Party Theory Journals & Theory Pages
+        label_zh: 党刊与理论报刊
+        # Added 2026-11-12 (crawlers/theory.py). The journal 《求是》 issue by issue
+        # (qiushi), 《红旗文稿》 (hongqi), the Central Party School's 学习时报
+        # (studytimes), 光明日报's THEORY pages only (gmrb_theory) and 人民论坛 /
+        # 学术前沿 (rmlt). admin_level='media' in the DB, like qstheory: these are
+        # publications, not issuing bodies, so they must never read as "central"
+        # in a diffusion cut. A leaf of their own, not media_state, because the
+        # global-discourse map treats party theory as a different SPEAKER TYPE
+        # from state news; qstheory (the 求是网 daily feed) is left in media_state
+        # where it was. CASS's 中国社会科学网 (cssn) is research, not here.
+        site_keys: [qiushi, hongqi, studytimes, gmrb_theory, rmlt]
       - id: media_commercial
         label_en: Commercial & Tech Media
         label_zh: 商业与科技媒体
@@ -205,7 +218,9 @@ tree:
     # cas (中国科学院) and nsfc (国家自然科学基金委) carry admin_level='central' in
     # the DB — listed here to override the fallback. Fallback target for
     # admin_level='research' and govcms group 'assoc'.
-    site_keys: [chinalawtranslate, tsinghua_aiig, amr, cass, cast, isc, cas, nsfc]
+    # cssn = 中国社会科学网 / 中国社会科学报 (CASS), admin_level='research'; listed
+    # explicitly anyway so it does not depend on the fallback.
+    site_keys: [chinalawtranslate, tsinghua_aiig, amr, cass, cast, isc, cas, nsfc, cssn]
 
   # ── CATCH-ALL ─────────────────────────────────────────────────────────
   # Only a site_key that neither layer can place (no explicit rule AND no usable

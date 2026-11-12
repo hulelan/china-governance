@@ -259,6 +259,11 @@ run_crawler_t 600 "finmedia (7 financial/business sites)" \
     python3 -m crawlers.finmedia --tier 1 --max-docs 150
 run_crawler_t 600 "finmedia tier 2" \
     python3 -m crawlers.finmedia --tier 2 --max-docs 150
+# Party-theory journals and CASS (2026-11-12, crawlers/theory.py): 求是 issues, 红旗文稿,
+# 学习时报, 光明日报 theory pages, 人民论坛, 中国社会科学网. --recent reads only the newest
+# issue lists / list pages / 3 days of e-paper; held URLs are skipped.
+run_crawler_t 900 "theory (求是/红旗文稿/学习时报/光明理论/人民论坛/社科网, recent)" \
+    python3 -m crawlers.theory --recent --max-docs 200
 # Location-specific crawlers
 if [ "$IS_MAC" = "true" ]; then
     # These gkmlpt sites are unreachable from the Singapore droplet

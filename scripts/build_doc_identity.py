@@ -243,6 +243,15 @@ A6  province (2026-10-07) — the 2-letter code (scripts/rnd/analysis/geo.PROVIN
     AMBIGUOUS_DOCNUM_PREFIXES, the 文号 candidate is DROPPED and the remaining fields
     decide. The site is evidence, not a candidate: it never supplies the answer here.
     Measured scope: 22 documents, the corpus's only 文号-vs-site province conflicts.
+      SITE FALLBACK STORED (2026-11-12) + `province_source`: when no header field names a
+    locality, the column now holds province_of(site) with province_source='site'
+    (per-document answers carry 'doc'; NULL/NULL only when the site has no province either,
+    e.g. a sub-national-level row on npc/miit/samr). Before this, the fallback lived only in
+    build_diffusion_events.load and pairs.load_docs (`iprov or province_of(site)`), so any
+    reader of the RAW column — the global-discourse concept scan — saw 40,612 of 70,017
+    post-2025-07 sub-national docs as province-less although 40,531 of them sit on a site
+    whose province is known. Those two consumers compute the identical value, so their
+    output does not move. To restrict to per-document evidence: WHERE province_source='doc'.
 
 A7  instrument_kind (2026-10-07, docs/working/qa-framework-gate.md) — the kind of text,
     orthogonal to `genre` (genre says whether the doc IS the text or is ABOUT it; kind
@@ -626,6 +635,59 @@ def derive_province(doc, lead_issuer, site_prov=None):
     if code:
         return code
     return province_of_name(title_head(doc["title"]))
+
+
+def resolve_province(doc_code, site_prov):
+    """A6 (2026-11-12): (province, province_source) for a SUB-NATIONAL doc, given its
+    per-document answer `doc_code` (derive_province) and its SITE's province.
+
+    'doc'  — per-document evidence (issuer / 文号 / publisher / masthead / localize /
+             title head);
+    'site' — no per-document evidence, so the SITE's province (build_diffusion_events.
+             province_of: the hand override, else geo.province_code_of_site_name over
+             sites.name + data/city_province.csv). This is exactly the fallback
+             build_diffusion_events.load and pairs.load_docs already applied on NULL
+             (`iprov or province_of(site)`), now stored so EVERY reader gets it — the
+             global-discourse concept scan read the column raw and saw 40,612 of 70,017
+             post-2025-07 sub-national docs as province-less, 99.8% of which were on a
+             site whose province was known;
+    (None, None) — neither: a sub-national doc on a site with no province (npc, miit,
+             samr …), or on a site whose province is CONTRADICTED by its own documents
+             (contradicted_sites; the caller passes site_prov=None). Never guessed.
+    """
+    if doc_code:
+        return doc_code, "doc"
+    if site_prov:
+        return site_prov, "site"
+    return None, None
+
+
+# A site's province is only a fallback; its OWN documents are the check on it. If the
+# per-document evidence on a site mostly names a DIFFERENT province, the site label is
+# wrong (found 2026-11-12: `suzhou_ah` is named 宿州市 (Anhui) but crawls www.suzhou.gov.cn,
+# i.e. 苏州 (Jiangsu) — 82 of 82 per-document answers said js, 0 said ah), and stamping
+# its province on the rest would write the mislabel into the column. Such sites get NO
+# site fallback and are printed loudly.
+CONTRADICTION_MIN_DOCS = 10
+CONTRADICTION_MAX_AGREE = 0.5
+
+
+def contradicted_sites(per_doc, site_prov_of):
+    """{site: (agree, n, top_province)} for sites with >= CONTRADICTION_MIN_DOCS
+    per-document provinces of which fewer than CONTRADICTION_MAX_AGREE agree with the
+    site's own province. `per_doc` is an iterable of (site, per-document code or None);
+    `site_prov_of` maps a site to its province (None = no site province, never flagged)."""
+    by = defaultdict(Counter)
+    for site, code in per_doc:
+        if code:
+            by[site][code] += 1
+    out = {}
+    for site, c in by.items():
+        sp = site_prov_of(site)
+        n = sum(c.values())
+        if sp and n >= CONTRADICTION_MIN_DOCS and c[sp] / n < CONTRADICTION_MAX_AGREE:
+            out[site] = (c[sp], n, c.most_common(1)[0][0])
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -1743,16 +1805,26 @@ def build(conn):
     for d in docs.values():
         # province_of(site) is passed only to arbitrate an ambiguous 文号 head (A6); it is
         # never itself the answer — consumers fall back to it on NULL as they always did.
-        d["province"] = (derive_province(d, d["lead_issuer"], province_of(d["site"]))
-                         if d["level"] in SUBNATIONAL else None)
+        # A6 per-document answer; province_of(site) is passed only to arbitrate an
+        # ambiguous 文号 head, never itself the answer here.
+        d["_prov_doc"] = (derive_province(d, d["lead_issuer"], province_of(d["site"]))
+                          if d["level"] in SUBNATIONAL else None)
         if not d["has_date"]:
             d["date_quality"] = "missing"
         elif d["site"] in stamped:
             d["date_quality"] = "crawl_stamped"
         else:
             d["date_quality"] = "good"
+    # A6 site fallback (2026-11-12): with no per-document evidence, store the SITE's
+    # province (province_source='site') — unless the site's own documents contradict it.
+    contra = contradicted_sites(((d["site"], d["_prov_doc"]) for d in docs.values()), province_of)
+    for d in docs.values():
+        d["province"], d["province_source"] = (
+            resolve_province(d.pop("_prov_doc"),
+                             None if d["site"] in contra else province_of(d["site"]))
+            if d["level"] in SUBNATIONAL else (d.pop("_prov_doc"), None))
     meta = {"t_load": t_load, "t_total": time.time() - t0, "stamped": stamped,
-            "crawl_year": crawl_year, **inst}
+            "crawl_year": crawl_year, "prov_contradicted": contra, **inst}
     return docs, meta
 
 
@@ -1769,7 +1841,8 @@ CREATE TABLE doc_identity (
     lead_issuer TEXT,
     localized_of INTEGER,
     province TEXT,
-    instrument_kind TEXT
+    instrument_kind TEXT,
+    province_source TEXT    -- 'doc' (per-document evidence) | 'site' (site fallback) | NULL
 );
 CREATE INDEX IF NOT EXISTS idx_doc_identity_level ON doc_identity(admin_level_doc);
 CREATE INDEX IF NOT EXISTS idx_doc_identity_instrument ON doc_identity(instrument_id);
@@ -1781,14 +1854,14 @@ def write(conn, docs):
     t0 = time.time()
     rows = [(d["id"], d["level"], d["level_source"], d["instrument_id"], d["instrument_role"],
              d["genre"], d["date_quality"], d["lead_issuer"], d["localized_of"], d["province"],
-             d["instrument_kind"])
+             d["instrument_kind"], d["province_source"])
             for d in docs.values()]
     conn.execute("BEGIN IMMEDIATE")
     try:
         for stmt in DDL.strip().split(";"):
             if stmt.strip():
                 conn.execute(stmt)
-        conn.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?,?,?)", rows)
+        conn.executemany("INSERT INTO doc_identity VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", rows)
         conn.execute("COMMIT")
     except Exception:
         conn.execute("ROLLBACK")
@@ -1823,8 +1896,19 @@ def print_stats(docs, meta, site_level):
           f"{meta['n_trigger_moved']:,} triggers moved to the nearest dated parent)")
     sub = [d for d in docs.values() if d["level"] in SUBNATIONAL]
     n_prov = sum(1 for d in sub if d["province"])
+    src = Counter(d["province_source"] for d in sub)
     print(f"province (A6): {n_prov:,} of {len(sub):,} sub-national docs resolved "
-          f"({n_prov / max(len(sub), 1) * 100:.1f}%)")
+          f"({n_prov / max(len(sub), 1) * 100:.1f}%; per-document {src['doc']:,}, "
+          f"site fallback {src['site']:,}, NULL {src[None]:,})")
+    for site, (agree, n, top) in sorted(meta.get("prov_contradicted", {}).items()):
+        print(f"  WARNING site {site}: province_of={province_of(site)} but only {agree}/{n} of its "
+              f"per-document provinces agree (mostly {top}) — site fallback WITHHELD; fix the "
+              f"site's province (build_diffusion_events._PROV_EXACT / sites.name)")
+    unplaced = Counter(d["site"] for d in sub if not d["province"])
+    if unplaced:
+        print("  province NULL (no per-doc evidence AND the site has no province): "
+              + ", ".join(f"{s}({n:,})" for s, n in unplaced.most_common(12))
+              + (f", +{len(unplaced) - 12} more sites" if len(unplaced) > 12 else ""))
     print(f"crawl-stamped sites: {len(meta['stamped'])}  "
           f"({sum(1 for d in docs.values() if d['date_quality'] == 'crawl_stamped'):,} docs)")
 
@@ -2055,6 +2139,8 @@ def dry_run_province(docs):
     sub = [d for d in docs.values() if d["level"] in SUBNATIONAL]
     n_prov = sum(1 for d in sub if d["province"])
     print(f"sub-national docs: {len(sub):,}; province resolved: {n_prov:,} ({n_prov / max(len(sub), 1) * 100:.1f}%)")
+    # Below, "per-doc" means province_source == 'doc' (site-fallback rows would agree
+    # with the site by construction and inflate the agreement figure).
     gap = [d for d in sub if not province_of(d["site"])]
     per_site = defaultdict(lambda: [0, 0])
     for d in gap:
@@ -2071,7 +2157,8 @@ def dry_run_province(docs):
     for d in unresolved[:6]:
         print(f"    e.g. {d['id']} {d['site']:8s} {d['level']:10s} src={d['level_source']:13s} "
               f"pub={d['publisher'][:14]!r} | {d['title'][:40]}")
-    both = [(d["province"], province_of(d["site"])) for d in sub if d["province"] and province_of(d["site"])]
+    both = [(d["province"], province_of(d["site"])) for d in sub
+            if d["province_source"] == "doc" and province_of(d["site"])]
     agree = sum(1 for a, b in both if a == b)
     print(f"agreement with the site's province where both exist: {agree:,}/{len(both):,} "
           f"({agree / max(len(both), 1) * 100:.1f}%)")

@@ -170,6 +170,12 @@ _PROV_EXACT = {
     # (its docs carry 黔江府发 文号; Hubei 潜江 is `hbqj`) — found 2026-10-07 by the
     # doc_identity.province audit, 28/40 docs name 黔江. Override beats the name.
     "qianjiang": "cq",
+    # Same shape, found 2026-11-12 by build_doc_identity.contradicted_sites: `sites.name`
+    # says "Suzhou, Anhui (宿州市)" but the site crawls www.suzhou.gov.cn — 苏州 (Jiangsu),
+    # the same host as `suzhou` (宿州 is `ahsz`, www.ahsz.gov.cn). 82 of 82 per-document
+    # provinces say js, 0 say ah. The name cannot be corrected in place (store_site's
+    # upsert never updates `name`), so the override carries it.
+    "suzhou_ah": "js",
     # Fujian
     "fujian": "fj", "fuzhou_fj": "fj", "longyan": "fj", "quanzhou": "fj", "sm": "fj",
     # Hunan
@@ -906,7 +912,8 @@ _GEO_TEST_CASES = [
     ("qianjiang", "cq"),   # override beats a wrong display name (see _PROV_EXACT)
     ("bjrd", "bj"),        # geo: leading city/province prefix of an institution name
     ("szd_zjg", "js"), ("szdp", "gd"), ("nanjing", "js"), ("wuhan", "hb"),
-    ("whd_qiaokou", "hb"), ("suzhou_ah", "ah"), ("jcgov", "sx"), ("xa", "sn"),
+    ("whd_qiaokou", "hb"), ("jcgov", "sx"), ("xa", "sn"),
+    ("suzhou_ah", "js"),   # override: named 宿州 (Anhui) but crawls www.suzhou.gov.cn, 苏州 (2026-11-12)
     ("hbqj", "hb"), ("xlgl", "nm"), ("shijiazhuang", "he"), ("abazhou", "sc"),
     ("linxia", "gs"), ("laiwu", "sd"), ("bjd_daxing", "bj"), ("cq", "cq"),
     ("yushu", "qh"), ("zzz_nowhere", None), ("zzz_noname", None),
