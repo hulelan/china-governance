@@ -146,3 +146,26 @@ resolution's reassurances (不搞零和博弈, 永远不称霸) for the named pr
    to spread) is visible as it happens.
 4. **Kept / cut comparisons** for every 2026 foreign-policy speech against its source text, the
    method that found finding 6.
+
+## Revisions
+
+**2026-11-12, finding 3 (measured).** The count of 28 commentary documents containing 伪史论 was
+inflated: 20 carry the term only in a 观察者网 "related articles" sidebar link, and 8 engage it
+(12725981, 900075778, 900076707, 900145644, 900104244, 900131727, 900145583, 900175926). The
+王旭东 line quoted above is that article's **title**; the stored body is page 1 of 2 and does not
+contain it. The finding itself holds and is stronger than first stated: the pushback reaches the
+centre. 中国社会科学报 (front-page commentator article, 2026-08-20) and 《求是》 (2026 issue 17,
+2026-09-01) both classify pseudo-history as historical nihilism, while the CAC had already listed
+伪史学 as false information in its December 2025 online-celebrity notice (12693814). The
+Tang-sites "demolition calls" story that triggered the summer wave was itself false (denied by
+陕西省文旅厅, 900076707). All Party and state pieces are held only as 观察者网 reposts. Full
+evidence: the pseudo-history view of the Disputes reader.
+
+**2026-11-12, all commentary counts (measured, scope not yet re-measured).** About 913 观察者网
+documents carry a sidebar list of other headlines inside the stored body (观察者头条, timestamps,
+评论 N). A plain match counts a term that appears only in that list: 中国挤压 in commentary falls
+from 13 to 5 once matches in a ±150-character clutter window are dropped. Every commentary rate in
+finding 1's table is therefore an upper bound until re-run with the filter; the weekly tracker
+applies it. Finding 4 also needs one correction: official text does claim to **lead** the Global
+South (引领, 15 titles, e.g. 外交部 900154072 团结引领全球南方联合自强); what it never does is cast
+India as a rival.

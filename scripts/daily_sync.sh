@@ -409,6 +409,12 @@ timeout 900 nice -n 19 python3 scripts/rnd/analysis/build_diffusion_events.py --
 log "Phase 2c: Rebuilding tracker_weekly (per-topic weekly rollup)..."
 timeout 300 nice -n 19 python3 scripts/build_tracker_rollup.py >> "$LOG" 2>&1 || log "  build_tracker_rollup had errors"
 
+# 3. discourse_weekly — concept x speaker-type x ISO week counts for /discourse
+#    (docs/research/global-discourse-map.md). Streams bodies in Python, one write at
+#    the end. Measured 65-121s / 124MB full rebuild on the droplet (2026-11-12).
+log "Phase 2c: Rebuilding discourse_weekly (concept x speaker tracker)..."
+timeout 600 nice -n 19 python3 scripts/build_discourse_weekly.py >> "$LOG" 2>&1 || log "  build_discourse_weekly had errors"
+
 # --- Phase 2d: Validate the rebuilt analytical tables (corpus-lessons.md B5) ---
 # Read-only regression test of the corpus's known-good facts (boost-consumption
 # cascade lags, 城乡规划法 inbound band, AI+ source gate, proxy-target guards, table

@@ -6,51 +6,15 @@ import sqlite3, re, json, collections, hashlib, sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 WIN = ("2025-07-01", "2026-11-13")
-C = {  # label -> regex
- "命运共同体": r"人类命运共同体",
- "全人类共同价值": r"全人类共同价值",
- "普世价值": r"普世价值",
- "GDI发展倡议": r"全球发展倡议",
- "GSI安全倡议": r"全球安全倡议",
- "GCI文明倡议": r"全球文明倡议",
- "GGI治理倡议": r"全球治理倡议",
- "四大全球倡议": r"[四三]大全球倡议",
- "胸怀天下": r"胸怀天下",
- "人类文明新形态": r"人类文明新形态",
- "文明互鉴": r"文明(?:交流)?互鉴",
- "文明冲突": r"文明冲突",
- "文明优越": r"文明优越",
- "文明多样性": r"文明多样性",
- "中国式现代化": r"中国式现代化",
- "现代化≠西方化": r"现代化(?:不等于|≠|不是|并非)西方化",
- "中国方案": r"中国方案",
- "百年变局": r"百年(?:未有之)?大?变局",
- "新型国际关系": r"新型国际关系",
- "全球治理体系": r"全球治理体系",
- "真正的多边主义": r"真正的多边主义",
- "霸权主义": r"霸权主义",
- "单边主义": r"单边主义",
- "保护主义": r"保护主义",
- "西方中心": r"西方中心",
- "历史终结": r"历史终结",
- "天下为公": r"天下为公",
- "天下体系": r"天下(?:体系|主义)",
- "全球南方": r"全球南方",
- "多极化": r"多极化",
- "经济全球化": r"经济全球化",
- "脱钩断链": r"脱钩断链|小院高墙",
- "修昔底德": r"修昔底德",
- "一带一路": r"一带一路",
- "规则国际秩序": r"基于规则的国际秩序",
- "自主知识体系": r"自主(?:的)?知识体系",
- "国际话语权": r"国际话语权|话语体系",
- "讲好中国故事": r"讲好中国故事",
-}
+# Concept regexes: web/services/discourse_vocab.py (one source of truth, via speakers.py).
+# NOTE 2026-11-12: 保护主义 now excludes 地方保护主义 and 现代化≠西方化 was widened;
+# neither appears in the memo's tables.
+from speakers import C
 CR = {k: re.compile(v) for k, v in C.items()}
 MARK = re.compile(r"所谓|鼓吹|谬论|驳斥|驳|炒作|抹黑|污名|并非|绝不是|不是.{0,30}而是|有人认为|一些人|西方学者|有观点|争论|争议|质疑|误读|曲解|错误思潮|陷阱|零和")
 SENT = re.compile(r"[^。！？\n]{6,240}[。！？]?")
 
-from speakers import speaker
+from speakers import speaker, strip_chrome
 
 c = sqlite3.connect("file:documents.db?mode=ro", uri=True)
 q = ("SELECT d.id, d.site_key, substr(d.date_published,1,10), d.title, d.body_text_cn, "
@@ -70,6 +34,7 @@ seen_title = set()
 for did, site, dt, title, body, lvl, genre, prov in c.execute(q, WIN):
     sp = speaker(site, lvl)
     if not sp: continue
+    body = strip_chrome(site, body)       # guancha 相关推荐/观察者头条 sidebar (2026-11-12)
     key = (sp, re.sub(r"\W", "", title or "")[:40])
     if key in seen_title: continue          # one copy per title per speaker: mirrors are not voices
     seen_title.add(key)

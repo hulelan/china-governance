@@ -196,6 +196,23 @@ Chinese government document corpus + web app. Crawls policy documents from centr
     inside `docs/research/` (traversal → 404). The research memos are committed
     and deployed; add a new memo by dropping a `.md` in `docs/research/` and
     (optionally) adding its slug to the curated order in `research.py`.
+  - **Discourse tracker (2026-11-12)** — `/discourse?concept=&weeks=` reads `discourse_weekly`
+    (concept × speaker type × ISO week, docs + per-speaker denominator, `concept='_all'` rows
+    carry the denominator) and `discourse_concepts`, built by `scripts/build_discourse_weekly.py`
+    (nightly Phase 2c, ~2 min, `--since`/`--out`/`--dry-run`). ONE source of truth for the 49
+    concept regexes and the speaker classifier: `web/services/discourse_vocab.py` (the
+    `scripts/rnd/analysis/global_discourse/` scripts import from it). Dedup is one copy per
+    title per speaker type per week. **Guancha bodies carry page chrome**: 934 stored bodies
+    are title + timestamp + a 相关推荐 / 观察者头条 headline list, and a plain match counts terms
+    that appear only in that list (伪史论 28 → 8 real documents). `strip_chrome` cuts at the
+    first header line and drops pages with under 30 article characters; any commentary count
+    must go through it. Known loose regexes (kept because the memo reports them): bare
+    话语体系, 中国方案 (technology uses), 胸怀天下 (generic praise).
+  - **Disputes reader (2026-11-12)** — `data/disputes/*.json` (positions, quotes verified as
+    substrings of `body_text_cn`, counts, labelled readings) rendered by
+    `scripts/rnd/disputes/build_disputes.py` into one hash-routed page. Background and the
+    field it speaks to: `docs/research/global-discourse-map.md`,
+    `docs/research/ideology-literature-review.md`.
   - **Genre typer** — `scripts/rnd/classification/genre_typer.py` (wired into
     `compute_scores.classify_doc_type`): strips HTML/文号/date tails + adds ~11
     genres; cut `algo_doc_type='other'` from ~50% → ~37.6%.
@@ -1325,6 +1342,11 @@ or add a site to the generic `crawlers/govcms.py` registry when its CMS matches 
   share the pattern is **unmeasured**. A cheap check is a sampled `os.path.exists` over
   `raw_html_path` grouped by `site_key` — worth running before anyone relies on the raw-HTML
   mirror again.
+- **(2026-11-12) Guancha multi-page articles are stored as page 1 only.** Found while
+  building the disputes: 900200671, 900090984, 12725981, 900175926 and 900065595 hold page 1 of
+  2+ (the 王旭东 piece's own title sentence is on page 2). Unmeasured: how many guancha rows are
+  truncated this way, and whether the crawler can follow the pager. Matters because commentary is
+  where the argued register lives.
 - **(2026-06) Is DeepSeek `references_json` worth the cost over regex refs?**
   We have regex-extracted `references_source` on ~133k docs (`regex_v1`). A
   sample comparison found ~72% overlap with DeepSeek's refs. Open question

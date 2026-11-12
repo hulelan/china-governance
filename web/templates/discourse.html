@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}{% if d %}{{ d.concept }} · Discourse Tracker{% else %}Discourse Tracker{% endif %} — Governance Archive{% endblock %}
+{% block meta_description %}Discourse Tracker — how often each speaker type (central documents, party theory, diplomacy, state media, commentary, business press, research, sub-national) uses China's global-discourse vocabulary, week by week, with denominators.{% endblock %}
+
+{% block head %}
+<style>
+    .wk-current td { background: #e9e4d6; }
+    .wk-current td:first-child { border-left: 3px solid var(--accent); }
+    .rate { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+    .frac { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--muted); }
+    .thin .rate, .thin .frac { color: #b5afa1; }
+    .cell-zero { color: #b5afa1; }
+    .bar { height: 3px; background: var(--teal); margin-top: 2px; margin-left: auto; }
+    .thin .bar { background: #c9c3b5; }
+    .floor { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+    .tag { display: inline-block; font-size: 10px; letter-spacing: .04em; padding: 0 5px;
+           border: 1px solid var(--rule); color: var(--muted); border-radius: 2px; margin-right: 3px; }
+    .tag-warn { border-color: #c9a98f; color: #7a2e2e; background: #f3ebe4; cursor: help; }
+    .tag-new { border-color: #9fb8b0; color: #1f4f45; background: #e6eeec; }
+    .concept-tabs a { display: inline-block; padding: 2px 7px; margin: 0 4px 4px 0; font-size: 12px;
+           border: 1px solid var(--rule); background: #fdfcf9; color: var(--ink); }
+    .concept-tabs a.on { background: var(--teal); color: #fff; border-color: var(--teal); }
+    .concept-tabs a:hover { text-decoration: none; border-color: var(--teal); }
+    .concept-tabs a .n { font-size: 10px; color: var(--muted); margin-left: 3px; }
+    .concept-tabs a.on .n { color: #dbe6e2; }
+    .fam { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 6px 0 3px; }
+    th.media { border-bottom: 2px dotted #c9a98f; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+
+    <div class="border border-rule bg-panel mb-6">
+        <div class="bg-teal text-[#e8f0ed] px-4 py-1.5 flex justify-between text-[11px] tracking-[0.16em] uppercase">
+            <span>Discourse Tracker · 话语追踪</span>
+            {% if d %}<span class="mono">{{ d.this_week }} · last {{ d.weeks }} weeks · updated nightly</span>{% endif %}
+        </div>
+        <div class="px-6 py-4">
+            {% if d %}
+            <div class="flex flex-col sm:flex-row sm:items-start gap-3">
+                <div class="flex-1">
+                    {% for f in d.families %}
+                    <div class="fam">{{ f.label }}</div>
+                    <div class="concept-tabs">
+                        {% for c in f.concepts %}
+                        <a href="/discourse?concept={{ c.concept|urlencode }}&weeks={{ d.weeks }}" class="{{ 'on' if c.concept == d.concept }}" title="{{ c.label_en }} · /{{ c.pattern }}/">{{ c.concept }}<span class="n">{{ "{:,}".format(c.n) }}</span></a>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <form method="get" action="/discourse" class="sm:w-40 flex-shrink-0">
+                    <input type="hidden" name="concept" value="{{ d.concept }}">
+                    <label class="text-[10px] tracking-[0.14em] uppercase text-muted block mb-1.5">Window</label>
+                    <select name="weeks" class="w-full" onchange="this.form.submit()">
+                        {% for n in [8, 12, 26, 52] %}
+                        <option value="{{ n }}" {{ 'selected' if n == d.weeks }}>last {{ n }} weeks</option>
+                        {% endfor %}
+                    </select>
+                    <noscript><button type="submit" class="bg-teal text-white px-4 py-1.5 text-sm mt-1">Go</button></noscript>
+                </form>
+            </div>
+            {% endif %}
+            <p class="floor mt-3 max-w-4xl">
+                <strong class="text-ink font-medium">Read the denominators.</strong>
+                Each cell is documents of that speaker type using the term per 1,000 of that speaker type's documents that week,
+                counting one copy per title per speaker type per week (a wire story reposted by forty portals counts once).
+                <strong class="text-ink font-medium">The media layer before 2025 is crawl-thin</strong>
+                (state media, commentary and business press are almost entirely 2025–26 in the corpus), so a long media series measures our crawl, not the discourse;
+                read across speakers within a week, not down a media column across years. Diplomacy and research are thin every week.
+                Counts are regex matches on title + body, so a term inside a fixed formula counts like a live use.
+                Method and caveats: <a href="/research/global-discourse-map">global-discourse-map</a>.
+            </p>
+        </div>
+    </div>
+
+    {% if not d %}
+    <div class="text-muted italic text-center py-16 border border-dashed border-rule">
+        The discourse tables (<span class="mono not-italic">discourse_weekly</span>, <span class="mono not-italic">discourse_concepts</span>)
+        have not been built on this database yet. They are produced by <span class="mono not-italic">scripts/build_discourse_weekly.py</span>.
+    </div>
+    {% else %}
+    {% set S = d.series %}
+
+    <div class="mb-8">
+        <span class="lab">{{ d.concept }} · {{ d.info.label_en }} · rate per 1,000 by speaker type</span>
+        <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
+            Rate per 1,000, with <span class="frac">docs/denominator</span> beneath. The bar under each rate is scaled within its own column
+            (each speaker type is its own small multiple), so compare a column's shape, not bar lengths across columns.
+            Cells in grey have fewer than {{ d.thin }} documents that week: a single document moves them a lot.
+            The current week is partial. Columns with a dotted rule are media speakers (crawl-thin before 2025).
+            Pattern: <span class="mono">/{{ d.info.pattern }}/</span>
+        </p>
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr>
+                <th class="w-24">Week</th>
+                <th class="w-24 hidden sm:table-cell">From</th>
+                {% for s in d.speakers %}<th class="text-right {{ 'media' if s.media }}">{{ s.label }}</th>{% endfor %}
+            </tr></thead>
+            <tbody>
+            {% for w in S.weeks %}
+            <tr class="{{ 'wk-current' if w.is_current }}">
+                <td class="mono">{{ w.iso_week }}{% if w.is_current %} <span class="text-[10px] text-brand uppercase tracking-wider">now</span>{% endif %}</td>
+                <td class="mono text-muted text-xs hidden sm:table-cell">{{ w.week_start }}</td>
+                {% for s in d.speakers %}{% set c = w.cells[s.key] %}
+                <td class="text-right {{ 'thin' if c.thin }}">
+                    {% if c.denom %}
+                    <div class="rate {{ 'cell-zero' if not c.docs }}">{{ '%.1f'|format(c.rate) if c.docs else '0' }}</div>
+                    <div class="frac">{{ c.docs }}/{{ "{:,}".format(c.denom) }}</div>
+                    {% if c.bar %}<div class="bar" style="width: {{ c.bar }}%"></div>{% endif %}
+                    {% else %}<span class="cell-zero">·</span>{% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr class="border-t-2 border-ink">
+                <td class="mono text-xs text-muted" colspan="2">{{ d.weeks }}-week pooled</td>
+                {% for s in d.speakers %}{% set t = S.totals[s.key] %}
+                <td class="text-right {{ 'thin' if t.denom < d.thin }}">
+                    <div class="rate font-medium">{{ '%.1f'|format(t.rate) if t.rate is not none else '·' }}</div>
+                    <div class="frac">{{ t.docs }}/{{ "{:,}".format(t.denom) }}</div>
+                </td>
+                {% endfor %}
+            </tr>
+            </tfoot>
+        </table>
+        </div>
+    </div>
+
+    {% set N = d.new %}
+    <div class="mb-8">
+        <span class="lab">New this week · {{ N.ref_week }} (from {{ N.ref_monday }}) against the trailing {{ d.trail }} weeks ({{ N.trail_from }} to {{ N.trail_to }})</span>
+        <p class="text-muted text-xs mb-2 leading-relaxed max-w-4xl">
+            The last complete week. A <span class="tag">jump</span> is at least {{ d.jump_min }} documents and at least {{ d.jump_ratio|round|int }}&times; the
+            trailing weekly mean; <span class="tag tag-new">first</span> means the term had no use by that speaker type in the trailing window
+            (<span class="tag tag-new">first ever</span>: none since the table starts). The speaker's own denominator is shown beside it:
+            a jump tagged <span class="tag tag-warn">volume</span> came in a week when that speaker type's total output also doubled, so it may be crawl, not discourse.
+            {{ N.n_items }} cell{{ '' if N.n_items == 1 else 's' }} qualify{% if N.n_items > N.rows|length %}, top {{ N.rows|length }} shown{% endif %}.
+        </p>
+        {% if N.rows %}
+        <div class="card table-scroll">
+        <table class="data-table">
+            <thead><tr>
+                <th>Term</th><th>Speaker</th>
+                <th class="text-right">Docs</th><th class="text-right">Trailing mean</th>
+                <th class="text-right">Rate /1k</th><th class="text-right">Trailing rate</th>
+                <th class="text-right">Denominator (mean)</th><th></th>
+            </tr></thead>
+            <tbody>
+            {% for it in N.rows %}
+            <tr>
+                <td><a href="/discourse?concept={{ it.concept|urlencode }}&weeks={{ d.weeks }}">{{ it.concept }}</a></td>
+                <td class="text-xs">{{ it.speaker_label }}</td>
+                <td class="text-right rate">{{ it.docs }}</td>
+                <td class="text-right rate text-muted">{{ it.trail_mean }}</td>
+                <td class="text-right rate">{{ it.rate if it.rate is not none else '·' }}</td>
+                <td class="text-right rate text-muted">{{ it.trail_rate if it.trail_rate is not none else '·' }}</td>
+                <td class="text-right frac">{{ "{:,}".format(it.denom) }} ({{ it.denom_mean }})</td>
+                <td>{% if it.kind == 'first_ever' %}<span class="tag tag-new">first ever</span>{% elif it.kind == 'first_in_window' %}<span class="tag tag-new">first</span>{% else %}<span class="tag">jump {{ it.ratio }}&times;</span>{% endif %}{% if it.volume_driven %}<span class="tag tag-warn" title="this speaker type's total output that week was at least {{ d.jump_ratio|round|int }}x its trailing mean">volume</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+        <div class="text-muted italic text-sm">No term jumped or first appeared in {{ N.ref_week }}.</div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,582 @@
+{
+ "title": "伪史论: anti-Western-centrism turned on itself",
+ "question": "Who promotes and who polices the online claim that Western antiquity was fabricated, where is the line drawn, and how did it come to be applied to Chinese history?",
+ "camps": [
+  {
+   "name": "Proponents (reported only)",
+   "who": "Bilibili uploader 'qiao乔于yu' (Tang-does-not-exist videos, late Apr-May 2026, account since banned); an older 'Western pseudo-history' current traced to 何新; unnamed short-video bloggers on Bilibili, Xiaohongshu, Douyin. No proponent text is held: every claim below is quoted by a critic.",
+   "summary_en": "Two waves. The first denies Western antiquity (Aristotle never existed, Greek classics are late forgeries, the Yongle Encyclopedia sparked modern Western civilization) under a banner of questioning authority and breaking Western centrism. The second turns the same method on China: the Song lasted 800 years, and the Sui, Tang, Five Dynasties and Yuan were invented by later historians, supported by an imported 'phantom time' hypothesis and a rule that any contrary evidence is forged. 诸玄识 does not appear in the corpus.",
+   "quotes": [
+    {
+     "id": 900175926,
+     "site": "guancha",
+     "speaker": "闻博 (Guancha columnist), describing proponents",
+     "date": "2026-10-08",
+     "title": "伪史论的回旋镖，最终会打到我们自己头上",
+     "url": "https://www.guancha.cn/Wenbo/2026_10_08_902672.shtml",
+     "zh": "它打着“质疑权威”“打破西方中心论”的旗号",
+     "en": "It marched under the banners of 'questioning authority' and 'breaking Western centrism'."
+    },
+    {
+     "id": 900175926,
+     "site": "guancha",
+     "speaker": "闻博, describing proponents",
+     "date": "2026-10-08",
+     "title": "伪史论的回旋镖，最终会打到我们自己头上",
+     "url": "https://www.guancha.cn/Wenbo/2026_10_08_902672.shtml",
+     "zh": "伪史论的孕育经过很长时期，从何新开始",
+     "en": "Pseudo-history incubated over a long period, starting with He Xin."
+    },
+    {
+     "id": 900175926,
+     "site": "guancha",
+     "speaker": "闻博, paraphrasing proponents' argument",
+     "date": "2026-10-08",
+     "title": "伪史论的回旋镖，最终会打到我们自己头上",
+     "url": "https://www.guancha.cn/Wenbo/2026_10_08_902672.shtml",
+     "zh": "一个人一辈子写一千万字、留存三百万字，怎么可能？所以此人必定不存在",
+     "en": "How could one man write ten million characters in a lifetime and leave three million? So he must not have existed."
+    },
+    {
+     "id": 12725981,
+     "site": "guancha",
+     "speaker": "王旭东 (historian), describing proponents",
+     "date": "2026-03-27",
+     "title": "王旭东：伪史论者常以“反西方中心主义”自居，却深陷同一思维框架",
+     "url": "https://www.guancha.cn/wangxudong/2026_03_27_811584.shtml",
+     "zh": "诸如“古希腊经典系近人伪造”、“《永乐大典》催生西方近代文明”等荒谬观点",
+     "en": "absurd views such as 'the Greek classics were forged in recent times' and 'the Yongle Encyclopedia gave birth to modern Western civilization'"
+    },
+    {
+     "id": 900131727,
+     "site": "guancha",
+     "speaker": "《求是》 (文平), describing proponents",
+     "date": "2026-09-06",
+     "title": "《求是》：“伪史论”潜藏着多重政治与社会风险，其负面效应已向现实社会蔓延",
+     "url": "https://www.guancha.cn/politics/2026_09_06_830164.shtml",
+     "zh": "“峨眉山就是阿尔卑斯山”、“《永乐大典》催生西方近代文明”等牵强附会的荒唐叙事",
+     "en": "far-fetched, absurd narratives such as 'Mount Emei is the Alps' and 'the Yongle Encyclopedia gave birth to modern Western civilization'"
+    },
+    {
+     "id": 900104244,
+     "site": "guancha",
+     "speaker": "中国社会科学报 report, via Guancha",
+     "date": "2026-08-20",
+     "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+     "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+     "zh": "这一荒谬言论最初缘起于B站UP主“qiao乔于yu”",
+     "en": "This absurd claim originated with the Bilibili uploader 'qiao乔于yu'."
+    },
+    {
+     "id": 900104244,
+     "site": "guancha",
+     "speaker": "中国社会科学报 report, summarizing the uploader",
+     "date": "2026-08-20",
+     "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+     "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+     "zh": "隋唐、五代十国乃至元朝，全部是后世史官刻意虚构出来的",
+     "en": "the Sui and Tang, the Five Dynasties and Ten Kingdoms, and even the Yuan were all deliberately invented by later court historians"
+    },
+    {
+     "id": 900104244,
+     "site": "guancha",
+     "speaker": "中国社会科学报 report",
+     "date": "2026-08-20",
+     "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+     "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+     "zh": "移植早已被史学界、天文学界普遍证伪的西方“幻影时间假说”",
+     "en": "transplanted the Western 'phantom time hypothesis', long since refuted by historians and astronomers"
+    }
+   ]
+  },
+  {
+   "name": "Academic critics",
+   "who": "王旭东 (historian, Guancha 2026-03); historians interviewed by 中国社会科学报 (CASS's own paper): 李鸿宾 (Shandong U., vice-president of the Tang History Society), 胡耀飞 (Shaanxi Normal U.), 何岁利 (CASS Institute of Archaeology), 王博 (CASS Institute of Ancient History); communication scholars 罗昕 (Jinan U.) and 董晨宇 (Renmin U.).",
+   "summary_en": "Method-based rebuttal: pseudo-history ignores the evidence chain (manuscript transmission via Byzantium and the Arabic translation movement, Pompeii, Nineveh tablets, Tang texts plus Turkic, Tibetan, Japanese, Persian, Arab sources), and swaps 'evidence is imperfect' for 'history is fiction'. The line drawn: doubt and debate are legitimate scholarship; preset conclusions that declare all contrary evidence forged are not. By August the academic critics also call it historical nihilism.",
+   "quotes": [
+    {
+     "id": 12725981,
+     "site": "guancha",
+     "speaker": "王旭东",
+     "date": "2026-03-27",
+     "title": "王旭东：伪史论者常以“反西方中心主义”自居，却深陷同一思维框架",
+     "url": "https://www.guancha.cn/wangxudong/2026_03_27_811584.shtml",
+     "zh": "伪史论以所谓“祛魅”为名挑战专业主流认知",
+     "en": "Pseudo-history challenges mainstream professional knowledge in the name of so-called 'disenchantment'."
+    },
+    {
+     "id": 12725981,
+     "site": "guancha",
+     "speaker": "王旭东",
+     "date": "2026-03-27",
+     "title": "王旭东：伪史论者常以“反西方中心主义”自居，却深陷同一思维框架",
+     "url": "https://www.guancha.cn/wangxudong/2026_03_27_811584.shtml",
+     "zh": "此论调将“证据的相对性”偷换为“证据的虚无性”",
+     "en": "This line of argument swaps 'the relativity of evidence' for 'the nothingness of evidence'."
+    },
+    {
+     "id": 12725981,
+     "site": "guancha",
+     "speaker": "王旭东",
+     "date": "2026-03-27",
+     "title": "王旭东：伪史论者常以“反西方中心主义”自居，却深陷同一思维框架",
+     "url": "https://www.guancha.cn/wangxudong/2026_03_27_811584.shtml",
+     "zh": "最终陷入极端怀疑论的泥潭",
+     "en": "ending up stuck in the mire of extreme skepticism"
+    },
+    {
+     "id": 900104244,
+     "site": "guancha",
+     "speaker": "何岁利 (CASS Institute of Archaeology)",
+     "date": "2026-08-20",
+     "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+     "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+     "zh": "直言“唐朝不存在、宋朝八百年”是别有用心的谣言",
+     "en": "said bluntly that 'the Tang did not exist, the Song lasted 800 years' is a rumour with ulterior motives"
+    },
+    {
+     "id": 900104244,
+     "site": "guancha",
+     "speaker": "王博 (CASS Institute of Ancient History)",
+     "date": "2026-08-20",
+     "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+     "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+     "zh": "打造虚假揭秘，脱离学术考据，依托猎奇话术博取流量，这些都属于典型的历史虚无主义言论。",
+     "en": "Fake exposés, detached from scholarly evidence, chasing traffic with sensational talk: these are all typical historical-nihilist speech."
+    },
+    {
+     "id": 900104244,
+     "site": "guancha",
+     "speaker": "中国社会科学报 report",
+     "date": "2026-08-20",
+     "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+     "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+     "zh": "过去一些伪史论热衷于证明古希腊、古罗马和古埃及都是近代伪造的",
+     "en": "Some earlier pseudo-history was keen to prove that ancient Greece, Rome and Egypt were all modern forgeries."
+    }
+   ]
+  },
+  {
+   "name": "Party and state organs",
+   "who": "《求是》 (Party theory journal, issue 17, 2026-09-01, byline 文平, reposted in full by Guancha); 中国社会科学报 front-page commentator article 《旗帜鲜明反对伪史论》 (2026-08-20); 陕西省文旅厅 via 陕西日报 (rumour denial); the Cyberspace Administration of China (central notice on online-celebrity accounts, 2025-12-26).",
+   "summary_en": "Official framing is security-and-governance, not scholarship: pseudo-history is a new variant of historical nihilism, threatens ideological security and the Party's leadership, carries ethnic-separatist undertones (the 'Tang was a Hu regime', 1644 view, 'Yuan and Qing are not China'), resonates with foreign narratives, and damages China's academic voice abroad. Remedies: platform responsibility, account takedowns, embedding mainstream values in recommendation algorithms. 求是 explicitly keeps legitimate 疑古辨伪 (critical doubt about antiquity) on the permitted side of the line.",
+   "quotes": [
+    {
+     "id": 12693814,
+     "site": "cac",
+     "speaker": "Cyberspace Administration of China (central notice)",
+     "date": "2025-12-26",
+     "title": "关于规范网络名人账号行为管理的通知",
+     "url": "https://www.cac.gov.cn/2025-12/26/c_1768474094737119.htm",
+     "zh": "传播伪科普、伪史学等伪知识",
+     "en": "spreading pseudo-knowledge such as pseudo-science popularization and pseudo-history"
+    },
+    {
+     "id": 900131727,
+     "site": "guancha",
+     "speaker": "《求是》 (文平)",
+     "date": "2026-09-06",
+     "title": "《求是》：“伪史论”潜藏着多重政治与社会风险，其负面效应已向现实社会蔓延",
+     "url": "https://www.guancha.cn/politics/2026_09_06_830164.shtml",
+     "zh": "“伪史论”就是当前历史虚无主义极具反智主义色彩的变种之一。",
+     "en": "'Pseudo-history' is one of the current variants of historical nihilism with a strongly anti-intellectual cast."
+    },
+    {
+     "id": 900131727,
+     "site": "guancha",
+     "speaker": "《求是》 (文平)",
+     "date": "2026-09-06",
+     "title": "《求是》：“伪史论”潜藏着多重政治与社会风险，其负面效应已向现实社会蔓延",
+     "url": "https://www.guancha.cn/politics/2026_09_06_830164.shtml",
+     "zh": "它虽然自我标榜“疑古”，却与史学界立足严谨材料的疑古辨伪有着本质区别",
+     "en": "Though it styles itself 'doubting antiquity', it differs in essence from historians' evidence-based critical scrutiny of ancient sources."
+    },
+    {
+     "id": 900131727,
+     "site": "guancha",
+     "speaker": "《求是》 (文平)",
+     "date": "2026-09-06",
+     "title": "《求是》：“伪史论”潜藏着多重政治与社会风险，其负面效应已向现实社会蔓延",
+     "url": "https://www.guancha.cn/politics/2026_09_06_830164.shtml",
+     "zh": "“伪史论”以“疑古”之名、行“虚无”之实",
+     "en": "Pseudo-history practises nihilism in the name of doubting antiquity."
+    },
+    {
+     "id": 900131727,
+     "site": "guancha",
+     "speaker": "《求是》 (文平)",
+     "date": "2026-09-06",
+     "title": "《求是》：“伪史论”潜藏着多重政治与社会风险，其负面效应已向现实社会蔓延",
+     "url": "https://www.guancha.cn/politics/2026_09_06_830164.shtml",
+     "zh": "有些“伪史论”叙事暗含民族分裂倾向",
+     "en": "Some pseudo-history narratives carry an implicit tendency toward ethnic separatism."
+    },
+    {
+     "id": 900131727,
+     "site": "guancha",
+     "speaker": "《求是》 (文平)",
+     "date": "2026-09-06",
+     "title": "《求是》：“伪史论”潜藏着多重政治与社会风险，其负面效应已向现实社会蔓延",
+     "url": "https://www.guancha.cn/politics/2026_09_06_830164.shtml",
+     "zh": "已对我国学术话语权与对外文化形象造成损害",
+     "en": "has already damaged our country's academic voice and its cultural image abroad"
+    },
+    {
+     "id": 900131727,
+     "site": "guancha",
+     "speaker": "《求是》 (文平)",
+     "date": "2026-09-06",
+     "title": "《求是》：“伪史论”潜藏着多重政治与社会风险，其负面效应已向现实社会蔓延",
+     "url": "https://www.guancha.cn/politics/2026_09_06_830164.shtml",
+     "zh": "对长期散播“伪史论”的账号，应依法依规处置",
+     "en": "Accounts that spread 'pseudo-history' over long periods should be dealt with according to law and regulation."
+    },
+    {
+     "id": 900131727,
+     "site": "guancha",
+     "speaker": "《求是》 (文平)",
+     "date": "2026-09-06",
+     "title": "《求是》：“伪史论”潜藏着多重政治与社会风险，其负面效应已向现实社会蔓延",
+     "url": "https://www.guancha.cn/politics/2026_09_06_830164.shtml",
+     "zh": "推动主流价值导向深度嵌入算法推荐模型",
+     "en": "push mainstream value orientation deep into algorithmic recommendation models"
+    },
+    {
+     "id": 900104244,
+     "site": "guancha",
+     "speaker": "中国社会科学报 commentator article",
+     "date": "2026-08-20",
+     "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+     "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+     "zh": "伪史论是历史虚无主义的新变种。",
+     "en": "Pseudo-history is a new variant of historical nihilism."
+    },
+    {
+     "id": 900104244,
+     "site": "guancha",
+     "speaker": "中国社会科学报 commentator article",
+     "date": "2026-08-20",
+     "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+     "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+     "zh": "其危害是从根本上否定马克思主义指导地位和中国走向社会主义的历史必然性，否定中国共产党的领导。",
+     "en": "Its harm is to fundamentally deny Marxism's guiding role and the historical necessity of China's road to socialism, and to deny the leadership of the Communist Party."
+    },
+    {
+     "id": 900104244,
+     "site": "guancha",
+     "speaker": "中国社会科学报 report (platform measures)",
+     "date": "2026-08-20",
+     "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+     "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+     "zh": "集中下架否定唐史、解构正史、歪曲古文明的极端内容",
+     "en": "mass removal of extreme content that denies Tang history, deconstructs orthodox history or distorts ancient civilizations"
+    },
+    {
+     "id": 900076707,
+     "site": "guancha",
+     "speaker": "陕西省文旅厅 via 陕西日报",
+     "date": "2026-07-30",
+     "title": "陕西省文旅厅：“网民骚扰陕西文旅要求拆除唐代古迹”信息不实",
+     "url": "https://www.guancha.cn/ChengShi/2026_07_30_825616.shtml",
+     "zh": "这种论调属于典型的历史虚无主义言论",
+     "en": "this kind of talk is typical historical-nihilist speech"
+    }
+   ]
+  },
+  {
+   "name": "Commentary columnists (the boomerang argument)",
+   "who": "Guancha columnists 闻博 (2026-10-08), 夏曼波 (2026-07-28), 潘禺 (2026-08-04), 每文 (2026-09-18).",
+   "summary_en": "Patriotic commentators who share the anti-Western-centrism stance but reject the method. 闻博's three-stage history: pseudo-history began as 'academic fraud-busting' aimed only at foreign antiquity, slid into nihilism, then turned on Chinese history; the same reasoning would make Sima Qian not exist. 潘禺 redirects the blame outward to Japanese 'Tuoba state' scholarship (杉山正明, 森安孝夫), keeping a foreign source in frame. 每文 ties it to history being dropped from exam scoring.",
+   "quotes": [
+    {
+     "id": 900175926,
+     "site": "guancha",
+     "speaker": "闻博",
+     "date": "2026-10-08",
+     "title": "伪史论的回旋镖，最终会打到我们自己头上",
+     "url": "https://www.guancha.cn/Wenbo/2026_10_08_902672.shtml",
+     "zh": "最初，它披着“学术打假”的外衣，矛头只对准外国的古代历史。",
+     "en": "At first it wore the cloak of 'academic fraud-busting' and aimed only at foreign ancient history."
+    },
+    {
+     "id": 900175926,
+     "site": "guancha",
+     "speaker": "闻博",
+     "date": "2026-10-08",
+     "title": "伪史论的回旋镖，最终会打到我们自己头上",
+     "url": "https://www.guancha.cn/Wenbo/2026_10_08_902672.shtml",
+     "zh": "它已经从“另类的历史观点”滑向了彻底的虚无主义",
+     "en": "It had slid from an 'alternative view of history' into outright nihilism."
+    },
+    {
+     "id": 900175926,
+     "site": "guancha",
+     "speaker": "闻博",
+     "date": "2026-10-08",
+     "title": "伪史论的回旋镖，最终会打到我们自己头上",
+     "url": "https://www.guancha.cn/Wenbo/2026_10_08_902672.shtml",
+     "zh": "它扔出去时瞄准的是别人，飞回来的终点却是我们自己",
+     "en": "When thrown it is aimed at others, but where it lands on the way back is ourselves."
+    },
+    {
+     "id": 900175926,
+     "site": "guancha",
+     "speaker": "闻博",
+     "date": "2026-10-08",
+     "title": "伪史论的回旋镖，最终会打到我们自己头上",
+     "url": "https://www.guancha.cn/Wenbo/2026_10_08_902672.shtml",
+     "zh": "照伪史论的逻辑，是不是也可以断定司马迁不存在？",
+     "en": "By pseudo-history's logic, could one not also conclude that Sima Qian never existed?"
+    },
+    {
+     "id": 900075778,
+     "site": "guancha",
+     "speaker": "夏曼波 (Guancha)",
+     "date": "2026-07-28",
+     "title": "“唐朝不存在”的伪史论歪风，何以在中文互联网蔓延？",
+     "url": "https://www.guancha.cn/history/2026_07_28_825367.shtml",
+     "zh": "“官方一定错，专家一定骗”",
+     "en": "'the officials must be wrong, the experts must be lying'"
+    },
+    {
+     "id": 900145644,
+     "site": "guancha",
+     "speaker": "潘禺 (Guancha columnist)",
+     "date": "2026-08-04",
+     "title": "“唐朝不存在论”要清算的源头是日本学者",
+     "url": "https://www.guancha.cn/history/2026_08_04_826082.shtml",
+     "zh": "它本质上是一种披着“内亚史观”“全球史”外衣的历史虚无主义",
+     "en": "In essence it is historical nihilism dressed in the clothes of 'Inner Asian history' and 'global history'."
+    },
+    {
+     "id": 900145583,
+     "site": "guancha",
+     "speaker": "每文 (Guancha columnist)",
+     "date": "2026-09-18",
+     "title": "中考不计分、高考性价比太低，历史学科的问题在外也在内",
+     "url": "https://www.guancha.cn/yanping/2026_09_18_900877.shtml",
+     "zh": "社交平台可以不断播放数百万流量的“唐朝不存在”短视频，这当然不该让历史课堂背锅",
+     "en": "That social platforms can keep playing 'the Tang did not exist' videos with millions of views is certainly not the history classroom's fault."
+    }
+   ]
+  }
+ ],
+ "engagements": [
+  {
+   "id": 900076707,
+   "site": "guancha",
+   "speaker": "陕西省文旅厅 via 陕西日报",
+   "date": "2026-07-30",
+   "title": "陕西省文旅厅：“网民骚扰陕西文旅要求拆除唐代古迹”信息不实",
+   "url": "https://www.guancha.cn/ChengShi/2026_07_30_825616.shtml",
+   "zh": "从未接到此类骚扰电话，网传相关情节属于不实信息",
+   "en": "never received any such harassing calls; the details circulating online are false",
+   "note": "Rebuts the premise of the 2026-07-27 newspaper commentary (南京日报 per 900075778), reproduced by Guancha 900075778 the day before, that self-described pseudo-historians phoned Shaanxi tourism officials demanding Tang sites be demolished. The denial nonetheless affirms the Tang-denial talk exists and labels it historical nihilism."
+  },
+  {
+   "id": 900075778,
+   "site": "guancha",
+   "speaker": "夏曼波 (Guancha), relaying 南京日报",
+   "date": "2026-07-28",
+   "title": "“唐朝不存在”的伪史论歪风，何以在中文互联网蔓延？",
+   "url": "https://www.guancha.cn/history/2026_07_28_825367.shtml",
+   "zh": "伪史论者已经从线上的口嗨走向了线下的行动",
+   "en": "pseudo-historians have moved from talk online to action offline",
+   "note": "The claim the Shaanxi denial (900076707) refuted two days later."
+  },
+  {
+   "id": 900104244,
+   "site": "guancha",
+   "speaker": "中国社会科学报 report",
+   "date": "2026-08-20",
+   "title": "“唐朝不存在”是如何炮制出来的？必须旗帜鲜明反对伪史论",
+   "url": "https://www.guancha.cn/politics/2026_08_20_828019.shtml",
+   "zh": "7月由于某篇报道中引述消息出现偏差，导致批驳该伪史观点的议题失焦",
+   "en": "In July a misquoted report knocked the rebuttal of this pseudo-historical view off focus",
+   "note": "CASS's paper acknowledges the false harassment story and re-dates the phenomenon to Bilibili videos from May."
+  },
+  {
+   "id": 900145644,
+   "site": "guancha",
+   "speaker": "潘禺 (Guancha)",
+   "date": "2026-08-04",
+   "title": "“唐朝不存在论”要清算的源头是日本学者",
+   "url": "https://www.guancha.cn/history/2026_08_04_826082.shtml",
+   "zh": "网络上流传的“唐朝不存在”伪史论调，并非不存在",
+   "en": "The 'Tang did not exist' pseudo-history talk circulating online is not itself non-existent.",
+   "note": "Responds to the denial: the harassment was false, the theory is real; then traces it to Japanese Tuoba-state scholarship."
+  },
+  {
+   "id": 900175926,
+   "site": "guancha",
+   "speaker": "闻博",
+   "date": "2026-10-08",
+   "title": "伪史论的回旋镖，最终会打到我们自己头上",
+   "url": "https://www.guancha.cn/Wenbo/2026_10_08_902672.shtml",
+   "zh": "“唐朝根本不存在”、“土木堡在德国”、“中国人会飞”",
+   "en": "'the Tang never existed', 'Tumubao is in Germany', 'the Chinese could fly'",
+   "note": "The boomerang examples: the method once aimed at Greece and Rome turned on Chinese history."
+  },
+  {
+   "id": 900131727,
+   "site": "guancha",
+   "speaker": "《求是》 (文平)",
+   "date": "2026-09-06",
+   "title": "《求是》：“伪史论”潜藏着多重政治与社会风险，其负面效应已向现实社会蔓延",
+   "url": "https://www.guancha.cn/politics/2026_09_06_830164.shtml",
+   "zh": "2025年一批炮制、传播极端“伪史论”的自媒体账号被集中处置后",
+   "en": "after a batch of self-media accounts that concocted and spread extreme 'pseudo-history' were dealt with together in 2025",
+   "note": "Places an earlier enforcement round in 2025, consistent with the CAC notice (12693814, 2025-12-26) listing 伪史学 as false information."
+  },
+  {
+   "id": 900145583,
+   "site": "guancha",
+   "speaker": "每文 (Guancha)",
+   "date": "2026-09-18",
+   "title": "中考不计分、高考性价比太低，历史学科的问题在外也在内",
+   "url": "https://www.guancha.cn/yanping/2026_09_18_900877.shtml",
+   "zh": "《求是》杂志刊文批判“伪史论”",
+   "en": "Qiushi magazine published an article criticizing 'pseudo-history'",
+   "note": "Commentary citing the Party-journal piece as the authoritative position, about two weeks after it ran."
+  }
+ ],
+ "timeline": [
+  {
+   "month": "2025-12",
+   "speaker": "central (CAC notice)",
+   "docs": [
+    12693814
+   ]
+  },
+  {
+   "month": "2026-03",
+   "speaker": "commentary (historian 王旭东 on Guancha)",
+   "docs": [
+    12725981
+   ]
+  },
+  {
+   "month": "2026-07",
+   "speaker": "commentary (Guancha relaying 南京日报); subnational government (陕西省文旅厅 denial via Guancha)",
+   "docs": [
+    900075778,
+    900076707
+   ]
+  },
+  {
+   "month": "2026-08",
+   "speaker": "commentary (潘禺); research/state press (中国社会科学报 report + commentator article, via Guancha)",
+   "docs": [
+    900145644,
+    900104244
+   ]
+  },
+  {
+   "month": "2026-09",
+   "speaker": "party_theory (《求是》, via Guancha); commentary (每文)",
+   "docs": [
+    900131727,
+    900145583
+   ]
+  },
+  {
+   "month": "2026-10",
+   "speaker": "commentary (闻博)",
+   "docs": [
+    900175926
+   ]
+  }
+ ],
+ "lineage": [
+  {
+   "term": "伪史学 (pseudo-history, as a regulated category of false information)",
+   "first_date": "2025-12-26",
+   "first_id": 12693814,
+   "note": "CAC notice on online-celebrity accounts lists it beside pseudo-science. Earliest official use in the corpus."
+  },
+  {
+   "term": "1644史观",
+   "first_date": "2026-03-12",
+   "first_id": 12725987,
+   "note": "Guancha column on the new ethnic-unity law; later grouped with pseudo-history by 中国社会科学报 and 求是 as a separatist-leaning narrative."
+  },
+  {
+   "term": "伪史论",
+   "first_date": "2026-03-27",
+   "first_id": 12725981,
+   "note": "王旭东; aimed at Western-antiquity denial. Title frames proponents as styling themselves anti-Western-centrist."
+  },
+  {
+   "term": "唐朝不存在 / 唐朝根本不存在",
+   "first_date": "2026-07-28",
+   "first_id": 900075778,
+   "note": "The turn to Chinese history; per 中国社会科学报 the videos began late April-May 2026 on Bilibili."
+  },
+  {
+   "term": "伪史论 = 历史虚无主义",
+   "first_date": "2026-07-30",
+   "first_id": 900076707,
+   "note": "First explicit link comes from a provincial department (陕西省文旅厅), then 潘禺 (08-04), 中国社会科学报 (08-20, 'new variant'), 求是 (09-01)."
+  },
+  {
+   "term": "拓跋国家论 (as source of Tang-denial)",
+   "first_date": "2026-08-04",
+   "first_id": 900145644,
+   "note": "潘禺 externalizes the origin to Japanese scholars."
+  },
+  {
+   "term": "软性历史虚无主义",
+   "first_date": "2026-08-20",
+   "first_id": 900104244,
+   "note": "中国社会科学报: Tang-denial as the new form of 'soft' historical nihilism."
+  },
+  {
+   "term": "回旋镖 (boomerang)",
+   "first_date": "2026-10-08",
+   "first_id": 900175926,
+   "note": "闻博's framing of the method turning on Chinese history."
+  }
+ ],
+ "reading": [
+  {
+   "claim": "Only 8 documents engage pseudo-history substantively, all on guancha.cn. The memo's '28 commentary documents' counts 20 Guancha pages whose only mention is a 'related articles' sidebar link.",
+   "label": "measured"
+  },
+  {
+   "claim": "No proponent text is held. Every proponent claim, including the 何新 lineage and the Bilibili uploader, is known only through critics' quotations; 诸玄识 does not appear.",
+   "label": "measured"
+  },
+  {
+   "claim": "The Party/state voice is held only as Guancha reposts: the 求是 article (issue 17, 2026-09-01) and the 中国社会科学报 pieces (2026-08-20) have no copy on qstheory or a CASS site in the corpus.",
+   "label": "measured"
+  },
+  {
+   "claim": "Every official or party source in the set frames pseudo-history as historical nihilism; the first to do so was a provincial department (陕西省文旅厅, 07-30), before CASS's paper (08-20) and 求是 (09-01).",
+   "label": "measured"
+  },
+  {
+   "claim": "The line drawn is consistent across critics: doubt and evidence-based 疑古辨伪 are legitimate; preset conclusions that declare all counter-evidence forged are not. 求是 states this explicitly.",
+   "label": "measured"
+  },
+  {
+   "claim": "Official attention rose only after the method turned on Chinese history (Tang denial, July 2026); the earlier Western-antiquity strand drew one historian's critique (March) and no official response in the corpus, apart from the generic CAC listing.",
+   "label": "inferred"
+  },
+  {
+   "claim": "Official escalation is about national identity and security (separatism, 1644 view, foreign narratives, AI-generated fake sources), not about defending Western antiquity: the anti-Western-centrism theme is left intact while the epistemic method is outlawed.",
+   "label": "inferred"
+  },
+  {
+   "claim": "The memo's 王旭东 quote ('常以“反西方中心主义”自居') is the article TITLE; the stored body is page 1 of 2 and does not contain the phrase.",
+   "label": "measured"
+  },
+  {
+   "claim": "The trigger event (pseudo-historians harassing Shaanxi officials) was false per the department itself; the theory's spread is attested by CASS's paper and platform takedowns but not measured in the corpus.",
+   "label": "measured"
+  },
+  {
+   "claim": "求是 says a batch of pseudo-history accounts was dealt with in 2025; no document in the corpus records that enforcement round directly.",
+   "label": "unverified"
+  }
+ ]
+}

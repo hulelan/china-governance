@@ -1,20 +1,11 @@
-"""Speaker type of a document, shared by the global-discourse scans."""
-PARTY = {"qstheory", "dangyuan"}
-STATE = {"xinhua", "people", "ce", "jjckb", "stdaily", "cnr", "cctv", "chinanews", "people_rmrb",
-         "peopleapp", "newscn", "xinhua_lw", "xinhua_en"}
-COMM = {"guancha", "ifeng"}
-BIZ = {"yicai", "jiemian", "36kr", "latepost", "qbitai", "eeo", "huxiu", "tmtpost", "elsewhere",
-       "21jingji", "cnfin", "eastmoney", "guandian", "qqnews", "thepaper"}
-RES = {"cass", "amr", "tsinghua_aiig", "cast", "isc"}
+"""Speaker type of a document, shared by the global-discourse scans.
 
-def speaker(site, lvl):
-    if site in PARTY: return "party_theory"
-    if site == "mfa": return "diplomacy"
-    if site in STATE: return "state_media"
-    if site in COMM: return "commentary"
-    if site in BIZ: return "business_press"
-    if site in RES: return "research"
-    if lvl == "central": return "central"
-    if lvl in ("provincial", "municipal", "district", "department"): return "subnational"
-    return None
+The definitions now live in web/services/discourse_vocab.py (one source of truth,
+also used by scripts/build_discourse_weekly.py and /discourse); this module
+re-exports them so the memo's scripts keep working unchanged."""
+import sys
+from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
+from web.services.discourse_vocab import (  # noqa: E402,F401
+    BIZ, COMM, PARTY, RES, STATE, C, PH, speaker, strip_chrome)

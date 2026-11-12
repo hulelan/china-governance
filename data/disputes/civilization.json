@@ -1,0 +1,501 @@
+{
+ "title": "Two civilizational vocabularies: official pluralism vs the civilizational-state school",
+ "question": "Do the official civilization vocabulary (人类文明新形态, 全球文明倡议, the 文明优越 formula) and the commentary vocabulary (张维为 文明型国家, 谢茂松 天下文明, 王义桅 文明型政党) make the same claim, and where does anyone in the corpus draw the line between them?",
+ "camps": [
+  {
+   "name": "Official line",
+   "who": "Xi Jinping speeches and their relays: central bodies, 求是/qstheory, People's Daily, Xinhua, sub-national portals",
+   "summary_en": "Civilization is defined through modernization (Chinese modernization 'created a new form of human civilization', different from the Western model) and through pluralism (respect diversity, common values, inheritance, exchange). It explicitly rules out cultural hegemony, imposing one's values or political system, the 'clash of civilizations' and 'civilizational superiority', which it attributes to others.",
+   "quotes": [
+    {
+     "id": 12651498,
+     "site": "gov",
+     "speaker": "central",
+     "date": "2021-11-16",
+     "title": "中共中央关于党的百年奋斗重大成就和历史经验的决议",
+     "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+     "zh": "党领导人民成功走出中国式现代化道路，创造了人类文明新形态，拓展了发展中国家走向现代化的途径",
+     "en": "The Party led the people to blaze the path of Chinese modernization, created a new form of human civilization, and widened the routes by which developing countries can modernize."
+    },
+    {
+     "id": 900121125,
+     "site": "qstheory",
+     "speaker": "party_theory",
+     "date": "2026-08-27",
+     "title": "《习近平文化文选》第一卷、第二卷主要篇目介绍",
+     "url": "http://www.qstheory.cn/20260827/dee401a8155f4aadb56828cf33a7504a/c.html",
+     "zh": "展现了不同于西方现代化模式的新图景，是一种全新的人类文明形态",
+     "en": "[Chinese modernization] presents a new picture different from the Western model of modernization; it is an entirely new form of human civilization. (Summary of Xi, 7 Feb 2023)"
+    },
+    {
+     "id": 900121125,
+     "site": "qstheory",
+     "speaker": "party_theory",
+     "date": "2026-08-27",
+     "title": "《习近平文化文选》第一卷、第二卷主要篇目介绍",
+     "url": "http://www.qstheory.cn/20260827/dee401a8155f4aadb56828cf33a7504a/c.html",
+     "zh": "要共同倡导尊重世界文明多样性，共同倡导弘扬全人类共同价值，共同倡导重视文明传承和创新，共同倡导加强国际人文交流合作",
+     "en": "We should jointly advocate respect for the diversity of world civilizations, jointly advocate the common values of humanity, jointly advocate valuing the inheritance and innovation of civilizations, and jointly advocate stronger international people-to-people exchange. (The Global Civilization Initiative, 15 Mar 2023)"
+    },
+    {
+     "id": 900094525,
+     "site": "ncha",
+     "speaker": "central",
+     "date": "2022-10-26",
+     "title": "习近平：高举中国特色社会主义伟大旗帜为全面建设社会主义现代化国家而团结奋斗——在中国共产党第二十次全国代表大会上的报告",
+     "url": "http://www.ncha.gov.cn/art/2022/10/26/art_2667_177872.html",
+     "zh": "尊重世界文明多样性，以文明交流超越文明隔阂、文明互鉴超越文明冲突、文明共存超越文明优越",
+     "en": "Respect the diversity of world civilizations; transcend estrangement between civilizations through exchange, clashes between civilizations through mutual learning, and civilizational superiority through coexistence. (20th Party Congress report)"
+    },
+    {
+     "id": 552841,
+     "site": "heyuan",
+     "speaker": "subnational (repost of Xinhua readout of Xi speech)",
+     "date": "2023-06-03",
+     "title": "习近平出席文化传承发展座谈会并发表重要讲话",
+     "url": "https://www.gov.cn/yaowen/liebiao/202306/content_6884316.htm",
+     "zh": "决定了中国不断追求文明交流互鉴而不搞文化霸权，决定了中国不会把自己的价值观念与政治体制强加于人",
+     "en": "[The peaceful character of Chinese civilization] determines that China pursues exchange and mutual learning among civilizations and does not practise cultural hegemony, and that China will not impose its own values and political system on others."
+    },
+    {
+     "id": 900121125,
+     "site": "qstheory",
+     "speaker": "party_theory",
+     "date": "2026-08-27",
+     "title": "《习近平文化文选》第一卷、第二卷主要篇目介绍",
+     "url": "http://www.qstheory.cn/20260827/dee401a8155f4aadb56828cf33a7504a/c.html",
+     "zh": "只要秉持包容精神，就不存在什么“文明冲突”，就可以实现文明和谐",
+     "en": "As long as a spirit of inclusiveness is upheld, there is no such thing as a 'clash of civilizations', and harmony among civilizations can be achieved. (Xi at UNESCO, 2014)"
+    }
+   ]
+  },
+  {
+   "name": "Civilizational-state commentary",
+   "who": "张维为, 王义桅, 谢茂松 and forum speakers, 田飞龙, 杨光斌; almost entirely 观察者网 (guancha)",
+   "summary_en": "China is a civilizational state, not a nation-state; its Party is a civilizational party; its political system is the third great creation of Chinese civilization, which surpasses the Western model, will win the world and will lead toward an 'all-under-heaven civilization' offering the next five hundred years a new imagination. Some authors cast the historical tributary order as a universal peace.",
+   "quotes": [
+    {
+     "id": 900031935,
+     "site": "guancha",
+     "speaker": "commentary",
+     "date": "2026-06-23",
+     "title": "张维为、吉塔·维尔贾万：西方学者总说中国人不敢讨论民主，我这样回应",
+     "url": "https://www.guancha.cn/ZhangWeiWei/2026_06_23_821305.shtml",
+     "zh": "文明型国家是古老文明与现代国家的结合体——中国把极其悠久的传统与现代国家形态融合在了一起",
+     "en": "A civilizational state is a fusion of an ancient civilization and a modern state: China has merged an extremely long tradition with the form of a modern state. (Zhang Weiwei)"
+    },
+    {
+     "id": 900033801,
+     "site": "guancha",
+     "speaker": "commentary",
+     "date": "2026-06-28",
+     "title": "张维为《这就是中国》第337集 | 回望十五年前的那场辩论：两种知识体系的碰撞",
+     "url": "https://www.guancha.cn/ZhangWeiWei/2026_06_28_821833.shtml",
+     "zh": "它很大程度上实现了对西方模式的超越，因此中国不会发生“阿拉伯之春”",
+     "en": "It has to a large extent surpassed the Western model, so China will not have an 'Arab Spring'. (Zhang Weiwei on the civilizational state, recalling his debate with Fukuyama)"
+    },
+    {
+     "id": 900193159,
+     "site": "guancha",
+     "speaker": "commentary",
+     "date": "2026-10-19",
+     "title": "从“应然”到“实然”：中国自主知识体系，怎么长出来？",
+     "url": "https://www.guancha.cn/ZhengZhi/2026_10_19_904878.shtml",
+     "zh": "在国家理论方面，它实现了从“民族国家”到“文明型国家”的范式转变",
+     "en": "In the theory of the state, it [the civilizational-state theory] accomplished a paradigm shift from the 'nation-state' to the 'civilizational state'. (report of Zhang Weiwei's keynote)"
+    },
+    {
+     "id": 900035071,
+     "site": "guancha",
+     "speaker": "commentary",
+     "date": "2026-07-01",
+     "title": "王义桅：超越西方政治逻辑，中国“文明型政党”正在开创人类新政治文明",
+     "url": "https://www.guancha.cn/WangYiWei/2026_07_01_822176.shtml",
+     "zh": "是扎根五千年华夏文脉的文明型政党，带领文明型国家走出了一条非西方、非霸权的复兴道路",
+     "en": "[The CPC] is a civilizational party rooted in five thousand years of Chinese civilization, leading a civilizational state along a non-Western, non-hegemonic road of revival. (Wang Yiwei)"
+    },
+    {
+     "id": 900200671,
+     "site": "guancha",
+     "speaker": "commentary",
+     "date": "2026-10-27",
+     "title": "为“千年新局”立学统！如何在撕裂中重建“相互理解”的能力？",
+     "url": "https://www.guancha.cn/WenHua/2026_10_27_905960.shtml",
+     "zh": "提出中国共产党所创立的新政治制度是中国文明的第三次伟大创制，并将在未来引领中国走向“天下文明”的新格局",
+     "en": "[Xie Maosong] argues that the new political system founded by the CPC is the third great institutional creation of Chinese civilization, and will in future lead China toward a new configuration of 'all-under-heaven civilization'."
+    },
+    {
+     "id": 900200671,
+     "site": "guancha",
+     "speaker": "commentary",
+     "date": "2026-10-27",
+     "title": "为“千年新局”立学统！如何在撕裂中重建“相互理解”的能力？",
+     "url": "https://www.guancha.cn/WenHua/2026_10_27_905960.shtml",
+     "zh": "正在为世界下一个五百年提供新的文明想象",
+     "en": "...is providing the world with a new civilizational imagination for the next five hundred years. (Chen Jin, at the forum on Xie's book)"
+    },
+    {
+     "id": 900136415,
+     "site": "guancha",
+     "speaker": "commentary",
+     "date": "2023-08-12",
+     "title": "“中国统一台湾就是世界大战”？西方搞错了什么（田飞龙）",
+     "url": "https://www.guancha.cn/TianFeilong/2023_08_12_704842.shtml",
+     "zh": "不仅提供了朝贡关系所及的普遍和平与发展秩序，更是构成人类文明史的东方代表",
+     "en": "[Chinese civilization] not only provided a universal order of peace and development wherever tributary relations reached, but also constitutes the Eastern representative of human civilizational history. (Tian Feilong)"
+    },
+    {
+     "id": 12727729,
+     "site": "guancha",
+     "speaker": "commentary",
+     "date": "2021-12-10",
+     "title": "杨光斌：美国政治理论先天不足，导致对华战略一错再错",
+     "url": "https://www.guancha.cn/YangGuangBin/2021_12_10_617943.shtml",
+     "zh": "最终，在世界市场中发展起来的文明型国家的游戏规则将赢得世界。",
+     "en": "In the end, the rules of the game of the civilizational state that grew up in the world market will win the world. (Yang Guangbin)"
+    }
+   ]
+  }
+ ],
+ "engagements": [
+  {
+   "id": 900160234,
+   "site": "cass",
+   "speaker": "research",
+   "date": "2026-06-23",
+   "title": "在百年变局中筑牢文化安全（辛向阳书评）",
+   "url": "https://www.cass.cn/keyandongtai/baokanchuban/202606/t20260623_6055300.shtml",
+   "zh": "中国文化走向世界不是以一种新的文化中心主义取代旧的西方中心主义",
+   "en": "Chinese culture going out into the world is not about replacing the old Western centrism with a new cultural centrism.",
+   "note": "CASS review (Xin Xiangyang, reviewing a book by Zhang Ji et al.). The only corpus use of 文化中心主义. Oblique guard: names the reading it rules out without naming anyone who holds it."
+  },
+  {
+   "id": 12708916,
+   "site": "people",
+   "speaker": "state_media",
+   "date": "2025-11-05",
+   "title": "五年规划何以世界瞩目（评论员观察）",
+   "url": "http://opinion.people.com.cn/n1/2025/1105/c1003-40596816.html",
+   "zh": "近来，关于中国的3种说法意味深长，即“前瞻型国家”“赋能型国家”“文明型国家”。",
+   "en": "Recently three descriptions of China have been telling: the 'forward-looking state', the 'enabling state' and the 'civilizational state'.",
+   "note": "The ONLY non-commentary use of 文明型国家 in the corpus. People's Daily adopts the phrase at arm's length (as a 'description'), then glosses it as 文明包容性 'civilizational inclusiveness', and closes on Xi's line that China 从来没有想挑战谁、取代谁 (never intended to challenge or replace anyone): domestication, not endorsement of the exceptionalist reading."
+  },
+  {
+   "id": 900033246,
+   "site": "guancha",
+   "speaker": "commentary",
+   "date": "2026-06-26",
+   "title": "民间发起的“中俄文明对话论坛”在俄成功举办：聚焦文明-价值观联结",
+   "url": "https://www.guancha.cn/internation/2026_06_26_821735.shtml",
+   "zh": "带来一种不加区别、全面否定欧洲启蒙主义价值观的倾向",
+   "en": "...brings a tendency to reject European Enlightenment values wholesale and indiscriminately.",
+   "note": "Yang Ping (文化纵横) at a Sino-Russian civilization forum, criticizing the RUSSIAN civilizational-state value system; he contrasts China's sources as socialist revolution, traditional culture AND advanced Western value ideas. A criticism of civilizational-state excess from inside the commentary camp, aimed abroad."
+  },
+  {
+   "id": 900065595,
+   "site": "guancha",
+   "speaker": "commentary",
+   "date": "2026-07-22",
+   "title": "复旦教授石源华谈中国周边外交：不是“朝贡体系”，也不是“国强必霸”",
+   "url": "https://www.guancha.cn/ShiYuanHua/2026_07_22_824630.shtml",
+   "zh": "针对国际舆论中关于“朝贡体系”“国强必霸”等对中国周边外交的歪曲与误解，进行了有力的驳斥",
+   "en": "...forcefully refuted the distortions and misunderstandings in international opinion that cast China's neighbourhood diplomacy as a 'tributary system' or as 'a strong state must seek hegemony'.",
+   "note": "Editor's lede to Shi Yuanhua interview. Treats the tributary frame as a foreign smear; contrast Tian Feilong (900136415), who praises 朝贡关系 as a universal order of peace. Same outlet, opposite valence. Only page 1 of the interview is held."
+  },
+  {
+   "id": 900090984,
+   "site": "guancha",
+   "speaker": "commentary",
+   "date": "2024-06-10",
+   "title": "田飞龙：超越文明冲突论，文明对话是对西方与世界的道德救赎",
+   "url": "https://www.guancha.cn/TianFeilong/2024_06_10_737532.shtml",
+   "zh": "单一文明中心主义，无论其自我标榜的文明性如何，最终只能陷入霸权与征服的循环游戏",
+   "en": "Single-civilization centrism, however civilized it proclaims itself to be, can only end in a cycle of hegemony and conquest.",
+   "note": "Tian Feilong, aimed at Western centrism, but stated as a universal rule; the same author elsewhere celebrates 天下主义 and the tributary order (900136415)."
+  },
+  {
+   "id": 900035071,
+   "site": "guancha",
+   "speaker": "commentary",
+   "date": "2026-07-01",
+   "title": "王义桅：超越西方政治逻辑，中国“文明型政党”正在开创人类新政治文明",
+   "url": "https://www.guancha.cn/WangYiWei/2026_07_01_822176.shtml",
+   "zh": "文明没有高低优劣，唯有交流互鉴。",
+   "en": "Civilizations have no high or low, superior or inferior; there is only exchange and mutual learning.",
+   "note": "Wang Yiwei recites the official guard inside the very essay that coins 文明型政党: the commentary camp self-guards with the official formula."
+  },
+  {
+   "id": 900175926,
+   "site": "guancha",
+   "speaker": "commentary",
+   "date": "2026-10-08",
+   "title": "伪史论的回旋镖，最终会打到我们自己头上",
+   "url": "https://www.guancha.cn/Wenbo/2026_10_08_902672.shtml",
+   "zh": "它扔出去时瞄准的是别人，飞回来的终点却是我们自己",
+   "en": "When it is thrown it is aimed at others, but where it lands on the way back is ourselves.",
+   "note": "Wen Bo on 伪史论 (the claim that Western antiquity was forged), which presents itself as 打破西方中心论. An internal warning that anti-Western-centrism without evidence turns on Chinese history itself."
+  },
+  {
+   "id": 12725981,
+   "site": "guancha",
+   "speaker": "commentary",
+   "date": "2026-03-27",
+   "title": "王旭东：伪史论者常以“反西方中心主义”自居，却深陷同一思维框架",
+   "url": "https://www.guancha.cn/wangxudong/2026_03_27_811584.shtml",
+   "zh": "伪史论以所谓“祛魅”为名挑战专业主流认知，但在证据、逻辑与认知层面存在严重谬误。",
+   "en": "Pseudo-history challenges mainstream professional knowledge in the name of 'disenchantment', but is seriously wrong on evidence, logic and cognition.",
+   "note": "Historian Wang Xudong; title: 伪史论者常以'反西方中心主义'自居，却深陷同一思维框架 (pseudo-historians style themselves anti-Western-centrist yet are trapped in the same frame)."
+  },
+  {
+   "id": 4460152,
+   "site": "gdcom",
+   "speaker": "subnational",
+   "date": "2024-07-23",
+   "title": "省商务厅认真传达学习贯彻落实党的二十届三中全会精神",
+   "url": "https://com.gd.gov.cn/gkmlpt/content/4/4460/post_4460152.html",
+   "zh": "充分彰显了我们的制度优越性、发展优越性、文明优越性。",
+   "en": "...fully demonstrated our institutional superiority, developmental superiority and civilizational superiority.",
+   "note": "Guangdong commerce department Party group study session on the 3rd Plenum. An official body asserting exactly the 文明优越 the formula says to transcend (文明优越性, 2 corpus docs, the other a business-press warning). A single slip, not a line; shows the boundary is not policed in local boilerplate."
+  },
+  {
+   "id": 12709245,
+   "site": "people",
+   "speaker": "state_media",
+   "date": "2026-03-15",
+   "title": "从文明交流中汲取破解全球难题的智慧（和音）",
+   "url": "http://opinion.people.com.cn/n1/2026/0315/c461529-40682002.html",
+   "zh": "冲突纷争的一个重要根源，在于一小部分国家固守“文明冲突论”“文明优越论”",
+   "en": "An important source of conflict is that a small number of countries cling to the 'clash of civilizations' and 'civilizational superiority' theories.",
+   "note": "Official usage always points 文明优越 outward at the West; no official document in the corpus applies it to a domestic voice."
+  },
+  {
+   "id": 900175886,
+   "site": "stdaily",
+   "speaker": "state_media",
+   "date": "2026-10-07",
+   "title": "习近平文化思想引领文化强国建设迈出坚实步伐",
+   "url": "https://www.stdaily.com/web/2026-10/07/content_592355.html",
+   "zh": "“以文明交流超越文明隔阂、文明互鉴超越文明冲突、文明包容超越文明优越。”",
+   "en": "'Transcend estrangement through exchange, clashes through mutual learning, and superiority through inclusiveness.'",
+   "note": "Xinhua Oct 2026 piece (relayed by ~20 sites) quotes the formula with 文明包容 in place of the Congress report's 文明共存: textual drift in the third clause (coexistence -> inclusiveness)."
+  }
+ ],
+ "lineage": [
+  {
+   "term": "人类文明新形态",
+   "first_date": "2021-11-16",
+   "first_id": 12651498,
+   "note": "Third historical resolution (gov). The term's July-2021 coinage is not held in the corpus, so earlier origin unverified here. 148 docs."
+  },
+  {
+   "term": "以文明交流超越文明隔阂…文明共存超越文明优越 (formula)",
+   "first_date": "2022-10-15",
+   "first_id": 900094545,
+   "note": "任仲平 article reposted on ncha, one day before the 20th Congress report (900094525, held dated 2022-10-26). 36 docs; 1 commentary."
+  },
+  {
+   "term": "文明优越",
+   "first_date": "2022-10-15",
+   "first_id": 900094545,
+   "note": "Same 任仲平 piece; enters the corpus only as the foil inside the formula. 43 docs."
+  },
+  {
+   "term": "全球文明倡议",
+   "first_date": "2023-05-06",
+   "first_id": 12704396,
+   "note": "mofcom. Proposed 2023-03-15; the heyuan repost of that speech readout (541713, 2023-03-16) has a title but no body. 380 docs."
+  },
+  {
+   "term": "中华文明的突出特性",
+   "first_date": "2023-06-03",
+   "first_id": 552841,
+   "note": "Xi, 文化传承发展座谈会 (2 June 2023), heyuan repost. 18 docs, 0 commentary."
+  },
+  {
+   "term": "文明型国家",
+   "first_date": "2021-12-10",
+   "first_id": 12727729,
+   "note": "杨光斌 on guancha. Zhang Weiwei says he proposed it in 2010 (900195307: 最终于2010年提出“文明型国家”命题和理论框架); self-report, pre-2021 not in corpus. 31 docs: 30 commentary, 1 People's Daily (2025-11-05)."
+  },
+  {
+   "term": "天下主义",
+   "first_date": "2015-11-26",
+   "first_id": 12726249,
+   "note": "程亚文 & 王义桅 book preface 《天命》 ('复兴天下主义'). 3 docs, all guancha."
+  },
+  {
+   "term": "文明型政党",
+   "first_date": "2026-07-01",
+   "first_id": 900035071,
+   "note": "王义桅 on CPC 105th anniversary. 2 docs, both guancha."
+  },
+  {
+   "term": "天下文明",
+   "first_date": "2026-07-01",
+   "first_id": 900035071,
+   "note": "First as 融通天下文明 in 王义桅; as a book title (谢茂松, 三联 2026-05) from 900135063 (2026-09-09). 3 docs, all guancha."
+  },
+  {
+   "term": "文化中心主义",
+   "first_date": "2026-06-23",
+   "first_id": 900160234,
+   "note": "CASS guard sentence; the only corpus use."
+  }
+ ],
+ "counts": [
+  {
+   "term": "人类文明新形态",
+   "by_speaker": {
+    "state_media": 55,
+    "subnational": 46,
+    "central": 33,
+    "commentary": 9,
+    "research": 4,
+    "party_theory": 1
+   }
+  },
+  {
+   "term": "全球文明倡议",
+   "by_speaker": {
+    "subnational": 136,
+    "central": 95,
+    "state_media": 92,
+    "commentary": 30,
+    "party_theory": 19,
+    "diplomacy": 4,
+    "research": 3,
+    "other": 1
+   }
+  },
+  {
+   "term": "以文明交流超越文明隔阂 (formula)",
+   "by_speaker": {
+    "subnational": 22,
+    "central": 7,
+    "state_media": 6,
+    "commentary": 1
+   }
+  },
+  {
+   "term": "文明优越",
+   "by_speaker": {
+    "subnational": 25,
+    "central": 8,
+    "state_media": 7,
+    "commentary": 2,
+    "business_press": 1
+   }
+  },
+  {
+   "term": "中华文明的突出特性",
+   "by_speaker": {
+    "subnational": 8,
+    "central": 7,
+    "state_media": 2,
+    "party_theory": 1
+   }
+  },
+  {
+   "term": "文明型国家",
+   "by_speaker": {
+    "commentary": 30,
+    "state_media": 1
+   }
+  },
+  {
+   "term": "天下文明",
+   "by_speaker": {
+    "commentary": 3
+   }
+  },
+  {
+   "term": "文明型政党",
+   "by_speaker": {
+    "commentary": 2
+   }
+  },
+  {
+   "term": "天下主义",
+   "by_speaker": {
+    "commentary": 3
+   }
+  },
+  {
+   "term": "文化中心主义",
+   "by_speaker": {
+    "research": 1
+   }
+  },
+  {
+   "term": "西方中心主义",
+   "by_speaker": {
+    "commentary": 19,
+    "state_media": 2,
+    "research": 2,
+    "central": 1,
+    "subnational": 1
+   }
+  },
+  {
+   "term": "文明冲突",
+   "by_speaker": {
+    "subnational": 29,
+    "commentary": 17,
+    "central": 13,
+    "state_media": 10,
+    "party_theory": 1,
+    "diplomacy": 1
+   }
+  }
+ ],
+ "reading": [
+  {
+   "claim": "Counts are documents whose title or body_text_cn contains the term (SQL LIKE, full corpus, all dates, reposts counted separately); speaker types from scripts/rnd/analysis/global_discourse/speakers.py ('other' = no speaker type). They differ slightly from finding 2's table, which was 'documents in window'.",
+   "label": "measured"
+  },
+  {
+   "claim": "The two vocabularies have almost disjoint carriers: 文明型国家/天下文明/文明型政党/天下主义 appear in 35 distinct commentary documents (union of the four terms) and in one state-media document; the official terms (人类文明新形态, 全球文明倡议, the formula) are carried overwhelmingly by state media, central and sub-national bodies.",
+   "label": "measured"
+  },
+  {
+   "claim": "Zhang Weiwei (the scholar) is named in 0 government, state-media or party-theory documents; every non-guancha hit for 张维为 is a false positive (officials named 张维 + 为 in appointment notices) or a LatePost sidebar headline.",
+   "label": "measured"
+  },
+  {
+   "claim": "The official line defines its civilization concept by modernization ('a new form of human civilization' created by Chinese modernization) and by pluralism (the four 'jointly advocate' clauses of the GCI), and it explicitly rules out cultural hegemony, imposing values and political systems, the clash-of-civilizations thesis and civilizational superiority.",
+   "label": "measured"
+  },
+  {
+   "claim": "Every official use of 文明优越 points outward (at 'a small number of countries' or at 论调 that 沉渣泛起); no official document in the corpus applies the warning to a domestic voice or to the civilizational-state school by name.",
+   "label": "measured"
+  },
+  {
+   "claim": "The commentary camp goes further than the official line in three specific ways: it makes civilization the basis of the state's and the Party's legitimacy (文明型国家, 文明型政党), it claims a paradigm shift beyond the nation-state, and it projects a 天下/tributary order as a universal good. None of these three moves appears in official text in the corpus.",
+   "label": "measured"
+  },
+  {
+   "claim": "The engagement is oblique, not a named debate: the CASS sentence, People's Daily's arm's-length 'three descriptions' framing, and Yang Ping's critique of Russia's civilizational state each police the boundary without naming a Chinese proponent.",
+   "label": "inferred"
+  },
+  {
+   "claim": "The commentary camp also self-guards with the official formula (王义桅's 文明没有高低优劣), so the disagreement is over how far the civilizational claim extends (legitimacy, hierarchy of orders), not over the formula itself.",
+   "label": "inferred"
+  },
+  {
+   "claim": "Within guancha itself the tributary order is contested: Tian Feilong praises 朝贡关系 as a universal order of peace (2023) while the Shi Yuanhua interview (2026) treats 'tributary system' as a foreign distortion to be refuted.",
+   "label": "measured"
+  },
+  {
+   "claim": "The CASS sentence is a guard aimed specifically at the commentary camp's reading.",
+   "label": "inferred"
+  },
+  {
+   "claim": "The formula's earliest wording is earlier than 2022 (e.g. in Xi speeches before the 20th Congress); the corpus earliest is 2022-10-15.",
+   "label": "unverified"
+  },
+  {
+   "claim": "Several guancha bodies (900200671, 900090984, 12725981, 900175926, 900065595) are page 1 of a multi-page article, so later pages may contain further engagement not captured here.",
+   "label": "measured"
+  }
+ ]
+}

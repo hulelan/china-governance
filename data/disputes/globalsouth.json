@@ -1,0 +1,891 @@
+{
+ "title": "Who owns the Global South, what kind of multipolarity, and whether the rules-based order is dead",
+ "question": "Three linked disputes in the 2025-07 to 2026-11 corpus: who speaks for the Global South (and whether China is its member or its leader); whether multipolarity brings order or blocs; and how Chinese voices read the 'middle powers' moment after Carney's Davos 2026 speech, against the official counter-terms.",
+ "subdisputes": [
+  {
+   "key": "global_south",
+   "title": "A. Who owns the Global South",
+   "question": "Is China a member of, a leader of, or a squeezer of the Global South, and is India a co-member or a rival claimant?",
+   "camps": [
+    {
+     "name": "Official: China is a natural member, and the one that unites and leads",
+     "who": "MFA, Xi's letters and talks, central portals, state media",
+     "summary_en": "Official text pairs 'largest developing country' with 'member of the Global South', calls China a 'natural' or 'rightful' member, and in its own summaries says China 'unites and leads' the Global South. India is addressed as a fellow 'important member', never as a rival.",
+     "quotes": [
+      {
+       "id": 900154004,
+       "site": "mfa",
+       "speaker": "diplomacy: Xi letter to the GDI 5th-anniversary dialogue",
+       "date": "2026-09-26",
+       "title": "习近平向全球发展倡议5周年高级别对话会致贺信（2026-09-26）",
+       "url": "https://www.mfa.gov.cn/zyxw/202609/t20260926_12031563.shtml",
+       "zh": "作为最大发展中国家和全球南方一员，中国愿同各方一道",
+       "en": "As the largest developing country and a member of the Global South, China is ready to work with all parties"
+      },
+      {
+       "id": 900029785,
+       "site": "guancha",
+       "speaker": "commentary: diplomacy (MFA vice minister 苗得雨), carried by commentary site",
+       "date": "2026-06-17",
+       "title": "外交部：全球南方群体性的崛起不可阻挡，少数国家垄断国际事务的时代已经一去不返",
+       "url": "https://www.guancha.cn/internation/2026_06_17_820778.shtml",
+       "zh": "作为全球南方的天然成员，中国始终心系全球南方、扎根全球南方",
+       "en": "As a natural member of the Global South, China has always kept the Global South at heart and stayed rooted in it"
+      },
+      {
+       "id": 900038970,
+       "site": "stdaily",
+       "speaker": "state_media",
+       "date": "2026-07-11",
+       "title": "执大象 天下往——2026年上半年中国元首外交纪实",
+       "url": "https://www.stdaily.com/web/2026-07/11/content_545739.html",
+       "zh": "作为最大的发展中国家和全球南方当然成员",
+       "en": "As the largest developing country and a rightful member of the Global South"
+      },
+      {
+       "id": 900154072,
+       "site": "mfa",
+       "speaker": "diplomacy: MFA theory article on Xi's diplomatic thought",
+       "date": "2026-08-19",
+       "title": "深学笃行习近平外交思想 奋力开创中国特色大国外交新局面（2026-08-12）",
+       "url": "https://www.mfa.gov.cn/wjbzhd/202608/t20260812_12002547.shtml",
+       "zh": "团结引领全球南方联合自强",
+       "en": "[China] unites and leads the Global South in self-strengthening through unity"
+      },
+      {
+       "id": 900142001,
+       "site": "miit",
+       "speaker": "central (Xinhua feature on Xi at the New Delhi BRICS summit, MIIT portal)",
+       "date": "2026-09-15",
+       "title": "勇做时代先锋 汇聚团结力量——习近平主席赴印度新德里出席金砖国家领导人第十八次会晤纪实",
+       "url": "https://www.miit.gov.cn/xwfb/szyw/art/2026/art_b689e16ef9124e43a3a455d5ebbcb319.html",
+       "zh": "中国以“大金砖合作”引领全球南方大发展",
+       "en": "Through 'greater BRICS cooperation', China leads the Global South's great development"
+      },
+      {
+       "id": 900207108,
+       "site": "ce",
+       "speaker": "state_media (Xinhua readout, Xi meets Modi)",
+       "date": "2025-08-31",
+       "title": "习近平会见印度总理莫迪",
+       "url": "http://www.ce.cn/xwzx/gnsz/szyw/202508/t20250831_2459931.shtml",
+       "zh": "是世界上人口最多的两个国家，也是全球南方重要成员",
+       "en": "[China and India] are the world's two most populous countries and also important members of the Global South"
+      }
+     ]
+    },
+    {
+     "name": "Commentary: India as a rival claimant and a 'bridge' to the West",
+     "who": "Guancha columnists and interviewees (刘宗义, 雁默, a Pakistani contributor)",
+     "summary_en": "Commentary reads India's Global South advocacy as competitive: India casts itself as the South's spokesman and as a bridge to the US and the West, and on many issues aims at China rather than at the US.",
+     "quotes": [
+      {
+       "id": 900138544,
+       "site": "guancha",
+       "speaker": "commentary: 刘宗义 (interview)",
+       "date": "2026-09-13",
+       "title": "观察新德里峰会，需先厘清两个关键事实",
+       "url": "https://www.guancha.cn/liuzongyi/2026_09_13_900415.shtml",
+       "zh": "印度确实一直试图把自己定位为全球南方与美西方之间的桥梁",
+       "en": "India has indeed long tried to position itself as the bridge between the Global South and the US-led West"
+      },
+      {
+       "id": 900138544,
+       "site": "guancha",
+       "speaker": "commentary: 刘宗义 (interview)",
+       "date": "2026-09-13",
+       "title": "观察新德里峰会，需先厘清两个关键事实",
+       "url": "https://www.guancha.cn/liuzongyi/2026_09_13_900415.shtml",
+       "zh": "在很多具体问题上，印度所针对的实际上更多是中国，而不是美国",
+       "en": "On many concrete issues, what India is really aiming at is China more than the US"
+      },
+      {
+       "id": 12759776,
+       "site": "guancha",
+       "speaker": "commentary: 沙希德·哈什马特 (Pakistani contributor)",
+       "date": "2025-08-27",
+       "title": "沙希德·哈什马特：王毅外长南亚三国行，释放了多个信号",
+       "url": "https://www.guancha.cn/ShahidHashmat/2025_08_27_787910.shtml",
+       "zh": "印度一直谋求主导该运动，并将自身塑造为“全球南方”的领导者",
+       "en": "India has always sought to dominate the [Non-Aligned] movement and to cast itself as the leader of the 'Global South'"
+      },
+      {
+       "id": 900128534,
+       "site": "guancha",
+       "speaker": "commentary: 雁默 (columnist)",
+       "date": "2026-09-05",
+       "title": "雁默：印度怕中国“木马屠城”，中国怕印度“城屠木马”",
+       "url": "https://www.guancha.cn/yanmo/2026_09_05_830063.shtml",
+       "zh": "日后新德里连谎称自己是全球南方领袖都难以启齿",
+       "en": "New Delhi would later be too embarrassed even to falsely claim to be the leader of the Global South"
+      }
+     ]
+    },
+    {
+     "name": "The 'China squeeze' charge and the official rebuttal",
+     "who": "MFA (毛宁), MOFCOM (鄢东), NDRC (李超), relayed by 科技日报, 新华, 求是, Guancha",
+     "summary_en": "Reported charge (Peterson Institute / Arvind Subramanian, Foreign Affairs): Chinese manufacturing takes the industrialisation ladder away from the Global South. Every official voice answers with flat denial and motive attribution: it is the 'China threat theory' in new form, meant to drive a wedge between China and developing countries.",
+     "quotes": [
+      {
+       "id": 900039534,
+       "site": "guancha",
+       "speaker": "commentary: 苏奎 (columnist), describing the charge",
+       "date": "2026-07-13",
+       "title": "居心叵测！“中国挤压”是印度学者的最新离间话术-苏奎",
+       "url": "https://www.guancha.cn/Sukui/2026_07_13_823604.shtml",
+       "zh": "并“挤占”了全球南方国家在中低端制造方面的发展空间",
+       "en": "[The claim is that China] also 'crowds out' the room for Global South countries to develop in low- and mid-end manufacturing"
+      },
+      {
+       "id": 900065553,
+       "site": "stdaily",
+       "speaker": "state_media (科技日报) quoting MFA spokesperson 毛宁",
+       "date": "2026-07-22",
+       "title": "正听丨炮制“中国挤压论”，这又是一出什么戏",
+       "url": "https://www.stdaily.com/web/gdxw/2026-07/21/content_550880.html",
+       "zh": "所谓中国挤压显然不符合事实，全球南方国家也不会认同",
+       "en": "The so-called China squeeze is plainly not factual, and Global South countries will not accept it"
+      },
+      {
+       "id": 900065553,
+       "site": "stdaily",
+       "speaker": "state_media (科技日报 commentary, 张梦然)",
+       "date": "2026-07-22",
+       "title": "正听丨炮制“中国挤压论”，这又是一出什么戏",
+       "url": "https://www.stdaily.com/web/gdxw/2026-07/21/content_550880.html",
+       "zh": "试图在发展中国家之间打进楔子",
+       "en": "[The authors] are trying to drive a wedge among developing countries"
+      },
+      {
+       "id": 900075740,
+       "site": "guancha",
+       "speaker": "commentary site relaying MOFCOM vice minister 鄢东",
+       "date": "2026-07-28",
+       "title": "商务部回应某些国家炮制的“中国挤压论”",
+       "url": "https://www.guancha.cn/internation/2026_07_28_825364.shtml",
+       "zh": "企图破坏中国同全球南方国家合作",
+       "en": "[The China-squeeze theory] seeks to sabotage China's cooperation with Global South countries"
+      },
+      {
+       "id": 900122102,
+       "site": "stdaily",
+       "speaker": "state_media (科技日报) quoting NDRC spokesperson 李超",
+       "date": "2026-08-29",
+       "title": "“中国挤压”论是对中国的又一次抹黑",
+       "url": "https://www.stdaily.com/web/gdxw/2026-08/29/content_571726.html",
+       "zh": "是基于零和博弈，对中国的又一次攻击抹黑",
+       "en": "[The China squeeze] rests on zero-sum thinking and is one more smear against China"
+      }
+     ]
+    },
+    {
+     "name": "Dissent inside the Chinese debate: do not just deny it",
+     "who": "Economist 姚洋 (Tsinghua Wudaokou forum, via Guancha)",
+     "summary_en": "One Chinese economist argues flat denial is a trap and that developing countries really do feel China's pressure; the official rebuttals never concede this.",
+     "quotes": [
+      {
+       "id": 900146305,
+       "site": "guancha",
+       "speaker": "commentary site reporting 姚洋 (economist)",
+       "date": "2026-09-19",
+       "title": "“对方给我们下套，为什么要往里钻？”",
+       "url": "https://www.guancha.cn/CaiJing/2026_09_19_901255.shtml",
+       "zh": "如果非得说没有这个问题，就又落入对方的圈套",
+       "en": "If we insist there is no such problem, we fall into the other side's trap again"
+      },
+      {
+       "id": 900146305,
+       "site": "guancha",
+       "speaker": "commentary site reporting 姚洋 (economist)",
+       "date": "2026-09-19",
+       "title": "“对方给我们下套，为什么要往里钻？”",
+       "url": "https://www.guancha.cn/CaiJing/2026_09_19_901255.shtml",
+       "zh": "发展中国家现在也感觉到中国的压力",
+       "en": "Developing countries now also feel pressure from China"
+      },
+      {
+       "id": 900146305,
+       "site": "guancha",
+       "speaker": "commentary site reporting 姚洋 (economist)",
+       "date": "2026-09-19",
+       "title": "“对方给我们下套，为什么要往里钻？”",
+       "url": "https://www.guancha.cn/CaiJing/2026_09_19_901255.shtml",
+       "zh": "长期来说，这会对中国国际空间形成挤压",
+       "en": "In the long run this will squeeze China's own international room"
+      }
+     ]
+    }
+   ],
+   "counts": [
+    {
+     "term": "全球南方",
+     "by_speaker": {
+      "subnational": 160,
+      "central": 94,
+      "research": 7,
+      "state_media": 268,
+      "commentary": 235,
+      "business_press": 21,
+      "party_theory": 42,
+      "diplomacy": 28
+     }
+    },
+    {
+     "term": "发展中国家",
+     "by_speaker": {
+      "subnational": 142,
+      "central": 121,
+      "research": 13,
+      "state_media": 350,
+      "commentary": 201,
+      "business_press": 28,
+      "party_theory": 36,
+      "diplomacy": 22
+     }
+    },
+    {
+     "term": "全球南方一员",
+     "by_speaker": {
+      "state_media": 3,
+      "central": 1,
+      "party_theory": 1,
+      "subnational": 4,
+      "diplomacy": 1,
+      "research": 1
+     }
+    },
+    {
+     "term": "全球南方当然成员 / 当然一员 / 天然成员",
+     "by_speaker": {
+      "state_media": 2,
+      "commentary": 1
+     }
+    },
+    {
+     "term": "发展中国家和全球南方 (paired self-description)",
+     "by_speaker": {
+      "commentary": 3,
+      "state_media": 5,
+      "subnational": 8,
+      "party_theory": 2,
+      "central": 2,
+      "diplomacy": 1,
+      "research": 1
+     }
+    },
+    {
+     "term": "引领全球南方",
+     "by_speaker": {
+      "central": 2,
+      "subnational": 9,
+      "state_media": 2,
+      "diplomacy": 2
+     }
+    },
+    {
+     "term": "中国挤压",
+     "by_speaker": {
+      "commentary": 5,
+      "state_media": 6,
+      "party_theory": 2
+     }
+    },
+    {
+     "term": "印度 within 40 chars of 全球南方",
+     "by_speaker": {
+      "state_media": 8,
+      "commentary": 26,
+      "central": 5,
+      "subnational": 6,
+      "party_theory": 1
+     }
+    },
+    {
+     "term": "DENOMINATOR: distinct titles per speaker type, 2025-07-01 to 2026-11-12, body non-empty",
+     "by_speaker": {
+      "subnational": 56962,
+      "central": 14589,
+      "business_press": 6568,
+      "research": 373,
+      "state_media": 28212,
+      "commentary": 20430,
+      "party_theory": 924,
+      "diplomacy": 134
+     }
+    }
+   ],
+   "reading": [
+    {
+     "claim": "Diplomacy uses 全球南方 in 28 of 134 distinct titles (209 per 1,000), the highest rate of any speaker type; commentary 235 of 20,430, state media 268 of 28,212.",
+     "label": "measured"
+    },
+    {
+     "claim": "The official self-description is membership-plus-size ('largest developing country and member of the Global South'); 'natural/rightful member' appears in 3 titles, all in mid-2026 MFA framing relayed by media.",
+     "label": "measured"
+    },
+    {
+     "claim": "Official text does say China 'leads' (引领) the Global South: 15 titles (central 2, diplomacy 2, state media 2, sub-national 9), mostly around the September 2026 New Delhi BRICS summit; so 'never claims leadership' would be false. What it never says is that India is a rival for that role: every official India passage in the scan calls India a fellow 'important member'.",
+     "label": "measured"
+    },
+    {
+     "claim": "India-as-rival-claimant framing appears only in commentary (刘宗义, 雁默, a Pakistani contributor); India within 40 characters of 全球南方 is 26 commentary titles against 5 central and 0 diplomacy.",
+     "label": "measured"
+    },
+    {
+     "claim": "Every official response to the 'China squeeze' (MFA, MOFCOM, NDRC, Xinhua, 求是) is denial plus motive attribution; none concedes that developing countries feel competitive pressure. The only Chinese voice found conceding it is 姚洋, and he argues denial is itself the trap.",
+     "label": "measured"
+    },
+    {
+     "claim": "Commentary takes on the India-rivalry question that diplomacy will not name, a division of labour consistent with finding 1 of global-discourse-map.md.",
+     "label": "inferred"
+    }
+   ]
+  },
+  {
+   "key": "multipolarity",
+   "title": "B. What kind of multipolarity",
+   "question": "Does multipolarity bring a fairer order or a world of rival blocs, and how does official text answer the worry?",
+   "camps": [
+    {
+     "name": "Official: multipolarity, but 'equal and orderly'",
+     "who": "15th FYP proposal, Xi at the SCO+ meeting (Sept 2026), joint statements, MFA",
+     "summary_en": "Official text never uses the bare word as a goal. It attaches 平等有序 and pairs it with 普惠包容的经济全球化, and in the September 2026 SCO+ speech Xi asks outright 'what kind of multipolarity does the world need?', answering that bloc politics and a condominium of a few powers are not real multilateralism.",
+     "quotes": [
+      {
+       "id": 12650888,
+       "site": "gov",
+       "speaker": "central: CPC Central Committee proposal for the 15th Five-Year Plan",
+       "date": "2025-10-28",
+       "title": "中共中央关于制定国民经济和社会发展第十五个五年规划的建议",
+       "url": "https://www.gov.cn/zhengce/202510/content_7046052.htm",
+       "zh": "倡导平等有序的世界多极化、普惠包容的经济全球化",
+       "en": "Advocate an equal and orderly multipolar world and an inclusive economic globalisation that benefits all"
+      },
+      {
+       "id": 900124315,
+       "site": "sastind",
+       "speaker": "central: Xi, speech at the SCO+ meeting (full text)",
+       "date": "2026-09-02",
+       "title": "习近平在“上海合作组织+”会议上的讲话（全文）",
+       "url": "https://www.sastind.gov.cn/n10086200/n10086319/c10772594/content.html",
+       "zh": "世界需要怎样的多极化？各国如何参与和推动多极化？",
+       "en": "What kind of multipolarity does the world need? How should countries take part in and advance it?"
+      },
+      {
+       "id": 900124315,
+       "site": "sastind",
+       "speaker": "central: Xi, speech at the SCO+ meeting (full text)",
+       "date": "2026-09-02",
+       "title": "习近平在“上海合作组织+”会议上的讲话（全文）",
+       "url": "https://www.sastind.gov.cn/n10086200/n10086319/c10772594/content.html",
+       "zh": "一国独霸、几方共治、集团政治不是真正的多边主义",
+       "en": "One-power hegemony, rule by a few, and bloc politics are not genuine multilateralism"
+      },
+      {
+       "id": 900124315,
+       "site": "sastind",
+       "speaker": "central: Xi, speech at the SCO+ meeting (full text)",
+       "date": "2026-09-02",
+       "title": "习近平在“上海合作组织+”会议上的讲话（全文）",
+       "url": "https://www.sastind.gov.cn/n10086200/n10086319/c10772594/content.html",
+       "zh": "均衡有序、遵守法治是必然要求",
+       "en": "Balance, order and the rule of law are essential requirements"
+      },
+      {
+       "id": 900154010,
+       "site": "mfa",
+       "speaker": "diplomacy: Han Zheng at the 81st UNGA general debate",
+       "date": "2026-09-26",
+       "title": "韩正出席第81届联合国大会一般性辩论并发表讲话（2026-09-27）",
+       "url": "https://www.mfa.gov.cn/zyxw/202609/t20260927_12031831.shtml",
+       "zh": "摒弃冷战思维、阵营对抗",
+       "en": "Abandon Cold War thinking and bloc confrontation"
+      },
+      {
+       "id": 900136638,
+       "site": "sastind",
+       "speaker": "central (feature on the BRICS summit, SASTIND portal)",
+       "date": "2026-09-11",
+       "title": "推动金砖合作实现大发展、展现大作为——写在习近平主席出席金砖国家领导人第十八次会晤之际",
+       "url": "https://www.sastind.gov.cn/n10086200/n10086319/c10773704/content.html",
+       "zh": "各国人民企盼的，不是“新冷战”，不是“小圈子”",
+       "en": "What the world's peoples hope for is not a 'new Cold War', not 'small cliques'"
+      }
+     ]
+    },
+    {
+     "name": "Commentary: multipolar is not the same as orderly",
+     "who": "Guancha interviews and translated foreign voices (Sachs, 张维为, 乐文特, Mearsheimer, 周波)",
+     "summary_en": "Commentary debates the bare concept: the world is already multipolar but has no multilateral order; the danger is fragmentation into sealed blocs; some foresee two armed camps, while 周波 rejects the 'new Cold War' label itself.",
+     "quotes": [
+      {
+       "id": 12727660,
+       "site": "guancha",
+       "speaker": "commentary: Jeffrey Sachs in dialogue with 张维为",
+       "date": "2025-08-09",
+       "title": "张维为对话萨克斯：让北京或上海成为联合国主要机构所在地-张维为、杰弗里·萨克斯",
+       "url": "https://www.guancha.cn/ZhangWeiWei/2025_08_09_785976.shtml",
+       "zh": "如今的世界是多极化的世界，但并非是多边的世界",
+       "en": "Today's world is a multipolar world, but not a multilateral one"
+      },
+      {
+       "id": 12727660,
+       "site": "guancha",
+       "speaker": "commentary: 张维为 (host) to Sachs",
+       "date": "2025-08-09",
+       "title": "张维为对话萨克斯：让北京或上海成为联合国主要机构所在地-张维为、杰弗里·萨克斯",
+       "url": "https://www.guancha.cn/ZhangWeiWei/2025_08_09_785976.shtml",
+       "zh": "多极化其实已经存在了，但多极世界秩序尚未形成",
+       "en": "Multipolarity already exists, but a multipolar world order has not yet formed"
+      },
+      {
+       "id": 900124795,
+       "site": "guancha",
+       "speaker": "commentary: 乐文特 (former Hungarian consul-general in Shanghai)",
+       "date": "2026-09-02",
+       "title": "匈牙利前驻上海总领事乐文特：欧洲要补的不是对华立场，而是自身竞争力",
+       "url": "https://www.guancha.cn/LeventeHorvath/2026_09_02_829705.shtml",
+       "zh": "最大的风险并非多极化本身，而是多极世界有可能分裂为相互竞争、彼此隔绝的集团",
+       "en": "The biggest risk is not multipolarity itself but that a multipolar world may split into competing, mutually isolated blocs"
+      },
+      {
+       "id": 900144552,
+       "site": "guancha",
+       "speaker": "commentary: John Mearsheimer (translated interview)",
+       "date": "2025-09-23",
+       "title": "别等了，特朗普并不想结束这场战争",
+       "url": "https://www.guancha.cn/MiErSiHaiMo/2025_09_23_791007.shtml",
+       "zh": "加速世界走向两大武装集团对峙的新冷战格局",
+       "en": "is speeding the world toward a new Cold War of two armed blocs facing off"
+      },
+      {
+       "id": 900034182,
+       "site": "guancha",
+       "speaker": "commentary: 周波 (interview)",
+       "date": "2026-01-14",
+       "title": "周波：幻想成为棋手的日本，正在认清台海红线不能碰",
+       "url": "https://www.guancha.cn/ZhouBo3/2026_01_14_803782.shtml",
+       "zh": "我之所以拒绝“新冷战”的说法",
+       "en": "The reason I reject the term 'new Cold War'"
+      }
+     ]
+    }
+   ],
+   "counts": [
+    {
+     "term": "平等有序的世界多极化",
+     "by_speaker": {
+      "subnational": 47,
+      "central": 27,
+      "state_media": 54,
+      "commentary": 8,
+      "party_theory": 11,
+      "diplomacy": 4
+     }
+    },
+    {
+     "term": "普惠包容的经济全球化",
+     "by_speaker": {
+      "subnational": 52,
+      "central": 36,
+      "state_media": 67,
+      "commentary": 12,
+      "party_theory": 14,
+      "diplomacy": 6,
+      "business_press": 1
+     }
+    },
+    {
+     "term": "多极化 (bare, any context)",
+     "by_speaker": {
+      "subnational": 86,
+      "central": 42,
+      "state_media": 95,
+      "commentary": 76,
+      "party_theory": 23,
+      "diplomacy": 6,
+      "research": 3,
+      "business_press": 4
+     }
+    },
+    {
+     "term": "多极世界",
+     "by_speaker": {
+      "state_media": 19,
+      "commentary": 25,
+      "central": 11,
+      "subnational": 23,
+      "business_press": 1,
+      "party_theory": 3,
+      "diplomacy": 5
+     }
+    },
+    {
+     "term": "世界需要怎样的多极化",
+     "by_speaker": {
+      "central": 3,
+      "party_theory": 2,
+      "subnational": 5,
+      "state_media": 7
+     }
+    },
+    {
+     "term": "阵营对抗",
+     "by_speaker": {
+      "commentary": 29,
+      "state_media": 20,
+      "subnational": 18,
+      "party_theory": 5,
+      "central": 7,
+      "diplomacy": 4,
+      "research": 1
+     }
+    },
+    {
+     "term": "冷战思维",
+     "by_speaker": {
+      "state_media": 10,
+      "commentary": 17,
+      "central": 5,
+      "subnational": 10,
+      "party_theory": 3,
+      "diplomacy": 2
+     }
+    },
+    {
+     "term": "新冷战",
+     "by_speaker": {
+      "commentary": 26,
+      "central": 2,
+      "subnational": 1
+     }
+    },
+    {
+     "term": "集团政治",
+     "by_speaker": {
+      "state_media": 4,
+      "commentary": 1,
+      "party_theory": 1,
+      "central": 1,
+      "subnational": 1
+     }
+    },
+    {
+     "term": "多极化/多极世界 within 30 chars of 无序/混乱/失序",
+     "by_speaker": {}
+    },
+    {
+     "term": "多极化不等于 / 多极化并不 / 多极化不是 / 无序的多极",
+     "by_speaker": {}
+    },
+    {
+     "term": "DENOMINATOR: distinct titles per speaker type, 2025-07-01 to 2026-11-12, body non-empty",
+     "by_speaker": {
+      "subnational": 56962,
+      "central": 14589,
+      "business_press": 6568,
+      "research": 373,
+      "state_media": 28212,
+      "commentary": 20430,
+      "party_theory": 924,
+      "diplomacy": 134
+     }
+    }
+   ],
+   "reading": [
+    {
+     "claim": "The qualified form 平等有序的世界多极化 is official and state-media vocabulary (central 27, state media 54, sub-national 47, party theory 11, diplomacy 4) and rare in commentary (8); its twin 普惠包容的经济全球化 tracks it (central 36, state media 67, sub-national 52, commentary 12). It is in the 15th FYP proposal (12650888, 2025-10-28).",
+     "label": "measured"
+    },
+    {
+     "claim": "Xi's 1 Sept 2026 SCO+ speech is titled after the qualifier and explicitly poses 'what kind of multipolarity', naming 'rule by a few' and 'bloc politics' as what it is not; 17 titles across central, party, state media and sub-national repeat the question.",
+     "label": "measured"
+    },
+    {
+     "claim": "'New Cold War' is almost entirely a commentary word (26 titles) and appears in official text only negated ('not a new Cold War', 2 central titles); official text prefers 冷战思维 / 阵营对抗 as things to 'abandon' or 'oppose'.",
+     "label": "measured"
+    },
+    {
+     "claim": "No document in any speaker type pairs multipolarity with disorder (无序/混乱/失序 within 30 characters): a measured null. The fragmentation worry is voiced through 'blocs' and 'not multilateral', not 'disorder'.",
+     "label": "measured"
+    },
+    {
+     "claim": "Official text never concedes that multipolarity itself carries risk; risk is always attributed to hegemony, bloc politics or Cold War thinking by others. The qualifier 平等有序 reads as the official answer to the commentary worry (multipolar but not multilateral, bloc fragmentation).",
+     "label": "inferred"
+    }
+   ]
+  },
+  {
+   "key": "middle_powers",
+   "title": "C. Middle powers and the 'rules-based order'",
+   "question": "How do Chinese voices read Carney's Davos 2026 claim that the rules-based order is over and his call for middle powers to unite, and what counter-terms does official text use?",
+   "camps": [
+    {
+     "name": "Commentary: Carney confirms the US-led order is finished",
+     "who": "Guancha columnists (晨枫, 韩笑鹏, 翟东升)",
+     "summary_en": "Commentary takes Carney's speech as a Western confession: the 'rules-based order' was always a fiction and the US itself is ending it.",
+     "quotes": [
+      {
+       "id": 12726231,
+       "site": "guancha",
+       "speaker": "commentary: 晨枫 (columnist), quoting Carney",
+       "date": "2026-01-22",
+       "title": "晨枫：准入加拿大的中国电车，是假装鲶鱼的鲸鱼",
+       "url": "https://www.guancha.cn/ChenFeng3/2026_01_22_804680.shtml",
+       "zh": "卡尼在演讲中称，“基于规则的旧秩序已终结，且将一去不返”",
+       "en": "Carney said in his speech that 'the old rules-based order has ended and will not return'"
+      },
+      {
+       "id": 900036301,
+       "site": "guancha",
+       "speaker": "commentary: 韩笑鹏 (columnist), quoting Carney",
+       "date": "2026-01-25",
+       "title": "韩笑鹏：2026年的冬季达沃斯，西方自己打了个“冷战”",
+       "url": "https://www.guancha.cn/XiaoPeng/2026_01_25_804974.shtml",
+       "zh": "所谓的‘基于规则的国际秩序’，其实是虚假的",
+       "en": "the so-called 'rules-based international order' was in fact false"
+      },
+      {
+       "id": 900036301,
+       "site": "guancha",
+       "speaker": "commentary: 韩笑鹏 (columnist)",
+       "date": "2026-01-25",
+       "title": "韩笑鹏：2026年的冬季达沃斯，西方自己打了个“冷战”",
+       "url": "https://www.guancha.cn/XiaoPeng/2026_01_25_804974.shtml",
+       "zh": "这是对所有中等强国的警告",
+       "en": "This is a warning to all middle powers"
+      },
+      {
+       "id": 12759693,
+       "site": "guancha",
+       "speaker": "commentary: 翟东升 (scholar)",
+       "date": "2026-04-14",
+       "title": "翟东升：那个所谓“基于规则”的国际秩序正在被美国人亲手终结",
+       "url": "https://www.guancha.cn/DiDongSheng/2026_04_14_813520.shtml",
+       "zh": "那个所谓基于规则的国际秩序正在被美国人亲手终结",
+       "en": "That so-called rules-based international order is being ended by the Americans with their own hands"
+      }
+     ]
+    },
+    {
+     "name": "Commentary: but Carney's middle powers are still the West",
+     "who": "张维为 and Fudan China Institute colleagues; 黄平 via Guancha",
+     "summary_en": "The skeptical reading: Carney's 'third way' is a club of Western middle powers defending Western interests; China's realistic goal is that middle powers do not pick sides.",
+     "quotes": [
+      {
+       "id": 12726430,
+       "site": "guancha",
+       "speaker": "commentary: 张维为 (Fudan China Institute)",
+       "date": "2026-03-22",
+       "title": "张维为《这就是中国》323期|“卡尼主义”：第三条道路？-张维为、范勇鹏",
+       "url": "https://www.guancha.cn/ZhangWeiWei/2026_03_22_810903.shtml",
+       "zh": "他所讲的“中等强国”仍然是指西方国家",
+       "en": "The 'middle powers' he talks about still means Western countries"
+      },
+      {
+       "id": 12726430,
+       "site": "guancha",
+       "speaker": "commentary: 张维为 (Fudan China Institute)",
+       "date": "2026-03-22",
+       "title": "张维为《这就是中国》323期|“卡尼主义”：第三条道路？-张维为、范勇鹏",
+       "url": "https://www.guancha.cn/ZhangWeiWei/2026_03_22_810903.shtml",
+       "zh": "他骨子里还是要捍卫西方国家的所谓“共同利益”",
+       "en": "At bottom he still wants to defend the so-called 'common interests' of Western countries"
+      },
+      {
+       "id": 900031226,
+       "site": "guancha",
+       "speaker": "commentary: 戴维来 (Fudan China Institute)",
+       "date": "2026-06-21",
+       "title": "张维为《这就是中国》第336集：中等强国的崛起-张维为、戴维来",
+       "url": "https://www.guancha.cn/ZhangWeiWei/2026_06_21_821114.shtml",
+       "zh": "它们就是集体走向“C”位的“中等强国”",
+       "en": "They are the 'middle powers', moving together to centre stage"
+      },
+      {
+       "id": 900028857,
+       "site": "guancha",
+       "speaker": "commentary site reporting 黄平",
+       "date": "2026-06-13",
+       "title": "“中美独占，中等强国插不进脚”",
+       "url": "https://www.guancha.cn/internation/2026_06_13_820362.shtml",
+       "zh": "当前的真正目标应该是让中等强国不选边",
+       "en": "The real goal for now should be to keep the middle powers from taking sides"
+      }
+     ]
+    },
+    {
+     "name": "Official: no 'middle powers', no 'rules-based order'; the UN and international law instead",
+     "who": "Xi's talks and joint statements, People's Daily commentary, MFA",
+     "summary_en": "Official text does not take up 中等强国 or Carney's diagnosis. It answers with its own pair, 'the UN-centred international system and the international-law-based international order', treats 'rules-based' as a US code for rules that suit the US, and reads Carney's visit as a bilateral reset only.",
+     "quotes": [
+      {
+       "id": 12757602,
+       "site": "miit",
+       "speaker": "central: Xi meets Spanish PM Sánchez (MIIT portal)",
+       "date": "2026-04-14",
+       "title": "习近平会见西班牙首相桑切斯",
+       "url": "https://www.miit.gov.cn/xwfb/szyw/art/2026/art_0c4e1dd40e0f4c89af3f61c383873c19.html",
+       "zh": "维护以联合国为核心的国际体系和以国际法为基础的国际秩序",
+       "en": "Uphold the UN-centred international system and the international order based on international law"
+      },
+      {
+       "id": 900058958,
+       "site": "people",
+       "speaker": "state_media: People's Daily 寰宇平 commentary",
+       "date": "2026-07-16",
+       "title": "一篇声明，满纸“双标”（寰宇平）",
+       "url": "http://opinion.people.com.cn/n1/2026/0716/c461529-40761434.html",
+       "zh": "美国所谓“基于规则的秩序”，不过是“基于对美国有利规则的秩序”",
+       "en": "The US so-called 'rules-based order' is nothing but an 'order based on rules that favour the US'"
+      },
+      {
+       "id": 12709267,
+       "site": "people",
+       "speaker": "state_media: People's Daily 和音 commentary on Carney's visit",
+       "date": "2026-01-17",
+       "title": "中加关系转圜向好蕴含的启示与机遇（和音）",
+       "url": "http://opinion.people.com.cn/n1/2026/0117/c461529-40646973.html",
+       "zh": "中加关系在经历7年波折后重归正确发展轨道",
+       "en": "After seven years of setbacks, China-Canada relations are back on the right track"
+      },
+      {
+       "id": 900141987,
+       "site": "miit",
+       "speaker": "central: BRICS New Delhi Declaration (MIIT portal)",
+       "date": "2026-09-15",
+       "title": "金砖国家领导人第十八次会晤新德里宣言（全文）",
+       "url": "https://www.miit.gov.cn/xwfb/szyw/art/2026/art_116602ae8eef46c288ce74238951c75e.html",
+       "zh": "包容、可预期和基于规则的多边贸易体制",
+       "en": "an inclusive, predictable and rules-based multilateral trading system"
+      }
+     ]
+    },
+    {
+     "name": "Research: the term has a top-level pedigree",
+     "who": "CASS (丁工, Institute of Asia-Pacific and Global Strategy)",
+     "summary_en": "The one research text claims Xi himself used 中等强国 in July 2024 (of Kazakhstan), so the concept has official sanction even though it is absent from official text in the window.",
+     "quotes": [
+      {
+       "id": 900160201,
+       "site": "cass",
+       "speaker": "research: 丁工 (CASS)",
+       "date": "2026-08-25",
+       "title": "【重大成果】探究中等强国在全球治理中的效用",
+       "url": "https://www.cass.cn/xueshuchengguo/guojiyanjiuxuebu/202608/t20260825_6064517.shtml",
+       "zh": "习近平主席在外交场合明确使用“中等强国”这一概念",
+       "en": "President Xi explicitly used the concept of 'middle power' in a diplomatic setting"
+      }
+     ]
+    }
+   ],
+   "counts": [
+    {
+     "term": "中等强国",
+     "by_speaker": {
+      "commentary": 41,
+      "research": 1,
+      "business_press": 1
+     }
+    },
+    {
+     "term": "卡尼 within 40 chars of 加拿大/达沃斯/总理",
+     "by_speaker": {
+      "central": 3,
+      "subnational": 3,
+      "state_media": 11,
+      "commentary": 126,
+      "business_press": 4,
+      "party_theory": 2
+     }
+    },
+    {
+     "term": "卡尼主义",
+     "by_speaker": {
+      "commentary": 1
+     }
+    },
+    {
+     "term": "基于规则的(国际)秩序",
+     "by_speaker": {
+      "commentary": 22,
+      "state_media": 1
+     }
+    },
+    {
+     "term": "基于规则的 (any object, incl. trading system)",
+     "by_speaker": {
+      "commentary": 32,
+      "business_press": 9,
+      "state_media": 5,
+      "party_theory": 4,
+      "subnational": 5,
+      "central": 1
+     }
+    },
+    {
+     "term": "以联合国为核心的国际体系",
+     "by_speaker": {
+      "central": 19,
+      "state_media": 42,
+      "commentary": 15,
+      "subnational": 21,
+      "party_theory": 10,
+      "diplomacy": 7
+     }
+    },
+    {
+     "term": "以国际法为基础的国际秩序",
+     "by_speaker": {
+      "central": 19,
+      "state_media": 33,
+      "commentary": 12,
+      "subnational": 17,
+      "party_theory": 9,
+      "diplomacy": 3,
+      "research": 2
+     }
+    },
+    {
+     "term": "DENOMINATOR: distinct titles per speaker type, 2025-07-01 to 2026-11-12, body non-empty",
+     "by_speaker": {
+      "subnational": 56962,
+      "central": 14589,
+      "business_press": 6568,
+      "research": 373,
+      "state_media": 28212,
+      "commentary": 20430,
+      "party_theory": 924,
+      "diplomacy": 134
+     }
+    }
+   ],
+   "reading": [
+    {
+     "claim": "中等强国 is in 41 commentary titles and 0 central, 0 diplomacy, 0 state-media, 0 party-theory titles in the window (plus 1 CASS research piece and 1 business-press false positive).",
+     "label": "measured"
+    },
+    {
+     "claim": "基于规则的(国际)秩序 is commentary vocabulary (22 titles) with 1 state-media use, which is hostile (People's Daily: 'rules that favour the US'). The only central use of 基于规则的 in the window is the BRICS New Delhi Declaration on the WTO trading system, i.e. rules-based trade, never a rules-based order.",
+     "label": "measured"
+    },
+    {
+     "claim": "Official text answers with 以联合国为核心的国际体系 (central 19, diplomacy 7, state media 42) and 以国际法为基础的国际秩序 (central 19, diplomacy 3, state media 33); commentary uses these far less than it uses 基于规则.",
+     "label": "measured"
+    },
+    {
+     "claim": "Carney appears in official/state text (central 3, state media 11) only as a bilateral counterpart or trade-war actor; no official or state-media text in the scan repeats his 'order is dead' claim.",
+     "label": "measured"
+    },
+    {
+     "claim": "Xi's July 2024 use of 中等强国 (Kazakhstan) is asserted by CASS but the source readout is not in the corpus.",
+     "label": "unverified"
+    },
+    {
+     "claim": "Official silence on 'middle powers' is deliberate: the category would sort states by power tier, cutting across the 'Global South' grouping China claims to belong to and lead, and Carney's middle-power coalition is, as 张维为 notes, a Western one.",
+     "label": "inferred"
+    }
+   ]
+  }
+ ]
+}

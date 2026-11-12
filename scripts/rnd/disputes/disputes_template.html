@@ -1,0 +1,63 @@
+<title>Disputes in the Record</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,500;1,400&family=Noto+Serif+SC:wght@400;600&display=swap">
+<style>
+/* Layout: sticky index of disputes on the left, one dispute per view; positions sit side by side as catalog columns. Tokens follow chinagovernance.com's Archive/Record system. */
+:root{--paper:#edeae1;--panel:#f4f1e9;--ink:#23201b;--accent:#6d2b2b;--teal:#1f4e46;--rule:#c3bcab;--muted:#6f685c;
+ --chipbg:#e2ddd0;--meas:#1f4e46;--inf:#7a5a12;--unv:#6d2b2b;
+ --sans:"IBM Plex Sans",system-ui,sans-serif;--serif:"IBM Plex Serif",Georgia,serif;--zh:"Noto Serif SC","Songti SC",serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#1b1a17;--panel:#24221e;--ink:#e8e3d7;--accent:#d08a84;--teal:#7fb8ab;--rule:#4a4539;--muted:#a59d8d;--chipbg:#312e27;--meas:#7fb8ab;--inf:#d6b46a;--unv:#d08a84;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#1b1a17;--panel:#24221e;--ink:#e8e3d7;--accent:#d08a84;--teal:#7fb8ab;--rule:#4a4539;--muted:#a59d8d;--chipbg:#312e27;--meas:#7fb8ab;--inf:#d6b46a;--unv:#d08a84;color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;padding-block:32px 64px}
+header.mast{grid-column:1/-1;border-bottom:2px solid var(--ink);padding-bottom:14px}
+header.mast h1{font:500 30px/1.15 var(--serif);margin:0;text-wrap:balance}
+header.mast p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+nav.idx{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+nav.idx a{color:var(--ink);text-decoration:none;padding:10px 0 10px 10px;border-bottom:1px solid var(--rule);border-left:3px solid transparent;font-size:14px}
+nav.idx a:hover{color:var(--teal)} nav.idx a[aria-current="true"]{border-left-color:var(--accent);font-weight:600}
+nav.idx a:focus-visible,a:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0}
+article h2{font:500 26px/1.2 var(--serif);margin:6px 0 4px;text-wrap:balance}
+.question{font:italic 400 17px/1.5 var(--serif);color:var(--muted);max-width:68ch;margin:4px 0 20px}
+.camps{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0;border-top:2px solid var(--ink)}
+.camp{padding:14px 18px 6px;border-right:1px solid var(--rule);min-width:0} .camp:last-child{border-right:0}
+.camp h3{font:600 16px/1.3 var(--sans);margin:0;color:var(--teal)}
+.who{font-size:13px;color:var(--muted);margin:4px 0 8px}.sum{margin:0 0 12px;max-width:62ch}
+figure.q{margin:0 0 14px;padding:10px 0 0;border-top:1px solid var(--rule)}
+blockquote{margin:0;font:400 16px/1.75 var(--zh)}
+.en{margin:4px 0 4px;font:400 14px/1.55 var(--serif)}
+figcaption{font:12px/1.5 var(--mono);color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline}
+figcaption a{color:var(--teal)} .ttl{flex-basis:100%;font-family:var(--zh);font-size:12px;overflow-wrap:anywhere}
+.note{font-size:13px;margin:6px 0 0;padding-left:10px;border-left:2px solid var(--accent);max-width:66ch}
+.chip{display:inline-block;font:500 11px/1 var(--mono);padding:3px 6px;background:var(--chipbg);border-radius:2px;letter-spacing:.03em}
+.chip.lab{text-transform:uppercase;min-width:84px;text-align:center}
+.chip.measured{color:var(--meas)}.chip.inferred{color:var(--inf)}.chip.unverified{color:var(--unv)}
+h4{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:30px 0 10px;padding-top:12px;border-top:2px solid var(--ink)}
+.eng{display:grid;gap:4px}
+.tw{overflow-x:auto;margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;font:500 11px/1.3 var(--mono);color:var(--muted);border-bottom:1px solid var(--ink);padding:6px 10px 6px 0;vertical-align:bottom}
+td{border-bottom:1px solid var(--rule);padding:6px 10px 6px 0;vertical-align:top}
+td.n,th.n{font-variant-numeric:tabular-nums;font-family:var(--mono)}
+ul.reading{list-style:none;padding:0;margin:0;display:grid;gap:10px;max-width:80ch}
+ul.reading li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline}
+.sub{margin-top:34px}.subh{font:500 20px/1.3 var(--serif);margin:0}
+footer{grid-column:1/-1;border-top:1px solid var(--rule);padding-top:12px;font-size:12px;color:var(--muted)}
+.page[hidden]{display:none}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr);gap:20px}nav.idx{position:static}.camp{border-right:0}}
+</style>
+<div class="wrap">
+<header class="mast"><p class="eyebrow">China governance corpus</p><h1>Disputes in the Record</h1>
+<p>Where Party discourse about China's place in the world argues with itself. Each view sets the positions side by side in the speakers' own words, with the source document, a plain English translation, and what the evidence does and does not show.</p></header>
+<nav class="idx" aria-label="Disputes">{{NAV}}</nav>
+<main>{{PAGES}}</main>
+<footer>Quotes are copied from documents held in the corpus (doc numbers are corpus ids) or, where marked, from a reprint. Translations are ours. Labels: <b>measured</b> = counted; <b>inferred</b> = our reading; <b>unverified</b> = believed, not checked. Speaker types follow the global-discourse map: central, party theory, diplomacy, state media, commentary, research, sub-national.</footer>
+</div>
+<script>
+(function(){var pages=[].slice.call(document.querySelectorAll('.page')),links=[].slice.call(document.querySelectorAll('nav.idx a'));
+function show(k){var hit=pages.some(function(p){return p.dataset.k===k});if(!hit)k=pages[0]&&pages[0].dataset.k;
+pages.forEach(function(p){p.hidden=p.dataset.k!==k});links.forEach(function(a){a.setAttribute('aria-current',a.dataset.k===k?'true':'false')});}
+links.forEach(function(a){a.addEventListener('click',function(ev){ev.preventDefault();show(a.dataset.k);try{history.replaceState(null,'','#'+a.dataset.k)}catch(e){}window.scrollTo(0,0)})});
+show((location.hash||'').slice(1));})();
+</script>

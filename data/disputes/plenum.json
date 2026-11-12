@@ -1,0 +1,300 @@
+{
+ "title": "The world as mission, the world as threat",
+ "question": "How do the last three plenum documents place China in the world, and what does the 2026 Party-building decision drop?",
+ "camps": [
+  {
+   "name": "World as teacher and opportunity (2009)",
+   "who": "Fourth Plenum of the 17th Central Committee, the previous Party-building decision (adopted 18 September 2009). Not in the corpus; read from a reprint.",
+   "summary_en": "Same genre as the 2026 decision, so it controls for genre. The world brings opportunity as well as challenge, China is in a period of strategic opportunity, and the Party is to learn from other ruling parties and to have a world outlook.",
+   "quotes": [
+    {
+     "id": null,
+     "site": "aisixiang (reprint of Xinhua, 27 Sep 2009)",
+     "speaker": "central",
+     "date": "2009-09-18",
+     "title": "中共中央关于加强和改进新形势下党的建设若干重大问题的决定",
+     "url": "https://www.aisixiang.com/data/30610.html",
+     "zh": "世界多极化、经济全球化深入发展",
+     "en": "Multipolarity and economic globalization are developing in depth."
+    },
+    {
+     "id": null,
+     "site": "aisixiang (reprint of Xinhua, 27 Sep 2009)",
+     "speaker": "central",
+     "date": "2009-09-18",
+     "title": "中共中央关于加强和改进新形势下党的建设若干重大问题的决定",
+     "url": "https://www.aisixiang.com/data/30610.html",
+     "zh": "给我国发展带来新的机遇和挑战",
+     "en": "These bring new opportunities and challenges to China's development."
+    },
+    {
+     "id": null,
+     "site": "aisixiang (reprint of Xinhua, 27 Sep 2009)",
+     "speaker": "central",
+     "date": "2009-09-18",
+     "title": "中共中央关于加强和改进新形势下党的建设若干重大问题的决定",
+     "url": "https://www.aisixiang.com/data/30610.html",
+     "zh": "借鉴世界上一些执政党兴衰成败的经验教训",
+     "en": "Drawing on the lessons of the rise and fall, success and failure, of some ruling parties in the world."
+    },
+    {
+     "id": null,
+     "site": "aisixiang (reprint of Xinhua, 27 Sep 2009)",
+     "speaker": "central",
+     "date": "2009-09-18",
+     "title": "中共中央关于加强和改进新形势下党的建设若干重大问题的决定",
+     "url": "https://www.aisixiang.com/data/30610.html",
+     "zh": "具有世界眼光",
+     "en": "Possessing a world outlook (one of the requirements for a Marxist learning-type party)."
+    },
+    {
+     "id": null,
+     "site": "aisixiang (reprint of Xinhua, 27 Sep 2009)",
+     "speaker": "central",
+     "date": "2009-09-18",
+     "title": "中共中央关于加强和改进新形势下党的建设若干重大问题的决定",
+     "url": "https://www.aisixiang.com/data/30610.html",
+     "zh": "党面临的执政考验、改革开放考验、市场经济考验、外部环境考验是长期的、复杂的、严峻的",
+     "en": "The tests the Party faces, of governing, of reform and opening, of the market economy and of the external environment, are long-term, complex and severe."
+    }
+   ]
+  },
+  {
+   "name": "World as mission (2024-25)",
+   "who": "Third Plenum decision (July 2024); 15th Five-Year Plan proposal (October 2025)",
+   "summary_en": "The outside world is a field China shapes. The texts name the shared-future community, the global initiatives and support for the Global South, and see favourable conditions.",
+   "quotes": [
+    {
+     "id": 12651094,
+     "site": "gov",
+     "speaker": "central",
+     "date": "2024-07-21",
+     "title": "中共中央关于进一步全面深化改革 推进中国式现代化的决定",
+     "url": "https://www.gov.cn/zhengce/202407/content_6963772.htm",
+     "zh": "推动构建人类命运共同体，践行全人类共同价值，落实全球发展倡议、全球安全倡议、全球文明倡议",
+     "en": "Promote a community with a shared future for humankind, practise the common values of all humanity, and implement the Global Development, Security and Civilization Initiatives."
+    },
+    {
+     "id": 12651094,
+     "site": "gov",
+     "speaker": "central",
+     "date": "2024-07-21",
+     "title": "中共中央关于进一步全面深化改革 推进中国式现代化的决定",
+     "url": "https://www.gov.cn/zhengce/202407/content_6963772.htm",
+     "zh": "参与引领全球治理体系改革和建设",
+     "en": "Take part in, and lead, the reform and building of the global governance system."
+    },
+    {
+     "id": 12650888,
+     "site": "gov",
+     "speaker": "central",
+     "date": "2025-10-28",
+     "title": "中共中央关于制定国民经济和社会发展第十五个五年规划的建议",
+     "url": "https://www.gov.cn/zhengce/202510/content_7046052.htm",
+     "zh": "我国具备主动运筹国际空间、塑造外部环境的诸多有利因素",
+     "en": "China has many favourable factors for actively managing its international space and shaping its external environment."
+    },
+    {
+     "id": 12650888,
+     "site": "gov",
+     "speaker": "central",
+     "date": "2025-10-28",
+     "title": "中共中央关于制定国民经济和社会发展第十五个五年规划的建议",
+     "url": "https://www.gov.cn/zhengce/202510/content_7046052.htm",
+     "zh": "支持全球南方联合自强，加大援外力度，提供更多国际公共产品",
+     "en": "Support the Global South in uniting and strengthening itself, increase foreign aid, and provide more international public goods."
+    }
+   ]
+  },
+  {
+   "name": "World as threat (2026)",
+   "who": "Fifth Plenum decision on strict Party self-governance (adopted 29 October 2026, published 1 November)",
+   "summary_en": "The outside world appears once, as a list of dangers, and is immediately converted into one of four tests the Party faces. No shared-future language, no initiatives, no global governance.",
+   "quotes": [
+    {
+     "id": 900217958,
+     "site": "mofcom",
+     "speaker": "central",
+     "date": "2026-11-01",
+     "title": "中共中央关于持之以恒推进全面从严治党若干重大问题的决定",
+     "url": "https://www.mofcom.gov.cn/xwfb/ldrhd/art/2026/art_198c919fa81547a1ab33ec9f4481af32.html",
+     "zh": "霸权主义和强权政治威胁上升，地缘冲突和局部战争持续不断",
+     "en": "The threat of hegemonism and power politics is rising, and geopolitical conflicts and regional wars continue without pause."
+    },
+    {
+     "id": 900217958,
+     "site": "mofcom",
+     "speaker": "central",
+     "date": "2026-11-01",
+     "title": "中共中央关于持之以恒推进全面从严治党若干重大问题的决定",
+     "url": "https://www.mofcom.gov.cn/xwfb/ldrhd/art/2026/art_198c919fa81547a1ab33ec9f4481af32.html",
+     "zh": "世界进入新的动荡变革期，外部环境不确定难预料因素增多",
+     "en": "The world has entered a new period of turbulence and transformation, and uncertain and unpredictable external factors are increasing."
+    },
+    {
+     "id": 900217958,
+     "site": "mofcom",
+     "speaker": "central",
+     "date": "2026-11-01",
+     "title": "中共中央关于持之以恒推进全面从严治党若干重大问题的决定",
+     "url": "https://www.mofcom.gov.cn/xwfb/ldrhd/art/2026/art_198c919fa81547a1ab33ec9f4481af32.html",
+     "zh": "执政考验、改革开放考验、市场经济考验、外部环境考验",
+     "en": "The test of governing, the test of reform and opening, the test of the market economy, the test of the external environment."
+    },
+    {
+     "id": 900217958,
+     "site": "mofcom",
+     "speaker": "central",
+     "date": "2026-11-01",
+     "title": "中共中央关于持之以恒推进全面从严治党若干重大问题的决定",
+     "url": "https://www.mofcom.gov.cn/xwfb/ldrhd/art/2026/art_198c919fa81547a1ab33ec9f4481af32.html",
+     "zh": "深化反腐败国际合作，加强追逃防逃追赃",
+     "en": "Deepen international anti-corruption cooperation and strengthen the pursuit of fugitives, the prevention of flight, and the recovery of illicit assets."
+    }
+   ]
+  },
+  {
+   "name": "The world as audience for the Party",
+   "who": "The same 2026 decision",
+   "summary_en": "Where the world is not a threat it is a stage: the Party has shown the world what a Marxist party can be, and self-revolution is claimed as a contribution to the history of Marxist party-building.",
+   "quotes": [
+    {
+     "id": 900217958,
+     "site": "mofcom",
+     "speaker": "central",
+     "date": "2026-11-01",
+     "title": "中共中央关于持之以恒推进全面从严治党若干重大问题的决定",
+     "url": "https://www.mofcom.gov.cn/xwfb/ldrhd/art/2026/art_198c919fa81547a1ab33ec9f4481af32.html",
+     "zh": "向世界展示了坚定自信、坚强有力的马克思主义政党形象",
+     "en": "It has shown the world the image of a firm, confident, strong Marxist party."
+    },
+    {
+     "id": 900217958,
+     "site": "mofcom",
+     "speaker": "central",
+     "date": "2026-11-01",
+     "title": "中共中央关于持之以恒推进全面从严治党若干重大问题的决定",
+     "url": "https://www.mofcom.gov.cn/xwfb/ldrhd/art/2026/art_198c919fa81547a1ab33ec9f4481af32.html",
+     "zh": "这是中国共产党的独特创造，永载马克思主义政党建设史册",
+     "en": "This is a unique creation of the Communist Party of China, recorded for ever in the history of Marxist party-building."
+    }
+   ]
+  }
+ ],
+ "engagements": [
+  {
+   "id": 900204494,
+   "site": "qstheory",
+   "speaker": "party theory",
+   "date": "2026-11-01",
+   "title": "习近平：关于《中共中央关于持之以恒推进全面从严治党若干重大问题的决定》的说明",
+   "url": "http://www.qstheory.cn/20261101/712d83da50c746c697c9bcddabcb0127/c.html",
+   "zh": "世界进入新的动荡变革期，外部环境不确定难预料因素增多",
+   "en": "The world has entered a new period of turbulence and transformation, and uncertain and unpredictable external factors are increasing.",
+   "note": "Xi's explanation of the draft (Qiushi) carries the same sentence but without the Global South, unilateralism and protectionism, hegemonism, regional wars and the weak world economy. The adopted decision adds all five. Who added them is not visible; the explanation describes the draft, the decision is the final text."
+  }
+ ],
+ "counts": [
+  {
+   "term": "人类命运共同体 (shared future)",
+   "by_doc": {
+    "2024 decision": 2,
+    "2025 plan": 2,
+    "2026 decision": 0,
+    "2026 explanation": 0
+   }
+  },
+  {
+   "term": "Global Development / Security / Civilization / Governance Initiatives",
+   "by_doc": {
+    "2024 decision": 4,
+    "2025 plan": 4,
+    "2026 decision": 0,
+    "2026 explanation": 0
+   }
+  },
+  {
+   "term": "全球治理 (global governance)",
+   "by_doc": {
+    "2024 decision": 1,
+    "2025 plan": 1,
+    "2026 decision": 0,
+    "2026 explanation": 0
+   }
+  },
+  {
+   "term": "霸权主义 (hegemonism)",
+   "by_doc": {
+    "2024 decision": 0,
+    "2025 plan": 1,
+    "2026 decision": 1,
+    "2026 explanation": 0
+   }
+  },
+  {
+   "term": "全球南方 (Global South)",
+   "by_doc": {
+    "2024 decision": 0,
+    "2025 plan": 1,
+    "2026 decision": 1,
+    "2026 explanation": 0
+   }
+  },
+  {
+   "term": "历史周期率 (historical cycle)",
+   "by_doc": {
+    "2024 decision": 0,
+    "2025 plan": 0,
+    "2026 decision": 1,
+    "2026 explanation": 1
+   }
+  },
+  {
+   "term": "中国式现代化 (Chinese modernization)",
+   "by_doc": {
+    "2024 decision": 24,
+    "2025 plan": 21,
+    "2026 decision": 1,
+    "2026 explanation": 5
+   }
+  },
+  {
+   "term": "2009 vs 2026 Party-building decisions",
+   "by_doc": {
+    "世界眼光 world outlook": "1 → 0",
+    "借鉴 / 兴衰成败 learning from other parties": "1 → 0",
+    "机遇 opportunity": "2 → 0",
+    "世界多极化 / 经济全球化": "1 → 0",
+    "霸权 / 动荡变革 hegemony / turbulence": "0 → 1",
+    "向世界 showing the world": "0 → 1",
+    "the four-tests sentence": "identical in both"
+   }
+  }
+ ],
+ "reading": [
+  {
+   "claim": "The 2026 decision contains no shared-future, initiative or global-governance language, which both earlier plenum texts carry.",
+   "label": "measured"
+  },
+  {
+   "claim": "The adopted decision's world sentence lists more dangers than the same sentence in Xi's explanation of the draft.",
+   "label": "measured"
+  },
+  {
+   "claim": "Genre does not explain it. The previous Party-building decision (2009) treated the world as a source of opportunity and lessons and asked for a world outlook; the 2026 one keeps 2009's four-tests sentence verbatim but drops every opportunity and learning term and adds hegemony, wars and turbulence.",
+   "label": "measured"
+  },
+  {
+   "claim": "The direction of instruction has reversed: in 2009 the Party learns from the world's ruling parties; in 2026 it shows the world what a Marxist party is.",
+   "label": "inferred"
+  },
+  {
+   "claim": "The text treats the world mainly as a pressure that justifies internal discipline, which fits the regime-security reading of Chinese world-order language better than the order-replacing one.",
+   "label": "inferred"
+  },
+  {
+   "claim": "The 2025 plan abbreviates 百年未有之大变局 to 世界百年变局; a literal count would wrongly report the concept missing there.",
+   "label": "measured"
+  }
+ ]
+}

@@ -30,6 +30,7 @@ from web.services.annotations import list_annotations, get_overview, get_item
 from web.services.collections import get_collection
 from web.services.lens import get_topic_lens, get_doc_lens
 from web.services.tracker import get_tracker
+from web.services.discourse import get_discourse
 from web.services.research import list_sections as research_sections, get_memo as research_memo
 from web.services import ontology
 
@@ -224,6 +225,23 @@ async def tracker_page(request: Request, topic: str = "all", weeks: int = 8):
     t = await get_tracker(db, topic, weeks)
     return templates.TemplateResponse("tracker.html", {
         "request": request, "stats": stats, "active_nav": "tracker", "t": t,
+    })
+
+
+@router.get("/discourse", response_class=HTMLResponse)
+async def discourse_page(request: Request, concept: str = "全球南方", weeks: int = 12):
+    """Discourse Tracker — one global-discourse concept's weekly rate per 1,000
+    documents by speaker type (central, party theory, diplomacy, state media,
+    commentary, business press, research, sub-national), with denominators, plus
+    the terms that jumped or first appeared in the last complete week. Reads only
+    the nightly ``discourse_weekly`` / ``discourse_concepts`` tables
+    (scripts/build_discourse_weekly.py); cached in-process for an hour.
+    """
+    db = request.app.state.db
+    stats = await get_stats(db)
+    d = await get_discourse(db, concept, weeks)
+    return templates.TemplateResponse("discourse.html", {
+        "request": request, "stats": stats, "active_nav": "discourse", "d": d,
     })
 
 
