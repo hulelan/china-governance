@@ -381,6 +381,19 @@ python3 -m crawlers.finmedia --site ce --max-docs 400
 # date_published, which date_quality flags `missing`. Deliberately NOT inferred
 # from the crawl day — that is the crawl_stamped failure documented above.
 
+# Party-theory journals and CASS (2026-11-12). One module, a site registry like finmedia.
+# Backfill 2026-11-12: 31,673 docs (qiushi 3,255 issue-by-issue 2019-, hongqi 2,133,
+# studytimes 4,766, gmrb_theory 11,080, rmlt 6,422, cssn 4,017). admin_level 'media' for
+# the party venues (publications, never "central" in a diffusion cut), 'research' for cssn.
+# qiushi is dated by ISSUE cover date (odd issue N = 1st, even = 16th of month (N+1)//2);
+# issue/page/author in `relation`. 文化纵横 (21bcr.com) times out from the droplet; the
+# 学习时报 e-paper (paper.cntheory.com) returns 418, so the studytimes.cn web edition is used.
+# Parallel backfills must write ONE DB per run: next_id is MAX(id)+1.
+python3 -m crawlers.theory --list-sites
+python3 -m crawlers.theory --site qiushi --probe            # parse a few, write nothing
+python3 -m crawlers.theory --recent --max-docs 200          # what the nightly runs
+python3 -m crawlers.theory --site gmrb_theory --since 2024-01-01 --db documents_theory_x.db
+
 # Ingest the URLs a research brief cites, one row each. The lever: the next brief
 # is one command, not another hunt. Provenance lands in
 # relation='ingest=url_list;tag=<tag>'. First run: 62 URLs from the 21 Oct - 4 Nov
@@ -1350,6 +1363,12 @@ or add a site to the generic `crawlers/govcms.py` registry when its CMS matches 
   share the pattern is **unmeasured**. A cheap check is a sampled `os.path.exists` over
   `raw_html_path` grouped by `site_key` — worth running before anyone relies on the raw-HTML
   mirror again.
+- **(2026-11-12) Two more chrome/title defects, found by the media-bias replication.** (a)
+  `latepost`: 207 of 408 bodies carry a sidebar of OTHER outlets' headlines that
+  `discourse_vocab.strip_chrome` does not cut (it handles guancha only); all 8 sampled latepost
+  corruption hits came from it. (b) The `mem` crawler truncates titles at ~25 characters, so two
+  distinct ministry notices can share a title and collapse under title dedup. Unmeasured: how many
+  other sites carry sidebar chrome; a per-site check of repeated non-article lines would find them.
 - **(2026-11-12) Central news hosted on a city portal is levelled as the city.** `jcgov`
   (晋城) carries 814 rows in `/dtxx/gnyw/` (国内要闻) and `/dtxx/gwyyw/` (国务院要闻), all
   `admin_level_doc='municipal'`: Xi speeches, 中央纪委 notices, State Council readouts. The
