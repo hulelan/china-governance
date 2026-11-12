@@ -68,6 +68,7 @@ HOSTS = {
     "www.nda.gov.cn":        ("nda",      "National Data Administration / 国家数据局", CN_GOV),
     "www.mfa.gov.cn":        ("mfa",      "MFA / 外交部", CN_GOV),
     "www.sasac.gov.cn":      ("sasac",    "SASAC / 国务院国资委", CN_GOV),
+    "www.12371.cn":          ("dangyuan", "CPC Members Network / 共产党员网", CN_GOV),
     # --- Chinese state media already in the corpus ---
     "www.news.cn":           ("xinhua",   "Xinhua / 新华社", CN_MEDIA),
     "english.news.cn":       ("xinhua_en", "Xinhua English", CN_MEDIA),

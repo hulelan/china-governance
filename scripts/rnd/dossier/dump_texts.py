@@ -167,8 +167,13 @@ def para_split(body):
 
 def strip_carrier(body, opt):
     """A reprint's carrier text is not the document. `lede_until` drops the
-    wire lede through its marker (新华社…发表《X》。全文如下：), and
-    `drop_title_line` drops a first line that only repeats the title."""
+    wire lede through its marker (新华社…发表《X》。全文如下：),
+    `drop_title_line` drops a first line that only repeats the title, and
+    `tail_from` cuts a trailing related-links block from its first line on."""
+    if opt.get("tail_from"):
+        i = body.rfind(opt["tail_from"])
+        if i > len(body) // 2:
+            body = body[:i].rstrip()
     if opt.get("lede_until"):
         i = body.find(opt["lede_until"])
         if 0 <= i < 400:

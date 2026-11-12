@@ -1,0 +1,80 @@
+{
+ "page_title": "Sun Yat-sen at 160 Reader",
+ "built": "2026-11-12",
+ "ids": {
+  "speech": 900217946,
+  "readout": 900217947,
+  "s2016": 900217956,
+  "s2021": 900217957
+ },
+ "main": "speech",
+ "order": [
+  "speech",
+  "readout",
+  "s2016",
+  "s2021"
+ ],
+ "chain": [
+  "readout",
+  "s2016",
+  "s2021"
+ ],
+ "clean": {
+  "speech": {
+   "lede_until": "习近平\n"
+  },
+  "readout": {
+   "lede_until": "11月12日电"
+  },
+  "s2016": {
+   "drop_title_line": true,
+   "tail_from": "中华人民共和国外交部"
+  },
+  "s2021": {
+   "lede_until": "在纪念辛亥革命110周年大会上的讲话\n",
+   "tail_from": "纪念辛亥革命110周年大会在京隆重举行"
+  }
+ },
+ "chainTitle": "The event report, and the two speeches before it",
+ "drawerLabel": "context",
+ "chainIntro": [
+  "The panel holds the Xinhua report of the meeting and the two earlier speeches Xi Jinping gave on the same figure: the 150th anniversary of Sun Yat-sen's birth (11 November 2016) and the 110th anniversary of the 1911 Revolution (9 October 2021). All three speeches share a frame. Each calls Sun a great national hero, patriot and forerunner of the democratic revolution, each names Chinese Communists his most steadfast supporters, most loyal partners and most faithful successors, and each closes on national reunification and an appeal to all Chinese at home and abroad.",
+  "Where they differ is countable. On Taiwan, counted over the cleaned texts: 和平统一 and 一国两制 appear 0 times in 2016, once in 2021 and once in 2026; 一个中国原则 0, 1, 1; 九二共识 2, 1, 1. Three formulations each occur in only one speech. 2016 alone carries the list of six 任何 (no person, organization or party, at any time, in any form, any part of territory). 2021 alone says the question brooks no 外来干涉 (foreign interference) and that separatists 从来没有好下场 (have never come to a good end). 2026 alone says 两岸一家亲 and offers 对话协商 (dialogue and consultation) with 台湾各界有识之士 (people of insight from all sectors in Taiwan), while keeping the line that no room will be left for Taiwan independence in any form.",
+  "Other counts, for scale: 中国共产党 appears 12, 13 and 4 times (about 1.9, 3.1 and 1.0 per thousand characters; 2021 was also the Party's centenary). 中国式现代化 appears only in 2026 (5 times), a term that entered official usage in 2022. 辛亥革命 appears 3, 17 and 1 times. Each speech names the Kuomintang (1, 2, 1). These are word counts and say nothing about emphasis that the wording itself does not."
+ ],
+ "extraRefs": [],
+ "footNote": "Counts are computed over the cleaned texts shown here. The 2016 and 2021 copies omit the 同志们，朋友们 salutations that the 2026 copy prints.",
+ "meta": {
+  "speech": {
+   "label_en": "Speech at the Meeting Commemorating the 160th Anniversary of the Birth of Dr Sun Yat-sen",
+   "docnum": "",
+   "issuer_cn": "习近平",
+   "issuer_en": "Xi Jinping",
+   "published": "2026-11-12",
+   "plainBody": true,
+   "title_cn": "在纪念孙中山先生诞辰160周年大会上的讲话"
+  },
+  "readout": {
+   "label_en": "Xinhua report of the commemorative meeting",
+   "kind_cn": "新华社通稿",
+   "kind_en": "Xinhua wire report",
+   "plainBody": true
+  },
+  "s2016": {
+   "label_en": "Speech at the Meeting Commemorating the 150th Anniversary of the Birth of Dr Sun Yat-sen",
+   "issuer_cn": "习近平",
+   "issuer_en": "Xi Jinping",
+   "published": "2016-11-11",
+   "plainBody": true,
+   "kind_en": "Speech"
+  },
+  "s2021": {
+   "label_en": "Speech at the Meeting Marking the 110th Anniversary of the 1911 Revolution",
+   "issuer_cn": "习近平",
+   "issuer_en": "Xi Jinping",
+   "published": "2021-10-09",
+   "plainBody": true,
+   "kind_en": "Speech"
+  }
+ }
+}

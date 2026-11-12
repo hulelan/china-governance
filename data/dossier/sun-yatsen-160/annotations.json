@@ -1,0 +1,17 @@
+{
+ "readout": {
+  "role": "What most readers saw",
+  "note": "The Xinhua wire report runs 2,329 characters against the speech's 3,995 and follows its order, one paragraph per section, each opening 习近平指出 or 习近平强调. Its Taiwan paragraph keeps the speech's first and last sentences and drops the middle: 两岸一家亲, 和平统一、一国两制, the one-China principle, the 1992 Consensus, the offer of dialogue with people of insight in Taiwan, and the line that no room will be left for Taiwan independence. None of those six phrases appears anywhere in the report. Wang Huning's closing summary does keep a call for peaceful development of cross-Strait relations and complete reunification.",
+  "corpus": "On the day of the meeting the corpus holds the report with a full body on 9 sites and the full speech on 6. The only local-government copies are of the report, from two prefectures (林芝 in Tibet and 博尔塔拉 in Xinjiang); no local-government site in the corpus carried the speech itself. A reader who met this event through a local portal read the report."
+ },
+ "s2016": {
+  "role": "150th anniversary of Sun's birth, 2016",
+  "note": "The longest of the three (6,161 characters) and the one most about Sun himself: it walks through his life, the 1911 Revolution, the 1917 to 1919 Fundamentals of National Reconstruction and its railway, highway and Three Gorges plans. On Taiwan it rests on the 1992 Consensus alone, which it names twice, offering contact with any party, group or individual in Taiwan that accepts it, and it does not use 和平统一 or 一国两制. It is the only one of the three to carry the six-任何 list.",
+  "corpus": "Ingested today from the Ministry of Foreign Affairs topic page on Taiwan-related speeches, which reposted it in June 2022; stored with its 2016 date, not the repost date. The MFA copy prints no salutations."
+ },
+ "s2021": {
+  "role": "110th anniversary of the 1911 Revolution, 2021",
+  "note": "Its subject is the Revolution rather than Sun, and it is organised as five lessons of history (历史启示), the first of which is that national rejuvenation requires the leadership of the Communist Party of China. It is the only one of the three to say the Taiwan question arose from national weakness and will be resolved with national rejuvenation, the only one to call it a purely internal affair that brooks no foreign interference, and the most severe in register (从来没有好下场, 历史的审判). Its offer is framed as the basic policy of peaceful reunification and one country, two systems.",
+  "corpus": "Ingested today from 共产党员网 (12371.cn), already crawled under the site key dangyuan. The copy omits the salutations and opens with a photo caption, which the reader strips."
+ }
+}
