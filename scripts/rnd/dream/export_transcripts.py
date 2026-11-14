@@ -55,8 +55,8 @@ from collections import Counter
 from pathlib import Path
 
 PROJECTS = Path.home() / ".claude" / "projects"
-DEFAULT_PROJECT = "-Users-lelan-Desktop-claude-code-china-governance"
 REPO = Path(__file__).resolve().parents[3]
+DEFAULT_PROJECT = re.sub(r"[/_.]", "-", str(REPO))
 
 # Files on this machine that hold real credentials. Their VALUES become literal
 # denylist entries; nothing is ever printed.

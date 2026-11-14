@@ -220,7 +220,10 @@ tree:
     # admin_level='research' and govcms group 'assoc'.
     # cssn = 中国社会科学网 / 中国社会科学报 (CASS), admin_level='research'; listed
     # explicitly anyway so it does not depend on the fallback.
-    site_keys: [chinalawtranslate, tsinghua_aiig, amr, cass, cast, isc, cas, nsfc, cssn]
+    # aisixiang = 爱思想 (2026-11-14), an aggregator of academic essays that also
+    # reposts officials' 人民日报 / 求是 pieces; the original venue is in relation
+    # (origin=), so a per-document speaker can be derived later.
+    site_keys: [chinalawtranslate, tsinghua_aiig, amr, cass, cast, isc, cas, nsfc, cssn, aisixiang]
 
   # ── CATCH-ALL ─────────────────────────────────────────────────────────
   # Only a site_key that neither layer can place (no explicit rule AND no usable

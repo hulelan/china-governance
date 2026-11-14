@@ -37,6 +37,7 @@ import argparse
 import json
 import shutil
 import subprocess
+import re
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -44,8 +45,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
-MEMORY = (Path.home() / ".claude" / "projects"
-          / "-Users-lelan-Desktop-claude-code-china-governance" / "memory")
+# Claude Code keys a project by its path with / _ . turned into -, as session_end.sh does.
+MEMORY = Path.home() / ".claude" / "projects" / re.sub(r"[/_.]", "-", str(REPO)) / "memory"
 
 ANALYZER_TOOLS = "Read,Write,Glob,Grep"
 ORGANIZER_TOOLS = "Read,Write,Edit,Glob,Grep"

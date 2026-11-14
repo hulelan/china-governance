@@ -29,6 +29,14 @@ checked, not HTTP status (see the module report / CLAUDE.md "Source ACCESS map")
   research (admin_level='research', ontology leaf research)
     cssn         中国社会科学网 / 中国社会科学报 (CASS). Selected subject sections:
                  区域国别学, 国家安全学, 国际观察, 政治学, 马克思主义, 哲学.
+    aisixiang    爱思想 (added 2026-11-14). An aggregator: academics' journal essays,
+                 officials' 求是/人民日报 pieces and lectures, reposted with the origin
+                 on a closing `摘自：《社会科学》2025年第12期` line (kept in `relation` as
+                 origin=). Walked by ARTICLE ID, which is sequential (/data/<id>.html,
+                 185,621 on 2026-11-14, ~55 a day), so a range is a complete denominator.
+                 A missing id is a soft 404: HTTP 200, a 4.9 KB 提示信息 page, no <h3>.
+                 Speaker type `research` is a SITE-level label over mixed authors; a
+                 per-document speaker would have to come from origin= and author=.
 
   NOT reachable / not configured:
     文化纵横 www.21bcr.com — TCP connect timeout (resolves to 121.196.165.91);
@@ -47,6 +55,8 @@ DATES come from the page or the issue, never the crawl day:
                date), cross-checked against the page's own date line in tests.
   gmrb_theory  the e-paper day in the URL (the print date).
   rmlt         the /YYYY/MMDD/ path of the article URL.
+  aisixiang    the page's 更新时间, i.e. the REPOST date on aisixiang. The original
+               venue's issue is in origin= and is often months earlier.
 
 IDS. Rows are written to a SEPARATE DB (`--db documents_theory_<site>.db`), and
 `scripts/merge_db.py` reassigns ids on merge. Raw HTML is therefore NOT saved:
@@ -62,6 +72,7 @@ Usage:
     python -m crawlers.theory --site gmrb_theory --since 2023-01-01 --until 2023-12-31
     python -m crawlers.theory --site cssn --max-pages 15 --max-docs 3000
     python -m crawlers.theory --site qiushi --recent             # nightly: newest issues only
+    python -m crawlers.theory --site aisixiang --min-id 170000 --db documents_theory_asx.db
 """
 import argparse
 import html as H
@@ -162,6 +173,13 @@ SITES = {
                      r"<script"),
         "source_re": r'qt_article_source"><font>来源：</font>\s*([^<]{2,60})',
         "author_re": r'qt_article_author"><font>作者：</font>\s*([^<]{1,60})',
+    },
+    "aisixiang": {
+        "name": "Aisixiang / 爱思想",
+        "base_url": "https://www.aisixiang.com",
+        "admin_level": "research", "speaker": "research", "tier": 2,
+        "kind": "asx_ids", "publisher": "爱思想",
+        "recent_ids": 150,          # ~3 days at ~55 ids a day
     },
 }
 
@@ -518,6 +536,71 @@ def discover_rmlt(cfg: dict, recent: bool):
                         yield u, {"magazine": label, "issue": iu.rstrip("/").split("/")[-1]}
 
 
+# ── 爱思想 ─────────────────────────────────────────────────────────────────
+
+_ASX_ID = re.compile(r"/data/(\d+)\.html")
+_ASX_H3 = re.compile(r"(?is)<h3>(.*?)</h3>")
+_ASX_TIME = re.compile(r"更新时间：\s*(\d{4}-\d{2}-\d{2})")
+_ASX_AUTHOR = re.compile(r"●\s*<strong>([^<]{1,40})</strong>")
+_ASX_TOPIC = re.compile(r'href="/zhuanti/\d+\.html"><u>([^<]{1,30})</u>')
+# the closing origin line: 摘自/转自：《江淮论坛》2026年第3期, or a party paper's masthead
+# line 《 人民日报 》（ 2026年06月18日 09 版）. Many reposts carry neither.
+_ASX_ORIGIN = re.compile(r"^(?:(?:摘自|转自|原载|来源|本文原载于?)[：:]\s*(.{2,120})"
+                         r"|(《\s*[^》]{2,20}?\s*》\s*[（(][^）)]{4,30}[）)]))$", re.M)
+_DIV = re.compile(r"(?i)<(/?)div\b")
+
+
+def div_inner(html: str, start: str) -> str:
+    """Inner HTML of the first <div> whose opening tag matches `start`, cut at its
+    MATCHING close by depth count. A marker after the div (本文责编) would also
+    sweep in the 进入专栏 / 进入专题 block that sits between them."""
+    m = re.search(start, html)
+    if not m:
+        return ""
+    i = html.find(">", m.end()) + 1
+    depth = 1
+    for d in _DIV.finditer(html, i):
+        depth += -1 if d.group(1) else 1
+        if depth == 0:
+            return html[i:d.start()]
+    return html[i:]
+
+
+def parse_asx_article(html: str) -> dict:
+    h3 = _ASX_H3.search(html)
+    if not h3:
+        return {"gone": True, "title": "", "date": "", "body": "", "author": ""}
+    title = clean_title(h3.group(1))
+    authors = _ASX_AUTHOR.findall(html)
+    # the <h3> is "作者：题目"; store the title the source venue printed
+    head, sep, rest = title.partition("：")
+    if sep and authors and len(head) <= 30 and all(a.strip() in head for a in authors):
+        title = rest.strip()
+    d = _ASX_TIME.search(html)
+    body = flatten(div_inner(html, r'class="article-content"'))
+    origin = [re.sub(r"\s+", "", a or b) for a, b in _ASX_ORIGIN.findall(body)]
+    return {"title": title, "date": d.group(1) if d else "", "body": body,
+            "author": " ".join(a.strip() for a in authors),
+            "origin": origin[-1].strip() if origin else "",
+            "topics": list(dict.fromkeys(_ASX_TOPIC.findall(html)))}   # printed twice
+
+
+def discover_asx(cfg: dict, args):
+    """Article ids newest first. --recent walks cfg['recent_ids'] below the newest
+    id on the home page; --min-id / --max-id bound a backfill."""
+    base = cfg["base_url"]
+    hi = args.max_id
+    if not hi:
+        ids = [int(x) for x in _ASX_ID.findall(fetch(base + "/", headers=BROWSER_UA))]
+        if not ids:
+            raise RuntimeError("aisixiang: no /data/<id>.html links on the home page")
+        hi = max(ids)
+    lo = args.min_id if (args.min_id and not args.recent) else hi - cfg["recent_ids"]
+    log.info(f"  aisixiang ids {hi} down to {lo}")
+    for i in range(hi, lo - 1, -1):
+        yield f"{base}/data/{i}.html", {}
+
+
 # ── driver ────────────────────────────────────────────────────────────────
 
 def parse(site_key: str, cfg: dict, url: str, html: str, hint: dict) -> dict:
@@ -544,6 +627,12 @@ def parse(site_key: str, cfg: dict, url: str, html: str, hint: dict) -> dict:
         r = parse_rmlt_article(html, url)
         r["relation"] = f"magazine={hint['magazine']};issue={hint['issue']}"
         r["publisher"] = hint["magazine"] if not r.get("source") else r["source"]
+    elif kind == "asx_ids":
+        r = parse_asx_article(html)
+        r["relation"] = f"origin={r.get('origin', '')}"
+        if r.get("topics"):
+            r["relation"] += ";topics=" + "/".join(r["topics"])[:80]
+        r["publisher"] = cfg["publisher"]
     else:
         raise ValueError(kind)
     if not r["title"]:
@@ -570,6 +659,8 @@ def discover(site_key: str, cfg: dict, args):
         return discover_gmw(since, until)
     if kind == "rmlt_mag":
         return discover_rmlt(cfg, args.recent)
+    if kind == "asx_ids":
+        return discover_asx(cfg, args)
     raise ValueError(kind)
 
 
@@ -579,7 +670,7 @@ def crawl(conn, site_key: str, args) -> int:
         store_site(conn, site_key, {"name": cfg["name"], "base_url": cfg["base_url"],
                                     "admin_level": cfg["admin_level"]})
     log.info(f"[{site_key}] {cfg['name']}")
-    stored = seen = thin = nodate = failed = skipped = 0
+    stored = seen = thin = nodate = failed = skipped = gone = 0
     t0 = time.time()
     for url, hint in discover(site_key, cfg, args):
         if args.max_docs and stored >= args.max_docs:
@@ -599,6 +690,9 @@ def crawl(conn, site_key: str, args) -> int:
             log.warning(f"  {url}: {e}")
             continue
         r = parse(site_key, cfg, url, html, hint)
+        if r.get("gone"):              # a deleted id, not a parse failure
+            gone += 1
+            continue
         if not r["title"]:
             failed += 1
             log.warning(f"  no title: {url}")
@@ -633,7 +727,7 @@ def crawl(conn, site_key: str, args) -> int:
             log.info(f"  [{site_key}] stored {stored} (seen {seen}, thin {thin})")
         time.sleep(REQUEST_DELAY)
     log.info(f"[{site_key}] done: {stored} new, {skipped} held, {thin} thin-body, "
-             f"{nodate} no-date, {failed} failed, {seen} seen")
+             f"{nodate} no-date, {failed} failed, {gone} gone, {seen} seen")
     return stored
 
 
@@ -653,6 +747,9 @@ def main():
     ap.add_argument("--max-minutes", type=float, default=0)
     ap.add_argument("--since", help="gmrb_theory: earliest day (YYYY-MM-DD)")
     ap.add_argument("--until", help="gmrb_theory: latest day (YYYY-MM-DD)")
+    ap.add_argument("--min-id", type=int, default=0, help="aisixiang: lowest article id")
+    ap.add_argument("--max-id", type=int, default=0,
+                    help="aisixiang: highest article id (default: newest on the home page)")
     ap.add_argument("--db")
     args = ap.parse_args()
 

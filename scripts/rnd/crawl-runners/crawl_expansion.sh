@@ -1,7 +1,7 @@
 #!/bin/bash
 # Crawl all 14 new gkmlpt sites sequentially
 set -e
-cd /Users/lelan/Desktop/claude_code/china-governance
+cd "$(dirname "$0")/../../.."
 
 NEW_SITES=(zhongshan shantou zhaoqing shaoguan heyuan shanwei yangjiang zhanjiang chaozhou jieyang yunfu szyantian szlg szdp)
 

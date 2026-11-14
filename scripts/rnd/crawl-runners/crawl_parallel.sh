@@ -2,7 +2,7 @@
 # Parallel expansion crawl — 4 workers for 13 remaining sites
 # SQLite WAL + busy_timeout=30000 handles concurrent writers
 set -e
-cd /Users/lelan/Desktop/claude_code/china-governance
+cd "$(dirname "$0")/../../.."
 
 crawl_batch() {
     local batch_name=$1

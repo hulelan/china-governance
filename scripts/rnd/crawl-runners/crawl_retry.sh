@@ -1,7 +1,7 @@
 #!/bin/bash
 # Retry failed sites with 2 workers (safer for SQLite)
 set -e
-cd /Users/lelan/Desktop/claude_code/china-governance
+cd "$(dirname "$0")/../../.."
 
 crawl_batch() {
     local batch_name=$1

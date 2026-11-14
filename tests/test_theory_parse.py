@@ -197,3 +197,68 @@ def test_qs_url_date_fallback():
     assert T.qs_url_date("http://www.qstheory.cn/dukan/hqwg/2024-07/27/c_1130185879.htm") == "2024-07-27"
     assert T.qs_url_date("http://www.qstheory.cn/20261027/5d2bc062bcd8450da3d987f974e75dd4/c.html") == "2026-10-27"
     assert T.qs_url_date("http://www.qstheory.cn/qs/mulu.htm") == ""
+
+
+# ── 爱思想 ─────────────────────────────────────────────────────────────────
+
+ASX = """<div class="show_text"><div style="padding: 30px 10px 20px 10px">
+          <h3>郑功成：“十五五”时期的社会保障改革：问题清单与制度优化</h3>
+          <div class="info">选择字号：<a href="#">大</a>
+            &nbsp; 本文共阅读 25665 次 更新时间：2026-05-11 00:22
+          </div></div>
+        <div class="about"><div style="padding: 0px 20px"><p align="right">进入专题：
+                  <a href="/zhuanti/795.html"><u>十五五</u></a>&nbsp;
+                  <a href="/zhuanti/841.html"><u>社会保障</u></a>&nbsp;</p>
+            <div>●
+                <strong>郑功成</strong>
+                  (<a href="/thinktank/ZhengGongcheng.html"><u>进入专栏</u></a>)</div></div>
+          <div style="padding: 25px"><div id="content"><div id="content2">
+                <div class="article-content">
+<p>摘要：健全的社会保障体系是国家现代化的“标配”，中国式现代化更需要通过高质量的社会保障制度促进社会平等、走向共同富裕。</p>
+<div class="note"><p>第一，实现了社会保障制度整体转型。</p></div>
+<p> </p>
+<p>郑功成，中国人民大学中国社会保障研究中心教授</p>
+<p>摘自：《社会科学》2025年第12期</p>
+                </div></div>
+            进入 <a href="/thinktank/ZhengGongcheng.html">郑功成</a> 的专栏 进入专题：十五五
+            <p>本文责编：<u>SuperAdmin</u></br>发信站：爱思想（https://www.aisixiang.com）"""
+
+ASX_GONE = """<html><head><title>提示信息_爱思想</title></head>
+<body><div class="tips">该文章不存在或已被删除</div></body></html>"""
+
+
+def test_asx_article():
+    r = T.parse_asx_article(ASX)
+    assert r["title"] == "“十五五”时期的社会保障改革：问题清单与制度优化"
+    assert r["author"] == "郑功成"
+    assert r["date"] == "2026-05-11"
+    assert r["origin"] == "《社会科学》2025年第12期"
+    assert r["topics"] == ["十五五", "社会保障"]
+    assert r["body"].startswith("摘要：健全的社会保障体系")
+    assert "第一，实现了社会保障制度整体转型。" in r["body"]   # a nested div does not end the body
+    assert r["body"].endswith("摘自：《社会科学》2025年第12期")
+    assert "进入专题" not in r["body"] and "本文责编" not in r["body"]
+
+
+def test_asx_origin_shapes():
+    for line, want in [("转自：《江淮论坛》2026年第3期", "《江淮论坛》2026年第3期"),
+                       ("《 人民日报 》（ 2026年06月18日 09 版）", "《人民日报》（2026年06月18日09版）")]:
+        html = ASX.replace("<p>摘自：《社会科学》2025年第12期</p>", f"<p>{line}</p>")
+        assert T.parse_asx_article(html)["origin"] == want
+    html = ASX.replace("<p>摘自：《社会科学》2025年第12期</p>", "")
+    assert T.parse_asx_article(html)["origin"] == ""
+
+
+def test_asx_topics_printed_twice_are_kept_once():
+    html = ASX + '<a href="/zhuanti/795.html"><u>十五五</u></a>'
+    assert T.parse_asx_article(html)["topics"] == ["十五五", "社会保障"]
+
+
+def test_asx_soft_404_is_gone_not_failed():
+    r = T.parse_asx_article(ASX_GONE)
+    assert r["gone"] is True and r["title"] == ""
+
+
+def test_asx_title_keeps_colon_when_prefix_is_not_the_author():
+    html = ASX.replace("<strong>郑功成</strong>", "<strong>张三</strong>")
+    assert T.parse_asx_article(html)["title"].startswith("郑功成：")

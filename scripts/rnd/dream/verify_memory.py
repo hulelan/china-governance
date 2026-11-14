@@ -40,7 +40,7 @@ from collections import defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-MEMORY = Path.home() / ".claude" / "projects" / "-Users-lelan-Desktop-claude-code-china-governance" / "memory"
+MEMORY = Path.home() / ".claude" / "projects" / re.sub(r"[/_.]", "-", str(REPO)) / "memory"
 
 OK, STALE, UNCHECKED = "ok", "stale", "unchecked"
 

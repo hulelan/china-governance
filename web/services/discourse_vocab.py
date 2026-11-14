@@ -26,7 +26,7 @@ STATE = {"xinhua", "people", "ce", "jjckb", "stdaily", "cnr", "cctv", "chinanews
 COMM = {"guancha", "ifeng"}
 BIZ = {"yicai", "jiemian", "36kr", "latepost", "qbitai", "eeo", "huxiu", "tmtpost", "elsewhere",
        "21jingji", "cnfin", "eastmoney", "guandian", "qqnews", "thepaper"}
-RES = {"cass", "amr", "tsinghua_aiig", "cast", "isc", "cssn"}
+RES = {"cass", "amr", "tsinghua_aiig", "cast", "isc", "cssn", "aisixiang"}
 SUBNATIONAL_LEVELS = ("provincial", "municipal", "district", "department")
 
 SPEAKERS = ["central", "party_theory", "diplomacy", "state_media", "commentary",

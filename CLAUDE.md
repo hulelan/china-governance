@@ -393,6 +393,13 @@ python3 -m crawlers.theory --list-sites
 python3 -m crawlers.theory --site qiushi --probe            # parse a few, write nothing
 python3 -m crawlers.theory --recent --max-docs 200          # what the nightly runs
 python3 -m crawlers.theory --site gmrb_theory --since 2024-01-01 --db documents_theory_x.db
+# 爱思想 aisixiang (2026-11-14): walked by sequential ARTICLE ID (/data/<id>.html; 185,621 newest
+# on 2026-11-14, ~55/day), so an id range is a complete denominator. A missing id is a SOFT 404
+# (HTTP 200, 4.9 KB 提示信息 page, no <h3>), counted as `gone`, not `failed`. Dated by the page's
+# 更新时间 = the REPOST date; the original venue is in relation as origin= (摘自/转自 line or a
+# 《 人民日报 》（date 版） masthead line; empty on many rows). admin_level 'research', speaker
+# `research`: a SITE label over mixed authors, including officials' 人民日报 pieces (庄荣文, 178000).
+python3 -m crawlers.theory --site aisixiang --min-id 150000 --db documents_theory_asx.db
 
 # Ingest the URLs a research brief cites, one row each. The lever: the next brief
 # is one command, not another hunt. Provenance lands in
@@ -616,6 +623,10 @@ Droplet (104.236.88.45, NYC3, 2 vCPU / 4GB RAM / 2GB swap):
    nginx + certbot (HTTPS) ───────────────────────────────────────┘
 
 Mac (dev only, OPTIONAL): git push code; pull a DB copy when developing locally.
+   The checkout lives at ~/dev/china-governance. It moved off ~/Desktop/claude_code
+   (iCloud-synced) on 2026-11-14 by fresh clone, because iCloud was evicting files
+   (145k of raw_html/) and timing out git's index.lock writes. Claude Code keys memory by
+   path, so the store was copied to ~/.claude/projects/-Users-lelan-dev-china-governance/.
 ```
 
 - **The droplet's `documents.db` is the source of truth.** Crawlers run *on the

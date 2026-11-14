@@ -57,6 +57,8 @@ is syncing a 3.9GB `documents.db` (+ WAL/shm + `.git`). That's the probable batt
 CPU/network drain (and the source of the `.git/index.lock` timeouts). Options: move
 the project out of `~/Desktop`/`~/Documents` (iCloud-synced) to e.g. `~/dev/`, or
 exclude it from iCloud. Investigate with `brctl status` / Activity Monitor.
+**Done 2026-11-14:** re-cloned to `~/dev/china-governance`; the Desktop copy is left in
+place (its raw_html/ is 145k evicted iCloud placeholders) for the user to delete.
 
 ### 1b. Fix crawler timeouts  ⭐ (you asked to fix these)
 `CRAWLER_TIMEOUT=1800` (30 min/crawler) in `daily_sync.sh`. Last run: **593 min total**,

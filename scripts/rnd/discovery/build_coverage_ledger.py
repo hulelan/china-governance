@@ -5,7 +5,7 @@ Re-runnable; the not-held list is maintained here as the campaign progresses."""
 import csv
 from pathlib import Path
 
-REPO = Path("/Users/lelan/Desktop/claude_code/china-governance")
+REPO = Path(__file__).resolve().parents[3]
 HAVE = Path("/tmp/have.csv")
 OUT = REPO / "docs/working/coverage-ledger.csv"
 
