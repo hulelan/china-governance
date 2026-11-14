@@ -262,3 +262,32 @@ def test_asx_soft_404_is_gone_not_failed():
 def test_asx_title_keeps_colon_when_prefix_is_not_the_author():
     html = ASX.replace("<strong>郑功成</strong>", "<strong>张三</strong>")
     assert T.parse_asx_article(html)["title"].startswith("郑功成：")
+
+
+def test_fetch_paced_waits_out_a_429_and_retries_the_same_url(monkeypatch):
+    import urllib.error
+    calls, slept = [], []
+
+    def fake_fetch(url, headers=None, retries=3):
+        calls.append((url, retries))
+        if len(calls) == 1:
+            raise urllib.error.HTTPError(url, 429, "Too Many Requests", None, None)
+        return "<h3>ok</h3>"
+    monkeypatch.setattr(T, "fetch", fake_fetch)
+    monkeypatch.setattr(T.time, "sleep", slept.append)
+    cfg = T.SITES["aisixiang"]
+    assert T.fetch_paced("https://x/data/1.html", cfg) == "<h3>ok</h3>"
+    assert calls == [("https://x/data/1.html", 1)] * 2      # one quick try each, same URL
+    assert slept == [90]
+
+
+def test_fetch_paced_does_not_cool_down_a_404(monkeypatch):
+    import urllib.error
+    import pytest
+
+    def fake_fetch(url, headers=None, retries=3):
+        raise urllib.error.HTTPError(url, 404, "Not Found", None, None)
+    monkeypatch.setattr(T, "fetch", fake_fetch)
+    monkeypatch.setattr(T.time, "sleep", lambda s: pytest.fail("slept on a 404"))
+    with pytest.raises(urllib.error.HTTPError):
+        T.fetch_paced("https://x/data/1.html", T.SITES["aisixiang"])

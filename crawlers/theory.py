@@ -79,6 +79,7 @@ import html as H
 import json
 import re
 import time
+import urllib.error
 from datetime import date, datetime, timedelta
 from urllib.parse import urljoin
 
@@ -177,9 +178,14 @@ SITES = {
     "aisixiang": {
         "name": "Aisixiang / 爱思想",
         "base_url": "https://www.aisixiang.com",
-        "admin_level": "research", "speaker": "research", "tier": 2,
+        # tier 3 = run only by name: the quota below makes it too slow to share the
+        # journals' nightly cap
+        "admin_level": "research", "speaker": "research", "tier": 3,
         "kind": "asx_ids", "publisher": "爱思想",
         "recent_ids": 150,          # ~3 days at ~55 ids a day
+        # measured 2026-11-14 from the droplet: HTTP 429 after ~40 requests whether
+        # spaced 0.5 s or 2 s, cleared ~1 min later. So a QUOTA, not a rate.
+        "delay": 3.0, "cooldown_429": 90,
     },
 }
 
@@ -603,6 +609,20 @@ def discover_asx(cfg: dict, args):
 
 # ── driver ────────────────────────────────────────────────────────────────
 
+def fetch_paced(url: str, cfg: dict) -> str:
+    """fetch(), but a site with `cooldown_429` waits out its quota and retries the
+    same URL, instead of spending base.fetch's quick retries on more 429s."""
+    cool = cfg.get("cooldown_429")
+    for attempt in range(4):
+        try:
+            return fetch(url, headers=BROWSER_UA, retries=1 if cool else 3)
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or not cool or attempt == 3:
+                raise
+            log.info(f"  429 on {url}; cooling down {cool}s")
+            time.sleep(cool)
+
+
 def parse(site_key: str, cfg: dict, url: str, html: str, hint: dict) -> dict:
     kind = cfg["kind"]
     if kind == "qs_journal":
@@ -684,7 +704,7 @@ def crawl(conn, site_key: str, args) -> int:
             skipped += 1
             continue
         try:
-            html = fetch(url, headers=BROWSER_UA)
+            html = fetch_paced(url, cfg)
         except Exception as e:
             failed += 1
             log.warning(f"  {url}: {e}")
@@ -692,6 +712,7 @@ def crawl(conn, site_key: str, args) -> int:
         r = parse(site_key, cfg, url, html, hint)
         if r.get("gone"):              # a deleted id, not a parse failure
             gone += 1
+            time.sleep(cfg.get("delay", REQUEST_DELAY))
             continue
         if not r["title"]:
             failed += 1
@@ -712,7 +733,7 @@ def crawl(conn, site_key: str, args) -> int:
                              ensure_ascii=False))
             if seen >= args.probe_n:
                 break
-            time.sleep(REQUEST_DELAY)
+            time.sleep(cfg.get("delay", REQUEST_DELAY))
             continue
         if store_document(conn, site_key, {
             "id": next_id(conn), "title": r["title"], "date_published": r["date"],
@@ -725,7 +746,7 @@ def crawl(conn, site_key: str, args) -> int:
         commit_with_retry(conn)
         if stored and stored % 50 == 0:
             log.info(f"  [{site_key}] stored {stored} (seen {seen}, thin {thin})")
-        time.sleep(REQUEST_DELAY)
+        time.sleep(cfg.get("delay", REQUEST_DELAY))
     log.info(f"[{site_key}] done: {stored} new, {skipped} held, {thin} thin-body, "
              f"{nodate} no-date, {failed} failed, {gone} gone, {seen} seen")
     return stored
@@ -734,7 +755,8 @@ def crawl(conn, site_key: str, args) -> int:
 def main():
     ap = argparse.ArgumentParser(description="Party-theory and academic venues crawler")
     ap.add_argument("--site", help="one site key")
-    ap.add_argument("--tier", type=int, choices=(1, 2))
+    ap.add_argument("--tier", type=int, choices=(1, 2, 3),
+                    help="tier 3 sites run only by --site or --tier 3, never by default")
     ap.add_argument("--list-sites", action="store_true")
     ap.add_argument("--probe", action="store_true",
                     help="discover + parse a few articles, write NOTHING")
@@ -759,7 +781,7 @@ def main():
         return
     keys = ([args.site] if args.site else
             [k for k, c in SITES.items() if c["tier"] == args.tier] if args.tier else
-            list(SITES))
+            [k for k, c in SITES.items() if c["tier"] <= 2])
     for k in keys:
         if k not in SITES:
             ap.error(f"unknown site: {k}")

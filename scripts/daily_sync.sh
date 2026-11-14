@@ -262,9 +262,12 @@ run_crawler_t 600 "finmedia tier 2" \
 # Party-theory journals and CASS (2026-11-12, crawlers/theory.py): 求是 issues, 红旗文稿,
 # 学习时报, 光明日报 theory pages, 人民论坛, 中国社会科学网. --recent reads only the newest
 # issue lists / list pages / 3 days of e-paper; held URLs are skipped.
-# 爱思想 (aisixiang) walks its newest 150 article ids, ~4 min; the cap was 900s before it.
-run_crawler_t 1200 "theory (求是/红旗文稿/学习时报/光明理论/人民论坛/社科网/爱思想, recent)" \
+run_crawler_t 900 "theory (求是/红旗文稿/学习时报/光明理论/人民论坛/社科网, recent)" \
     python3 -m crawlers.theory --recent --max-docs 200
+# 爱思想 is tier 3 (by name only): a ~40-request quota means 3 s spacing and 90 s
+# cool-downs, so its newest 150 ids take ~8-10 min and get their own cap.
+run_crawler_t 900 "aisixiang 爱思想 (newest 150 ids)" \
+    python3 -m crawlers.theory --site aisixiang --recent
 # Location-specific crawlers
 if [ "$IS_MAC" = "true" ]; then
     # These gkmlpt sites are unreachable from the Singapore droplet

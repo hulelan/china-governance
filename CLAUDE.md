@@ -399,6 +399,10 @@ python3 -m crawlers.theory --site gmrb_theory --since 2024-01-01 --db documents_
 # 更新时间 = the REPOST date; the original venue is in relation as origin= (摘自/转自 line or a
 # 《 人民日报 》（date 版） masthead line; empty on many rows). admin_level 'research', speaker
 # `research`: a SITE label over mixed authors, including officials' 人民日报 pieces (庄荣文, 178000).
+# QUOTA: HTTP 429 after ~40 requests whether spaced 0.5 s or 2 s, clear ~1 min later (measured
+# 2026-11-14). So the site config carries delay=3.0 and cooldown_429=90 (fetch_paced waits and
+# retries the same id), it is tier 3 (never in the default all-sites run), and the nightly runs it
+# on its own line. A full backfill is ~1,200 ids/hour at best: plan in days, not hours.
 python3 -m crawlers.theory --site aisixiang --min-id 150000 --db documents_theory_asx.db
 
 # Ingest the URLs a research brief cites, one row each. The lever: the next brief
