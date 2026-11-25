@@ -119,6 +119,18 @@ async def lifespan(app):
     await conn.execute("PRAGMA cache_size = -32000")    # 32 MB page cache (original, proven)
     app.state.db = SQLiteDB(conn)
 
+    # Load jieba's dictionary (~1s) in a background thread so the first search
+    # after a restart does not pay for it. Best effort: no jieba, no preload.
+    import asyncio
+
+    def _preload_jieba():
+        try:
+            from web.services import segment
+            segment._lazy()
+        except Exception:
+            pass
+    app.state.jieba_preload = asyncio.get_running_loop().run_in_executor(None, _preload_jieba)
+
     # Open officials.db (separate read-only connection) if it exists
     app.state.officials_db = None
     if Path(OFFICIALS_PATH).exists():

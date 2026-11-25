@@ -74,6 +74,12 @@ CREATE INDEX IF NOT EXISTS idx_instrument_inbound_inbound ON instrument_inbound(
 """
 
 
+LENS_INDEX_COLS = ("title", "site_key", "date_written", "algo_doc_type",
+                   "topics_algo", "citation_rank")
+LENS_INDEX_SQL = ("CREATE INDEX IF NOT EXISTS idx_documents_lens ON documents("
+                  + ", ".join(LENS_INDEX_COLS) + ")")
+
+
 def build_instrument_inbound(conn) -> tuple:
     """Roll citation weight up to `doc_identity.instrument_id`.
 
@@ -171,6 +177,18 @@ def build(db_path: Path) -> tuple:
         # build; a no-op on later nightly runs.
         conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_classify_main "
                      "ON documents(classify_main_name)")
+        # The third (2026-11-25): a COVERING index for /lens's title scan. A lens
+        # query under 3 characters (算力, 住房, 石油) cannot use the trigram index, so
+        # it is `title LIKE '%q%'` over every row; on `documents` that reads the whole
+        # ~16 GB table (38s measured cold for 石油, ~1.5s warm). With every column the
+        # lens reads in one index, SQLite scans the ~60 MB index instead
+        # (`SCAN d USING COVERING INDEX`, pinned in tests/test_pubcache.py), ~0.5s.
+        # Keep its column list in step with web/services/lens.py:_ROW_COLS.
+        # One-time build (~1-2 min); a no-op on later runs. Skipped on a DB that
+        # lacks any of the columns (a partial fixture or an old schema).
+        have = {r[1] for r in conn.execute("PRAGMA table_info(documents)")}
+        if set(LENS_INDEX_COLS) <= have:
+            conn.execute(LENS_INDEX_SQL)
 
         # Single sequential scan. `body_text_cn != ''` returns a 0/1 the engine
         # answers from each record's length header, so no overflow page is read and

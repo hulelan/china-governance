@@ -8,6 +8,7 @@ from datetime import datetime, timezone, timedelta
 from collections import Counter, defaultdict
 
 from . import segment
+from . import pubcache
 
 CST = timezone(timedelta(hours=8))
 
@@ -454,8 +455,6 @@ def annotate_body_with_citations(body, cites):
     return "".join(out).replace("\n", "<br>\n"), len(spans)
 
 
-_sites_cache = {"data": None, "ts": 0}
-
 # Fast path: read the precomputed per-site summary (scripts/build_site_stats.py,
 # refreshed nightly in daily_sync.sh Phase 2c). O(sites), sub-ms.
 _SITES_FAST_SQL = """
@@ -485,41 +484,33 @@ _SITES_SLOW_SQL = """
 
 
 async def get_sites(db):
-    """All sites with aggregate doc counts, body-text coverage, and doc-number counts."""
-    import time
-    now = time.time()
-    if _sites_cache["data"] and now - _sites_cache["ts"] < 3600:
-        return _sites_cache["data"]
-    try:
-        result = await db.fetch(_SITES_FAST_SQL)
-    except Exception:
-        result = await db.fetch(_SITES_SLOW_SQL)
-    _sites_cache["data"] = result
-    _sites_cache["ts"] = now
-    return result
+    """All sites with aggregate doc counts, body-text coverage, and doc-number counts.
 
+    Cached per publish, shared across workers (services.pubcache). Rows are
+    returned as dicts so they can be pickled to the shared cache."""
+    async def compute():
+        try:
+            result = await db.fetch(_SITES_FAST_SQL)
+        except Exception:
+            result = await db.fetch(_SITES_SLOW_SQL)
+        return [dict(r) for r in result]
+    return await pubcache.memo("sites", "all", compute)
 
-_categories_cache = {"data": None, "ts": 0}
 
 async def get_categories(db):
-    """Distinct classify_main_name values with document counts, ordered by frequency."""
-    import time
-    now = time.time()
-    if _categories_cache["data"] and now - _categories_cache["ts"] < 3600:
-        return _categories_cache["data"]
-    result = await db.fetch("""
-        SELECT classify_main_name, COUNT(*) as count
-        FROM documents
-        WHERE classify_main_name != ''
-        GROUP BY classify_main_name
-        ORDER BY count DESC
-    """)
-    _categories_cache["data"] = result
-    _categories_cache["ts"] = now
-    return result
+    """Distinct classify_main_name values with document counts, ordered by frequency.
+    Cached per publish (services.pubcache)."""
+    async def compute():
+        result = await db.fetch("""
+            SELECT classify_main_name, COUNT(*) as count
+            FROM documents
+            WHERE classify_main_name != ''
+            GROUP BY classify_main_name
+            ORDER BY count DESC
+        """)
+        return [dict(r) for r in result]
+    return await pubcache.memo("categories", "all", compute)
 
-
-_stats_cache = {"data": None, "ts": 0}
 
 # Fast path: the precomputed corpus totals (scripts/build_site_stats.py, refreshed
 # nightly in daily_sync.sh Phase 2c alongside site_stats). A handful of rows, sub-ms.
@@ -551,20 +542,16 @@ async def _stats_fast(db):
 
 async def get_stats(db):
     """Corpus-wide statistics: total documents, body-text and doc-number coverage, and year breakdown."""
-    import time
-    now = time.time()
-    if _stats_cache["data"] and now - _stats_cache["ts"] < 3600:
-        return _stats_cache["data"]
-
+    hit = pubcache.get("stats", "all")
+    if hit is not pubcache.MISS:
+        return hit
     try:
         result = await _stats_fast(db)
     except Exception:
         # Fallback: the live scan. Only hit if corpus_stats is missing (fresh DB or
         # a backup restored without it) — slow but correct until the builder runs.
         result = await _stats_slow(db)
-    _stats_cache["data"] = result
-    _stats_cache["ts"] = now
-    return result
+    return pubcache.put("stats", "all", result)
 
 
 async def _stats_slow(db):
@@ -664,6 +651,26 @@ async def _search_seg_bm25(db, match, date_clause, date_params, site_clause,
 async def search_documents(db, query: str, page: int = 1, per_page: int = 50,
                            date_start: int = None, date_end: int = None,
                            exclude_sites=None, include_sites=None):
+    """Cached wrapper over _search_documents.
+
+    Search must stay LIVE (the trigram index is trigger-maintained, so a document is
+    searchable the moment a crawler stores it), so unlike the other pages the key
+    also carries MAX(documents.id), one rowid lookup: any new document invalidates
+    every cached search. What the cache buys is repeats (paging back, re-running a
+    query). The first run of a query is bm25() over every match, ~0.05s for a rare
+    term to ~1.5s for 发展's 210k matches (2026-11-25); a two-stage rewrite that
+    skipped the documents JOIN saved nothing, because bm25 itself dominates."""
+    max_id = await db.fetchval("SELECT MAX(id) FROM documents")
+    key = (max_id, query, page, per_page, date_start, date_end,
+           tuple(sorted(exclude_sites)) if exclude_sites else None,
+           tuple(sorted(include_sites)) if include_sites else None)
+    return await pubcache.memo("search", key, lambda: _search_documents(
+        db, query, page, per_page, date_start, date_end, exclude_sites, include_sites))
+
+
+async def _search_documents(db, query: str, page: int = 1, per_page: int = 50,
+                            date_start: int = None, date_end: int = None,
+                            exclude_sites=None, include_sites=None):
     """Full-text search across title, doc number, keywords, abstract, body.
 
     Ranking chain, best available first:

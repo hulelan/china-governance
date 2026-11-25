@@ -550,6 +550,24 @@ and the WAL never bloats (segmentation is Python, so it can't be a SQL trigger l
 KILLED build skips that and leaves a big WAL, so a manual run must be allowed to finish
 or be followed by a checkpoint). See `docs/research/search-primer.md` + `search-proposal.md`.
 
+**Page cache = per PUBLISH, shared across workers (2026-11-25, `web/services/pubcache.py`).**
+The heavy pages were fast only on a second hit (/dashboard 13s, /chain 8s, /lens 9s,
+/collections/oil 5.6s cold) because each cache was a per-process dict with a 1h TTL: both
+workers paid every cold build, hourly and after every restart. Now sites/stats/categories,
+dashboard, chain, tracker, discourse, collections, lens topics and the network API cache to
+pickle files under `.web_cache/<generation>/`, where the generation is the mtime of
+`.publish_stamp` (repo root, gitignored; falls back to the DB file's mtime). Phase 3 runs
+`touch .publish_stamp` before the restart and then `scripts/warm_web_cache.py` (~3 min, one
+request per URL warms both workers). **To invalidate by hand: `touch .publish_stamp`.**
+Entries also expire after 26h, and tracker/discourse keys carry today's date (their windows
+come from `date.today()`). Search is the exception: it stays live, so its key carries
+`MAX(documents.id)` and only repeats are cached. `/lens` reads its rows in ONE query instead
+of six LIKE scans, from the covering index `idx_documents_lens` (built by
+`build_site_stats.py`, ~0.5s cold for any term, where a 2-char term scanning `documents`
+cold took 38-64s); `/chain` caps each table at 100 rows (`?full=1` for all). The dashboard's
+top-cited panel was also WRONG, not just slow: joining citations to documents by 文号 before
+grouping multiplied each count by the copies sharing the 文号 (80 citations read 5,360).
+
 ### Daily Crawl + Sync (runs ON the droplet via cron)
 ```bash
 # Automated: droplet cron runs daily_sync.sh at 06:00 UTC.

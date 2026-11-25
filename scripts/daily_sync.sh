@@ -450,8 +450,8 @@ fi
 # Two modes:
 #   (a) Production droplet (marker file present): the web app reads THIS very
 #       documents.db, so there is nothing to rsync. Just checkpoint the WAL so
-#       readers see all committed data, then restart the app to clear its
-#       1-hour query cache. Rsyncing to self would corrupt the file — never do it.
+#       readers see all committed data, stamp a new cache generation, restart
+#       and re-warm. Rsyncing to self would corrupt the file — never do it.
 #   (b) Dev Mac (no marker): push the DB up to the droplet as before.
 PUBLISH_OK=false
 REMOTE_COUNT=""
@@ -460,17 +460,18 @@ if [ -f .is_production_droplet ]; then
     log "Phase 3: Publishing locally (production droplet)..."
     sqlite3 documents.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true
     [ -f officials.db ] && sqlite3 officials.db "PRAGMA wal_checkpoint(TRUNCATE);" >> "$LOG" 2>&1 || true
+    # New publish = new cache generation. The web app's page cache
+    # (web/services/pubcache.py) is keyed to this file's mtime and shared across
+    # both workers on disk, so touching it is what makes tonight's data visible on
+    # the cached pages (dashboard, chain, tracker, lens, ...). Manual lever too.
+    touch .publish_stamp
     systemctl restart chinagovernance >> "$LOG" 2>&1 || true
-    # Warm-up: the restart drops all in-proc caches + the OS page cache is cold for
-    # the ~10 GB DB, so the FIRST real visitor otherwise eats a 5–15s cold build on
-    # heavy endpoints. Prime them in the background so that cost is paid here, not by
-    # a user (and doesn't pin a worker under bot load).
-    sleep 4
-    for p in / /browse "/browse?site=gov" /structure /network \
-             "/api/v1/network?min_degree=3" "/api/v1/stats" /officials; do
-        curl -s -o /dev/null "http://localhost:8001$p" || true
-    done
-    log "  Warm-up pings sent"
+    # Warm-up: compute every cached page ONCE so no visitor pays the cold build
+    # (measured 2026-11-25: /dashboard 13s, /chain 8s, /lens 9s on a first hit).
+    # The cache is shared, so one request per URL warms both workers.
+    timeout 900 python3 scripts/warm_web_cache.py --base http://localhost:8001 >> "$LOG" 2>&1 \
+        || log "  warm_web_cache had errors"
+    log "  Warm-up done"
     REMOTE_COUNT=$(sqlite3 documents.db "SELECT COUNT(*) FROM documents" 2>/dev/null || echo "?")
     log "  Published: $REMOTE_COUNT docs (web app restarted)"
     PUBLISH_OK=true

@@ -28,11 +28,12 @@ from web.services.chain import get_chain, TOPIC_KEYWORDS
 from web.services.structure import get_structure
 from web.services.annotations import list_annotations, get_overview, get_item
 from web.services.collections import get_collection
-from web.services.lens import get_topic_lens, get_doc_lens
+from web.services.lens import get_topic_lens, get_doc_lens, LENS_SUGGESTIONS
 from web.services.tracker import get_tracker
 from web.services.discourse import get_discourse
 from web.services.research import list_sections as research_sections, get_memo as research_memo
 from web.services import ontology
+from web.services import pubcache
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -204,8 +205,7 @@ async def lens_page(request: Request, q: str = "", doc: int = 0):
         "request": request, "stats": stats, "active_nav": "lens",
         "q": q, "topic": topic, "doc_view": doc_view,
         # A few suggested entry-point topics for the empty state.
-        "suggestions": ["人工智能", "算力", "数据要素", "低空经济",
-                        "碳中和", "住房", "医保", "养老"],
+        "suggestions": LENS_SUGGESTIONS,
     })
 
 
@@ -280,23 +280,29 @@ async def network_page(request: Request):
     })
 
 
-_dashboard_cache = {"data": None, "ts": 0}
+# The dashboard's top-cited query. Grouping citations FIRST and attaching one
+# document per 文号 afterwards matters for correctness, not only speed: the old
+# `citations LEFT JOIN documents ON document_number GROUP BY target_ref` multiplied
+# each count by the number of documents sharing that 文号 (财税〔2018〕74号 read
+# 5,360 = 80 citations x 67 documents).
+_TOP_CITED_SQL = """
+    SELECT t.target_ref AS docnum, t.count, t.level,
+           d.id AS resolved_id, d.title
+    FROM (SELECT target_ref, COUNT(*) AS count, MIN(target_level) AS level
+          FROM citations
+          GROUP BY target_ref
+          ORDER BY count DESC
+          LIMIT 25) t
+    LEFT JOIN documents d ON d.id = (
+        SELECT d2.id FROM documents d2
+        WHERE d2.document_number = t.target_ref AND d2.document_number != ''
+        ORDER BY d2.id LIMIT 1)
+    ORDER BY t.count DESC
+"""
 
-@router.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request):
-    """Analytics dashboard with timeline, citation hierarchy, top-cited docs, and coverage charts."""
-    import time
-    db = request.app.state.db
-    stats = await get_stats(db)
-    sites = await get_sites(db)
 
-    now = time.time()
-    if _dashboard_cache["data"] and now - _dashboard_cache["ts"] < 3600:
-        cached = _dashboard_cache["data"]
-        return templates.TemplateResponse("dashboard.html", {
-            "request": request, "stats": stats, "sites": sites, **cached,
-        })
-
+async def _dashboard_data(db, stats, sites):
+    """The dashboard's computed panels (cached per publish via pubcache)."""
     # Timeline data
     timeline_labels = [str(yr["year"]) for yr in stats["by_year"]]
     timeline_data = [yr["count"] for yr in stats["by_year"]]
@@ -314,16 +320,7 @@ async def dashboard(request: Request):
         level_counts.get("unknown", 0),
     ]
 
-    # Top cited — from citations table with JOIN to resolve titles
-    top_rows = await db.fetch("""
-        SELECT c.target_ref as docnum, COUNT(*) as count, c.target_level as level,
-               d.id as resolved_id, d.title
-        FROM citations c
-        LEFT JOIN documents d ON d.document_number = c.target_ref
-        GROUP BY c.target_ref
-        ORDER BY count DESC
-        LIMIT 25
-    """)
+    top_rows = await db.fetch(_TOP_CITED_SQL)
     top_cited = [{
         "docnum": r["docnum"], "count": r["count"], "level": r["level"],
         "resolved": r["resolved_id"] is not None,
@@ -335,42 +332,47 @@ async def dashboard(request: Request):
     coverage_body = [s["body_count"] for s in sites[:12]]
     coverage_no_body = [s["doc_count"] - s["body_count"] for s in sites[:12]]
 
-    dashboard_data = {
+    return {
         "timeline_labels": timeline_labels, "timeline_data": timeline_data,
         "hierarchy_labels": hierarchy_labels, "hierarchy_data": hierarchy_data,
         "top_cited": top_cited,
         "coverage_labels": coverage_labels, "coverage_body": coverage_body,
         "coverage_no_body": coverage_no_body,
     }
-    _dashboard_cache["data"] = dashboard_data
-    _dashboard_cache["ts"] = now
 
+
+@router.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    """Analytics dashboard with timeline, citation hierarchy, top-cited docs, and coverage charts."""
+    db = request.app.state.db
+    stats = await get_stats(db)
+    sites = await get_sites(db)
+    dashboard_data = await pubcache.memo(
+        "dashboard", "v2", lambda: _dashboard_data(db, stats, sites))
     return templates.TemplateResponse("dashboard.html", {
         "request": request, "stats": stats, "sites": sites, **dashboard_data,
     })
 
 
-_chain_cache = {}
+# Rows shown per table on /chain before a "show all" link. The AI trace is ~2,200
+# rows (1.76 MB of HTML, each row carrying two Alpine x-show spans); the first
+# hundred per table is what a reader scans, and ?full=1 still renders everything.
+CHAIN_ROW_LIMIT = 100
+
 
 @router.get("/chain/{topic}", response_class=HTMLResponse)
-async def chain_page(request: Request, topic: str = "ai"):
+async def chain_page(request: Request, topic: str = "ai", full: int = 0):
     """Policy Trace page showing cross-level citation hierarchy for a topic (e.g. AI, housing)."""
-    import time
     db = request.app.state.db
     stats = await get_stats(db)
     keyword = TOPIC_KEYWORDS.get(topic, topic)
-
-    now = time.time()
-    cached = _chain_cache.get(topic)
-    if cached and now - cached["ts"] < 3600:
-        chain = cached["data"]
-    else:
-        chain = await get_chain(db, keyword, topic=topic)
-        _chain_cache[topic] = {"data": chain, "ts": now}
+    chain = await pubcache.memo(
+        "chain", (topic, keyword), lambda: get_chain(db, keyword, topic=topic))
 
     return templates.TemplateResponse("chain.html", {
         "request": request, "stats": stats, "chain": chain,
         "topic": topic, "keyword": keyword, "topics": TOPIC_KEYWORDS,
+        "row_limit": None if full else CHAIN_ROW_LIMIT,
     })
 
 

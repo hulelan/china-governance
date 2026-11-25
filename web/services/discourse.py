@@ -11,16 +11,16 @@ Reads only the two tables scripts/build_discourse_weekly.py precomputes nightly
 
 Every query is either a PK-prefix read on one concept (+ '_all') or an iso_week
 range read on the week index; nothing touches ``documents``. Page assemblies are
-cached in-process for an hour (the data changes nightly).
+cached per publish, shared across workers (services.pubcache).
 """
 import time
 from collections import defaultdict
 
 from web.services.discourse_vocab import FAMILIES, SPEAKERS, SPEAKER_LABELS
 from web.services.tracker import clamp_weeks, recent_weeks
+from web.services import pubcache
+from datetime import date
 
-CACHE_TTL = 3600
-_cache: dict = {}
 
 ALL = "_all"
 DEFAULT_CONCEPT = "全球南方"
@@ -39,16 +39,16 @@ FAMILY_LABELS = {
 }
 
 
+# Cached per publish and shared across workers (services.pubcache). The key
+# carries today's date because the page windows are computed from date.today()
+# (recent_weeks), so a cache made before midnight must not serve the next ISO week.
 def _cached(key):
-    hit = _cache.get(key)
-    if hit and time.time() - hit["ts"] < CACHE_TTL:
-        return hit["data"]
-    return None
+    hit = pubcache.get("discourse", (date.today().isoformat(), key))
+    return None if hit is pubcache.MISS else hit
 
 
 def _store(key, data):
-    _cache[key] = {"data": data, "ts": time.time()}
-    return data
+    return pubcache.put("discourse", (date.today().isoformat(), key), data)
 
 
 def rate(docs, denom):
