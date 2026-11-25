@@ -11,6 +11,7 @@ from web.services.documents import (
     REF_PATTERN, get_admin_level,
 )
 from web.services.inbox import get_inbox_dates, get_documents_for_date
+from web.services import pubcache
 import time
 from collections import Counter
 
@@ -23,11 +24,8 @@ router = APIRouter()
 NETWORK_NODE_CAP = 400    # max hub (frequently-cited) target nodes
 NETWORK_EDGE_CAP = 2500   # max edges returned (strongest hubs' edges kept first)
 
-# Simple TTL cache keyed by the filter tuple (mirrors the stats/sites cache
-# pattern in web/services/documents.py). Bounded to a handful of entries.
-_network_cache: dict = {}
-_NETWORK_TTL = 3600  # seconds
-_NETWORK_CACHE_MAX = 48
+# Cached per publish by the filter tuple, shared across workers
+# (web/services/pubcache.py), like every other heavy page.
 
 
 @router.get("/documents")
@@ -138,7 +136,7 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
     date/site index, aggregates citation counts in Python, keeps only the
     top-N most-cited hub documents (NETWORK_NODE_CAP) plus a capped set of
     edges (NETWORK_EDGE_CAP), and resolves node metadata with one indexed
-    ``IN`` lookup. Results are cached per filter tuple for an hour.
+    ``IN`` lookup. Results are cached per filter tuple per publish.
     """
     db = request.app.state.db
     ds = date_str_to_timestamp(date_start) if date_start else None
@@ -146,9 +144,9 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
 
     cache_key = (site or "", int(min_degree), ds, de, doc_type or "")
     now = time.time()
-    hit = _network_cache.get(cache_key)
-    if hit and now - hit[0] < _NETWORK_TTL:
-        return hit[1]
+    hit = pubcache.get("network", cache_key)
+    if hit is not pubcache.MISS:
+        return hit
 
     # Build source filter for citations (filter by source doc attributes)
     source_where = ["sd.document_number != ''"]
@@ -261,11 +259,8 @@ async def api_network(request: Request, site: str = None, min_degree: int = 2,
 
 
 def _network_store(key, ts, result):
-    """Store a network result, evicting the oldest entry when the cache is full."""
-    if len(_network_cache) >= _NETWORK_CACHE_MAX and key not in _network_cache:
-        oldest = min(_network_cache, key=lambda k: _network_cache[k][0])
-        del _network_cache[oldest]
-    _network_cache[key] = (ts, result)
+    """Store a network result in the shared publish-keyed cache."""
+    pubcache.put("network", key, result)
 
 
 @router.get("/officials/network")

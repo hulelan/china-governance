@@ -34,3 +34,7 @@ random/
 raw_html/
 backups/
 .is_production_droplet
+
+# Web app page cache (web/services/pubcache.py) and its publish stamp
+.web_cache/
+.publish_stamp

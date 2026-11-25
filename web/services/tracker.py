@@ -25,7 +25,7 @@ must exist; the nightly rebuilds it).
 
 Plus ``documents``/``sites`` for issuer names and the anchor's full topic list —
 always by primary key on a few dozen ids, never a cold aggregate scan. Each
-page assembly is cached in-process for an hour (same pattern as /lens), which
+page assembly is cached per publish across workers (services.pubcache), which
 is also the data's own refresh cadence (nightly).
 
 Topic semantics (from build_tracker_rollup.py): ``diffusion_events.topic`` only
@@ -40,8 +40,8 @@ from collections import defaultdict
 from datetime import date, timedelta
 from statistics import median
 
-CACHE_TTL = 3600  # seconds
-_cache: dict = {}
+from web.services import pubcache
+
 
 ALL = "all"
 CONFIRMED = ("citation", "title_reissue")
@@ -179,16 +179,16 @@ def _clean(title) -> str:
     return " ".join(_TAG_RE.sub(" ", title or "").split())
 
 
+# Cached per publish and shared across workers (services.pubcache). The key
+# carries today's date because the page windows are computed from date.today()
+# (recent_weeks), so a cache made before midnight must not serve the next ISO week.
 def _cached(key):
-    hit = _cache.get(key)
-    if hit and time.time() - hit["ts"] < CACHE_TTL:
-        return hit["data"]
-    return None
+    hit = pubcache.get("tracker", (date.today().isoformat(), key))
+    return None if hit is pubcache.MISS else hit
 
 
 def _store(key, data):
-    _cache[key] = {"data": data, "ts": time.time()}
-    return data
+    return pubcache.put("tracker", (date.today().isoformat(), key), data)
 
 
 def iso_week_str(d: date) -> str:
@@ -243,7 +243,7 @@ async def get_topics(db):
 
 async def _anchor_topics(db):
     """anchor_id → set of topics_algo tags for every anchor in diffusion_events.
-    One PK join over ~3.7k anchors, cached for the hour."""
+    One PK join over ~3.7k anchors, cached per publish."""
     hit = _cached("anchor_topics")
     if hit is not None:
         return hit
@@ -568,7 +568,7 @@ async def get_leaderboard(db, anchor_level: str = "central"):
     ('central' | 'provincial') ranked by distinct implementing sources (sites)
     over confirmed IMPLEMENTING signals (source_implementing=1); the confirmed
     mentions are carried as a secondary ``mentions`` count. One grouped PK join
-    of the confirmed events with documents (for site_key); cached an hour per level."""
+    of the confirmed events with documents (for site_key); cached per publish per level."""
     key = ("leaderboard", anchor_level)
     hit = _cached(key)
     if hit is not None:
@@ -617,7 +617,7 @@ async def get_leaderboard(db, anchor_level: str = "central"):
 
 
 async def get_tracker(db, topic: str = ALL, weeks=DEFAULT_WEEKS):
-    """Assemble the whole /tracker page for (topic, weeks); cached an hour.
+    """Assemble the whole /tracker page for (topic, weeks); cached per publish.
     Returns None when the precomputed tables are absent (nightly not yet run)."""
     if not await tables_present(db):
         return None

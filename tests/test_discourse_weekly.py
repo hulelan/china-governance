@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import build_discourse_weekly as bdw  # noqa: E402
 from web.services import discourse as svc  # noqa: E402
 from web.services import tracker as trk  # noqa: E402
+from web.services import pubcache  # noqa: E402
 from web.services.discourse_vocab import CONCEPTS, COUNTER_TERMS, all_terms, compiled, find_terms  # noqa: E402
 
 TODAY = date(2026, 11, 12)       # Thursday of 2026-W46
@@ -215,9 +216,11 @@ def page_db(tmp_path, monkeypatch):
     p = tmp_path / "weekly.db"
     _weekly_fixture(p)
     monkeypatch.setattr(svc, "recent_weeks", lambda n, today=None: trk.recent_weeks(n, TODAY))
-    svc._cache.clear()
+    # The page cache is shared on disk now (web/services/pubcache.py): keep it off
+    # in tests so nothing is written outside tmp_path and every call recomputes.
+    pubcache.configure(cache_dir=tmp_path / "cache", stamp=tmp_path / "stamp", enabled=False)
     yield p
-    svc._cache.clear()
+    pubcache.clear_memory()
 
 
 async def _service(path, concept, weeks):
@@ -301,5 +304,5 @@ def test_page_renders(page_db, monkeypatch):
 def test_page_without_tables(tmp_path, monkeypatch):
     p = tmp_path / "empty.db"
     sqlite3.connect(p).execute("CREATE TABLE x(a)").connection.commit()
-    svc._cache.clear()
+    pubcache.configure(cache_dir=tmp_path / "cache", stamp=tmp_path / "stamp", enabled=False)
     assert asyncio.run(_service(p, "全球南方", 8)) is None
