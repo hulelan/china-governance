@@ -20,9 +20,10 @@ import time
 import urllib.parse
 from pathlib import Path
 
-import openpyxl
-import requests
-from bs4 import BeautifulSoup
+from crawlers.baike_career import parse_career_text  # noqa: F401  (re-exported)
+
+# openpyxl / requests / bs4 are imported where they are used, so `--parse` and
+# `--stats` run on a machine that has only the standard library.
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger(__name__)
@@ -39,9 +40,9 @@ HEADERS = {
 REQUEST_DELAY = 2.0  # seconds between requests
 
 
-def init_db():
+def init_db(db_path=None):
     """Create tables if they don't exist."""
-    conn = sqlite3.connect(str(DB_PATH))
+    conn = sqlite3.connect(str(db_path or DB_PATH))
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA busy_timeout=30000")
     conn.executescript("""
@@ -117,6 +118,7 @@ def load_members_from_excel(conn):
     name alone would silently drop one of them, which is how we ended up
     with the wrong 李强 in the original DB load.
     """
+    import openpyxl
     wb = openpyxl.load_workbook(str(EXCEL_PATH), read_only=True)
 
     # Collect CC membership info, keyed by (name_cn, birth_year)
@@ -171,6 +173,8 @@ def fetch_baike_page(name_cn, birth_year=None):
     encoded = urllib.parse.quote(name_cn)
     url = f"https://baike.baidu.com/item/{encoded}"
 
+    import requests
+    from bs4 import BeautifulSoup
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15, allow_redirects=True)
         if resp.status_code != 200:
@@ -195,36 +199,57 @@ def fetch_baike_page(name_cn, birth_year=None):
         return None
 
 
+_CAREER_LINE = re.compile(r"^\d{4}\s*[\.\-年—–－~～至/]|^\d{4}\s+\S")
+
+
+def _paragraph_lines(soup):
+    """One string per Baike paragraph, inline spans JOINED.
+
+    Baike wraps every hyperlink and every run of plain text in its own <span>, so
+    `get_text("\n")` cut career lines at each link: "2011-2014 外交部新闻司司" /
+    "长、外交部发言人", or a bare "1963.09——1968.08，" whose post was a link and was
+    lost. Reading paragraph by paragraph keeps the line whole. Footnote markers
+    ([3]) and picture captions are dropped.
+    """
+    lines = []
+    for para in soup.find_all(attrs={"data-tag": "paragraph"}):
+        for junk in para.find_all(
+                lambda t: t.name in ("sup", "svg", "img")
+                or any(c.startswith(("supWrap", "lemmaPicture")) for c in (t.get("class") or []))):
+            junk.decompose()
+        for br in para.find_all("br"):
+            br.replace_with("\n")
+        for part in para.get_text("").split("\n"):
+            part = re.sub(r"[ \t\xa0]+", " ", part).strip()
+            if part:
+                lines.append(part)
+    return lines
+
+
 def _extract_career_text(soup):
     """Extract career/biography section from Baidu Baike page.
 
-    Baidu Baike renders article content client-side, but the text is still
-    in the HTML. We extract all text and look for structured career lines
-    in the format: YYYY.MM-YYYY.MM position  or  YYYY年M月 position
+    Career lines are those starting with a year: 1975.09-1978.12 …, 1975年9月 …,
+    1982 － 1988 ….
     """
     # Remove script and style elements
     for tag in soup(["script", "style"]):
         tag.decompose()
 
+    para_lines = _paragraph_lines(soup)
     full_text = soup.get_text("\n", strip=True)
-    lines = full_text.split("\n")
+    lines = para_lines or full_text.split("\n")
 
-    # Look for structured career lines (YYYY.MM-YYYY.MM or YYYY年M月)
     career_lines = []
-    career_pattern = re.compile(r"^\d{4}[\.\-年]")
-
     for line in lines:
         line = line.strip()
-        if not line:
-            continue
-        # Match career timeline format: 1975.09-1978.12 or 1975年9月
-        if career_pattern.match(line) and len(line) > 15:
-            # Skip birth/education-only lines that are too short
+        if line and _CAREER_LINE.match(line) and len(line) > (9 if para_lines else 15):
             career_lines.append(line)
 
     if career_lines:
         return "\n".join(career_lines)
 
+    lines = full_text.split("\n")
     # Fallback: look for any lines with career keywords
     keyword_lines = []
     for line in lines:
@@ -240,6 +265,34 @@ def _extract_career_text(soup):
         return meta["content"]
 
     return ""
+
+
+def reextract_career_text(conn, dry_run=False):
+    """Rebuild baike_career_text from the STORED baike_html (no network).
+
+    Only replaces a text when the new one has at least as many dated lines, so a
+    page on an older template that the paragraph reader cannot see keeps what it had.
+    """
+    from bs4 import BeautifulSoup
+    rows = conn.execute(
+        "SELECT id, name_cn, baike_html, baike_career_text FROM officials "
+        "WHERE crawl_status='done' AND baike_html IS NOT NULL AND baike_html != ''"
+    ).fetchall()
+    changed = kept = 0
+    for official_id, name_cn, html, old in rows:
+        new = _extract_career_text(BeautifulSoup(html, "html.parser"))
+        n_old = sum(1 for ln in (old or "").split("\n") if _CAREER_LINE.match(ln))
+        n_new = sum(1 for ln in new.split("\n") if _CAREER_LINE.match(ln))
+        if not new or new == old or (n_new == 0 and n_old > 0):
+            kept += 1
+            continue
+        changed += 1
+        if not dry_run:
+            conn.execute("UPDATE officials SET baike_career_text=? WHERE id=?", (new, official_id))
+    if not dry_run:
+        conn.commit()
+    log.info(f"Re-extracted career text: {changed} changed, {kept} kept, of {len(rows)}")
+    return changed
 
 
 def crawl_officials(conn, limit=None):
@@ -285,158 +338,8 @@ def crawl_officials(conn, limit=None):
 
 
 # --- Step 2: Programmatic career parsing ---
-
-# Patterns for extracting career records from Chinese biographical text
-# Format 1: YYYY.MM-YYYY.MM position (Baike style A)
-CAREER_PATTERN_DOT = re.compile(
-    r"(\d{4})\.(\d{1,2})-(\d{4})\.(\d{1,2})\s+(.+)"
-)
-# Format 2: YYYY-YYYY年 position (Baike style B — top leaders)
-CAREER_PATTERN_RANGE = re.compile(
-    r"(\d{4})-(\d{4})年\s+(.+)"
-)
-# Format 3: YYYY年M月 position (older narrative style)
-CAREER_PATTERN_CN = re.compile(
-    r"(\d{4})年(?:(\d{1,2})月)?[，,、\s—-]*"
-    r"(?:任|担任|兼任|调任|转任|升任|当选|出任|改任|晋升|被任命|受命|就任|授予|选举|聘为|提拔|调入|进入|赴|到|在)?"
-    r"\s*(.+?)(?=[。；;$\n]|(?=\d{4}年))"
-)
-
-# Province/city detection
-PROVINCES = {
-    "北京": "Beijing", "天津": "Tianjin", "上海": "Shanghai", "重庆": "Chongqing",
-    "河北": "Hebei", "山西": "Shanxi", "辽宁": "Liaoning", "吉林": "Jilin",
-    "黑龙江": "Heilongjiang", "江苏": "Jiangsu", "浙江": "Zhejiang", "安徽": "Anhui",
-    "福建": "Fujian", "江西": "Jiangxi", "山东": "Shandong", "河南": "Henan",
-    "湖北": "Hubei", "湖南": "Hunan", "广东": "Guangdong", "海南": "Hainan",
-    "四川": "Sichuan", "贵州": "Guizhou", "云南": "Yunnan", "陕西": "Shaanxi",
-    "甘肃": "Gansu", "青海": "Qinghai", "台湾": "Taiwan",
-    "内蒙古": "Inner Mongolia", "广西": "Guangxi", "西藏": "Tibet",
-    "宁夏": "Ningxia", "新疆": "Xinjiang",
-}
-
-CENTRAL_ORGS = [
-    "国务院", "中央", "全国人大", "全国政协", "中共中央", "中纪委", "中央纪委",
-    "中央军委", "国家", "最高人民法院", "最高人民检察院",
-    "中国人民银行", "外交部", "国防部", "财政部", "商务部", "工信部",
-    "教育部", "科技部", "公安部", "民政部", "司法部", "人社部",
-    "自然资源部", "生态环境部", "住建部", "交通运输部", "水利部",
-    "农业农村部", "文旅部", "卫健委", "退役军人事务部", "应急管理部",
-    "审计署", "国资委", "市场监管总局", "发改委", "统计局",
-]
-
-
-def _detect_province(text):
-    """Detect province from position text."""
-    for cn, en in PROVINCES.items():
-        if cn in text:
-            return cn
-    return None
-
-
-def _detect_admin_level(text, province):
-    """Detect admin level from position text."""
-    if any(org in text for org in CENTRAL_ORGS):
-        return "central"
-    if province and ("省" in text or "自治区" in text or province + "市" in text for p in ["北京", "天津", "上海", "重庆"] if p == province):
-        return "provincial"
-    if "市" in text and "区" not in text:
-        return "municipal"
-    if "区" in text or "县" in text:
-        return "district"
-    if province:
-        return "provincial"
-    return "unknown"
-
-
-def parse_career_text(career_text):
-    """Parse career text into structured records.
-
-    Handles two formats:
-    - YYYY.MM-YYYY.MM position (most common on modern Baike pages)
-    - YYYY年M月 position (older style)
-
-    Returns list of dicts with position, organization, province, etc.
-    """
-    if not career_text:
-        return []
-
-    records = []
-
-    for line in career_text.split("\n"):
-        line = line.strip()
-        if not line:
-            continue
-
-        # Skip education/parenthetical lines
-        if line.startswith("（") or line.startswith("("):
-            continue
-
-        start_year = start_month = end_year = end_month = None
-        position_text = ""
-
-        # Format 1: YYYY.MM-YYYY.MM position
-        m = CAREER_PATTERN_DOT.match(line)
-        if m:
-            start_year, start_month = int(m.group(1)), int(m.group(2))
-            end_year, end_month = int(m.group(3)), int(m.group(4))
-            position_text = m.group(5).strip()
-        else:
-            # Format 2: YYYY-YYYY年 position (top leaders)
-            m2 = CAREER_PATTERN_RANGE.match(line)
-            if m2:
-                start_year = int(m2.group(1))
-                end_year = int(m2.group(2))
-                position_text = m2.group(3).strip()
-            else:
-                # Format 3: YYYY年M月 position (narrative)
-                m3 = CAREER_PATTERN_CN.match(line)
-                if m3:
-                    start_year = int(m3.group(1))
-                    start_month = int(m3.group(2)) if m3.group(2) else None
-                    position_text = m3.group(3).strip()
-
-        if not position_text or not start_year:
-            continue
-        if len(position_text) < 2 or len(position_text) > 200:
-            continue
-        # Skip birth/education entries
-        if any(skip in position_text for skip in ["出生", "生于", "入学", "学习", "专业", "毕业", "学位", "结婚"]):
-            continue
-
-        province = _detect_province(position_text)
-        admin_level = _detect_admin_level(position_text, province)
-
-        # Try to split organization from position title
-        org = ""
-        pos = position_text
-        org_match = re.match(
-            r"(.+?(?:省|市|区|县|部|委|局|院|署|办|厅|处|总|公司|集团|银行|大学|学院|工厂|军区|政府))"
-            r"\s*(.+)", position_text
-        )
-        if org_match and len(org_match.group(2)) > 1:
-            org = org_match.group(1)
-            pos = org_match.group(2)
-
-        records.append({
-            "position": pos,
-            "organization": org or position_text,
-            "province": province,
-            "admin_level": admin_level,
-            "start_year": start_year,
-            "start_month": start_month,
-            "end_year": end_year,
-            "end_month": end_month,
-            "raw_text": line,
-        })
-
-    # For format 2 (no end dates): infer from next record
-    for i in range(len(records) - 1):
-        if records[i]["end_year"] is None:
-            records[i]["end_year"] = records[i + 1]["start_year"]
-            records[i]["end_month"] = records[i + 1]["start_month"]
-
-    return records
+# The parser lives in crawlers/baike_career.py (stdlib only, unit-tested in
+# tests/test_baike_career.py). One row per held post body; see its docstring.
 
 
 def parse_all_officials(conn, dry_run=False):
@@ -472,6 +375,7 @@ def parse_all_officials(conn, dry_run=False):
                  r["end_year"], r["end_month"], r["raw_text"]),
             )
         conn.execute("UPDATE officials SET parse_status='done' WHERE id=?", (official_id,))
+    if not dry_run:
         conn.commit()
 
     log.info(f"Total: {total_records} career records from {len(rows)} officials")
@@ -499,16 +403,33 @@ def main():
     parser.add_argument("--stats", action="store_true", help="Show progress stats")
     parser.add_argument("--parse", action="store_true", help="Parse career records from crawled pages")
     parser.add_argument("--dry-run", action="store_true", help="Preview parsing without saving")
+    parser.add_argument("--reextract", action="store_true",
+                        help="Rebuild baike_career_text from the stored baike_html (no network)")
+    parser.add_argument("--db", help="officials.db to work on (default: repo officials.db). "
+                                     "Re-parse a COPY, never the file the web app is reading.")
     args = parser.parse_args()
 
-    conn = init_db()
-
-    # Always load/update from Excel
-    load_members_from_excel(conn)
+    # Re-parsing needs no seed list (the Excel file exists only on the Mac) and
+    # must not touch the schema of the file it was pointed at.
+    offline = args.stats or args.parse or args.reextract
+    if offline:
+        conn = sqlite3.connect(str(args.db or DB_PATH))
+        conn.execute("PRAGMA busy_timeout=30000")
+    else:
+        conn = init_db(args.db)
+    if not offline:
+        if not EXCEL_PATH.exists():
+            parser.error(f"seed list not found: {EXCEL_PATH}")
+        load_members_from_excel(conn)
 
     if args.stats:
         show_stats(conn)
         return
+
+    if args.reextract:
+        reextract_career_text(conn, dry_run=args.dry_run)
+        if not args.parse:
+            return
 
     if args.parse:
         parse_all_officials(conn, dry_run=args.dry_run)

@@ -717,6 +717,20 @@ Tables: `officials`, `career_records`, `overlaps`.
   - `python3 -m crawlers.baike` (crawl) → `--parse` (extract career_records)
   - `scripts/compute_overlaps.py` builds the `overlaps` table
   - `scripts/fix_baike_collisions.py` fixes name-collision mismatches
+- **Career parser rewritten 2026-11-25** (`crawlers/baike_career.py`, stdlib only,
+  `tests/test_baike_career.py`). `career_records` is now ONE ROW PER HELD POST BODY and
+  `organization` is a canonical key (北京市委 / 北京市政府 / 浙江省委组织部 / 清华大学), so a
+  line like "中央政治局委员，北京市委书记" yields a row in each body and the overlap builder
+  pairs by key equality. The old parser required `Y.M-Y.M` + whitespace: a comma after the
+  range, `——`, `Y年-Y年`, and every open-ended `2022.10-` line parsed to nothing (527 of
+  2,155 crawled officials had ZERO records). Also: `--reextract` rebuilds
+  `baike_career_text` from the STORED `baike_html` paragraph by paragraph, because the
+  first extraction cut every line at each inline `<span>`/link (1,645 texts changed).
+  Rebuild a COPY, never the live file:
+  `python3 -m crawlers.baike --db COPY.db --reextract --parse && python3 scripts/compute_overlaps.py --db COPY.db`.
+  Known limits: narrative biographies (pre-1980s figures) parse poorly; ministry-level keys
+  are coarse (two people in different departments of 财政部 "overlap"); some pages are the
+  WRONG PERSON (黎明 640 and 张杰 are the singers), unmeasured.
 - **Seed input**: `~/Downloads/CPC_Elite_Leadership_Database.xlsx` (manual,
   Mac-local, NOT in the repo). The crawler reads this list to know whom to crawl.
 - **NOT part of the daily pipeline** — `daily_sync.sh` only checkpoints it, never
