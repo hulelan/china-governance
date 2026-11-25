@@ -33,6 +33,7 @@ from web.services.tracker import get_tracker
 from web.services.discourse import get_discourse
 from web.services.research import list_sections as research_sections, get_memo as research_memo
 from web.services import ontology
+from web.services.sections import get_sections
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -524,6 +525,20 @@ async def coverage_page(request: Request):
         "request": request, "stats": stats,
         "org_data_json": json.dumps(org_data, ensure_ascii=False),
         "site_counts_json": json.dumps(site_counts),
+    })
+
+
+@router.get("/admin/sections", response_class=HTMLResponse)
+async def admin_sections_page(request: Request, level: str = "central", site: str = "",
+                              issues: int = 0):
+    """Per-site SECTION coverage: configured sections vs held, plus known-missing
+    sections. Reads only the nightly `section_registry` table and a small YAML."""
+    db = request.app.state.db
+    stats = await get_stats(db)
+    data = await get_sections(db, level="" if level == "all" else level,
+                              site=site, issues_only=bool(issues))
+    return templates.TemplateResponse("admin_sections.html", {
+        "request": request, "stats": stats, "active_nav": "admin", **data,
     })
 
 

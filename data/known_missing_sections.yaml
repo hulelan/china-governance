@@ -1,0 +1,356 @@
+# Sections we KNOW a crawled site has and that we do not (or did not) crawl.
+#
+# Shown on /admin/sections beside each site's crawled sections. The section registry
+# (scripts/build_section_registry.py) is derived from the crawler code and so can only
+# describe what a crawler DECLARES; a section nobody configured is invisible to it.
+# This file is where that gap is written down. It is hand-kept on purpose and must
+# stay small: one row per section, with a URL someone can open.
+#
+# status
+#   missing  the section exists, is reachable from the droplet, and no crawler reads it
+#   broken   a crawler is configured for it and gets nothing (wrong path, template change)
+#   blocked  not reachable from the droplet's NYC IP (WAF / TLS / challenge page)
+#   added    a crawler now reads it. Keep the row: `found` + `note` say when and how,
+#            and whether a one-time backfill is still owed.
+#
+# Every `example_url` was byte-checked from the droplet on the `found` date unless the
+# note says otherwise. HTTP 200 alone was never accepted as reachable.
+#
+# Full audit table: docs/working/press-conference-coverage.md
+
+sections:
+
+  # ---------------------------------------------------------------- SAMR 市场监管总局
+  - site_key: samr
+    name: 新闻发布厅 (press conferences)
+    path: /xw/xwfbt/
+    example_url: https://www.samr.gov.cn/xw/xwfbt/art/2026/art_7aa3b165c4114ac1ac910a34f8fca79e.html
+    status: added
+    found: 2026-11-25
+    note: "crawlers/samr.py section `xwfbt` (page_id 5fb1ceb6…). Scratch crawl: 275 docs, 271 with body, 2024-05-07 to 2026-11-24. Backfill owed."
+  - site_key: samr
+    name: 广告监管司 通知公告
+    path: /ggjgs/tzgg/
+    example_url: https://www.samr.gov.cn/ggjgs/tzgg/art/2026/art_661a8bad452546e9b0cb8f448fecda3d.html
+    status: added
+    found: 2026-11-25
+    note: "section `ggjgs_tzgg` (26 docs). The 司局 sub-sites use a second listing template (tagId ajax分页, 10 rows/page) that the crawler now parses."
+  - site_key: samr
+    name: 标准技术司 征求意见
+    path: /bzjss/zqyj/
+    example_url: https://www.samr.gov.cn/bzjss/zqyj/art/2026/art_1d9ba0952fb846e8b40c9b0e9e0e2323.html
+    status: added
+    found: 2026-11-25
+    note: "section `bzjss_zqyj` (430 listed, 2019-). Backfill owed."
+  - site_key: samr
+    name: every other 司局 column (≈30 司局 × 通知公告 / 征求意见 / 工作动态)
+    path: /<司局>/tzgg/ , /<司局>/zqyj/
+    example_url: https://www.samr.gov.cn/jg/
+    status: missing
+    found: 2026-11-25
+    note: "Only two 司局 columns were added. Each is one SECTIONS entry (page_id = the column page's <meta name=ColId>, tag_id ajax分页); enumerating them needs a walk of /jg/ (机构), not done."
+
+  # ---------------------------------------------------------------- gov.cn 国务院
+  - site_key: gov
+    name: 要闻 (rolling news / readouts)
+    path: /yaowen/liebiao/
+    example_url: https://www.gov.cn/yaowen/liebiao/202611/content_7086500.htm
+    status: added
+    found: 2026-11-25
+    note: "crawlers/gov.py FEEDS['yaowen'] reads /yaowen/liebiao/YAOWENLIEBIAO.json (rolling 400 rows, about 4 weeks). The list page itself is a 20 KB shell with no rows. History before the feed window is NOT recoverable from the feed."
+  - site_key: gov
+    name: 新闻发布 (国新办 / 部门 press conferences and releases)
+    path: /lianbo/fabu/
+    example_url: https://www.gov.cn/lianbo/fabu/202611/content_7086301.htm
+    status: added
+    found: 2026-11-25
+    note: "FEEDS['fabu'] reads /lianbo/fabu/TONGYONGLIEBIAODRQ.json (702 rows, 2022-10 onward; about 625 are article pages, 99% with body on a scratch crawl). Backfill owed."
+  - site_key: gov
+    name: 国务院政策例行吹风会 and 专题 briefing mini-sites (transcripts)
+    path: /xinwen/<year>zccfh/<n>/ , /zhuanti/
+    example_url: https://www.gov.cn/xinwen/2026zccfh/10/index.htm
+    status: missing
+    found: 2026-11-25
+    note: "75 rows of the 新闻发布 feed point at the index page of a per-briefing mini-site, which has no body; the transcript is a page inside it. The feed crawler now skips them rather than store bodiless rows. Needs a walker: open each index, follow its 文字实录 link. This is the State Council's own policy-briefing series, so it is the most valuable press gap still open."
+  - site_key: gov
+    name: 要闻 video items (tv.cctv.com)
+    path: tv.cctv.com/<date>/VIDE…
+    example_url: https://tv.cctv.com/2026/11/24/VIDEb21PXT3mic7y5AErc3YS261124.shtml
+    status: missing
+    found: 2026-11-25
+    note: "107 of the 395 rows in the 要闻 feed are links to CCTV video pages on another host. Skipped by design (no text; a different site). Listed so the 要闻 count is not read as the whole feed."
+  - site_key: gov
+    name: 联播 (部门 / 地方 news relay)
+    path: /lianbo/
+    example_url: https://www.gov.cn/lianbo/202611/content_7087302.htm
+    status: missing
+    found: 2026-11-25
+    note: "Same JSON shape at /lianbo/YAOWENLIEBIAO.json (400 rows). One more FEEDS entry; left out because it is ministry and local news relayed by gov.cn, so it would duplicate the ministries' own columns. A decision, not a blocker."
+  - site_key: gov
+    name: 政策解读 图解
+    path: /zhengce/jiedu/tujie/
+    example_url: https://www.gov.cn/zhengce/jiedu/tujie/202611/content_7087077.htm
+    status: missing
+    found: 2026-11-25
+    note: "/zhengce/jiedu/tujie/TUPIAN_JSON.json, 3,351 rows from 2022-10. Infographics: mostly images, so body yield is expected to be low. Not probed for bodies."
+  - site_key: gov
+    name: 政策解读 (text) and 部门/地方联播 list pages
+    path: /zhengce/jiedu/ , /lianbo/bumen/ , /lianbo/difang/
+    example_url: https://www.gov.cn/zhengce/jiedu/
+    status: blocked
+    found: 2026-11-25
+    note: "Each answers 200 with a ~650-byte stub from the droplet (0 CJK). Either redirect stubs or geo-gated; the JSON feed behind them was not found."
+
+  # ---------------------------------------------------------------- MFA 外交部
+  - site_key: mfa
+    name: 发言人表态 / 例行记者会 (spokesperson pressers)
+    path: /fyrbt_673021/
+    example_url: https://www.mfa.gov.cn/fyrbt_673021/jzhsl_673025/202611/t20261125_12066982.shtml
+    status: added
+    found: 2026-11-25
+    note: "Two faults. (1) mfa was configured in govcms.SITES and never listed in daily_sync.sh, so nothing crawled it. (2) its presser path was /fyrbt_674889/, which redirects to a landing page whose newest row is 2026-01-13. Path corrected, site added to the nightly. Same pressers are also served at /web/wjdt_674879/fyrbt_674889/ and at www.fmprc.gov.cn; deliberately not added (duplicates)."
+  - site_key: mfa
+    name: 声明公报 and 讲话全文
+    path: /web/ziliao_674904/1179_674909/ , /web/ziliao_674904/zyjh_674906/
+    example_url: https://www.mfa.gov.cn/web/ziliao_674904/1179_674909/202611/t20261120_12064294.shtml
+    status: added
+    found: 2026-11-25
+    note: "Added to govcms mfa sections. 61 rows on page 1 each; bodies 1-2k chars."
+  - site_key: mfa
+    name: 重要新闻
+    path: /zyxw/
+    example_url: https://www.mfa.gov.cn/zyxw/202611/t20261125_12066779.shtml
+    status: added
+    found: 2026-11-25
+    note: "Was configured all along; stale only because the site was not scheduled. Caveat: every mfa list page also carries ~19 nav links to 驻外团处 pages in the same t-date URL shape, and the lister stores them as articles (already held, so no new cost)."
+  - site_key: mfa
+    name: 吹风会
+    path: /web/wjdt_674879/cfhsl_674891/
+    example_url: https://www.mfa.gov.cn/web/wjdt_674879/cfhsl_674891/
+    status: missing
+    found: 2026-11-25
+    note: "Page is reachable (65 KB) but the lister finds only the nav links; its own rows are not in a shape govcms recognises. Needs a look at the row markup."
+
+  # ---------------------------------------------------------------- MOFCOM 商务部
+  - site_key: mofcom
+    name: 新闻发言人谈话 (spokesperson remarks)
+    path: /xwfb/xwfyrth/
+    example_url: https://www.mofcom.gov.cn/xwfb/xwfyrth/art/2026/art_67a40650300a4ef396543f5964c7748b.html
+    status: added
+    found: 2026-11-25
+    note: "crawlers/mofcom.py section `xwfyrth` (same jpaas listing API as 政策发布, different pageId). 641 listed, 2002-; 1 held before. Backfill owed."
+  - site_key: mofcom
+    name: 领导人活动
+    path: /xwfb/ldrhd/
+    example_url: https://www.mofcom.gov.cn/xwfb/ldrhd/art/2026/art_9b94e6737baa4d408e94dae2efa1341f.html
+    status: added
+    found: 2026-11-25
+    note: "section `ldrhd`. 669 listed, 2014-; 4 held before. Backfill owed."
+  - site_key: mofcom
+    name: 首页新闻发布
+    path: /syxwfb/
+    example_url: https://www.mofcom.gov.cn/syxwfb/art/2026/art_df1f9a5c99a54d22babbe442b1297805.html
+    status: missing
+    found: 2026-11-25
+    note: "Same API and row shape (pageId a490d0b9e98e4df1b6e924e9c7fe1cca, 3,247 rows, bodies extract). NOT added: it is the homepage news mix and includes reprinted central news (习近平… items), so it needs a decision about duplication before a 3k backfill. One SECTIONS entry when wanted."
+  - site_key: mofcom
+    name: 新闻发布会 / 例行新闻发布会 (press conference specials)
+    path: /xwfbh/ , /xwfbzt/
+    example_url: https://www.mofcom.gov.cn/xwfbzt/2026/swbzklxxwfbh2026n11y19r/index.html
+    status: missing
+    found: 2026-11-25
+    note: "Listing API works (pageId 8b2070bd42444e2db135724c912e13d8, 488 conferences) but each row links to a per-conference mini-site (/xwfbzt/<year>/<slug>/index.html) with no date in the list, not to an article. Needs: a second row pattern + a walker that opens each mini-site and takes its transcript page."
+
+  # ---------------------------------------------------------------- NEA 国家能源局
+  - site_key: nea
+    name: 新闻中心 / 新闻发布 / 最新文件 / 通知 / 公告 / 解读
+    path: /xwzx/ , /xwfb/ , /policy/zxwj.htm , /policy/tz.htm , /policy/gg.htm , /policy/jd.htm
+    example_url: http://www.nea.gov.cn/20261125/155af4f250be4ce99ae523fff16801f0/c.html
+    status: added
+    found: 2026-11-25
+    note: "The site held 2 documents because (1) every configured path carried a '/n/' prefix that does not exist, which 404'd and had been recorded as a datacenter geo-fence; (2) the site was never in daily_sync.sh; (3) all list pages except /xwzx/ are script-rendered from a Xinhua-CMS datasource JSON (ds_<id>.json beside the page). Paths fixed, govcms got a datasource fallback, site added to the nightly. Scratch crawl: 232 new docs non-deep. Full history needs --deep (最新文件 alone is a 1 MB datasource)."
+
+  # ---------------------------------------------------------------- NDA 国家数据局
+  - site_key: nda
+    name: 地方动态
+    path: /sjj/swdt/dfdt/
+    example_url: https://www.nda.gov.cn/sjj/swdt/dfdt/1125/20261125092027432710518_pc.html
+    status: added
+    found: 2026-11-25
+    note: "crawlers/nda.py section `dfdt` (279 listed). Backfill owed."
+  - site_key: nda
+    name: 媒体声音
+    path: /sjj/swdt/mtsy/
+    example_url: https://www.nda.gov.cn/sjj/swdt/mtsy/1123/20261123200804173603682_pc.html
+    status: added
+    found: 2026-11-25
+    note: "section `mtsy` (500 listed). Media reprints; some bodies are short (143 chars on the sampled row)."
+  - site_key: nda
+    name: 数据局动态
+    path: /sjj/swdt/sjdt/
+    example_url: https://www.nda.gov.cn/sjj/swdt/sjdt/1124/20261124130256868778049_pc.html
+    status: added
+    found: 2026-11-25
+    note: "section `sjdt` (140 listed)."
+  - site_key: nda
+    name: 局领导活动 (per-leader 领导活动 lists)
+    path: /sjj/jgsz/jld/<leader>/llhldhd/
+    example_url: https://www.nda.gov.cn/sjj/jgsz/jld/
+    status: missing
+    found: 2026-11-25
+    note: "One list per leader under /sjj/jgsz/jld/; the per-leader paths were not enumerated. Likely the same list/index_pc_N.html template (not probed)."
+
+  # ---------------------------------------------------------------- MIIT 工信部
+  - site_key: miit
+    name: 新闻发布会
+    path: /xwfb/xwfbh/
+    example_url: https://www.miit.gov.cn/xwfb/xwfbh/gxbxwfbh/art/2026/art_213c82c9bf69441ab42252e6fcbc9f1f.html
+    status: missing
+    found: 2026-11-25
+    note: "Reachable, 22 rows, transcripts 6-12k chars, 9 of 22 already held via the search API. crawlers/miit.py reads three search-API categories (51/183/163), not columns; adding a column needs either its category id or a jpaas column walk like samr's."
+  - site_key: miit
+    name: 科技司 文件发布 (and the other 司局 columns)
+    path: /jgsj/kjs/wjfb/
+    example_url: https://www.miit.gov.cn/jgsj/kjs/wjfb/index.html
+    status: missing
+    found: 2026-11-25
+    note: "Script-rendered through the jpaas unit API (webId 8d828e408d90447786ddbe128d495e9e, pageId 7df23bf39e2d42b793ebfcc3319015b7, tagId 当前栏目_list). Not config-level for the current crawler. Separately, 5k+ miit article pages are anti-bot stubs from NYC, so a column walk would list more than it can read."
+
+  # ---------------------------------------------------------------- CAC 网信办
+  - site_key: cac
+    name: 网信发布
+    path: /wxzw/wxfb/
+    example_url: https://www.cac.gov.cn/wxzw/wxfb/A093702index_1.htm
+    status: added
+    found: 2026-11-25
+    note: "Was already crawled (section `wxfb`, 479 docs, newest 2026-11-20). Reported as missing because its articles live at /YYYY-MM/DD/c_<id>.htm, not under /wxzw/wxfb/, so a URL-path check cannot see them. The registry matches this section by its stored label instead."
+
+  # ---------------------------------------------------------------- Shanghai
+  - site_key: sh
+    name: all seven 沪府 document families, 2026 (and 沪府办发 2025)
+    path: /nw39220/ , /nw2407/ , /nw11407/ , /nw11408/ , /nw39221/ , /nw42944/ , /nw42850/
+    example_url: https://www.shanghai.gov.cn/nw12344/20261112/1134de6e51964970983ea1461c702cda.html
+    status: added
+    found: 2026-11-25
+    note: "Not a missing section: a silently broken crawler since 2026-01. The listing template moved the date span inside the anchor, every page parsed to 0 rows, and 0 new was read as fully held. Fixed; scratch crawl recovered 134 documents (133 with body). The next nightly picks them up with no backfill step."
+  - site_key: sh
+    name: 沪府任 (appointments and removals)
+    path: /nw44931/
+    example_url: https://www.shanghai.gov.cn/nw44931/index.html
+    status: missing
+    found: 2026-11-25
+    note: "Section index lists 40 rows, but its year-archive pages (/hfrwj2026/index.html, ~11 KB) use a third markup that parses to 0 rows. Needs that markup read; not config-level."
+
+  # ---------------------------------------------------------------- other central press sections (audit)
+  - site_key: ndrc
+    name: 新闻发布
+    path: /xwdt/xwfb/
+    example_url: https://www.ndrc.gov.cn/xwdt/xwfb/202611/t20261125_1409066.html
+    status: missing
+    found: 2026-11-25
+    note: "Reachable, 25 rows on page 1, 0 held. crawlers/ndrc.py builds every URL as /xxgk/zcfb/<key>/, so a section outside that tree needs _section_url to take a full path. Small code change, not done."
+  - site_key: mee
+    name: 新闻发布 (incl. 例行新闻发布会 transcripts)
+    path: /ywdt/xwfb/
+    example_url: https://www.mee.gov.cn/ywdt/xwfb/202611/t20261117_1186708.shtml
+    status: missing
+    found: 2026-11-25
+    note: "Reachable, bodies ~2.9k chars, 0 held. crawlers/mee.py sections are {name, path}, so this is probably one entry; not added because the mee listing parser was not run against it."
+  - site_key: mot
+    name: 新闻发布会
+    path: /xinwen/xinwenfabuhui/
+    example_url: http://www.mot.gov.cn/xinwen/xinwenfabuhui/202608/t20260818_4222547.html
+    status: added
+    found: 2026-11-25
+    note: "Added to govcms mot sections. 16 rows, transcripts 9-10k chars, 2 held before."
+  - site_key: nbs
+    name: 新闻发布会 (全文 + 答记者问)
+    path: /sj/xwfbh/
+    example_url: http://www.stats.gov.cn/sj/xwfbh/fbhwd/202611/t20261116_1965844.html
+    status: added
+    found: 2026-11-25
+    note: "Added to govcms nbs sections. 19 rows, 5-12k chars, 3 held before."
+  - site_key: spb
+    name: 新闻发布会
+    path: /gjyzj/c106927/
+    example_url: http://www.spb.gov.cn/gjyzj/c106927/202609/403b0439797241f59fb1ffd7245193ec.shtml
+    status: missing
+    found: 2026-11-25
+    note: "Reachable; 9 rows, quarterly transcripts ~4.9k chars, 3 held. Likely one govcms section entry (/gjyzj/c106927/common_list.shtml); not added, untested through crawl_site."
+  - site_key: mem
+    name: 新闻发布会
+    path: /xw/xwfbh/
+    example_url: https://www.mem.gov.cn/xw/xwfbh/2026n10y16xwfbh/fbyd_4258/202610/t20261016_736050.shtml
+    status: missing
+    found: 2026-11-25
+    note: "Each conference is a mini-site (/xw/xwfbh/<slug>/) with its own sub-columns; the top list has 1 article-shaped link. Needs a two-level walk."
+  - site_key: mct
+    name: 新闻发布会
+    path: /hdjl/xwfbh/
+    example_url: http://www.mct.gov.cn/hdjl/xwfbh/
+    status: missing
+    found: 2026-11-25
+    note: "Page reachable (31 KB, 1,869 CJK) but 0 article-shaped links: rows are script-rendered or in a shape govcms does not list."
+  - site_key: mwr
+    name: 新闻发布会
+    path: /xw/xwfbh/
+    example_url: http://www.mwr.gov.cn/xw/xwfbh/
+    status: missing
+    found: 2026-11-25
+    note: "Same as mct: reachable list page, 0 article-shaped links; conferences are 在线访谈 mini-sites under /hd/zxft/<year>/, and that mini-site answered with a 695-byte stub."
+  - site_key: cas
+    name: 例行发布会
+    path: /xwfbh/
+    example_url: https://www.cas.cn/xwfbh/
+    status: missing
+    found: 2026-11-25
+    note: "Reachable (11 KB), 0 article-shaped links."
+  - site_key: csrc
+    name: 新闻发布会 and 新闻发言人答记者问
+    path: /csrc/c100029/ , /csrc/c100028/
+    example_url: http://www.csrc.gov.cn/csrc/c100028/c7671451/content.shtml
+    status: missing
+    found: 2026-11-25
+    note: "Reachable. crawlers/csrc.py reads only the 政策法规库 index; 6 documents under these two columns are held incidentally. Lists are script-rendered (common_list.shtml)."
+  - site_key: spc
+    name: 新闻发布会 / 发布会实录
+    path: /zixun/gengduo/26.html , /zixun/gengduo/39.html
+    example_url: https://www.court.gov.cn/zixun/gengduo/39.html
+    status: missing
+    found: 2026-11-25
+    note: "Reachable (16 KB, 1.6k CJK); article URLs are /zixun/xiangqing/<id>.html, a shape the audit's article test and govcms's lister do not count."
+  - site_key: mod
+    name: 例行记者会 / 发言人谈话和答记者问
+    path: /gfbw/xwfyr/
+    example_url: http://www.mod.gov.cn/gfbw/xwfyr/yzxwfb/index.html
+    status: missing
+    found: 2026-11-25
+    note: "Reachable (53 KB). mod is configured in govcms but not in daily_sync.sh; its article URL shape is not one govcms lists."
+  - site_key: 36kr
+    name: whole site (RSS feed)
+    path: /feed
+    example_url: https://36kr.com/feed
+    status: blocked
+    found: 2026-11-25
+    note: "Since 2026-08-05 every 36kr.com URL returns HTTP 200 with a 25 KB challenge page from the droplet (any UA, with or without TLS impersonation). The crawler now exits non-zero on an empty feed instead of reporting 0 new."
+  - site_key: zj
+    name: all seven department sub-sites
+    path: fzggw.zj.gov.cn , kjt.zj.gov.cn , jxt.zj.gov.cn , sft.zj.gov.cn , sthjt.zj.gov.cn
+    example_url: https://fzggw.zj.gov.cn/col/col1229565788/index.html
+    status: blocked
+    found: 2026-11-25
+    note: "TLS handshake times out from NYC on every listing URL (urllib and curl_cffi both). Weekly Monday probe under a 600 s cap, zero rows. Needs a non-datacenter vantage."
+  - site_key: moe
+    name: all seven 司局 sections
+    path: /srcsite/A16/ and six more
+    example_url: http://www.moe.gov.cn/srcsite/A16/s3336/200207/t20020724_82273.html
+    status: added
+    found: 2026-11-25
+    note: "Was in no line of daily_sync.sh: run by hand in April 2026, and only for section a16. The other six configured sections (政策法规司 414 rows, 规范性文件 228, 部令 82, 发展规划司 121 list pages, 高等教育司, 部文) have never been crawled. Crawler works from the droplet. Now a weekly Monday run; backfill of the six sections owed."
+  - site_key: moe
+    name: 新闻发布会
+    path: /jyb_xwfb/xw_fbh/
+    example_url: https://www.moe.gov.cn/jyb_xwfb/xw_fbh/
+    status: missing
+    found: 2026-11-25
+    note: "Reachable (26 KB). The crawler reads seven WAS-search channels and none of them is this column."
