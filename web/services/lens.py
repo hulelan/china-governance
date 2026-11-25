@@ -85,6 +85,10 @@ _SZ_DEPTS = {"audit", "fgw", "ga", "hrss", "jtys", "mzj", "sf", "stic",
 
 
 def _region_for(site_key, name, admin_level):
+    # Before any name match: an overseas outlet is not a Chinese region, whatever
+    # its name contains (a "Tibet" or "(中国)" channel name must not place it).
+    if admin_level == "foreign_media":
+        return "Foreign media"
     sk = (site_key or "").lower()
     for pre, reg in _REGION_PREFIX.items():
         if sk.startswith(pre):

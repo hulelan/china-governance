@@ -94,7 +94,7 @@ def main(argv):
 
     for doc_id, title, kw, level, stored in cur:
         n += 1
-        labels = classify(title, "" if level == "media" else kw)
+        labels = classify(title, "" if level in ("media", "foreign_media") else kw)
         val = ",".join(labels)
         if val != stored:
             changed += 1

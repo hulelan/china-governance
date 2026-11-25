@@ -292,6 +292,28 @@ def type_to_sites(node_id: str) -> list[str]:
     return out
 
 
+def claims_only_leaves() -> list[str]:
+    """Leaf ids marked `claims_only: true` in the yaml (currently media_foreign_claims)."""
+    st = _state()
+    return sorted(nid for nid in st["leaf_rules"]
+                  if st["nodes_by_id"][nid].get("claims_only"))
+
+
+def claims_only_sites() -> list[str]:
+    """Every site_key whose content is CLAIMS attributed to an outlet, never a
+    government act: the explicit keys of every `claims_only: true` leaf. The
+    analysis layer filters on this (`WHERE site_key NOT IN (...)`), alongside
+    admin_level='foreign_media' and relation LIKE '%claims=outlet_attributed%'.
+    Explicit keys only, on purpose: a claims source is never placed by fallback."""
+    st = _state()
+    return sorted(sk for leaf in claims_only_leaves()
+                  for sk in st["leaf_rules"][leaf]["site_keys"])
+
+
+def is_claims_only(site_key: str) -> bool:
+    return site_key in set(claims_only_sites())
+
+
 def type_to_prefixes(node_id: str) -> list[str]:
     """Every site_key prefix rule under a node (leaf or branch)."""
     st = _state()

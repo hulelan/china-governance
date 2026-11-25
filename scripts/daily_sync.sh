@@ -293,6 +293,12 @@ run_crawler_t 900 "finmedia tier 5 (新浪财经/IT之家 filtered, 每经)" \
     python3 -m crawlers.finmedia --tier 5 --nightly
 run_crawler_t 600 "finmedia tier 6 (RTHK/TC609/红歌会)" \
     python3 -m crawlers.finmedia --tier 6 --nightly
+# Overseas CLAIMS-ONLY sources (2026-11-25, crawlers/claims_outlets.py): RFA, VOA, BBC,
+# DW, 看中国, 大纪元, 新唐人, 联合早报, 端传媒 (teaser), elite-politics channels only, <= 30
+# docs each. admin_level 'foreign_media', ontology leaf media_foreign_claims, relation
+# claims=outlet_attributed: claims attributed to the outlet, never government documents.
+run_crawler_t 900 "finmedia tier 7 (overseas claims sources)" \
+    python3 -m crawlers.finmedia --tier 7 --nightly
 # Party-theory journals and CASS (2026-11-12, crawlers/theory.py): 求是 issues, 红旗文稿,
 # 学习时报, 光明日报 theory pages, 人民论坛, 中国社会科学网. --recent reads only the newest
 # issue lists / list pages / 3 days of e-paper; held URLs are skipped.

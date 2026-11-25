@@ -19,6 +19,15 @@ prefilter cannot silently drop matches.
 """
 import re
 
+try:
+    from crawlers.claims_outlets import OUTLETS as _CLAIMS_OUTLETS
+except ImportError:
+    # Some R&D scripts load this file alone (a copied dir on sys.path, no repo root).
+    # The level test in speaker() is the primary guard; the key set is a second one.
+    _CLAIMS_OUTLETS = {}
+
+CLAIMS_SITES = frozenset(_CLAIMS_OUTLETS)
+
 # --- speaker type -----------------------------------------------------------
 PARTY = {"qstheory", "dangyuan", "qiushi", "hongqi", "studytimes", "gmrb_theory", "rmlt"}
 STATE = {"xinhua", "people", "ce", "jjckb", "stdaily", "cnr", "cctv", "chinanews", "people_rmrb",
@@ -40,7 +49,11 @@ SPEAKER_LABELS = {
 
 def speaker(site, lvl):
     """Speaker type of a document from its site_key and doc_identity.admin_level_doc.
-    None = not a speaker we count (foreign media, unlevelled rows)."""
+    None = not a speaker we count (foreign media, unlevelled rows).
+    Overseas outlets and the tier-7 claims-only sources (crawlers/claims_outlets.py)
+    are excluded FIRST, by level and by key, so a wrong upstream level can never put
+    a claim in the 'central' or a PRC-media bucket."""
+    if lvl == "foreign_media" or site in CLAIMS_SITES: return None
     if site in PARTY: return "party_theory"
     if site == "mfa": return "diplomacy"
     if site in STATE: return "state_media"

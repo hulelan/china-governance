@@ -378,10 +378,19 @@ except Exception:  # pragma: no cover
 DB_PATH = ROOT / "documents.db"
 LOCK_DIR = Path("/tmp/china-governance-daily-sync.lock.d")
 
-LEVELS = ("central", "provincial", "municipal", "district", "department", "media", "research")
+LEVELS = ("central", "provincial", "municipal", "district", "department", "media", "research",
+          "foreign_media")
+# foreign_media ranks BELOW unknown: an overseas outlet's copy of a PRC text (China Digital
+# Times mirrors them; the tier-7 claims sources quote them) must never become an
+# instrument's canonical copy, nor open an edition, while any other copy exists.
 LEVEL_RANK = {"central": 0, "provincial": 1, "municipal": 2, "department": 2,
-              "district": 3, "media": 4, "research": 4, None: 5, "": 5, "unknown": 5}
-NON_ISSUER_SITE_LEVELS = {"media", "research"}
+              "district": 3, "media": 4, "research": 4, None: 5, "": 5, "unknown": 5,
+              "foreign_media": 6}
+# A site whose type IS the document's identity: no issuer / 文号 / title cue re-levels it.
+# 'foreign_media' was missing until 2026-11-25, so an overseas article whose title named a
+# central organ (中共中央纪律检查委员会关于…) would have been levelled 'central' by
+# level_of_title and entered every central-vs-local cut as a government document.
+NON_ISSUER_SITE_LEVELS = {"media", "research", "foreign_media"}
 DEPT_SITE_FALLBACK = {"department": "municipal"}
 SUBNATIONAL = {"provincial", "municipal", "district", "department"}
 
@@ -772,6 +781,10 @@ def derive_genre(title, algo_type, level):
     core = title_core(title)
     if not full:
         return "other"
+    if level == "foreign_media":
+        # Overseas outlets (incl. the tier-7 claims sources) only ever REPORT: even a
+        # mirrored PRC text is a copy held abroad, never a promulgation or implementing act.
+        return "news"
     if EXPLAINER_RE.search(full):
         return "explainer"
     frame = is_issuance_frame(core, full, level)
