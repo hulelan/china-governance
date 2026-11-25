@@ -568,6 +568,21 @@ cold took 38-64s); `/chain` caps each table at 100 rows (`?full=1` for all). The
 top-cited panel was also WRONG, not just slow: joining citations to documents by 文号 before
 grouping multiplied each count by the copies sharing the 文号 (80 citations read 5,360).
 
+**First-run search (2026-11-25, `_search_seg_title_first`).** The BM25 query's cost was the
+JOIN to `documents` for the `title LIKE` boost on EVERY match (a random read each: cold
+人工智能 3.6s, 经济 14s), not bm25. Now the title flag comes from an index (trigram title
+column for 3+ chars, the `idx_documents_lens` scan for 2 chars), scores come from the FTS index
+alone, and only the page's rows are read; when the page lies inside the title matches only
+those are scored. Exact: same ids, order, snippets and totals as the old query on 10 live terms
+incl. 约谈 and 跨境人民币. Measured: 3+ char terms 0.02-0.3s, 2-char ~0.33s, the ~15 2-char
+terms with 100k+ matches ~1s (pre-warmed by `warm_web_cache.py`; the search key carries
+MAX(id), so they stay warm only until the next stored document). **Trap found doing it:** a
+`rowid IN (SELECT value FROM json_each(?))` in the WHERE clause of an FTS5 query is offered to
+FTS5 as a rowid constraint and degenerates (minutes for 发展); put it in the SELECT list.
+`build_site_stats.py` also creates `(classify_main_name, date_written)` and
+`(algo_doc_type, date_written)` indexes for /browse and a covering index on
+`document_changes` for /admin.
+
 ### Daily Crawl + Sync (runs ON the droplet via cron)
 ```bash
 # Automated: droplet cron runs daily_sync.sh at 06:00 UTC.

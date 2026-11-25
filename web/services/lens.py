@@ -112,6 +112,18 @@ async def _yearly_totals(db):
     topic timeline so numerator and denominator are comparable.
     """
     async def compute():
+        # corpus_stats' year:<YYYY> rows (build_site_stats.py) use the same
+        # definition (date_written > 0, strftime year), so read those first: a few
+        # rows instead of a 0.28s GROUP BY over the date index.
+        try:
+            kv = await db.fetch(
+                "SELECT key, value FROM corpus_stats WHERE key LIKE 'year:%'")
+            yrs = {int(r["key"][5:]): r["value"] for r in kv}
+            yrs = {y: c for y, c in yrs.items() if 2013 <= y <= 2035}
+            if yrs:
+                return yrs
+        except Exception:
+            pass
         rows = await db.fetch(
             """SELECT CAST(strftime('%Y', date_written, 'unixepoch') AS INTEGER) AS yr,
                       COUNT(*) AS c
@@ -128,6 +140,8 @@ _ROW_COLS = """d.id, d.date_written, d.site_key, d.algo_doc_type, d.topics_algo,
 
 
 _SCAN_SQL = f"SELECT {_ROW_COLS} FROM documents d WHERE d.title LIKE $1"
+_INSTR_SQL = (f"SELECT {_ROW_COLS} FROM documents d INDEXED BY idx_documents_lens "
+              "WHERE instr(d.title, $1) > 0")
 _FTS_SQL = f"""SELECT {_ROW_COLS} FROM doc_search s CROSS JOIN documents d
                ON d.id = s.rowid
                WHERE doc_search MATCH $1 AND d.title LIKE $2"""
@@ -159,6 +173,10 @@ async def _matching_rows(db, q: str):
     """All documents whose title contains q, as dicts of _ROW_COLS."""
     pat = f"%{q}%"
     if await _lens_index_present(db):
+        # With no cased character and no LIKE wildcard, instr() is exactly
+        # `LIKE '%q%'`, and ~25% cheaper per scan (measured on the live index).
+        if _like_escape_free(q) and all(ch.lower() == ch.upper() for ch in q):
+            return [dict(r) for r in await db.fetch(_INSTR_SQL, q)]
         return [dict(r) for r in await db.fetch(_SCAN_SQL, pat)]
     if len(q) >= 3 and _like_escape_free(q) and await docsvc._fts_available(db):
         match = 'title : "' + q.replace('"', '""') + '"'

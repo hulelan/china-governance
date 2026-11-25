@@ -39,7 +39,18 @@ def warm_urls() -> list:
             "/research", "/annotations", "/lens"]
     urls += [f"/chain/{t}" for t in TOPIC_KEYWORDS]
     urls += ["/lens?q=" + urllib.parse.quote(q) for q in LENS_SUGGESTIONS]
+    urls += ["/search?q=" + urllib.parse.quote(q) for q in COMMON_SEARCH_TERMS]
     return urls
+
+
+# 2-character search terms with >100k matching documents, the only searches still
+# near a second on first run after the title-first rewrite (measured 2026-11-25:
+# 发展 ~1s, 通知 ~1.1s; 3+ character terms are 0.02-0.3s). Picked by hand from the
+# top of the segmented index's document-frequency list (an fts5vocab scan takes
+# ~150s, too slow to run nightly). Note the search cache key carries
+# MAX(documents.id), so these stay warm only until the next document is stored.
+COMMON_SEARCH_TERMS = ["发展", "经济", "企业", "技术", "安全", "创新", "政策",
+                       "标准", "项目", "质量", "信息", "服务", "管理", "建设", "通知"]
 
 
 def fetch(url: str, timeout: float):

@@ -41,7 +41,7 @@ CREATE VIRTUAL TABLE doc_search_seg USING fts5(
 """
 
 
-def _make(path, n_title, n_body):
+def _make(path, n_title, n_body, every_mirror=4):
     """n_title docs with 数据安全 in the title (several exact mirrors, i.e. bm25 ties,
     with distinct and NULL dates) and n_body docs with it only in the body."""
     c = sqlite3.connect(path)
@@ -50,7 +50,7 @@ def _make(path, n_title, n_body):
     i = 0
     for k in range(n_title):
         i += 1
-        mirror = k % 4 == 0                      # every 4th is a byte-identical mirror
+        mirror = k % every_mirror == 0           # every Nth is a byte-identical mirror
         title = "关于数据安全的通知" if mirror else f"关于数据安全的通知第{k}号"
         body = "数据安全 " * (1 + (0 if mirror else k % 5))
         date = None if k % 7 == 0 else 1_600_000_000 + k * 86400
@@ -116,17 +116,46 @@ class TitleFirst(unittest.TestCase):
             self.assertEqual(fast[1], full[1])
             self.assertEqual([dict(r) for r in fast[0]], [dict(r) for r in full[0]])
 
+    def test_tie_group_larger_than_the_overfetch(self):
+        """300 byte-identical mirrors share one bm25; the page boundary tie group
+        exceeds the over-fetch, so the date tiebreak needs the refetch path."""
+        _make(self.path, n_title=300, n_body=20, every_mirror=1)
+        for per_page, offset in ((5, 0), (50, 100)):
+            fast, full = self.both("数据安全", '"数据安全"', per_page, offset)
+            self.assertEqual(self.ids(fast[0]), self.ids(full[0]), (per_page, offset))
+
     def test_two_char_query_uses_the_covering_index(self):
         _make(self.path, n_title=80, n_body=50)
-        fast, full = self.both("安全", '"安全"', 50, 0)
+        # below SHORT_QUERY_MIN_MATCHES a 2-char query keeps the original query
+        fast, _ = self.both("安全", '"安全"', 50, 0)
+        self.assertIsNone(fast)
+        old = docsvc.SHORT_QUERY_MIN_MATCHES
+        docsvc.SHORT_QUERY_MIN_MATCHES = 0
+        try:
+            fast, full = self.both("安全", '"安全"', 50, 0)
+        finally:
+            docsvc.SHORT_QUERY_MIN_MATCHES = old
         self.assertIsNotNone(fast)
-        self.assertEqual(self.ids(fast[0]), self.ids(full[0]))
+        self.assertEqual([dict(r) for r in fast[0]], [dict(r) for r in full[0]])
 
-    def test_declines_when_page_reaches_past_title_matches(self):
+    def test_page_past_the_title_matches_is_also_identical(self):
+        """Fewer title matches than the page: every match is scored and the page
+        mixes title rows (first) with body-only rows, exactly as before."""
         _make(self.path, n_title=30, n_body=100)
+        for per_page, offset in ((50, 0), (50, 50), (10, 25), (50, 125)):
+            fast, full = self.both("数据安全", '"数据安全"', per_page, offset)
+            self.assertIsNotNone(fast)
+            self.assertEqual([dict(r) for r in fast[0]], [dict(r) for r in full[0]],
+                             (per_page, offset))
+            self.assertEqual(fast[1], full[1])
+
+    def test_no_title_matches_and_no_matches(self):
+        _make(self.path, n_title=0, n_body=60)
         fast, full = self.both("数据安全", '"数据安全"', 50, 0)
-        self.assertIsNone(fast)               # caller runs the full query instead
-        self.assertEqual(len(full[0]), 50)
+        self.assertEqual([dict(r) for r in fast[0]], [dict(r) for r in full[0]])
+        fast, full = self.both("不存在词", '"不存在词"', 50, 0)
+        self.assertEqual((fast[0], fast[1]), ([], 0))
+        self.assertEqual(full[1], 0)
 
     def test_declines_on_wildcards_and_non_ascii_case(self):
         _make(self.path, n_title=80, n_body=10)

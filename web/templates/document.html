@@ -148,12 +148,17 @@
             <div>
                 <span class="lab">Cited by ({{ cited_by|length }})</span>
                 <div class="max-h-56 overflow-y-auto">
-                {% for cb in cited_by %}
+                {# Capped: a framework law has 2,000+ citers, which was ~1 MB of this page. #}
+                {% for cb in cited_by[:200] %}
                     <div class="grid grid-cols-[auto_1fr] gap-2 py-2 border-b border-rule items-baseline">
                         <span class="badge badge-{{ cb.level }}">{{ cb.level[:3] }}</span>
                         <a href="/document/{{ cb.id }}" class="font-zh text-[13px] text-ink">{{ cb.title[:50] }}<span class="block text-muted text-[11px]" style="font-family:'IBM Plex Sans'">{{ cb.site_key }}</span></a>
                     </div>
                 {% endfor %}
+                {% if cited_by|length > 200 %}
+                    <div class="py-2 text-[12px] text-muted">Showing 200 of {{ cited_by|length }}.
+                        <a href="/lens?doc={{ doc.id }}">All citing documents</a></div>
+                {% endif %}
                 </div>
             </div>
             {% endif %}

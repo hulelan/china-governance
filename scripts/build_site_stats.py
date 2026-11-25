@@ -74,6 +74,9 @@ CREATE INDEX IF NOT EXISTS idx_instrument_inbound_inbound ON instrument_inbound(
 """
 
 
+BROWSE_DATE_INDEXES = (("idx_documents_classify_date", "classify_main_name"),
+                       ("idx_documents_doctype_date", "algo_doc_type"))
+
 LENS_INDEX_COLS = ("title", "site_key", "date_written", "algo_doc_type",
                    "topics_algo", "citation_rank")
 LENS_INDEX_SQL = ("CREATE INDEX IF NOT EXISTS idx_documents_lens ON documents("
@@ -189,6 +192,20 @@ def build(db_path: Path) -> tuple:
         have = {r[1] for r in conn.execute("PRAGMA table_info(documents)")}
         if set(LENS_INDEX_COLS) <= have:
             conn.execute(LENS_INDEX_SQL)
+        # /browse?category=X and ?doc_type=X sort by date: with single-column
+        # indexes SQLite reads EVERY matching row to sort it (媒体报道: 2.3s cold,
+        # measured 2026-11-25). (filter, date) lets it read the page's 50 rows only.
+        # /admin's sync-run summary and change totals aggregate document_changes by
+        # (sync_run_id, detected_at, change_type); covering those three makes both
+        # index-only instead of reading every change row (2.7s cold measured).
+        if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' "
+                        "AND name='document_changes'").fetchone():
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_doc_changes_run_cover "
+                         "ON document_changes(sync_run_id, detected_at, change_type)")
+        for name, col in BROWSE_DATE_INDEXES:
+            if col in have and "date_written" in have:
+                conn.execute(f"CREATE INDEX IF NOT EXISTS {name} "
+                             f"ON documents({col}, date_written)")
 
         # Single sequential scan. `body_text_cn != ''` returns a 0/1 the engine
         # answers from each record's length header, so no overflow page is read and

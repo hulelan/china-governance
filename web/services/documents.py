@@ -138,6 +138,9 @@ async def inbound_join(db, alias: str = "d"):
     return "", "0"
 
 
+AI_HINT_MAX_ROWS = 3000
+
+
 async def get_documents(db, site_key=None, category=None, year=None,
                         has_docnum=None, page=1, per_page=50,
                         date_start=None, date_end=None,
@@ -222,8 +225,22 @@ async def get_documents(db, site_key=None, category=None, year=None,
     where_sql = " AND ".join(where)
     offset = (page - 1) * per_page
 
+    # An AI threshold matches few documents (>= 0.5: 829 of 438k), yet the planner
+    # walks idx_documents_date (or a site's rows, for the COUNT) and reads rows
+    # until the filter is satisfied: 1.1s cold for ?min_ai=0.5, 3.8s with
+    # &site=gov (measured 2026-11-25). When the threshold alone selects few rows
+    # (an index-only count, ~1 ms), read exactly those, for the count and the page.
+    hint = ""
+    if (min_ai_relevance is not None
+            and await _index_exists(db, "idx_documents_ai_relevance")):
+        n_ai = await db.fetchval(
+            "SELECT COUNT(*) FROM documents WHERE ai_relevance >= $1",
+            float(min_ai_relevance))
+        if (n_ai or 0) <= AI_HINT_MAX_ROWS:
+            hint = "INDEXED BY idx_documents_ai_relevance"
+
     total = await db.fetchval(
-        f"SELECT COUNT(*) FROM documents d {join_sites} WHERE {where_sql}", *params
+        f"SELECT COUNT(*) FROM documents d {hint} {join_sites} WHERE {where_sql}", *params
     )
 
     param_idx += 1
@@ -304,9 +321,10 @@ async def get_documents(db, site_key=None, category=None, year=None,
     elif sort_by == "ai_relevance":
         order_clause = "d.ai_relevance DESC NULLS LAST"
 
+
     rows = await db.fetch(
         f"""SELECT {select_cols}
-            FROM documents d {join_sites} {join_inbound}
+            FROM documents d {hint} {join_sites} {join_inbound}
             WHERE {where_sql}
             ORDER BY {order_clause}
             LIMIT ${limit_idx} OFFSET ${offset_idx}""",
@@ -601,6 +619,7 @@ def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
 
 
 _BM25 = "bm25(doc_search_seg, 12.0, 6.0, 4.0, 2.0, 1.0)"
+SHORT_QUERY_MIN_MATCHES = 2000
 
 
 def _has_cased_non_ascii(q: str) -> bool:
@@ -636,51 +655,92 @@ async def _title_match_ids(db, clean_query: str):
 
 async def _search_seg_title_first(db, match, clean_query, search_pattern,
                                   per_page, offset):
-    """Exact shortcut for the unfiltered BM25 path. Returns (rows, total) or None.
+    """Exact two-stage version of the unfiltered BM25 path. Returns (rows, total)
+    or None (the caller then runs _search_seg_bm25, the original single query).
 
-    The ranked query orders by (title contains the query, bm25, date DESC). So when
-    at least offset+per_page matches have the query in their TITLE, the requested
-    page consists only of title matches, and their order needs bm25 for THOSE rows
-    alone: a row's bm25 depends on the row and corpus statistics, not on which other
-    rows match. Scoring the title matches instead of every match is what turns
-    发展 (210k matches) from ~1.5s into a fraction of that, with an identical page.
-    Rare terms and queries whose page reaches past the title matches return None,
-    and the caller runs the full query exactly as before.
+    The ranked query orders every match by (title contains the query, bm25, date
+    DESC). Its cost on the live corpus (measured 2026-11-25) was NOT mostly bm25: it
+    was the JOIN to `documents` for `title LIKE` on every match, a random read per
+    match, so a cold 人工智能 (30,849 matches) took 3.6s and 发展 (210,840) over 8s.
+    Here the title flag comes from an index (_title_match_ids), the scores come
+    from the FTS index alone, and `documents` is read only for the date tiebreak of
+    the rows that can reach the page and for the page itself.
+
+    When at least offset+per_page matches have the query in the title, the page
+    lies wholly inside them, so only THOSE rows are scored (a row's bm25 depends
+    on the row and corpus statistics, not on which other rows match). Same rows,
+    same order, same snippets, same total as the original query.
     """
-    title_ids = await _title_match_ids(db, clean_query)
-    need = offset + per_page
-    if title_ids is None or len(title_ids) < need:
-        return None
     import json as _json
-    scored = await db.fetch(
-        f"""SELECT rowid, {_BM25} AS score FROM doc_search_seg
-            WHERE doc_search_seg MATCH $1
-              AND rowid IN (SELECT value FROM json_each($2))""",
-        match, _json.dumps(sorted(title_ids)))
-    if len(scored) < need:
+    total = await db.fetchval(
+        "SELECT COUNT(*) FROM doc_search_seg WHERE doc_search_seg MATCH $1", match)
+    # Below the trigram floor the title ids cost a fixed ~0.3s index scan, while
+    # the original query costs roughly 0.15 ms per match cold (measured: 约谈, 4,463
+    # matches, 0.67s cold). So short queries with few matches keep the original.
+    if len(clean_query) < 3 and total < SHORT_QUERY_MIN_MATCHES:
         return None
-    scored = sorted(((r[0], r[1]) for r in scored), key=lambda x: x[1])
-    # Every row tied with the last one on the page must be in the date tiebreak.
-    cut = scored[need - 1][1]
-    cand = [x for x in scored if x[1] <= cut]
-    dates = {r[0]: r[1] for r in await db.fetch(
-        "SELECT id, date_written FROM documents WHERE id = ANY($1::int[])",
-        [x[0] for x in cand])}
+    title_ids = await _title_match_ids(db, clean_query)
+    if title_ids is None:
+        return None
+    need = offset + per_page
+    ids_json = _json.dumps(sorted(title_ids))
+    title_only = len(title_ids) >= need
+    # The IN sits in the SELECT list on purpose: in a WHERE clause SQLite offers
+    # `rowid IN (...)` to FTS5 as a rowid constraint and the query degenerates
+    # (minutes for 发展, measured); as an expression it is one ephemeral index.
+    # Title-only mode computes bm25 for title rows alone (CASE yields NULL else).
+    score = (f"CASE WHEN rowid IN (SELECT value FROM json_each($2)) THEN {_BM25} END"
+             if title_only else _BM25)
+    # Over-fetch so the whole tie group at the page boundary is present; if the
+    # last fetched row still ties the boundary, fetch everything (rare).
+    limit = need * 2 + 50
+    sql = f"""SELECT rowid, flag, score FROM (
+                SELECT rowid,
+                       CASE WHEN rowid IN (SELECT value FROM json_each($2))
+                            THEN 0 ELSE 1 END AS flag,
+                       {score} AS score
+                FROM doc_search_seg WHERE doc_search_seg MATCH $1)
+              {"WHERE score IS NOT NULL" if title_only else ""}
+              ORDER BY flag, score LIMIT $3"""
+    raw = await db.fetch(sql, match, ids_json, limit)
+    scored = [(r[0], r[1], r[2]) for r in raw]
+    if title_only and len(scored) < need:
+        return None    # title ids that are not segmented matches: stay exact
+    if len(scored) == limit and scored[-1][1:] == scored[min(need, len(scored)) - 1][1:]:
+        raw = await db.fetch(sql, match, ids_json, -1)
+        scored = [(r[0], r[1], r[2]) for r in raw]
+    if not scored:
+        return [], total
+    # Every row tied (flag, score) with the page's last row joins the date tiebreak.
+    last = min(need, len(scored)) - 1
+    cut = (scored[last][1], scored[last][2])
+    cand = [x for x in scored if (x[1], x[2]) <= cut]
+    dates = {}
+    ids = [x[0] for x in cand]
+    for k in range(0, len(ids), 20000):
+        for r in await db.fetch(
+                "SELECT id, date_written FROM documents WHERE id $1",
+                ids[k:k + 20000]):
+            dates[r[0]] = r[1]
 
     def key(x):
         dw = dates.get(x[0])
-        return (x[1], 0 if dw is not None else 1, -(dw or 0))
+        return (x[1], x[2], 0 if dw is not None else 1, -(dw or 0))
     page_ids = [x[0] for x in sorted(cand, key=key)[offset:need]]
+    if not page_ids:
+        return [], total
     rows = await db.fetch(
         """SELECT d.id, d.title, d.document_number, d.publisher,
                   d.date_written, d.site_key, d.classify_main_name,
                   d.title_en, d.importance, d.category,
-                  d.title as snippet
-           FROM documents d WHERE d.id = ANY($1::int[])""", page_ids)
+                  CASE
+                    WHEN d.title LIKE $1 THEN d.title
+                    WHEN d.abstract LIKE $1 THEN d.abstract
+                    ELSE SUBSTR(d.body_text_cn, 1, 200)
+                  END as snippet
+           FROM documents d WHERE d.id $2""", search_pattern, page_ids)
     order = {i: n for n, i in enumerate(page_ids)}
     rows = sorted(rows, key=lambda r: order[r["id"]])
-    total = await db.fetchval(
-        "SELECT COUNT(*) FROM doc_search_seg WHERE doc_search_seg MATCH $1", match)
     return rows, total
 
 
