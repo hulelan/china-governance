@@ -1,0 +1,4592 @@
+{
+ "meta": {
+  "title": "Senior officials removed since the 18th Party Congress: deputy-national rank and above, with a rank ladder below",
+  "as_of": "2026-11-25",
+  "scope": "Officials at 副国级 or above (rank held at removal, or the highest rank previously held) removed from November 2012 on, each with dated official actions and corpus evidence; a separate CMC-member tier; counts only for lower ranks.",
+  "rank_ladder": [
+   {
+    "rank": "正国级",
+    "en": "national leader rank",
+    "definition": "Politburo Standing Committee members; President, Premier, NPC Standing Committee chair, CPPCC chair, CMC chair."
+   },
+   {
+    "rank": "副国级",
+    "en": "deputy-national rank",
+    "definition": "Politburo members, Secretariat secretaries, Vice President, Vice Premiers, State Councilors, NPC Standing Committee vice-chairs, CPPCC vice-chairs, CMC vice-chairs, presidents of the Supreme People's Court and Supreme People's Procuratorate."
+   },
+   {
+    "rank": "CMC member",
+    "en": "Central Military Commission member who is not a vice-chair",
+    "definition": "Contested case. Often treated as deputy-national in protocol lists; recorded here as its own tier and NOT counted as 副国级. A CMC member who was also a State Councilor (李尚福, 魏凤和) is 副国级 through that post."
+   },
+   {
+    "rank": "正部级",
+    "en": "full ministerial / provincial rank",
+    "definition": "Ministers, provincial Party secretaries and governors, and equivalents. No official aggregate in the corpus separates this rank."
+   },
+   {
+    "rank": "副部级",
+    "en": "vice-ministerial / deputy provincial rank",
+    "definition": "Vice ministers, vice governors and equivalents; the bulk of 中管干部 cases. No official aggregate in the corpus separates this rank."
+   },
+   {
+    "rank": "正厅级",
+    "en": "bureau-director rank",
+    "definition": "Official aggregates give 厅局级 as one figure (正厅级 and 副厅级 together)."
+   },
+   {
+    "rank": "副厅级",
+    "en": "deputy bureau-director rank",
+    "definition": "See 正厅级."
+   },
+   {
+    "rank": "县处级",
+    "en": "county-division rank",
+    "definition": "Aggregate figures only."
+   },
+   {
+    "rank": "乡科级",
+    "en": "township-section rank",
+    "definition": "Aggregate figures only."
+   }
+  ],
+  "removal_types": {
+   "a": "Disciplinary or corruption case formally announced by a Party, state, military or judicial body.",
+   "b": "Removed from post with no reason stated.",
+   "c": "Demotion with a disciplinary sanction short of expulsion.",
+   "d": "Reported by foreign or Hong Kong media only, not officially confirmed."
+  },
+  "evidence_labels": {
+   "corpus": "doc_id + quote; the quote is checked programmatically to be an exact substring of that document's title or body_text_cn.",
+   "web, not in corpus": "A URL found by web search. 'fetched': true means the page was opened and the key sentence read; false means the URL and wording come from a search summary only. Never counted in corpus-verified totals.",
+   "not in corpus": "No corpus document and no usable URL; the fact is recalled from general knowledge and is unverified.",
+   "own tally": "A count we computed over corpus rows, with the script named.",
+   "officials.db": "A row of officials.db (overlaps / career_records); not quote-verified, and the career parser is being repaired."
+  },
+  "corpus_verified_rule": "A person is corpus-verified when at least one event marked establishes_removal carries corpus evidence whose quote verifies.",
+  "coverage_gaps": [
+   "MAIN GAP. No CCDI site is crawled: 0 documents have a ccdi.gov.cn URL and no site key or name matches it. Every CCDI release in the corpus is a reprint.",
+   "Before 2026 the corpus holds almost no contemporaneous announcement of a senior case. For the eleven 副国级+ persons removed in 2012 to 2025 (and 薄熙来), the investigation, expulsion and sentence announcements are absent, except a Guancha relay (郭伯雄 2015), two People's Bank relays (孙政才 2017), one CPPCC chronicle entry (令计划 2015) and two plenum communiques (18-5, 20-3).",
+   "Plenum communiques: 18-4, 18-6, 18-7 and every 19th CC plenum with an expulsion paragraph are absent; 20-4 is held only as rows with empty bodies (stic 12454787); 20-2 and 19-7 rows on stic/hrss/mzj also have empty bodies.",
+   "The Xinhua tier is a homepage sample (see CLAUDE.md), which is why Xinhua's own releases on these cases are mostly held through stdaily, guancha, qstheory and chinapeace reprints.",
+   "苗华 and 杨晶 have no corpus document about their cases at all; 何卫东 has one (a retrospective list by the CCDI secretary).",
+   "Name search limits: two-character names (秦刚, 苏荣, 杨晶, 苗华, 张阳) were searched through the segmented index plus title LIKE; namesakes (a Suzhou official 孔苏荣, several 杨晶 and 张阳) were excluded by hand."
+  ]
+ },
+ "persons": [
+  {
+   "id": "zhou-yongkang",
+   "name_cn": "周永康",
+   "name_en": "Zhou Yongkang",
+   "tier": "正国级",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "正国级",
+    "held": "retired",
+    "posts": "none (retired November 2012)"
+   },
+   "highest_rank_held": {
+    "rank": "正国级",
+    "posts": "中央政治局常委、中央政法委书记 (17th Central Committee, 2007 to 2012)"
+   },
+   "rank_evidence": [
+    {
+     "label": "not in corpus",
+     "note": "rank read from officials.db (is_psc=1, 14th to 17th CC); no corpus document held states his post in a sentence that also names him"
+    }
+   ],
+   "status": "expelled; sentenced to life imprisonment",
+   "stated_grounds": {
+    "zh": "政治上的野心家、阴谋家；严重违纪违法",
+    "en": "Named in official texts as a political careerist and conspirator; serious violations of discipline and law. The court's three convictions (bribery, abuse of power, intentional disclosure of state secrets) are not in the corpus.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900220715,
+      "quote": "严肃查处周永康、令计划等政治上的野心家、阴谋家",
+      "verified": true,
+      "where": "body",
+      "site": "qiushi",
+      "url": "http://www.qstheory.cn/dukan/qs/2020-05/01/c_1125923872.htm",
+      "doc_date": "2020-05-01",
+      "doc_title": "把“严”的主基调长期坚持下去"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 12651498,
+      "quote": "查处周永康、薄熙来、孙政才、令计划等严重违纪违法案件",
+      "verified": true,
+      "where": "body",
+      "site": "gov",
+      "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+      "doc_date": "2021-11-16",
+      "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2014-07-29",
+     "action": "investigation_announced",
+     "detail_en": "Politburo decides to open a case review (立案审查).",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.bjnews.com.cn/detail/155148542914881.html",
+       "fetched": false,
+       "note": "Beijing News reprint of the Xinhua 6 Dec 2014 release, which recounts the 29 July decision. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2014-12-05",
+     "action": "expelled",
+     "detail_en": "Politburo expels him from the Party and transfers the case to the judiciary.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.bjnews.com.cn/detail/155148542914881.html",
+       "fetched": false,
+       "note": "Beijing News reprint of the Xinhua release dated 6 Dec 2014. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2015-03-12",
+     "action": "prosecution_reported",
+     "detail_en": "The Supreme People's Procuratorate work report lists his case among 28 officials of provincial-ministerial rank or above handled in 2014.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900003374,
+       "quote": "依法办理周永康、徐才厚、蒋洁敏、李东生、李崇禧、金道铭、姚木根等28名省部级以上干部犯罪案件",
+       "verified": true,
+       "where": "body",
+       "site": "chinalawtranslate",
+       "url": "https://www.chinalawtranslate.com/2015sppworkreport/",
+       "doc_date": "2015-03-12",
+       "doc_title": "2015年 最高人民检察院工作报告"
+      }
+     ]
+    },
+    {
+     "date": "2015-06-11",
+     "action": "sentenced",
+     "detail_en": "Tianjin No. 1 Intermediate Court: life imprisonment.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.xinhuanet.com/politics/2015-06/11/c_1115590304.htm",
+       "fetched": false,
+       "note": "Xinhua. search-result URL, page not fetched; wording from the search summary"
+      },
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.court.gov.cn/fabu/xiangqing/14688.html",
+       "fetched": false,
+       "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+      }
+     ],
+     "sentence": "life imprisonment"
+    },
+    {
+     "date": "2021-11-16",
+     "action": "named_in_party_resolution",
+     "detail_en": "The third historical resolution names his case.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12651498,
+       "quote": "查处周永康、薄熙来、孙政才、令计划等严重违纪违法案件",
+       "verified": true,
+       "where": "body",
+       "site": "gov",
+       "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+       "doc_date": "2021-11-16",
+       "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "14th-17th CC",
+    "is_politburo": 1,
+    "is_psc": 1
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "none vacated (retired 2012; 孟建柱 had already taken the 中央政法委 post in November 2012)",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "no post was vacated by the case"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "2 of 5"
+  },
+  {
+   "id": "bo-xilai",
+   "name_cn": "薄熙来",
+   "name_en": "Bo Xilai",
+   "tier": "副国级",
+   "removal_type": "a",
+   "flags": [
+    "removed_before_18th_congress"
+   ],
+   "flag_note": "Removed from his Chongqing post in March 2012 and expelled in September 2012, both before the 18th Party Congress (November 2012). Trial and sentence fall after it (2013). Counted separately in every total.",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "中央政治局委员、重庆市委书记"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "中央政治局委员 (17th Central Committee)"
+   },
+   "rank_evidence": [
+    {
+     "label": "not in corpus",
+     "note": "rank read from officials.db (is_politburo=1, 16th and 17th CC)"
+    }
+   ],
+   "status": "expelled; sentenced to life imprisonment",
+   "stated_grounds": {
+    "zh": "受贿、贪污、滥用职权",
+    "en": "Bribery, embezzlement, abuse of power (the three offences named in the Supreme People's Court work report).",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900002129,
+      "quote": "其中包括薄熙来受贿、贪污、滥用职权案",
+      "verified": true,
+      "where": "body",
+      "site": "chinalawtranslate",
+      "url": "https://www.chinalawtranslate.com/work-report-of-the-supreme-peoples-court-for-year-2013-by-president-zhou-qiang/",
+      "doc_date": "2014-03-10",
+      "doc_title": "Work Report of the Supreme Peoples Court for Year 2013 By President Zhou Qiang"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2012-03-15",
+     "action": "removed_from_post",
+     "detail_en": "Removed as Chongqing Party secretary.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "recalled from general knowledge; no document found in the corpus or by search"
+      }
+     ]
+    },
+    {
+     "date": "2012-04-10",
+     "action": "investigation_announced",
+     "detail_en": "Suspended from the Politburo and Central Committee; case opened by the CCDI.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://news.sina.com.cn/o/2012-09-29/051925279306.shtml",
+       "fetched": false,
+       "note": "Sina reprint; the September 2012 release recounts the April decision. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2012-09-28",
+     "action": "expelled",
+     "detail_en": "Politburo expels him from the Party and from public office.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.bjnews.com.cn/detail/155145467314597.html",
+       "fetched": false,
+       "note": "Beijing News reprint of the Xinhua release. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2013-09-22",
+     "action": "sentenced",
+     "detail_en": "Jinan Intermediate Court: life imprisonment.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://language.chinadaily.com.cn/2013-09/23/content_16986237.htm",
+       "fetched": false,
+       "note": "China Daily. search-result URL, page not fetched; wording from the search summary"
+      }
+     ],
+     "sentence": "life imprisonment"
+    },
+    {
+     "date": "2014-03-10",
+     "action": "conviction_reported",
+     "detail_en": "The Supreme People's Court work report for 2013 lists his case among those concluded.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900002129,
+       "quote": "其中包括薄熙来受贿、贪污、滥用职权案",
+       "verified": true,
+       "where": "body",
+       "site": "chinalawtranslate",
+       "url": "https://www.chinalawtranslate.com/work-report-of-the-supreme-peoples-court-for-year-2013-by-president-zhou-qiang/",
+       "doc_date": "2014-03-10",
+       "doc_title": "Work Report of the Supreme Peoples Court for Year 2013 By President Zhou Qiang"
+      }
+     ]
+    },
+    {
+     "date": "2021-11-16",
+     "action": "named_in_party_resolution",
+     "detail_en": "The third historical resolution names his case.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12651498,
+       "quote": "查处周永康、薄熙来、孙政才、令计划等严重违纪违法案件",
+       "verified": true,
+       "where": "body",
+       "site": "gov",
+       "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+       "doc_date": "2021-11-16",
+       "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "16th-17th CC",
+    "is_politburo": 1,
+    "is_psc": 0
+   },
+   "successions": [
+    {
+     "post": "重庆市委书记",
+     "successor": "张德江",
+     "date": "2012-03-15",
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "recalled; not in corpus"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "2 of 6"
+  },
+  {
+   "id": "xu-caihou",
+   "name_cn": "徐才厚",
+   "name_en": "Xu Caihou",
+   "tier": "副国级",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "retired",
+    "posts": "none (retired from the Central Military Commission in March 2013)"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "中央政治局委员、中央军委副主席 (17th Central Committee)"
+   },
+   "rank_evidence": [
+    {
+     "label": "not in corpus",
+     "note": "rank read from officials.db (is_politburo=1, 15th to 17th CC)"
+    }
+   ],
+   "status": "expelled; died March 2015 before trial (death and non-prosecution decision not in corpus)",
+   "stated_grounds": {
+    "zh": "严重违纪违法；腐化变质高级政工将领",
+    "en": "Serious violations of discipline and law; later described as a degenerate senior political-work general.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 12651498,
+      "quote": "坚决查处郭伯雄、徐才厚、房峰辉、张阳等严重违纪违法案件并彻底肃清其流毒影响",
+      "verified": true,
+      "where": "body",
+      "site": "gov",
+      "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+      "doc_date": "2021-11-16",
+      "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 900224096,
+      "quote": "严肃查处徐才厚、张阳等腐化变质高级政工将领",
+      "verified": true,
+      "where": "body",
+      "site": "studytimes",
+      "url": "https://www.studytimes.cn/llsd/202503/t20250328_78407.html",
+      "doc_date": "2025-03-28",
+      "doc_title": "坚决扛起人民军队政治机关制使命责任"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2014-03-15",
+     "action": "investigation_announced",
+     "detail_en": "Organisational investigation opened (made public on 30 June 2014).",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.rmzxw.com.cn/sy/yw/2014/06/30/345859.shtml",
+       "fetched": false,
+       "note": "CPPCC Daily site reprint of the Xinhua 30 June 2014 release. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2014-06-30",
+     "action": "expelled",
+     "detail_en": "Politburo expels him; bribery case sent to the military procuratorate.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.rmzxw.com.cn/sy/yw/2014/06/30/345859.shtml",
+       "fetched": false,
+       "note": "CPPCC Daily site reprint of the Xinhua release. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2015-03-12",
+     "action": "prosecution_reported",
+     "detail_en": "The Supreme People's Procuratorate work report lists his case among 28 handled in 2014.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900003374,
+       "quote": "依法办理周永康、徐才厚、蒋洁敏、李东生、李崇禧、金道铭、姚木根等28名省部级以上干部犯罪案件",
+       "verified": true,
+       "where": "body",
+       "site": "chinalawtranslate",
+       "url": "https://www.chinalawtranslate.com/2015sppworkreport/",
+       "doc_date": "2015-03-12",
+       "doc_title": "2015年 最高人民检察院工作报告"
+      }
+     ]
+    },
+    {
+     "date": "2015-03-15",
+     "action": "died",
+     "detail_en": "Died of illness; the military procuratorate decided not to prosecute.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "recalled from general knowledge; not searched"
+      }
+     ]
+    },
+    {
+     "date": "2021-11-16",
+     "action": "named_in_party_resolution",
+     "detail_en": "The third historical resolution names his case.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12651498,
+       "quote": "坚决查处郭伯雄、徐才厚、房峰辉、张阳等严重违纪违法案件并彻底肃清其流毒影响",
+       "verified": true,
+       "where": "body",
+       "site": "gov",
+       "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+       "doc_date": "2021-11-16",
+       "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "15th-17th CC",
+    "is_politburo": 1,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "none vacated (retired)",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "no post was vacated by the case"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "2 of 5"
+  },
+  {
+   "id": "guo-boxiong",
+   "name_cn": "郭伯雄",
+   "name_en": "Guo Boxiong",
+   "tier": "副国级",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "retired",
+    "posts": "none (retired from the Central Military Commission in March 2013)"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "中央政治局委员、中央军委副主席 (16th and 17th Central Committees)"
+   },
+   "rank_evidence": [
+    {
+     "label": "not in corpus",
+     "note": "rank read from officials.db (is_politburo=1, 15th to 17th CC)"
+    }
+   ],
+   "status": "expelled; sentenced to life imprisonment",
+   "stated_grounds": {
+    "zh": "涉嫌严重受贿犯罪",
+    "en": "Suspected serious bribery offences.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900031073,
+      "quote": "给予郭伯雄开除党籍处分，对其涉嫌严重受贿犯罪问题及线索移送最高人民检察院授权军事检察机关依法处理",
+      "note": "Guancha commentary of 2 Aug 2015 quoting the central decision; a relay, not the Xinhua release itself",
+      "verified": true,
+      "where": "body",
+      "site": "guancha",
+      "url": "https://www.guancha.cn/HuaXuanHong/2015_08_02_329028.shtml",
+      "doc_date": "2015-08-02",
+      "doc_title": "华玄洪：反腐也是生产力，387亿是多大一笔钱？"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2015-07-30",
+     "action": "expelled",
+     "detail_en": "Politburo expels him; bribery case sent to the military procuratorate.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900031073,
+       "quote": "中央决定，给予郭伯雄开除党籍处分",
+       "note": "relayed in a Guancha commentary dated 2015-08-02; the date of the decision itself is not in the corpus text",
+       "verified": true,
+       "where": "body",
+       "site": "guancha",
+       "url": "https://www.guancha.cn/HuaXuanHong/2015_08_02_329028.shtml",
+       "doc_date": "2015-08-02",
+       "doc_title": "华玄洪：反腐也是生产力，387亿是多大一笔钱？"
+      }
+     ]
+    },
+    {
+     "date": "2016-07-25",
+     "action": "sentenced",
+     "detail_en": "Military court: life imprisonment, stripped of the rank of general.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://news.ifeng.com/c/7fc8SRXHKpo",
+       "fetched": false,
+       "note": "Phoenix reprint of the Xinhua release. search-result URL, page not fetched; wording from the search summary"
+      }
+     ],
+     "sentence": "life imprisonment"
+    },
+    {
+     "date": "2021-11-16",
+     "action": "named_in_party_resolution",
+     "detail_en": "The third historical resolution names his case.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12651498,
+       "quote": "坚决查处郭伯雄、徐才厚、房峰辉、张阳等严重违纪违法案件并彻底肃清其流毒影响",
+       "verified": true,
+       "where": "body",
+       "site": "gov",
+       "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+       "doc_date": "2021-11-16",
+       "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "15th-17th CC",
+    "is_politburo": 1,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "none vacated (retired)",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "no post was vacated by the case"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "2 of 3"
+  },
+  {
+   "id": "ling-jihua",
+   "name_cn": "令计划",
+   "name_en": "Ling Jihua",
+   "tier": "副国级",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "全国政协副主席、中央统战部部长"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "全国政协副主席 (12th CPPCC); earlier 中央书记处书记 (17th Central Committee)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900139575,
+     "quote": "通过关于免去令计划政协第十二届全国委员会副主席职务、撤销其全国政协委员资格的决定",
+     "verified": true,
+     "where": "body",
+     "site": "cppcc",
+     "url": "http://www.cppcc.gov.cn/zxww/2018/01/29/ARTI1517215310202792.shtml",
+     "doc_date": "2018-01-29",
+     "doc_title": "2015年全国政协大事记"
+    }
+   ],
+   "status": "expelled; sentenced to life imprisonment",
+   "stated_grounds": {
+    "zh": "严重违纪；政治上的野心家、阴谋家",
+    "en": "Serious violations of discipline (communique wording); named with Zhou Yongkang as a political careerist and conspirator.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 12760523,
+      "quote": "关于令计划、周本顺、杨栋梁、朱明国、王敏、陈川平、仇和、杨卫泽、潘逸阳、余远辉严重违纪问题的审查报告",
+      "verified": true,
+      "where": "body",
+      "site": "cac",
+      "url": "https://www.cac.gov.cn/2015-10/30/c_1116986257.htm",
+      "doc_date": "2015-10-30",
+      "doc_title": "授权发布：中国共产党第十八届中央委员会第五次全体会议公报"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 900220715,
+      "quote": "严肃查处周永康、令计划等政治上的野心家、阴谋家",
+      "verified": true,
+      "where": "body",
+      "site": "qiushi",
+      "url": "http://www.qstheory.cn/dukan/qs/2020-05/01/c_1125923872.htm",
+      "doc_date": "2020-05-01",
+      "doc_title": "把“严”的主基调长期坚持下去"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2014-12-22",
+     "action": "investigation_announced",
+     "detail_en": "Case review opened.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://paper.people.com.cn/hqrw/html/2015-07/26/content_1663877.htm",
+       "fetched": false,
+       "note": "People's Daily group paper; the July 2015 release recounts the 22 Dec 2014 decision. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2015-02",
+     "action": "removed_from_post",
+     "detail_en": "CPPCC Standing Committee removes him as vice-chair and revokes his membership.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900139575,
+       "quote": "通过关于免去令计划政协第十二届全国委员会副主席职务、撤销其全国政协委员资格的决定",
+       "note": "CPPCC chronicle for 2015; day of month not extracted",
+       "verified": true,
+       "where": "body",
+       "site": "cppcc",
+       "url": "http://www.cppcc.gov.cn/zxww/2018/01/29/ARTI1517215310202792.shtml",
+       "doc_date": "2018-01-29",
+       "doc_title": "2015年全国政协大事记"
+      }
+     ],
+     "date_precision": "month"
+    },
+    {
+     "date": "2015-07-20",
+     "action": "expelled",
+     "detail_en": "Politburo expels him from the Party and public office.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://paper.people.com.cn/hqrw/html/2015-07/26/content_1663877.htm",
+       "fetched": false,
+       "note": "People's Daily group paper. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2015-10-29",
+     "action": "expulsion_confirmed_by_plenum",
+     "detail_en": "Fifth Plenum of the 18th Central Committee confirms the expulsion.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12760523,
+       "quote": "确认中央政治局之前作出的给予令计划、周本顺、杨栋梁、朱明国、王敏、陈川平、仇和、杨卫泽、潘逸阳、余远辉开除党籍的处分",
+       "verified": true,
+       "where": "body",
+       "site": "cac",
+       "url": "https://www.cac.gov.cn/2015-10/30/c_1116986257.htm",
+       "doc_date": "2015-10-30",
+       "doc_title": "授权发布：中国共产党第十八届中央委员会第五次全体会议公报"
+      }
+     ]
+    },
+    {
+     "date": "2016-07-04",
+     "action": "sentenced",
+     "detail_en": "Tianjin No. 1 Intermediate Court: life imprisonment.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.court.gov.cn/fabu/xiangqing/23001.html",
+       "fetched": false,
+       "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+      }
+     ],
+     "sentence": "life imprisonment"
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "16th-18th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "中央统战部部长",
+     "successor": "孙春兰",
+     "date": "2014-12-31",
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900139575,
+       "quote": "中共中央政治局委员、中央统战部部长孙春兰讲话",
+       "note": "CPPCC chronicle for 2015 shows her in the post; the appointment date is recalled, not in the corpus",
+       "verified": true,
+       "where": "body",
+       "site": "cppcc",
+       "url": "http://www.cppcc.gov.cn/zxww/2018/01/29/ARTI1517215310202792.shtml",
+       "doc_date": "2018-01-29",
+       "doc_title": "2015年全国政协大事记"
+      }
+     ]
+    },
+    {
+     "post": "全国政协副主席",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "no direct successor; not searched"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "2 of 5"
+  },
+  {
+   "id": "su-rong",
+   "name_cn": "苏荣",
+   "name_en": "Su Rong",
+   "tier": "副国级",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "全国政协副主席"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "全国政协副主席 (12th CPPCC)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900235675,
+     "quote": "中国人民政治协商会议第十二届全国委员会原副主席苏荣的案件",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2021/0816/621953.shtml",
+     "doc_date": "2021-08-16",
+     "doc_title": "当前腐败新动向的核心特征与治理之策"
+    }
+   ],
+   "status": "expelled; sentenced to life imprisonment (neither announcement is in the corpus)",
+   "stated_grounds": {
+    "zh": "家族式腐败；重大腐败案件",
+    "en": "Described in party-journal texts as a model case of family corruption; listed among major corruption cases.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900235675,
+      "quote": "家族式腐败的典型案例就是中国人民政治协商会议第十二届全国委员会原副主席苏荣的案件",
+      "note": "People's Forum (人民论坛) article, a party-media analysis, not a CCDI release",
+      "verified": true,
+      "where": "body",
+      "site": "rmlt",
+      "url": "https://www.rmlt.com.cn/2021/0816/621953.shtml",
+      "doc_date": "2021-08-16",
+      "doc_title": "当前腐败新动向的核心特征与治理之策"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 900244750,
+      "quote": "坚决查处周永康、薄熙来、徐才厚、郭伯雄、令计划、苏荣等重大腐败案件",
+      "verified": true,
+      "where": "body",
+      "site": "gmrb_theory",
+      "url": "https://epaper.gmw.cn/gmrb/html/2022-08/22/nw.D110000gmrb_20220822_1-06.htm",
+      "doc_date": "2022-08-22",
+      "doc_title": "以党的自我革命引领社会革命"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2014-06-14",
+     "action": "investigation_announced",
+     "detail_en": "CCDI announces an investigation.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "recalled from general knowledge; search returned only non-official relays"
+      }
+     ]
+    },
+    {
+     "date": "2014-06",
+     "action": "removed_from_post",
+     "detail_en": "Removed as CPPCC vice-chair.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "the CPPCC 2014 chronicle held in the corpus does not mention him; not found"
+      }
+     ],
+     "date_precision": "month"
+    },
+    {
+     "date": "2015-02-16",
+     "action": "expelled",
+     "detail_en": "Expelled from the Party and public office.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "recalled from general knowledge; search returned only non-official relays, so no URL is given"
+      }
+     ]
+    },
+    {
+     "date": "2017-01-23",
+     "action": "sentenced",
+     "detail_en": "Jinan Intermediate Court: life imprisonment.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.court.gov.cn/fabu/xiangqing/35302.html",
+       "fetched": false,
+       "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+      }
+     ],
+     "sentence": "life imprisonment"
+    },
+    {
+     "date": "2022-08-22",
+     "action": "named_in_party_media",
+     "detail_en": "Guangming Daily theory page lists his case among six major corruption cases.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900244750,
+       "quote": "坚决查处周永康、薄熙来、徐才厚、郭伯雄、令计划、苏荣等重大腐败案件",
+       "verified": true,
+       "where": "body",
+       "site": "gmrb_theory",
+       "url": "https://epaper.gmw.cn/gmrb/html/2022-08/22/nw.D110000gmrb_20220822_1-06.htm",
+       "doc_date": "2022-08-22",
+       "doc_title": "以党的自我革命引领社会革命"
+      }
+     ]
+    },
+    {
+     "date": "2023-02-16",
+     "action": "named_in_party_journal",
+     "detail_en": "Qiushi article calls for clearing away his 'pernicious influence'.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900219576,
+       "quote": "全面彻底肃清孙政才和苏荣、王珉等流毒影响",
+       "verified": true,
+       "where": "body",
+       "site": "qiushi",
+       "url": "http://www.qstheory.cn/dukan/qs/2023-02/16/c_1129363077.htm",
+       "doc_date": "2023-02-16",
+       "doc_title": "在中国式现代化进程中推动全面振兴取得新突破"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "14th-17th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "全国政协副主席",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "no direct successor recorded"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "2 of 6"
+  },
+  {
+   "id": "sun-zhengcai",
+   "name_cn": "孙政才",
+   "name_en": "Sun Zhengcai",
+   "tier": "副国级",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "中央政治局委员、重庆市委书记"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "中央政治局委员 (18th Central Committee)"
+   },
+   "rank_evidence": [
+    {
+     "label": "not in corpus",
+     "note": "rank read from officials.db (is_politburo=1, 17th and 18th CC)"
+    }
+   ],
+   "status": "expelled; sentenced to life imprisonment",
+   "stated_grounds": {
+    "zh": "涉嫌严重违纪；严重违纪违法案件",
+    "en": "Suspected serious violations of discipline (2017); named among serious discipline and law cases in the 2021 resolution.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900181088,
+      "quote": "认真传达学习党中央对孙政才同志涉嫌严重违纪问题立案审查的决定",
+      "verified": true,
+      "where": "body",
+      "site": "pbc",
+      "url": "http://www.pbc.gov.cn/goutongjiaoliu/113456/113469/2025092212544643840/index.html",
+      "doc_date": "2017-07-31",
+      "doc_title": "人民银行党委坚决拥护党中央对孙政才同志立案审查的决定"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 12651498,
+      "quote": "查处周永康、薄熙来、孙政才、令计划等严重违纪违法案件",
+      "verified": true,
+      "where": "body",
+      "site": "gov",
+      "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+      "doc_date": "2021-11-16",
+      "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2017-07-15",
+     "action": "removed_from_post",
+     "detail_en": "Replaced as Chongqing Party secretary.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "recalled from general knowledge; not in corpus"
+      }
+     ]
+    },
+    {
+     "date": "2017-07-24",
+     "action": "investigation_announced",
+     "detail_en": "Central decision to open a case review. The corpus holds the People's Bank party committee's meeting of 31 July relaying it, not the announcement.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900181088,
+       "quote": "认真传达学习党中央对孙政才同志涉嫌严重违纪问题立案审查的决定",
+       "note": "document dated 2017-07-31; the 24 July date is recalled, not in the corpus",
+       "verified": true,
+       "where": "body",
+       "site": "pbc",
+       "url": "http://www.pbc.gov.cn/goutongjiaoliu/113456/113469/2025092212544643840/index.html",
+       "doc_date": "2017-07-31",
+       "doc_title": "人民银行党委坚决拥护党中央对孙政才同志立案审查的决定"
+      }
+     ]
+    },
+    {
+     "date": "2017-09-29",
+     "action": "expelled",
+     "detail_en": "Politburo expels him from the Party and public office. The corpus holds a relay of the 'handling decision' without the word 开除.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900181049,
+       "quote": "传达中央关于孙政才严重违纪案审查情况和处理决定",
+       "note": "document dated 2017-09-30; confirms a handling decision, not its content",
+       "verified": true,
+       "where": "body",
+       "site": "pbc",
+       "url": "http://www.pbc.gov.cn/goutongjiaoliu/113456/113469/2025092212544761680/index.html",
+       "doc_date": "2017-09-30",
+       "doc_title": "人民银行党委坚决拥护中央对孙政才严重违纪问题的处理决定"
+      },
+      {
+       "label": "not in corpus",
+       "note": "the expulsion wording itself: recalled; the Seventh Plenum communique of the 18th CC that confirmed it is not in the corpus"
+      }
+     ]
+    },
+    {
+     "date": "2018-05-08",
+     "action": "sentenced",
+     "detail_en": "Tianjin No. 1 Intermediate Court: life imprisonment for bribery.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.court.gov.cn/fabu/xiangqing/94792.html",
+       "fetched": false,
+       "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+      }
+     ],
+     "sentence": "life imprisonment"
+    },
+    {
+     "date": "2021-11-16",
+     "action": "named_in_party_resolution",
+     "detail_en": "The third historical resolution names his case.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12651498,
+       "quote": "查处周永康、薄熙来、孙政才、令计划等严重违纪违法案件",
+       "verified": true,
+       "where": "body",
+       "site": "gov",
+       "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+       "doc_date": "2021-11-16",
+       "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "17th-18th CC",
+    "is_politburo": 1,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "重庆市委书记",
+     "successor": "陈敏尔",
+     "date": "2017-07-15",
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "recalled; the corpus has 33 documents naming 陈敏尔 but none dated 2017-07 or later states the appointment in one sentence"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "3 of 5"
+  },
+  {
+   "id": "yang-jing",
+   "name_cn": "杨晶",
+   "name_en": "Yang Jing",
+   "tier": "副国级",
+   "removal_type": "c",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "中央书记处书记、国务委员兼国务院秘书长"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "国务委员兼国务院秘书长 (2013 to 2018)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900042245,
+     "quote": "国务委员兼国务院秘书长杨晶",
+     "verified": true,
+     "where": "body",
+     "site": "gov",
+     "url": "http://www.gov.cn/zhengce/zhengceku/2015-04/21/content_9648.htm",
+     "doc_date": "2015-04-21",
+     "doc_title": "国务院办公厅关于成立国务院推进职能转变协调小组的通知"
+    }
+   ],
+   "status": "demoted to full-ministerial rank; one year of Party probation; not expelled, not prosecuted",
+   "stated_grounds": {
+    "zh": "严重违纪 (留党察看一年、行政撤职，降为正部长级)",
+    "en": "Serious violations of discipline; one year of Party probation, administrative dismissal, demotion to full-ministerial rank. Wording is from a web reprint, not the corpus.",
+    "evidence": [
+     {
+      "label": "web, not in corpus",
+      "url": "https://news.ifeng.com/c/7fZtSUsPh8Z",
+      "fetched": true,
+      "note": "Phoenix page relaying the 24 Feb 2018 Xinhua release; fetched, key sentence: 决定给予杨晶同志留党察看一年、行政撤职处分，降为正部长级，按程序办理"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2018-02-24",
+     "action": "demoted",
+     "detail_en": "One year of Party probation, administrative dismissal, demoted to full-ministerial rank.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://news.ifeng.com/c/7fZtSUsPh8Z",
+       "fetched": true,
+       "note": "Phoenix page relaying the Xinhua release; fetched"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "16th-18th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "国务委员兼国务院秘书长",
+     "successor": "肖捷",
+     "date": "2018-03",
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900040861,
+       "quote": "国务委员、国务院秘书长肖捷",
+       "note": "State Council General Office notice of 2018-07-25 shows him in the post; the March 2018 appointment itself is not in the corpus",
+       "verified": true,
+       "where": "body",
+       "site": "gov",
+       "url": "http://www.gov.cn/zhengce/zhengceku/2018-07/25/content_5309035.htm",
+       "doc_date": "2018-07-25",
+       "doc_title": "国务院办公厅关于成立国务院推进政府职能转变和“放管服”改革协调小组的通知"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": false,
+   "events_with_corpus_evidence": "0 of 1"
+  },
+  {
+   "id": "qin-gang",
+   "name_cn": "秦刚",
+   "name_en": "Qin Gang",
+   "tier": "副国级",
+   "removal_type": "b",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "国务委员兼外交部部长"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "国务委员 (March to October 2023)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900250548,
+     "quote": "国务委员兼外交部长秦刚出席",
+     "verified": true,
+     "where": "body",
+     "site": "guancha",
+     "url": "https://www.guancha.cn/CuiTianKai/2023_04_21_689427.shtml",
+     "doc_date": "2023-04-21",
+     "doc_title": "只有解决这两个问题，中美高层才能顺利交往"
+    }
+   ],
+   "status": "removed from both posts with no reason stated; Central Committee resignation accepted; still styled 同志; no disciplinary finding published",
+   "stated_grounds": {
+    "zh": "未说明 (全会：接受秦刚同志辞职申请)",
+    "en": "None stated. The Third Plenum accepted his resignation and kept the honorific 'comrade'.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 12726515,
+      "quote": "接受秦刚同志辞职申请，免去秦刚同志中央委员会委员职务",
+      "verified": true,
+      "where": "body",
+      "site": "stdaily",
+      "url": "https://www.stdaily.com/web/2024-07/18/content_1967580.html",
+      "doc_date": "2024-07-18",
+      "doc_title": "中国共产党第二十届中央委员会第三次全体会议公报"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2023-07-25",
+     "action": "removed_from_post",
+     "detail_en": "NPC Standing Committee removes him as foreign minister.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.gov.cn/yaowen/liebiao/202307/content_6894258.htm",
+       "fetched": false,
+       "note": "gov.cn. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2023-10-24",
+     "action": "removed_from_post",
+     "detail_en": "NPC Standing Committee removes him as State Councilor.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://paper.people.com.cn/rmrb/html/2023-10/25/nw.D110000renmrb_20231025_3-04.htm",
+       "fetched": false,
+       "note": "People's Daily 25 Oct 2023, list of removals. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2024-07-18",
+     "action": "resignation_accepted",
+     "detail_en": "Third Plenum of the 20th Central Committee accepts his resignation from the Central Committee.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12726515,
+       "quote": "全会决定，接受秦刚同志辞职申请，免去秦刚同志中央委员会委员职务",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/2024-07/18/content_1967580.html",
+       "doc_date": "2024-07-18",
+       "doc_title": "中国共产党第二十届中央委员会第三次全体会议公报"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "20th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "外交部部长",
+     "successor": "王毅",
+     "date": "2023-07-25",
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.gov.cn/yaowen/liebiao/202307/content_6894258.htm",
+       "fetched": false,
+       "note": "gov.cn. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "post": "国务委员",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "no successor to the State Councilor seat recorded"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "1 of 3"
+  },
+  {
+   "id": "li-shangfu",
+   "name_cn": "李尚福",
+   "name_en": "Li Shangfu",
+   "tier": "副国级",
+   "removal_type": "a",
+   "also_cmc_member": true,
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "国务委员兼国防部长、中央军委委员"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "国务委员兼国防部长 (March to October 2023)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900026736,
+     "quote": "中央军委原委员、原国务委员兼国防部长李尚福",
+     "verified": true,
+     "where": "body",
+     "site": "stdaily",
+     "url": "https://www.stdaily.com/web/gdxw/2026-05/07/content_512961.html",
+     "doc_date": "2026-05-07",
+     "doc_title": "魏凤和案、李尚福案一审宣判"
+    }
+   ],
+   "status": "expelled; sentenced to death with two-year reprieve, then life without commutation or parole",
+   "stated_grounds": {
+    "zh": "严重违纪违法；受贿罪、行贿罪",
+    "en": "Serious violations of discipline and law; convicted of taking and giving bribes.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 12726515,
+      "quote": "关于李尚福、李玉超、孙金明严重违纪违法问题的审查报告",
+      "verified": true,
+      "where": "body",
+      "site": "stdaily",
+      "url": "https://www.stdaily.com/web/2024-07/18/content_1967580.html",
+      "doc_date": "2024-07-18",
+      "doc_title": "中国共产党第二十届中央委员会第三次全体会议公报"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 900026736,
+      "quote": "认定李尚福犯受贿罪、行贿罪",
+      "verified": true,
+      "where": "body",
+      "site": "stdaily",
+      "url": "https://www.stdaily.com/web/gdxw/2026-05/07/content_512961.html",
+      "doc_date": "2026-05-07",
+      "doc_title": "魏凤和案、李尚福案一审宣判"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2023-10-24",
+     "action": "removed_from_post",
+     "detail_en": "NPC Standing Committee removes him as State Councilor, defence minister and member of the state Central Military Commission; no reason stated at the time.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://paper.people.com.cn/rmrb/html/2023-10/25/nw.D110000renmrb_20231025_3-04.htm",
+       "fetched": false,
+       "note": "People's Daily 25 Oct 2023. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2024-06-27",
+     "action": "expelled",
+     "detail_en": "Politburo expels him; case sent to the military procuratorate.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://paper.people.com.cn/rmrbwap/html/2024-06/28/nw.D110000renmrb_20240628_3-04.htm",
+       "fetched": false,
+       "note": "People's Daily 28 June 2024. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2024-07-18",
+     "action": "expulsion_confirmed_by_plenum",
+     "detail_en": "Third Plenum of the 20th Central Committee confirms the expulsion.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12726515,
+       "quote": "确认中央政治局之前作出的给予李尚福、李玉超、孙金明开除党籍的处分",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/2024-07/18/content_1967580.html",
+       "doc_date": "2024-07-18",
+       "doc_title": "中国共产党第二十届中央委员会第三次全体会议公报"
+      }
+     ]
+    },
+    {
+     "date": "2026-05-07",
+     "action": "sentenced",
+     "detail_en": "Military court: death with two-year reprieve, to be commuted to life without further commutation or parole.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900026736,
+       "quote": "认定李尚福犯受贿罪、行贿罪，数罪并罚，决定执行死刑，缓期二年执行",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/gdxw/2026-05/07/content_512961.html",
+       "doc_date": "2026-05-07",
+       "doc_title": "魏凤和案、李尚福案一审宣判"
+      },
+      {
+       "label": "corpus",
+       "doc_id": 900094268,
+       "quote": "魏凤和案、李尚福案一审宣判",
+       "note": "Supreme People's Court site, title match",
+       "verified": true,
+       "where": "title",
+       "site": "spc",
+       "url": "https://www.court.gov.cn/fabu/xiangqing/499151.html",
+       "doc_date": "2026-05-08",
+       "doc_title": "魏凤和案、李尚福案一审宣判"
+      }
+     ],
+     "sentence": "death with two-year reprieve; life without commutation or parole after reprieve"
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "19th-20th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "国防部部长",
+     "successor": "董军",
+     "date": "2023-12-29",
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "recalled; 39 corpus documents name 董军 but none states the appointment in one sentence"
+      }
+     ]
+    },
+    {
+     "post": "国务委员、中央军委委员",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "seats not refilled as far as the corpus shows"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "2 of 4"
+  },
+  {
+   "id": "wei-fenghe",
+   "name_cn": "魏凤和",
+   "name_en": "Wei Fenghe",
+   "tier": "副国级",
+   "removal_type": "a",
+   "also_cmc_member": true,
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "retired",
+    "posts": "none (left office March 2023)"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "国务委员兼国防部长、中央军委委员 (2018 to 2023)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900229096,
+     "quote": "国务委员兼国防部长魏凤和",
+     "verified": true,
+     "where": "body",
+     "site": "cssn",
+     "url": "https://www.cssn.cn/gjaqx/202302/t20230213_5587657.shtml",
+     "doc_date": "2023-02-13",
+     "doc_title": "总体国家安全观大事记2022（四）"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900026736,
+     "quote": "中央军委原委员、原国务委员兼国防部长魏凤和",
+     "verified": true,
+     "where": "body",
+     "site": "stdaily",
+     "url": "https://www.stdaily.com/web/gdxw/2026-05/07/content_512961.html",
+     "doc_date": "2026-05-07",
+     "doc_title": "魏凤和案、李尚福案一审宣判"
+    }
+   ],
+   "status": "expelled; sentenced to death with two-year reprieve, then life without commutation or parole",
+   "stated_grounds": {
+    "zh": "受贿罪",
+    "en": "Convicted of taking bribes.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900026736,
+      "quote": "认定魏凤和犯受贿罪",
+      "verified": true,
+      "where": "body",
+      "site": "stdaily",
+      "url": "https://www.stdaily.com/web/gdxw/2026-05/07/content_512961.html",
+      "doc_date": "2026-05-07",
+      "doc_title": "魏凤和案、李尚福案一审宣判"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2023-09-21",
+     "action": "investigation_announced",
+     "detail_en": "Military discipline body opens a case (made public 27 June 2024).",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://news.sina.cn/2024-06-27/detail-incaemyn6936185.d.html",
+       "fetched": true,
+       "note": "Sina reprint of CCTV/Beijing Youth Daily; fetched, key sentence: 2023年9月21日，由军委纪委监委对魏凤和严重违纪违法问题立案审查调查"
+      }
+     ]
+    },
+    {
+     "date": "2024-06-27",
+     "action": "expelled",
+     "detail_en": "Politburo expels him; case sent to the military procuratorate.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://news.sina.cn/2024-06-27/detail-incaemyn6936185.d.html",
+       "fetched": true,
+       "note": "fetched, key sentence: 决定给予魏凤和开除党籍处分，终止其党的二十大代表资格"
+      }
+     ]
+    },
+    {
+     "date": "2026-05-07",
+     "action": "sentenced",
+     "detail_en": "Military court: death with two-year reprieve, to be commuted to life without further commutation or parole.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900026736,
+       "quote": "认定魏凤和犯受贿罪，判处死刑，缓期二年执行",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/gdxw/2026-05/07/content_512961.html",
+       "doc_date": "2026-05-07",
+       "doc_title": "魏凤和案、李尚福案一审宣判"
+      }
+     ],
+     "sentence": "death with two-year reprieve; life without commutation or parole after reprieve"
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "17th-19th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "none vacated (left office March 2023, before the case)",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "no post was vacated by the case"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "1 of 3"
+  },
+  {
+   "id": "he-weidong",
+   "name_cn": "何卫东",
+   "name_en": "He Weidong",
+   "tier": "副国级",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "中央政治局委员、中央军委副主席"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "中央政治局委员、中央军委副主席 (20th Central Committee)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 581176,
+     "quote": "中央军委副主席何卫东主持晋衔仪式",
+     "verified": true,
+     "where": "body",
+     "site": "heyuan",
+     "url": "https://www.gov.cn/yaowen/liebiao/202312/content_6922261.htm",
+     "doc_date": "2023-12-26",
+     "doc_title": "中央军委举行晋升上将军衔仪式 习近平颁发命令状并向晋衔的军官表示祝贺"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 545419,
+     "quote": "中央政治局委员刘国中、李干杰、李书磊、何卫东、陈敏尔等5位同志",
+     "verified": true,
+     "where": "body",
+     "site": "heyuan",
+     "url": "http://www.gov.cn/yaowen/2023-03/31/content_5749429.htm",
+     "doc_date": "2023-04-01",
+     "doc_title": "习近平主持中央政治局第四次集体学习并发表重要讲话"
+    }
+   ],
+   "status": "expelled from Party and army; referred for prosecution (all three announcements are outside the corpus)",
+   "stated_grounds": {
+    "zh": "腐败分子",
+    "en": "Named a 'corrupt element' by the CCDI secretary in November 2026. The October 2025 wording (serious violations of Party discipline, suspected serious duty crimes) is web only.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900206970,
+      "quote": "坚决查处周永康、薄熙来、郭伯雄、徐才厚、孙政才、马兴瑞、张又侠、何卫东、令计划等腐败分子",
+      "verified": true,
+      "where": "body",
+      "site": "ce",
+      "url": "http://www.ce.cn/xwzx/gnsz/gdxw/202611/t20261105_3284081.shtml",
+      "doc_date": "2026-11-05",
+      "doc_title": "坚定走好中国特色反腐败之路（学习贯彻党的二十届五中全会精神）"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2025-10-17",
+     "action": "expelled",
+     "detail_en": "Defence ministry spokesman: the Party centre expels nine generals, He first among them; army expulsion decided earlier.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
+       "fetched": true,
+       "note": "Xinhua; fetched, key sentence: 党中央决定给予9人开除党籍处分"
+      }
+     ]
+    },
+    {
+     "date": "2025-10-23",
+     "action": "expulsion_confirmed_by_plenum",
+     "detail_en": "Fourth Plenum of the 20th Central Committee confirms 14 expulsions.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
+       "fetched": true,
+       "note": "12371.cn full communique; fetched"
+      }
+     ]
+    },
+    {
+     "date": "2025-10-28",
+     "action": "removed_from_post",
+     "detail_en": "NPC Standing Committee removes him as vice-chair of the state Central Military Commission.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://global.hk01.com/即时中国/60307375/何卫东等8人被罢免全国人大代表职务",
+       "fetched": false,
+       "note": "HK01 relay of the NPC notice; no official URL retrieved. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2026-11-05",
+     "action": "named_by_ccdi_secretary",
+     "detail_en": "Li Xi's People's Daily article lists him among corrupt elements dealt with.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900206970,
+       "quote": "坚决查处周永康、薄熙来、郭伯雄、徐才厚、孙政才、马兴瑞、张又侠、何卫东、令计划等腐败分子",
+       "verified": true,
+       "where": "body",
+       "site": "ce",
+       "url": "http://www.ce.cn/xwzx/gnsz/gdxw/202611/t20261105_3284081.shtml",
+       "doc_date": "2026-11-05",
+       "doc_title": "坚定走好中国特色反腐败之路（学习贯彻党的二十届五中全会精神）"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "20th CC",
+    "is_politburo": 1,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "中央军委副主席",
+     "successor": "张升民",
+     "date": "2025-10-23",
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
+       "fetched": true,
+       "note": "Fourth Plenum communique; fetched, key sentence: 全会决定，增补张升民为中共中央军事委员会副主席"
+      },
+      {
+       "label": "corpus",
+       "doc_id": 900214415,
+       "quote": "中共中央政治局委员、中央军委副主席张升民",
+       "note": "shows him in the post in November 2026",
+       "verified": true,
+       "where": "body",
+       "site": "mod",
+       "url": "http://www.mod.gov.cn/gfbw/qwfb/16498913.html",
+       "doc_date": "2026-11-09",
+       "doc_title": "全军学习贯彻党的二十届五中全会精神宣讲首场报告会举行 张升民会见宣讲团成员"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "1 of 4"
+  },
+  {
+   "id": "ma-xingrui",
+   "name_cn": "马兴瑞",
+   "name_en": "Ma Xingrui",
+   "tier": "副国级",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "中央政治局委员、中央农村工作领导小组副组长"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "中央政治局委员 (20th Central Committee)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 12726009,
+     "quote": "中央政治局委员、中央农村工作领导小组副组长马兴瑞涉嫌严重违纪违法",
+     "verified": true,
+     "where": "body",
+     "site": "guancha",
+     "url": "https://www.guancha.cn/politics/2026_04_03_812484.shtml",
+     "doc_date": "2026-04-03",
+     "doc_title": "马兴瑞涉嫌严重违纪违法正接受中央纪委国家监委纪律审查和监察调查"
+    }
+   ],
+   "status": "expelled from Party and public office; indicted for bribery (November 2026); trial pending",
+   "stated_grounds": {
+    "zh": "丧失理想信念和政治立场……大搞家族腐败；构成职务违法并涉嫌受贿犯罪",
+    "en": "Lost ideals and political stance; violated political, organisational and integrity discipline; 'family corruption on a large scale'; duty violations and suspected bribery.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900058549,
+      "quote": "严重违反政治纪律和政治规矩，履行全面从严治党主体责任不力",
+      "verified": true,
+      "where": "body",
+      "site": "stdaily",
+      "url": "https://www.stdaily.com/web/gdxw/2026-07/14/content_546916.html",
+      "doc_date": "2026-07-14",
+      "doc_title": "中共中央决定给予马兴瑞开除党籍、开除公职处分"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 900058549,
+      "quote": "纵容放任亲属利用其职务影响谋取巨额利益，大搞家族腐败",
+      "verified": true,
+      "where": "body",
+      "site": "stdaily",
+      "url": "https://www.stdaily.com/web/gdxw/2026-07/14/content_546916.html",
+      "doc_date": "2026-07-14",
+      "doc_title": "中共中央决定给予马兴瑞开除党籍、开除公职处分"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 900058549,
+      "quote": "构成职务违法并涉嫌受贿犯罪，且在党的十八大后不收敛、不收手",
+      "verified": true,
+      "where": "body",
+      "site": "stdaily",
+      "url": "https://www.stdaily.com/web/gdxw/2026-07/14/content_546916.html",
+      "doc_date": "2026-07-14",
+      "doc_title": "中共中央决定给予马兴瑞开除党籍、开除公职处分"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2026-04-03",
+     "action": "investigation_announced",
+     "detail_en": "Xinhua: under CCDI and NSC disciplinary review and supervisory investigation.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12726009,
+       "quote": "据新华社4月3日消息，中央政治局委员、中央农村工作领导小组副组长马兴瑞涉嫌严重违纪违法，目前正接受中央纪委国家监委纪律审查和监察调查",
+       "note": "Guancha relay of the Xinhua release",
+       "verified": true,
+       "where": "body",
+       "site": "guancha",
+       "url": "https://www.guancha.cn/politics/2026_04_03_812484.shtml",
+       "doc_date": "2026-04-03",
+       "doc_title": "马兴瑞涉嫌严重违纪违法正接受中央纪委国家监委纪律审查和监察调查"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "action": "expelled",
+     "detail_en": "Announced 14 July: the Politburo on 30 June approved the CCDI report; expelled from the Party and public office; case sent for prosecution.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900058549,
+       "quote": "6月30日，中共中央政治局会议审议并通过中共中央纪律检查委员会《关于马兴瑞问题审查结果和处理意见的报告》",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/gdxw/2026-07/14/content_546916.html",
+       "doc_date": "2026-07-14",
+       "doc_title": "中共中央决定给予马兴瑞开除党籍、开除公职处分"
+      },
+      {
+       "label": "corpus",
+       "doc_id": 900058549,
+       "quote": "决定给予马兴瑞开除党籍处分，由国家监委给予其开除公职处分",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/gdxw/2026-07/14/content_546916.html",
+       "doc_date": "2026-07-14",
+       "doc_title": "中共中央决定给予马兴瑞开除党籍、开除公职处分"
+      }
+     ]
+    },
+    {
+     "date": "2026-10-29",
+     "action": "expulsion_confirmed_by_plenum",
+     "detail_en": "Fifth Plenum of the 20th Central Committee confirms the expulsion.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900206931,
+       "quote": "确认中央政治局之前作出的给予马兴瑞、张又侠、刘振立、蓝天立、刘建超、王莉霞、金壮龙、雷凡培、易会满、王祥喜、孙绍骋、王仁华、刘青松、黄铭、李桥铭、李伟、张红兵、汪海江、张林、王鹏、刘发庆、杨诚、钟绍军、赵晓哲、费东斌、吴胜华、余剑锋、袁洁、张忠阳、温刚、金东寒、方红卫、方永祥开除党籍处分，给予李云泽撤销党内职务处分",
+       "verified": true,
+       "where": "body",
+       "site": "xinhua",
+       "url": "https://www.news.cn/politics/20261029/1ed1fdb0c2c9490385fbc74a9989f5cc/c.html",
+       "doc_date": "2026-10-29",
+       "doc_title": "受权发布丨中国共产党第二十届中央委员会第五次全体会议公报"
+      }
+     ]
+    },
+    {
+     "date": "2026-11-05",
+     "action": "indicted",
+     "detail_en": "Arrested on SPP decision; Yichang procuratorate files a bribery indictment with the Yichang Intermediate Court.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900208786,
+       "quote": "最高人民检察院依法以涉嫌受贿罪对马兴瑞作出逮捕决定，并指定由湖北省宜昌市人民检察院审查起诉",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/gdxw/2026-11/05/content_608839.html",
+       "doc_date": "2026-11-05",
+       "doc_title": "检察机关依法对马兴瑞涉嫌受贿案提起公诉"
+      },
+      {
+       "label": "corpus",
+       "doc_id": 900208786,
+       "quote": "宜昌市人民检察院已向宜昌市中级人民法院提起公诉",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/gdxw/2026-11/05/content_608839.html",
+       "doc_date": "2026-11-05",
+       "doc_title": "检察机关依法对马兴瑞涉嫌受贿案提起公诉"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "18th-20th CC",
+    "is_politburo": 1,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "中央农村工作领导小组副组长",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "114 corpus documents mention the leading group; none dated after April 2026 names another deputy head"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "4 of 4"
+  },
+  {
+   "id": "zhang-youxia",
+   "name_cn": "张又侠",
+   "name_en": "Zhang Youxia",
+   "tier": "副国级",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "中央政治局委员、中央军委副主席"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "中央政治局委员、中央军委副主席 (19th and 20th Central Committees)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900148464,
+     "quote": "中央政治局委员、中央军委副主席张又侠",
+     "verified": true,
+     "where": "body",
+     "site": "qstheory",
+     "url": "http://www.qstheory.cn/20260921/48678bf347cf4ffeb695f320a9700af1/c.html",
+     "doc_date": "2026-09-21",
+     "doc_title": "张又侠、刘振立严重违纪违法被开除党籍军籍"
+    }
+   ],
+   "status": "expelled from Party and army; referred to the military procuratorate; no indictment or trial announced",
+   "stated_grounds": {
+    "zh": "背弃初心使命、与党离心离德……搞团团伙伙，对党不忠诚不老实；涉嫌严重职务犯罪",
+    "en": "Betrayed the original mission, estranged from the Party; factionalism, disloyalty and dishonesty to the Party; took large sums for promotions; suspected serious duty crimes.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900148464,
+      "quote": "严重违反政治纪律和政治规矩，搞团团伙伙，对党不忠诚不老实",
+      "verified": true,
+      "where": "body",
+      "site": "qstheory",
+      "url": "http://www.qstheory.cn/20260921/48678bf347cf4ffeb695f320a9700af1/c.html",
+      "doc_date": "2026-09-21",
+      "doc_title": "张又侠、刘振立严重违纪违法被开除党籍军籍"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 900148464,
+      "quote": "涉嫌严重职务犯罪，政治问题和经济问题交织，贪腐敛财与失职渎职并存",
+      "verified": true,
+      "where": "body",
+      "site": "qstheory",
+      "url": "http://www.qstheory.cn/20260921/48678bf347cf4ffeb695f320a9700af1/c.html",
+      "doc_date": "2026-09-21",
+      "doc_title": "张又侠、刘振立严重违纪违法被开除党籍军籍"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2026-01-24",
+     "action": "investigation_announced",
+     "detail_en": "Defence ministry: case review and investigation opened into Zhang Youxia and Liu Zhenli.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://cn.chinadaily.com.cn/a/202601/24/WS697478f6a310942cc499ca5d.html",
+       "fetched": false,
+       "note": "China Daily Chinese site. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2026-08-28",
+     "action": "removed_from_post",
+     "detail_en": "NPC Standing Committee removes him as vice-chair of the state Central Military Commission; recalled as NPC deputy the same day.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900122164,
+       "quote": "免去张又侠的中华人民共和国中央军事委员会副主席职务",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/2026-08/28/content_571624.html",
+       "doc_date": "2026-08-28",
+       "doc_title": "全国人民代表大会常务委员会决定免职的名单"
+      },
+      {
+       "label": "corpus",
+       "doc_id": 900122163,
+       "quote": "中央军委办公厅军人代表大会决定罢免张又侠、钟绍军的第十四届全国人民代表大会代表职务",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/2026-08/28/content_571625.html",
+       "doc_date": "2026-08-28",
+       "doc_title": "全国人民代表大会常务委员会公告〔十四届〕第十九号"
+      }
+     ]
+    },
+    {
+     "date": "2026-09-21",
+     "action": "expelled",
+     "detail_en": "Politburo approves the CMC report; expelled from the Party; army expulsion decided earlier; case sent to the military procuratorate.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900148464,
+       "quote": "决定给予张又侠、刘振立开除党籍处分，终止2人党的二十大代表资格，将涉嫌犯罪问题移送军事检察机关依法审查起诉",
+       "verified": true,
+       "where": "body",
+       "site": "qstheory",
+       "url": "http://www.qstheory.cn/20260921/48678bf347cf4ffeb695f320a9700af1/c.html",
+       "doc_date": "2026-09-21",
+       "doc_title": "张又侠、刘振立严重违纪违法被开除党籍军籍"
+      },
+      {
+       "label": "corpus",
+       "doc_id": 900148464,
+       "quote": "此前，中央军委已决定给予张又侠、刘振立开除军籍处分",
+       "verified": true,
+       "where": "body",
+       "site": "qstheory",
+       "url": "http://www.qstheory.cn/20260921/48678bf347cf4ffeb695f320a9700af1/c.html",
+       "doc_date": "2026-09-21",
+       "doc_title": "张又侠、刘振立严重违纪违法被开除党籍军籍"
+      }
+     ]
+    },
+    {
+     "date": "2026-10-29",
+     "action": "expulsion_confirmed_by_plenum",
+     "detail_en": "Fifth Plenum of the 20th Central Committee confirms the expulsion.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900206931,
+       "quote": "确认中央政治局之前作出的给予马兴瑞、张又侠、刘振立、蓝天立、刘建超、王莉霞、金壮龙、雷凡培、易会满、王祥喜、孙绍骋、王仁华、刘青松、黄铭、李桥铭、李伟、张红兵、汪海江、张林、王鹏、刘发庆、杨诚、钟绍军、赵晓哲、费东斌、吴胜华、余剑锋、袁洁、张忠阳、温刚、金东寒、方红卫、方永祥开除党籍处分，给予李云泽撤销党内职务处分",
+       "verified": true,
+       "where": "body",
+       "site": "xinhua",
+       "url": "https://www.news.cn/politics/20261029/1ed1fdb0c2c9490385fbc74a9989f5cc/c.html",
+       "doc_date": "2026-10-29",
+       "doc_title": "受权发布丨中国共产党第二十届中央委员会第五次全体会议公报"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "17th-20th CC",
+    "is_politburo": 1,
+    "is_psc": 0
+   },
+   "flags": [],
+   "successions": [
+    {
+     "post": "中央政治局委员 (military seat)",
+     "successor": "张升民",
+     "date": "2026-10-29",
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900206931,
+       "quote": "全会增选张升民为中央政治局委员",
+       "verified": true,
+       "where": "body",
+       "site": "xinhua",
+       "url": "https://www.news.cn/politics/20261029/1ed1fdb0c2c9490385fbc74a9989f5cc/c.html",
+       "doc_date": "2026-10-29",
+       "doc_title": "受权发布丨中国共产党第二十届中央委员会第五次全体会议公报"
+      }
+     ]
+    },
+    {
+     "post": "中央军委副主席",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "no second vice-chair named in the corpus as of 2026-11-25; 张升民 has held a vice-chair seat since October 2025"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "3 of 4"
+  },
+  {
+   "id": "chen-jining",
+   "name_cn": "陈吉宁",
+   "name_en": "Chen Jining",
+   "tier": "副国级",
+   "removal_type": "a",
+   "flags": [
+    "investigation_only_no_disposal_yet"
+   ],
+   "flag_note": "Announced the day before this dataset was built (24 Nov 2026). An investigation is not a finding; no removal from post, expulsion or charge is recorded yet.",
+   "rank_at_removal": {
+    "rank": "副国级",
+    "held": "in office",
+    "posts": "中央政治局委员、上海市委书记"
+   },
+   "highest_rank_held": {
+    "rank": "副国级",
+    "posts": "中央政治局委员 (20th Central Committee)"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900265582,
+     "quote": "中央政治局委员、上海市委书记陈吉宁",
+     "verified": true,
+     "where": "body",
+     "site": "chinapeace",
+     "url": "http://www.chinapeace.gov.cn/chinapeace/c100007/2026-11/24/content_12864633.shtml",
+     "doc_date": "2026-11-24",
+     "doc_title": "陈吉宁涉嫌严重违纪违法正接受中央纪委国家监委审查调查"
+    }
+   ],
+   "status": "under CCDI and NSC review and investigation; no disposal announced",
+   "stated_grounds": {
+    "zh": "涉嫌严重违纪违法",
+    "en": "Suspected serious violations of discipline and law.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900265582,
+      "quote": "陈吉宁涉嫌严重违纪违法，目前正接受中央纪委国家监委审查调查",
+      "verified": true,
+      "where": "body",
+      "site": "chinapeace",
+      "url": "http://www.chinapeace.gov.cn/chinapeace/c100007/2026-11/24/content_12864633.shtml",
+      "doc_date": "2026-11-24",
+      "doc_title": "陈吉宁涉嫌严重违纪违法正接受中央纪委国家监委审查调查"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2026-11-24",
+     "action": "investigation_announced",
+     "detail_en": "Xinhua: under CCDI and NSC review and investigation.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900265582,
+       "quote": "中央政治局委员、上海市委书记陈吉宁涉嫌严重违纪违法，目前正接受中央纪委国家监委审查调查",
+       "verified": true,
+       "where": "body",
+       "site": "chinapeace",
+       "url": "http://www.chinapeace.gov.cn/chinapeace/c100007/2026-11/24/content_12864633.shtml",
+       "doc_date": "2026-11-24",
+       "doc_title": "陈吉宁涉嫌严重违纪违法正接受中央纪委国家监委审查调查"
+      },
+      {
+       "label": "corpus",
+       "doc_id": 900266450,
+       "quote": "上海市委常委会举行扩大会议：坚决拥护党中央对陈吉宁涉嫌严重违纪违法进行审查调查的决定",
+       "note": "Guancha, title match",
+       "verified": true,
+       "where": "title",
+       "site": "guancha",
+       "url": "https://www.guancha.cn/ZhengZhi/2026_11_24_909804.shtml",
+       "doc_date": "2026-11-24",
+       "doc_title": "上海市委常委会举行扩大会议：坚决拥护党中央对陈吉宁涉嫌严重违纪违法进行审查调查的决定"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "19th-20th CC",
+    "is_politburo": 1,
+    "is_psc": 0
+   },
+   "successions": [
+    {
+     "post": "上海市委书记",
+     "successor": null,
+     "date": null,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "no successor announced in the corpus as of 2026-11-25, one day after the announcement"
+      }
+     ]
+    }
+   ],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "1 of 1"
+  },
+  {
+   "id": "fang-fenghui",
+   "name_cn": "房峰辉",
+   "name_en": "Fang Fenghui",
+   "tier": "CMC member",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "CMC member (not classed as 副国级 here)",
+    "held": "left the CMC at the 19th Congress, October 2017",
+    "posts": "中央军委委员、军委联合参谋部参谋长 (to 2017)"
+   },
+   "highest_rank_held": {
+    "rank": "CMC member",
+    "posts": "中央军委委员、军委联合参谋部参谋长"
+   },
+   "rank_evidence": [
+    {
+     "label": "not in corpus",
+     "note": "post recalled; the corpus texts name him only in lists of cases"
+    }
+   ],
+   "status": "expelled; sentenced to life imprisonment (web only)",
+   "stated_grounds": {
+    "zh": "严重违纪违法案件",
+    "en": "Serious violations of discipline and law.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 12651498,
+      "quote": "坚决查处郭伯雄、徐才厚、房峰辉、张阳等严重违纪违法案件并彻底肃清其流毒影响",
+      "verified": true,
+      "where": "body",
+      "site": "gov",
+      "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+      "doc_date": "2021-11-16",
+      "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2018-10-16",
+     "action": "expelled",
+     "detail_en": "Party centre expels him; case sent for prosecution.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.thepaper.cn/newsDetail_forward_2534652",
+       "fetched": true,
+       "note": "The Paper reprint of Xinhua; fetched, key sentence: 决定给予房峰辉开除党籍处分，移送审查起诉"
+      }
+     ]
+    },
+    {
+     "date": "2019-02-20",
+     "action": "sentenced",
+     "detail_en": "Military court: life imprisonment.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://news.sina.com.cn/c/2019-02-21/doc-ihqfskcp7300935.shtml",
+       "fetched": false,
+       "note": "Sina reprint of Xinhua. search-result URL, page not fetched; wording from the search summary"
+      }
+     ],
+     "sentence": "life imprisonment"
+    },
+    {
+     "date": "2021-11-16",
+     "action": "named_in_party_resolution",
+     "detail_en": "The third historical resolution names his case.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12651498,
+       "quote": "坚决查处郭伯雄、徐才厚、房峰辉、张阳等严重违纪违法案件并彻底肃清其流毒影响",
+       "verified": true,
+       "where": "body",
+       "site": "gov",
+       "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+       "doc_date": "2021-11-16",
+       "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "17th-18th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "1 of 3"
+  },
+  {
+   "id": "zhang-yang",
+   "name_cn": "张阳",
+   "name_en": "Zhang Yang",
+   "tier": "CMC member",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "CMC member (not classed as 副国级 here)",
+    "held": "in office when questioned (August 2017)",
+    "posts": "中央军委委员、军委政治工作部主任"
+   },
+   "highest_rank_held": {
+    "rank": "CMC member",
+    "posts": "中央军委委员、军委政治工作部主任"
+   },
+   "rank_evidence": [
+    {
+     "label": "not in corpus",
+     "note": "post recalled; the corpus texts name him only in lists of cases"
+    }
+   ],
+   "status": "died November 2017 while under investigation; expelled posthumously (both web or recalled)",
+   "stated_grounds": {
+    "zh": "严重违纪违法案件；腐化变质高级政工将领",
+    "en": "Serious violations of discipline and law; a degenerate senior political-work general.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 12651498,
+      "quote": "坚决查处郭伯雄、徐才厚、房峰辉、张阳等严重违纪违法案件并彻底肃清其流毒影响",
+      "verified": true,
+      "where": "body",
+      "site": "gov",
+      "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+      "doc_date": "2021-11-16",
+      "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 900224096,
+      "quote": "严肃查处徐才厚、张阳等腐化变质高级政工将领",
+      "verified": true,
+      "where": "body",
+      "site": "studytimes",
+      "url": "https://www.studytimes.cn/llsd/202503/t20250328_78407.html",
+      "doc_date": "2025-03-28",
+      "doc_title": "坚决扛起人民军队政治机关制使命责任"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2017-11-23",
+     "action": "died",
+     "detail_en": "Died by suicide at home while under investigation (announced 28 Nov 2017).",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "recalled from general knowledge; not searched"
+      }
+     ]
+    },
+    {
+     "date": "2018-10-16",
+     "action": "expelled",
+     "detail_en": "Expelled posthumously, announced with Fang Fenghui.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "not in corpus",
+       "note": "search summary only (non-official relay); no URL given"
+      }
+     ]
+    },
+    {
+     "date": "2021-11-16",
+     "action": "named_in_party_resolution",
+     "detail_en": "The third historical resolution names his case.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 12651498,
+       "quote": "坚决查处郭伯雄、徐才厚、房峰辉、张阳等严重违纪违法案件并彻底肃清其流毒影响",
+       "verified": true,
+       "where": "body",
+       "site": "gov",
+       "url": "http://www.gov.cn/zhengce/2021-11/16/content_5651269.htm",
+       "doc_date": "2021-11-16",
+       "doc_title": "中共中央关于党的百年奋斗重大成就和历史经验的决议"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "17th-18th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "1 of 3"
+  },
+  {
+   "id": "miao-hua",
+   "name_cn": "苗华",
+   "name_en": "Miao Hua",
+   "tier": "CMC member",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "CMC member (not classed as 副国级 here)",
+    "held": "in office when suspended (November 2024)",
+    "posts": "中央军委委员、军委政治工作部主任"
+   },
+   "highest_rank_held": {
+    "rank": "CMC member",
+    "posts": "中央军委委员、军委政治工作部主任"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 581473,
+     "quote": "中央军委委员、中央军委政治工作部主任苗华",
+     "verified": true,
+     "where": "body",
+     "site": "heyuan",
+     "url": "https://www.gov.cn/yaowen/liebiao/202312/content_6922448.htm",
+     "doc_date": "2023-12-27",
+     "doc_title": "中共中央举行纪念毛泽东同志诞辰130周年座谈会 习近平发表重要讲话"
+    }
+   ],
+   "status": "expelled from Party and army (web only: the corpus holds no document on his case)",
+   "stated_grounds": {
+    "zh": "(语料库无)",
+    "en": "Not in corpus. Web: serious violations of Party discipline, suspected serious duty crimes.",
+    "evidence": [
+     {
+      "label": "web, not in corpus",
+      "url": "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
+      "fetched": true,
+      "note": "Xinhua 17 Oct 2025; fetched"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2024-11-28",
+     "action": "suspended",
+     "detail_en": "Defence ministry: suspended pending examination for suspected serious violations of discipline.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://m.mp.oeeee.com/a/BAAFRD0000202411281029486.html",
+       "fetched": false,
+       "note": "Southern Metropolis Daily relay of the ministry briefing. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2025-10-17",
+     "action": "expelled",
+     "detail_en": "Defence ministry: expelled from Party and army with eight others.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
+       "fetched": true,
+       "note": "Xinhua; fetched"
+      }
+     ]
+    },
+    {
+     "date": "2025-10-23",
+     "action": "expulsion_confirmed_by_plenum",
+     "detail_en": "Fourth Plenum of the 20th Central Committee confirms the expulsion.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
+       "fetched": true,
+       "note": "12371.cn; fetched"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "19th-20th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "corpus_verified": false,
+   "events_with_corpus_evidence": "0 of 3"
+  },
+  {
+   "id": "liu-zhenli",
+   "name_cn": "刘振立",
+   "name_en": "Liu Zhenli",
+   "tier": "CMC member",
+   "removal_type": "a",
+   "rank_at_removal": {
+    "rank": "CMC member (not classed as 副国级 here)",
+    "held": "in office",
+    "posts": "中央军委委员、军委联合参谋部参谋长"
+   },
+   "highest_rank_held": {
+    "rank": "CMC member",
+    "posts": "中央军委委员、军委联合参谋部参谋长"
+   },
+   "rank_evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900148464,
+     "quote": "中央军委委员、军委联合参谋部原参谋长刘振立",
+     "verified": true,
+     "where": "body",
+     "site": "qstheory",
+     "url": "http://www.qstheory.cn/20260921/48678bf347cf4ffeb695f320a9700af1/c.html",
+     "doc_date": "2026-09-21",
+     "doc_title": "张又侠、刘振立严重违纪违法被开除党籍军籍"
+    }
+   ],
+   "status": "expelled from Party and army; referred to the military procuratorate",
+   "stated_grounds": {
+    "zh": "同张又侠 (同一通报)",
+    "en": "Same release and wording as Zhang Youxia.",
+    "evidence": [
+     {
+      "label": "corpus",
+      "doc_id": 900148464,
+      "quote": "严重违反政治纪律和政治规矩，搞团团伙伙，对党不忠诚不老实",
+      "verified": true,
+      "where": "body",
+      "site": "qstheory",
+      "url": "http://www.qstheory.cn/20260921/48678bf347cf4ffeb695f320a9700af1/c.html",
+      "doc_date": "2026-09-21",
+      "doc_title": "张又侠、刘振立严重违纪违法被开除党籍军籍"
+     },
+     {
+      "label": "corpus",
+      "doc_id": 900148464,
+      "quote": "涉嫌严重职务犯罪，政治问题和经济问题交织，贪腐敛财与失职渎职并存",
+      "verified": true,
+      "where": "body",
+      "site": "qstheory",
+      "url": "http://www.qstheory.cn/20260921/48678bf347cf4ffeb695f320a9700af1/c.html",
+      "doc_date": "2026-09-21",
+      "doc_title": "张又侠、刘振立严重违纪违法被开除党籍军籍"
+     }
+    ]
+   },
+   "events": [
+    {
+     "date": "2026-01-24",
+     "action": "investigation_announced",
+     "detail_en": "Defence ministry: case opened with Zhang Youxia.",
+     "establishes_removal": false,
+     "evidence": [
+      {
+       "label": "web, not in corpus",
+       "url": "https://cn.chinadaily.com.cn/a/202601/24/WS697478f6a310942cc499ca5d.html",
+       "fetched": false,
+       "note": "China Daily Chinese site. search-result URL, page not fetched; wording from the search summary"
+      }
+     ]
+    },
+    {
+     "date": "2026-08-28",
+     "action": "removed_from_post",
+     "detail_en": "NPC Standing Committee removes him as member of the state Central Military Commission; recalled as NPC deputy.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900122164,
+       "quote": "免去刘振立的中华人民共和国中央军事委员会委员职务",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/2026-08/28/content_571624.html",
+       "doc_date": "2026-08-28",
+       "doc_title": "全国人民代表大会常务委员会决定免职的名单"
+      },
+      {
+       "label": "corpus",
+       "doc_id": 900122163,
+       "quote": "中央军委联合参谋部军人代表大会决定罢免刘振立的第十四届全国人民代表大会代表职务",
+       "verified": true,
+       "where": "body",
+       "site": "stdaily",
+       "url": "https://www.stdaily.com/web/2026-08/28/content_571625.html",
+       "doc_date": "2026-08-28",
+       "doc_title": "全国人民代表大会常务委员会公告〔十四届〕第十九号"
+      }
+     ]
+    },
+    {
+     "date": "2026-09-21",
+     "action": "expelled",
+     "detail_en": "Expelled from the Party; army expulsion decided earlier.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900148464,
+       "quote": "决定给予张又侠、刘振立开除党籍处分",
+       "verified": true,
+       "where": "body",
+       "site": "qstheory",
+       "url": "http://www.qstheory.cn/20260921/48678bf347cf4ffeb695f320a9700af1/c.html",
+       "doc_date": "2026-09-21",
+       "doc_title": "张又侠、刘振立严重违纪违法被开除党籍军籍"
+      }
+     ]
+    },
+    {
+     "date": "2026-10-29",
+     "action": "expulsion_confirmed_by_plenum",
+     "detail_en": "Fifth Plenum of the 20th Central Committee confirms the expulsion.",
+     "establishes_removal": true,
+     "evidence": [
+      {
+       "label": "corpus",
+       "doc_id": 900206931,
+       "quote": "确认中央政治局之前作出的给予马兴瑞、张又侠、刘振立、蓝天立、刘建超、王莉霞、金壮龙、雷凡培、易会满、王祥喜、孙绍骋、王仁华、刘青松、黄铭、李桥铭、李伟、张红兵、汪海江、张林、王鹏、刘发庆、杨诚、钟绍军、赵晓哲、费东斌、吴胜华、余剑锋、袁洁、张忠阳、温刚、金东寒、方红卫、方永祥开除党籍处分，给予李云泽撤销党内职务处分",
+       "verified": true,
+       "where": "body",
+       "site": "xinhua",
+       "url": "https://www.news.cn/politics/20261029/1ed1fdb0c2c9490385fbc74a9989f5cc/c.html",
+       "doc_date": "2026-10-29",
+       "doc_title": "受权发布丨中国共产党第二十届中央委员会第五次全体会议公报"
+      }
+     ]
+    }
+   ],
+   "officials_db": {
+    "present": true,
+    "cc_congresses": "19th-20th CC",
+    "is_politburo": 0,
+    "is_psc": 0
+   },
+   "flags": [],
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "3 of 4"
+  }
+ ],
+ "cc_expulsions": [
+  {
+   "plenum": "18-4",
+   "date": "2014-10-23",
+   "congress": 18,
+   "expelled": [
+    "李东生",
+    "蒋洁敏",
+    "杨金山",
+    "王永春",
+    "李春城",
+    "万庆良"
+   ],
+   "other": [],
+   "evidence": [
+    {
+     "label": "web, not in corpus",
+     "url": "https://www.rmzxw.com.cn/sy/yw/2014/10/23/396884.shtml",
+     "fetched": false,
+     "note": "CPPCC Daily site reprint of the communique. search-result URL, page not fetched; wording from the search summary"
+    }
+   ]
+  },
+  {
+   "plenum": "18-5",
+   "date": "2015-10-29",
+   "congress": 18,
+   "expelled": [
+    "令计划",
+    "周本顺",
+    "杨栋梁",
+    "朱明国",
+    "王敏",
+    "陈川平",
+    "仇和",
+    "杨卫泽",
+    "潘逸阳",
+    "余远辉"
+   ],
+   "other": [],
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 12760523,
+     "quote": "确认中央政治局之前作出的给予令计划、周本顺、杨栋梁、朱明国、王敏、陈川平、仇和、杨卫泽、潘逸阳、余远辉开除党籍的处分",
+     "verified": true,
+     "where": "body",
+     "site": "cac",
+     "url": "https://www.cac.gov.cn/2015-10/30/c_1116986257.htm",
+     "doc_date": "2015-10-30",
+     "doc_title": "授权发布：中国共产党第十八届中央委员会第五次全体会议公报"
+    }
+   ]
+  },
+  {
+   "plenum": "18-6",
+   "date": "2016-10-27",
+   "congress": 18,
+   "expelled": [
+    "王珉",
+    "吕锡文",
+    "范长秘",
+    "牛志忠"
+   ],
+   "other": [],
+   "evidence": [
+    {
+     "label": "web, not in corpus",
+     "url": "https://chinadigitaltimes.net/chinese/543552.html",
+     "fetched": false,
+     "note": "non-official mirror of the Xinhua communique text; no official URL retrieved. search-result URL, page not fetched; wording from the search summary"
+    }
+   ]
+  },
+  {
+   "plenum": "18-7",
+   "date": "2017-10-14",
+   "congress": 18,
+   "expelled": null,
+   "other": [],
+   "evidence": [
+    {
+     "label": "not in corpus",
+     "note": "communique not in corpus; search did not return the confirmed list, so no names or count are recorded"
+    }
+   ]
+  },
+  {
+   "plenum": "19th CC, all plenums",
+   "date": null,
+   "congress": 19,
+   "expelled": null,
+   "other": [],
+   "evidence": [
+    {
+     "label": "not in corpus",
+     "note": "no 19th CC plenum communique with a body and an expulsion paragraph is held (sixth plenum body held, no expulsions in it; seventh plenum rows have empty bodies); not searched on the web"
+    }
+   ]
+  },
+  {
+   "plenum": "20-3",
+   "date": "2024-07-18",
+   "congress": 20,
+   "expelled": [
+    "李尚福",
+    "李玉超",
+    "孙金明"
+   ],
+   "other": [
+    {
+     "name": "秦刚",
+     "action": "resignation accepted, removed as Central Committee member",
+     "membership": "full"
+    }
+   ],
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 12726515,
+     "quote": "确认中央政治局之前作出的给予李尚福、李玉超、孙金明开除党籍的处分",
+     "verified": true,
+     "where": "body",
+     "site": "stdaily",
+     "url": "https://www.stdaily.com/web/2024-07/18/content_1967580.html",
+     "doc_date": "2024-07-18",
+     "doc_title": "中国共产党第二十届中央委员会第三次全体会议公报"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 12726515,
+     "quote": "接受秦刚同志辞职申请，免去秦刚同志中央委员会委员职务",
+     "verified": true,
+     "where": "body",
+     "site": "stdaily",
+     "url": "https://www.stdaily.com/web/2024-07/18/content_1967580.html",
+     "doc_date": "2024-07-18",
+     "doc_title": "中国共产党第二十届中央委员会第三次全体会议公报"
+    }
+   ],
+   "membership": {
+    "李尚福": "full",
+    "李玉超": "full",
+    "孙金明": "alternate"
+   },
+   "membership_source": {
+    "full_list_doc": 900207119,
+    "alternate_list_doc": 900207120,
+    "method": "exact name token in the list body, parenthetical notes stripped"
+   }
+  },
+  {
+   "plenum": "20-4",
+   "date": "2025-10-23",
+   "congress": 20,
+   "expelled": [
+    "何卫东",
+    "苗华",
+    "唐仁健",
+    "金湘军",
+    "何宏军",
+    "王秀斌",
+    "林向阳",
+    "秦树桐",
+    "袁华智",
+    "王春宁",
+    "李石松",
+    "杨发森",
+    "朱芝松",
+    "张凤中"
+   ],
+   "other": [],
+   "evidence": [
+    {
+     "label": "web, not in corpus",
+     "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
+     "fetched": true,
+     "note": "12371.cn full communique; fetched. The corpus holds this communique only as rows with empty bodies (stic 12454787)"
+    }
+   ],
+   "membership": {
+    "何卫东": "full",
+    "苗华": "full",
+    "唐仁健": "full",
+    "金湘军": "full",
+    "何宏军": "full",
+    "王秀斌": "full",
+    "林向阳": "full",
+    "秦树桐": "full",
+    "袁华智": "full",
+    "王春宁": "full",
+    "李石松": "alternate",
+    "杨发森": "alternate",
+    "朱芝松": "alternate",
+    "张凤中": "alternate"
+   },
+   "membership_source": {
+    "full_list_doc": 900207119,
+    "alternate_list_doc": 900207120,
+    "method": "exact name token in the list body, parenthetical notes stripped"
+   }
+  },
+  {
+   "plenum": "20-5",
+   "date": "2026-10-29",
+   "congress": 20,
+   "expelled": [
+    "马兴瑞",
+    "张又侠",
+    "刘振立",
+    "蓝天立",
+    "刘建超",
+    "王莉霞",
+    "金壮龙",
+    "雷凡培",
+    "易会满",
+    "王祥喜",
+    "孙绍骋",
+    "王仁华",
+    "刘青松",
+    "黄铭",
+    "李桥铭",
+    "李伟",
+    "张红兵",
+    "汪海江",
+    "张林",
+    "王鹏",
+    "刘发庆",
+    "杨诚",
+    "钟绍军",
+    "赵晓哲",
+    "费东斌",
+    "吴胜华",
+    "余剑锋",
+    "袁洁",
+    "张忠阳",
+    "温刚",
+    "金东寒",
+    "方红卫",
+    "方永祥"
+   ],
+   "other": [
+    {
+     "name": "李云泽",
+     "action": "removed from Party posts (撤销党内职务)",
+     "membership": "alternate"
+    }
+   ],
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900206931,
+     "quote": "确认中央政治局之前作出的给予马兴瑞、张又侠、刘振立、蓝天立、刘建超、王莉霞、金壮龙、雷凡培、易会满、王祥喜、孙绍骋、王仁华、刘青松、黄铭、李桥铭、李伟、张红兵、汪海江、张林、王鹏、刘发庆、杨诚、钟绍军、赵晓哲、费东斌、吴胜华、余剑锋、袁洁、张忠阳、温刚、金东寒、方红卫、方永祥开除党籍处分，给予李云泽撤销党内职务处分",
+     "verified": true,
+     "where": "body",
+     "site": "xinhua",
+     "url": "https://www.news.cn/politics/20261029/1ed1fdb0c2c9490385fbc74a9989f5cc/c.html",
+     "doc_date": "2026-10-29",
+     "doc_title": "受权发布丨中国共产党第二十届中央委员会第五次全体会议公报"
+    }
+   ],
+   "membership": {
+    "马兴瑞": "full",
+    "张又侠": "full",
+    "刘振立": "full",
+    "蓝天立": "full",
+    "刘建超": "full",
+    "王莉霞": "full",
+    "金壮龙": "full",
+    "雷凡培": "full",
+    "易会满": "full",
+    "王祥喜": "full",
+    "孙绍骋": "full",
+    "王仁华": "full",
+    "刘青松": "full",
+    "黄铭": "full",
+    "李桥铭": "full",
+    "李伟": "full",
+    "张红兵": "full",
+    "汪海江": "full",
+    "张林": "full",
+    "王鹏": "full",
+    "刘发庆": "full",
+    "杨诚": "full",
+    "钟绍军": "full",
+    "赵晓哲": "full",
+    "费东斌": "alternate",
+    "吴胜华": "alternate",
+    "余剑锋": "alternate",
+    "袁洁": "alternate",
+    "张忠阳": "alternate",
+    "温刚": "alternate",
+    "金东寒": "alternate",
+    "方红卫": "alternate",
+    "方永祥": "alternate"
+   },
+   "membership_source": {
+    "full_list_doc": 900207119,
+    "alternate_list_doc": 900207120,
+    "method": "exact name token in the list body, parenthetical notes stripped"
+   }
+  }
+ ],
+ "ladder": [
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "case opened (立案审查)",
+   "period": "18th to 19th Congress (Nov 2012 to Oct 2017)",
+   "value": "440",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900220240,
+     "quote": "立案审查的省军级以上党员干部及其他中管干部440人",
+     "verified": true,
+     "where": "body",
+     "site": "qiushi",
+     "url": "http://www.qstheory.cn/dukan/qs/2021-07/16/c_1127657180.htm",
+     "doc_date": "2021-07-16",
+     "doc_title": "中国共产党为什么“能”"
+    }
+   ]
+  },
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "of which 18th CC full and alternate members / CCDI members",
+   "period": "18th to 19th Congress",
+   "value": "43 / 9",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900235641,
+     "quote": "其中十八届中央委员、候补委员43人，中央纪委委员9人",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2021/0805/620886.shtml",
+     "doc_date": "2021-08-05",
+     "doc_title": "中国共产党的常青之道"
+    }
+   ]
+  },
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "case opened (立案审查)",
+   "period": "Nov 2012 to end of 2019",
+   "value": "414",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900220715,
+     "quote": "立案审查中管干部414人、厅局级干部1.8万人、县处级干部13.7万人",
+     "verified": true,
+     "where": "body",
+     "site": "qiushi",
+     "url": "http://www.qstheory.cn/dukan/qs/2020-05/01/c_1125923872.htm",
+     "doc_date": "2020-05-01",
+     "doc_title": "把“严”的主基调长期坚持下去"
+    }
+   ],
+   "note": "Lower than the 440 reported for the shorter 2012-2017 window. The sentence sits in a passage on the eight-point rules; the two figures are not reconcilable from the corpus and are reported side by side, not combined."
+  },
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "case opened (立案审查调查)",
+   "period": "19th to 20th Congress (Oct 2017 to Oct 2022)",
+   "value": "261",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900219708,
+     "quote": "五年来，中央纪委国家监委立案审查调查中管干部261人",
+     "verified": true,
+     "where": "body",
+     "site": "qiushi",
+     "url": "http://www.qstheory.cn/dukan/qs/2022-11/01/c_1129089158.htm",
+     "doc_date": "2022-11-01",
+     "doc_title": "十九届中央纪律检查委员会向中国共产党第二十次全国代表大会的工作报告"
+    }
+   ]
+  },
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "case opened (立案审查调查)",
+   "period": "18th to 20th Congress (Nov 2012 to Oct 2022)",
+   "value": "553",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900234930,
+     "quote": "立案审查调查中管干部553人",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2022/1103/659464.shtml",
+     "doc_date": "2022-11-03",
+     "doc_title": "新时代党的自我革命的成功经验、制度保障与实践要求"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900230597,
+     "quote": "含十八届中央委员、中央候补委员49人，十八届中央纪委委员12人",
+     "verified": true,
+     "where": "body",
+     "site": "cssn",
+     "url": "https://www.cssn.cn/skqns/skqns_tt/202308/t20230823_5680875.shtml",
+     "doc_date": "2023-08-23",
+     "doc_title": "冯维：坚决打赢反腐败斗争攻坚战持久战"
+    }
+   ]
+  },
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "case opened (立案审查调查), by year",
+   "period": "2023 / 2024 / 2025",
+   "value": "87 / 92 / 181",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900198060,
+     "quote": "中央纪委国家监委分别立案审查调查中管干部87人、92人、181人",
+     "verified": true,
+     "where": "body",
+     "site": "chinapeace",
+     "url": "http://www.chinapeace.gov.cn/chinapeace/c100007/2026-10/24/content_12860889.shtml",
+     "doc_date": "2026-10-24",
+     "doc_title": "以习近平同志为核心的党中央引领新时代全面从严治党纪实"
+    }
+   ]
+  },
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "investigation publicly announced (a narrower measure than cases opened)",
+   "period": "2024 / 2025",
+   "value": "58 / 65",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 12708830,
+     "quote": "58名中管干部接受审查调查",
+     "verified": true,
+     "where": "body",
+     "site": "people",
+     "url": "http://opinion.people.com.cn/n1/2025/0210/c1003-40415337.html",
+     "doc_date": "2025-02-10",
+     "doc_title": "把握“两个历史主动”，创造新的历史伟业（人民观点）"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900239721,
+     "quote": "全年通报接受审查调查的中管干部65人",
+     "verified": true,
+     "where": "body",
+     "site": "gmrb_theory",
+     "url": "https://epaper.gmw.cn/gmrb/html/content/202602/04/content_5641.html",
+     "doc_date": "2026-02-04",
+     "doc_title": "更加清醒坚定地推进反腐败斗争"
+    }
+   ]
+  },
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "case opened (立案审查调查), cumulative",
+   "period": "Nov 2012 to end of 2025",
+   "value": "more than 900",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900218138,
+     "quote": "立案审查调查中管干部超过900人",
+     "verified": true,
+     "where": "body",
+     "site": "qiushi",
+     "url": "http://www.qstheory.cn/20260630/b5cab48a04d44a3496d36fd786a2118b/c.html",
+     "doc_date": "2026-07-01",
+     "doc_title": "加强‌新时代党的建设的根本遵循"
+    }
+   ]
+  },
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "disciplined (处分), cumulative",
+   "period": "Nov 2012 to Sept 2026",
+   "value": "963",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900206970,
+     "quote": "其中处分中管干部963人",
+     "verified": true,
+     "where": "body",
+     "site": "ce",
+     "url": "http://www.ce.cn/xwzx/gnsz/gdxw/202611/t20261105_3284081.shtml",
+     "doc_date": "2026-11-05",
+     "doc_title": "坚定走好中国特色反腐败之路（学习贯彻党的二十届五中全会精神）"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900204091,
+     "quote": "共立案810.5万件，处分792.2万人，其中处分中管干部963人",
+     "verified": true,
+     "where": "body",
+     "site": "stdaily",
+     "url": "https://www.stdaily.com/web/2026-10/30/content_605614.html",
+     "doc_date": "2026-10-30",
+     "doc_title": "进一步开创新时代管党治党、兴党强党新局面——中共中央举行新闻发布会解读党的二十届五中全会精神"
+    }
+   ]
+  },
+  {
+   "rank_span": "省部级及以上 (provincial-ministerial rank and above: 副部级, 正部级, 副国级, 正国级)",
+   "measure": "case opened (立案审查调查)",
+   "period": "Dec 2012 to May 2021",
+   "value": "392",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900235653,
+     "quote": "立案审查调查省部级以上领导干部392人、厅局级干部2.2万人、县处级干部17万余人、乡科级干部61.6万人",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2021/0805/620905.shtml",
+     "doc_date": "2021-08-05",
+     "doc_title": "百年大党推进“刀刃向内”自我革命的逻辑理路"
+    }
+   ]
+  },
+  {
+   "rank_span": "省部级及以上 (provincial-ministerial rank and above: 副部级, 正部级, 副国级, 正国级)",
+   "measure": "disciplined (处分)",
+   "period": "2022",
+   "value": "53",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900233963,
+     "quote": "共处分省部级干部53人",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2023/0428/672216.shtml",
+     "doc_date": "2023-04-28",
+     "doc_title": "“微腐败”的易发领域及诱因"
+    }
+   ]
+  },
+  {
+   "rank_span": "省部级及以上 (provincial-ministerial rank and above: 副部级, 正部级, 副国级, 正国级)",
+   "measure": "case opened / disciplined",
+   "period": "Jan to June 2026",
+   "value": "50 / 74",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900070788,
+     "quote": "立案省部级及以上干部50人、厅局级干部2773人、县处级干部2.3万人、乡科级干部7.5万人",
+     "verified": true,
+     "where": "body",
+     "site": "guancha",
+     "url": "https://www.guancha.cn/politics/2026_07_25_825017.shtml",
+     "doc_date": "2026-07-25",
+     "doc_title": "2026年上半年全国纪检监察机关处分41.2万人"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900070788,
+     "quote": "处分省部级及以上干部74人",
+     "verified": true,
+     "where": "body",
+     "site": "guancha",
+     "url": "https://www.guancha.cn/politics/2026_07_25_825017.shtml",
+     "doc_date": "2026-07-25",
+     "doc_title": "2026年上半年全国纪检监察机关处分41.2万人"
+    }
+   ]
+  },
+  {
+   "rank_span": "省部级及以上 (provincial-ministerial rank and above: 副部级, 正部级, 副国级, 正国级)",
+   "measure": "case opened / disciplined",
+   "period": "Jan to Sept 2026",
+   "value": "73 / 105",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900200662,
+     "quote": "立案省部级及以上干部73人、厅局级干部4203人、县处级干部3.4万人、乡科级干部11.4万人",
+     "verified": true,
+     "where": "body",
+     "site": "guancha",
+     "url": "https://www.guancha.cn/ZhengZhi/2026_10_27_905909.shtml",
+     "doc_date": "2026-10-27",
+     "doc_title": "通报：1至9月，全国纪检监察机关立案省部级及以上干部73人"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900200662,
+     "quote": "处分省部级及以上干部105人",
+     "verified": true,
+     "where": "body",
+     "site": "guancha",
+     "url": "https://www.guancha.cn/ZhengZhi/2026_10_27_905909.shtml",
+     "doc_date": "2026-10-27",
+     "doc_title": "通报：1至9月，全国纪检监察机关立案省部级及以上干部73人"
+    }
+   ]
+  },
+  {
+   "rank_span": "省部级及以上 (provincial-ministerial rank and above: 副部级, 正部级, 副国级, 正国级)",
+   "measure": "criminal cases handled by procuratorates",
+   "period": "2014 (SPP work report, March 2015)",
+   "value": "28",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900003374,
+     "quote": "依法办理周永康、徐才厚、蒋洁敏、李东生、李崇禧、金道铭、姚木根等28名省部级以上干部犯罪案件",
+     "verified": true,
+     "where": "body",
+     "site": "chinalawtranslate",
+     "url": "https://www.chinalawtranslate.com/2015sppworkreport/",
+     "doc_date": "2015-03-12",
+     "doc_title": "2015年 最高人民检察院工作报告"
+    }
+   ]
+  },
+  {
+   "rank_span": "省部级及以上 (provincial-ministerial rank and above: 副部级, 正部级, 副国级, 正国级)",
+   "measure": "duty-crime investigations opened by procuratorates (pre-campaign baseline)",
+   "period": "2008 to 2012 (SPP work report, March 2013)",
+   "value": "30",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900000631,
+     "quote": "省部级以上30人",
+     "verified": true,
+     "where": "body",
+     "site": "chinalawtranslate",
+     "url": "https://www.chinalawtranslate.com/2013-spp-work-report/",
+     "doc_date": "2013-03-25",
+     "doc_title": "2013 Spp Work Report"
+    }
+   ],
+   "note": "Before the 18th Congress; a baseline, not part of the campaign count."
+  },
+  {
+   "rank_span": "厅局级 (bureau-director rank: 正厅级 and 副厅级 together)",
+   "measure": "case opened",
+   "period": "Dec 2012 to May 2021",
+   "value": "22,000",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900235653,
+     "quote": "厅局级干部2.2万人",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2021/0805/620905.shtml",
+     "doc_date": "2021-08-05",
+     "doc_title": "百年大党推进“刀刃向内”自我革命的逻辑理路"
+    }
+   ]
+  },
+  {
+   "rank_span": "厅局级",
+   "measure": "disciplined (处分)",
+   "period": "18th to 20th Congress",
+   "value": "more than 25,000",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900234930,
+     "quote": "处分厅局级干部2.5万多人、县处级干部18.2万多人",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2022/1103/659464.shtml",
+     "doc_date": "2022-11-03",
+     "doc_title": "新时代党的自我革命的成功经验、制度保障与实践要求"
+    }
+   ]
+  },
+  {
+   "rank_span": "厅局级",
+   "measure": "case opened",
+   "period": "2025",
+   "value": "5,016",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900239721,
+     "quote": "立案厅局级干部5016人、县处级干部4.1万人、乡科级干部13.7万人",
+     "verified": true,
+     "where": "body",
+     "site": "gmrb_theory",
+     "url": "https://epaper.gmw.cn/gmrb/html/content/202602/04/content_5641.html",
+     "doc_date": "2026-02-04",
+     "doc_title": "更加清醒坚定地推进反腐败斗争"
+    }
+   ]
+  },
+  {
+   "rank_span": "厅局级",
+   "measure": "case opened",
+   "period": "Jan to Sept 2026",
+   "value": "4,203",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900200662,
+     "quote": "厅局级干部4203人",
+     "verified": true,
+     "where": "body",
+     "site": "guancha",
+     "url": "https://www.guancha.cn/ZhengZhi/2026_10_27_905909.shtml",
+     "doc_date": "2026-10-27",
+     "doc_title": "通报：1至9月，全国纪检监察机关立案省部级及以上干部73人"
+    }
+   ]
+  },
+  {
+   "rank_span": "县处级 (county-division rank)",
+   "measure": "case opened",
+   "period": "Dec 2012 to May 2021",
+   "value": "more than 170,000",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900235653,
+     "quote": "县处级干部17万余人",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2021/0805/620905.shtml",
+     "doc_date": "2021-08-05",
+     "doc_title": "百年大党推进“刀刃向内”自我革命的逻辑理路"
+    }
+   ]
+  },
+  {
+   "rank_span": "县处级",
+   "measure": "disciplined (处分)",
+   "period": "18th to 20th Congress",
+   "value": "more than 182,000",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900234930,
+     "quote": "县处级干部18.2万多人",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2022/1103/659464.shtml",
+     "doc_date": "2022-11-03",
+     "doc_title": "新时代党的自我革命的成功经验、制度保障与实践要求"
+    }
+   ]
+  },
+  {
+   "rank_span": "县处级",
+   "measure": "case opened",
+   "period": "2025 / Jan to Sept 2026",
+   "value": "41,000 / 34,000",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900239721,
+     "quote": "县处级干部4.1万人",
+     "verified": true,
+     "where": "body",
+     "site": "gmrb_theory",
+     "url": "https://epaper.gmw.cn/gmrb/html/content/202602/04/content_5641.html",
+     "doc_date": "2026-02-04",
+     "doc_title": "更加清醒坚定地推进反腐败斗争"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900200662,
+     "quote": "县处级干部3.4万人",
+     "verified": true,
+     "where": "body",
+     "site": "guancha",
+     "url": "https://www.guancha.cn/ZhengZhi/2026_10_27_905909.shtml",
+     "doc_date": "2026-10-27",
+     "doc_title": "通报：1至9月，全国纪检监察机关立案省部级及以上干部73人"
+    }
+   ]
+  },
+  {
+   "rank_span": "乡科级 (township-section rank)",
+   "measure": "case opened",
+   "period": "Dec 2012 to May 2021",
+   "value": "616,000",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900235653,
+     "quote": "乡科级干部61.6万人",
+     "verified": true,
+     "where": "body",
+     "site": "rmlt",
+     "url": "https://www.rmlt.com.cn/2021/0805/620905.shtml",
+     "doc_date": "2021-08-05",
+     "doc_title": "百年大党推进“刀刃向内”自我革命的逻辑理路"
+    }
+   ]
+  },
+  {
+   "rank_span": "乡科级",
+   "measure": "case opened",
+   "period": "2025 / Jan to Sept 2026",
+   "value": "137,000 / 114,000",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900239721,
+     "quote": "乡科级干部13.7万人",
+     "verified": true,
+     "where": "body",
+     "site": "gmrb_theory",
+     "url": "https://epaper.gmw.cn/gmrb/html/content/202602/04/content_5641.html",
+     "doc_date": "2026-02-04",
+     "doc_title": "更加清醒坚定地推进反腐败斗争"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900200662,
+     "quote": "乡科级干部11.4万人",
+     "verified": true,
+     "where": "body",
+     "site": "guancha",
+     "url": "https://www.guancha.cn/ZhengZhi/2026_10_27_905909.shtml",
+     "doc_date": "2026-10-27",
+     "doc_title": "通报：1至9月，全国纪检监察机关立案省部级及以上干部73人"
+    }
+   ]
+  },
+  {
+   "rank_span": "all ranks",
+   "measure": "cases opened / persons disciplined, cumulative",
+   "period": "Nov 2012 to Sept 2026",
+   "value": "8.105 million / 7.922 million",
+   "kind": "official_aggregate",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900204091,
+     "quote": "共立案810.5万件，处分792.2万人",
+     "verified": true,
+     "where": "body",
+     "site": "stdaily",
+     "url": "https://www.stdaily.com/web/2026-10/30/content_605614.html",
+     "doc_date": "2026-10-30",
+     "doc_title": "进一步开创新时代管党治党、兴党强党新局面——中共中央举行新闻发布会解读党的二十届五中全会精神"
+    }
+   ]
+  },
+  {
+   "rank_span": "中管干部 (centrally managed cadres: roughly 副部级 and above, plus some posts below it)",
+   "measure": "CCDI investigation-announcement headlines HELD in the corpus (distinct subjects)",
+   "period": "2026 (none dated earlier)",
+   "value": "12",
+   "kind": "own_tally",
+   "evidence": [
+    {
+     "label": "own tally",
+     "script": "scripts/rnd/purges/tally_announcements.py",
+     "note": "title LIKE '%接受中央纪委国家监委%调查%', 15 title rows, 12 distinct subjects, all 2026"
+    }
+   ],
+   "note": "Known undercount: the official figure for cases opened at provincial-ministerial rank and above in Jan to Sept 2026 is 73, and the corpus holds no announcement at all before 2026. The tally measures the crawl, not the campaign. Never add it to an official aggregate."
+  }
+ ],
+ "institutional_changes": [
+  {
+   "date": "2014-10",
+   "system": "政法 / legal system",
+   "change": "Fourth Plenum decision on comprehensively advancing law-based governance.",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900164898,
+     "quote": "中共中央关于全面推进依法治国若干重大问题的决定",
+     "verified": true,
+     "where": "body",
+     "site": "gov",
+     "url": "https://www.gov.cn/zhengce/2014-10/28/content_2771946.htm",
+     "doc_date": "2014-10-28",
+     "doc_title": "中共中央关于全面推进依法治国若干重大问题的决定"
+    }
+   ]
+  },
+  {
+   "date": "2015-11",
+   "system": "军队 / CMC",
+   "change": "Military reform launched (CMC reform work conference); the four general departments become 15 CMC organs in January 2016.",
+   "evidence": [
+    {
+     "label": "not in corpus",
+     "note": "date recalled; the corpus holds only retrospective accounts"
+    }
+   ]
+  },
+  {
+   "date": "2016-02",
+   "system": "军队 / CMC",
+   "change": "Five theatre commands established.",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900089585,
+     "quote": "战区成立，标志着我军联合作战体系构建迈出历史性一步",
+     "note": "2026 retrospective; the 1 Feb 2016 date is recalled",
+     "verified": true,
+     "where": "body",
+     "site": "stdaily",
+     "url": "https://www.stdaily.com/web/gdxw/2026-08/05/content_559231.html",
+     "doc_date": "2026-08-05",
+     "doc_title": "制胜丨第六集《联战联胜》"
+    }
+   ]
+  },
+  {
+   "date": "2016-11",
+   "system": "纪检监察",
+   "change": "Supervision-commission pilot in Beijing, Shanxi and Zhejiang.",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900110621,
+     "quote": "开展国家监察体制改革试点方案",
+     "verified": true,
+     "where": "body",
+     "site": "bj",
+     "url": "https://www.beijing.gov.cn/zhengce/zcjd/201905/t20190523_77794.html",
+     "doc_date": "2016-11-08",
+     "doc_title": "中办印发《关于在北京市、山西省、浙江省开展国家监察体制改革试点方案》 部署在三省市设立各级监察委员会"
+    }
+   ]
+  },
+  {
+   "date": "2018-03",
+   "system": "党和国家机构",
+   "change": "Party and state institutional reform plan (National Supervisory Commission created; many leading groups become commissions).",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900164763,
+     "quote": "中共中央关于深化党和国家机构改革的决定",
+     "verified": true,
+     "where": "body",
+     "site": "gov",
+     "url": "https://www.gov.cn/zhengce/2018-03/04/content_5270704.htm",
+     "doc_date": "2018-03-04",
+     "doc_title": "中共中央关于深化党和国家机构改革的决定"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900164761,
+     "quote": "深化党和国家机构改革方案",
+     "verified": true,
+     "where": "body",
+     "site": "gov",
+     "url": "https://www.gov.cn/zhengce/2018-03/21/content_5276191.htm",
+     "doc_date": "2018-03-21",
+     "doc_title": "中共中央印发《深化党和国家机构改革方案》"
+    }
+   ]
+  },
+  {
+   "date": "2019-01",
+   "system": "政法",
+   "change": "Regulations on the Party's political-legal work issued.",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900164697,
+     "quote": "中国共产党政法工作条例",
+     "verified": true,
+     "where": "body",
+     "site": "gov",
+     "url": "https://www.gov.cn/zhengce/2019-01/18/content_5359135.htm",
+     "doc_date": "2019-01-18",
+     "doc_title": "中共中央印发《中国共产党政法工作条例》"
+    }
+   ]
+  },
+  {
+   "date": "2023-03",
+   "system": "党和国家机构",
+   "change": "Party and state institutional reform plan (Central Financial Commission, Central Society Work Department and others).",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 12651280,
+     "quote": "党和国家机构改革方案",
+     "verified": true,
+     "where": "body",
+     "site": "gov",
+     "url": "http://www.gov.cn/zhengce/2023-03/16/content_5747072.htm",
+     "doc_date": "2023-03-16",
+     "doc_title": "中共中央 国务院印发《党和国家机构改革方案》"
+    }
+   ]
+  },
+  {
+   "date": "2024-04",
+   "system": "军队 / CMC",
+   "change": "Information Support Force established; Strategic Support Force dissolved.",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 11440471,
+     "quote": "信息支援部队成立",
+     "note": "district committee study session of 2024-07-17 relaying the speech; the 19 April 2024 date is recalled",
+     "verified": true,
+     "where": "body",
+     "site": "szlg",
+     "url": "https://www.lg.gov.cn/gkmlpt/content/11/11440/post_11440471.html",
+     "doc_date": "2024-07-17",
+     "doc_title": "龙岗区委常委会召开会议"
+    }
+   ]
+  }
+ ],
+ "ties": [
+  {
+   "removed": [
+    "马兴瑞"
+   ],
+   "named": [
+    "李希"
+   ],
+   "tie_type": "same provincial leadership team",
+   "body": "广东省 (省长 and 省委书记)",
+   "period": "2017 to 2021 (dates recalled); corpus evidence 2018",
+   "corpus_counts": "58 documents name both, 26 in one sentence",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 164698,
+     "quote": "广东省委书记李希",
+     "verified": true,
+     "where": "body",
+     "site": "gd",
+     "url": "http://www.gd.gov.cn/gkmlpt/content/0/164/post_164698.html",
+     "doc_date": "2018-12-07",
+     "doc_title": "广东省人民政府 江西省人民政府关于第十二届泛珠三角区域合作与发展论坛暨经贸洽谈会情况的报告"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 164698,
+     "quote": "广东省省长马兴瑞",
+     "verified": true,
+     "where": "body",
+     "site": "gd",
+     "url": "http://www.gd.gov.cn/gkmlpt/content/0/164/post_164698.html",
+     "doc_date": "2018-12-07",
+     "doc_title": "广东省人民政府 江西省人民政府关于第十二届泛珠三角区域合作与发展论坛暨经贸洽谈会情况的报告"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "陈吉宁"
+   ],
+   "named": [
+    "蔡奇"
+   ],
+   "tie_type": "same municipal leadership team",
+   "body": "北京市 (市长 and 市委书记)",
+   "period": "2017 to 2022 (dates recalled); corpus evidence 2017",
+   "corpus_counts": "63 documents name both, 27 in one sentence",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900110206,
+     "quote": "蔡奇书记作出了重要批示，陈吉宁代市长做了专题部署",
+     "verified": true,
+     "where": "body",
+     "site": "bj",
+     "url": "https://www.beijing.gov.cn/zhengce/zcjd/201905/t20190523_78078.html",
+     "doc_date": "2017-09-27",
+     "doc_title": "深化改革创新 持续扩大开放 努力打造国际一流的营商环境高地"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "陈吉宁"
+   ],
+   "named": [
+    "朱忠明"
+   ],
+   "tie_type": "same municipal leadership team",
+   "body": "上海市 (市委书记 and 市委副书记、代市长)",
+   "period": "corpus evidence September 2026",
+   "corpus_counts": "19 documents name both, 5 in one sentence",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 900136712,
+     "quote": "市委书记陈吉宁，市委副书记、代市长朱忠明",
+     "verified": true,
+     "where": "body",
+     "site": "shb_edu",
+     "url": "https://edu.sh.gov.cn/xwzx_bsxw/20260910/7e25f7154d284a55a508c809ad1d05d9.html",
+     "doc_date": "2026-09-10",
+     "doc_title": "陈吉宁朱忠明与上海市优秀教师代表举行座谈"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "陈吉宁"
+   ],
+   "named": [
+    "陈杰"
+   ],
+   "tie_type": "same municipal government (identity of 陈杰 not confirmed against officials.db)",
+   "body": "上海市 (市委书记 and 副市长)",
+   "period": "corpus evidence September 2025",
+   "corpus_counts": "7 documents name both, 1 in one sentence",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 12695617,
+     "quote": "上海市委书记陈吉宁",
+     "verified": true,
+     "where": "body",
+     "site": "most",
+     "url": "https://www.most.gov.cn/kjbgz/202509/t20250921_194759.html",
+     "doc_date": "2025-09-21",
+     "doc_title": "“2024—2025中白科技创新年”闭幕式在沪成功举办"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 12695617,
+     "quote": "上海市副市长陈杰",
+     "verified": true,
+     "where": "body",
+     "site": "most",
+     "url": "https://www.most.gov.cn/kjbgz/202509/t20250921_194759.html",
+     "doc_date": "2025-09-21",
+     "doc_title": "“2024—2025中白科技创新年”闭幕式在沪成功举办"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "陈吉宁"
+   ],
+   "named": [
+    "李政"
+   ],
+   "tie_type": "co-mentioned only",
+   "body": "unknown",
+   "period": "n/a",
+   "corpus_counts": "8 documents name both, none in one sentence",
+   "evidence": [
+    {
+     "label": "not in corpus",
+     "note": "no same-sentence evidence; 李政 is not in officials.db and is a common name, so the identity is unresolved"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "马兴瑞",
+    "何卫东",
+    "张又侠",
+    "陈吉宁"
+   ],
+   "named": [
+    "刘国中",
+    "何立峰",
+    "黄坤明"
+   ],
+   "tie_type": "listed together among leaders on the rostrum (all were 20th Politburo members; the sentence itself is a seating list, not a membership list)",
+   "body": "十四届全国人大一次会议 opening, 2023-03-05",
+   "period": "March 2023",
+   "corpus_counts": "4 to 12 documents per pair",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 539350,
+     "quote": "在主席台就座的还有：马兴瑞、王毅、尹力、石泰峰、刘鹤、刘国中、许其亮、孙春兰、李书磊、杨晓渡、何卫东、何立峰、张又侠、张国清、陈文清、陈吉宁、陈敏尔、胡春华、袁家军、黄坤明",
+     "verified": true,
+     "where": "body",
+     "site": "heyuan",
+     "url": "http://www.gov.cn/xinwen/2023-03/06/content_5744885.htm",
+     "doc_date": "2023-03-06",
+     "doc_title": "十四届全国人大一次会议在京开幕"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "秦刚",
+    "李尚福"
+   ],
+   "named": [
+    "刘国中",
+    "何立峰",
+    "黄坤明"
+   ],
+   "tie_type": "listed together among leaders on the rostrum (秦刚 and 李尚福 as newly appointed State Councilors; 刘国中 and 何立峰 as Vice Premiers of the same State Council)",
+   "body": "十四届全国人大一次会议 closing, 2023-03-13",
+   "period": "March 2023",
+   "corpus_counts": "2 to 3 documents per pair",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 540795,
+     "quote": "在主席台就座的还有：马兴瑞、王毅、尹力、石泰峰、刘国中、李干杰、李书磊、何卫东、何立峰、张又侠、张国清、陈文清、陈吉宁、陈敏尔、袁家军、黄坤明、刘金国、王小洪、李尚福、吴政隆、谌贻琴、秦刚",
+     "verified": true,
+     "where": "body",
+     "site": "heyuan",
+     "url": "http://www.gov.cn/xinwen/2023-03/13/content_5746528.htm",
+     "doc_date": "2023-03-14",
+     "doc_title": "十四届全国人大一次会议在京闭幕"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "魏凤和"
+   ],
+   "named": [
+    "何立峰"
+   ],
+   "tie_type": "attended the same State Council meeting",
+   "body": "国务院 '十四五' planning meeting chaired by 李克强",
+   "period": "May 2020",
+   "corpus_counts": "4 documents name both, 4 in one sentence",
+   "evidence": [
+    {
+     "label": "corpus",
+     "doc_id": 7577202,
+     "quote": "孙春兰、胡春华、刘鹤、魏凤和、王勇、肖捷、巴特尔、何立峰参加会议",
+     "verified": true,
+     "where": "body",
+     "site": "hrss",
+     "url": "https://hrss.sz.gov.cn/gkmlpt/content/7/7577/post_7577202.html",
+     "doc_date": "2020-05-20",
+     "doc_title": "李克强主持召开研究部署“十四五”规划编制专题会议"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "张又侠"
+   ],
+   "named": [
+    "李希",
+    "蔡奇",
+    "黄坤明"
+   ],
+   "tie_type": "same central body (19th Politburo)",
+   "body": "中央政治局",
+   "period": "2017 to 2022; officials.db overlaps records only 2017 to 2018 (12 months), a parser truncation",
+   "corpus_counts": "32 / 33 / 9 documents name both",
+   "evidence": [
+    {
+     "label": "officials.db",
+     "note": "overlaps table: 张又侠 with 李希, 蔡奇 and 黄坤明, organization 中央政治局, 2017-2018, 12 months each"
+    },
+    {
+     "label": "corpus",
+     "doc_id": 900094526,
+     "quote": "李希、李强、李鸿忠、杨洁篪、杨晓渡、张又侠、陈希、陈全国、陈敏尔、胡春华、郭声琨、黄坤明、蔡奇",
+     "note": "presidium standing committee seating at the 20th Congress opening, 2022-10-16",
+     "verified": true,
+     "where": "body",
+     "site": "ncha",
+     "url": "http://www.ncha.gov.cn/art/2022/10/16/art_2667_177752.html",
+     "doc_date": "2022-10-16",
+     "doc_title": "中国共产党第二十次全国代表大会在京开幕 习近平代表第十九届中央委员会向大会作报告"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "马兴瑞",
+    "何卫东",
+    "张又侠",
+    "陈吉宁"
+   ],
+   "named": [
+    "李希",
+    "蔡奇"
+   ],
+   "tie_type": "same central body (20th Politburo; 李希 and 蔡奇 on its Standing Committee)",
+   "body": "中央政治局",
+   "period": "October 2022 to removal",
+   "corpus_counts": "n/a",
+   "evidence": [
+    {
+     "label": "not in corpus",
+     "note": "membership recalled and consistent with officials.db is_politburo flags; no corpus sentence lists the 20th Politburo in full (the First Plenum communique row is a 318-character stub)"
+    }
+   ]
+  },
+  {
+   "removed": [
+    "周永康",
+    "薄熙来",
+    "徐才厚",
+    "郭伯雄",
+    "令计划",
+    "苏荣",
+    "孙政才",
+    "杨晶"
+   ],
+   "named": [
+    "刘国中",
+    "李希",
+    "何立峰",
+    "蔡奇",
+    "黄坤明",
+    "朱忠明",
+    "李政",
+    "陈杰"
+   ],
+   "tie_type": "none found",
+   "body": "n/a",
+   "period": "n/a",
+   "corpus_counts": "0 or 1 documents per pair, none in one sentence; officials.db overlaps has no row",
+   "evidence": [
+    {
+     "label": "not in corpus",
+     "note": "absence in the corpus and in a career table whose parser is being repaired is not evidence of no tie"
+    }
+   ]
+  }
+ ],
+ "ties_meta": {
+  "reading": "A tie here is a co-presence fact: two people held posts in the same body at the same time, or appear in the same official list. It is not evidence of a personal relationship, patronage or alignment.",
+  "named_people_resolved": {
+   "刘国中": "officials.db id 1730",
+   "马兴瑞": "officials.db id 1534 (himself in the removed set)",
+   "李希": "officials.db id 1431",
+   "何立峰": "officials.db id 1478 (0 career records)",
+   "蔡奇": "officials.db id 1795",
+   "黄坤明": "officials.db id 1642",
+   "陈杰": "officials.db id 2113 (20th CC); whether this is the 上海市副市长 陈杰 of the corpus is not confirmed",
+   "朱忠明": "not in officials.db; corpus: 上海市委副书记、代市长 (Sept 2026)",
+   "李政": "not in officials.db; identity unresolved"
+  },
+  "unresolved_names": [
+   "Hu Qing",
+   "Rong Li",
+   "Wei Xiaodong"
+  ],
+  "unresolved_note": "No officials.db row has these romanisations (nearest: 舒庆 Shu Qing, 李荣融 Li Rongrong, 李荣灿 Li Rongcan, none a match) and no Chinese characters were supplied, so they were not searched in the corpus.",
+  "officials_db_caveat": "officials.db overlaps holds 5,121 rows built from career_records, whose parser is being repaired in another job: 徐才厚, 郭伯雄 and 何立峰 have 0 career records, 秦刚 1, 杨晶 3. Only one set of overlaps (张又侠 with three people) came back for the 15 x 9 pairs. Ties are certainly missing.",
+  "not_a_tie": "Nine of the removed are named together with 马兴瑞 in the CCDI secretary's November 2026 list of corrupt elements (doc 900206970). That is a list of cases, not co-working, and is excluded."
+ },
+ "web_urls_to_ingest": [
+  "https://chinadigitaltimes.net/chinese/543552.html",
+  "https://cn.chinadaily.com.cn/a/202601/24/WS697478f6a310942cc499ca5d.html",
+  "https://global.hk01.com/即时中国/60307375/何卫东等8人被罢免全国人大代表职务",
+  "https://language.chinadaily.com.cn/2013-09/23/content_16986237.htm",
+  "https://m.mp.oeeee.com/a/BAAFRD0000202411281029486.html",
+  "https://news.ifeng.com/c/7fZtSUsPh8Z",
+  "https://news.ifeng.com/c/7fc8SRXHKpo",
+  "https://news.sina.cn/2024-06-27/detail-incaemyn6936185.d.html",
+  "https://news.sina.com.cn/c/2019-02-21/doc-ihqfskcp7300935.shtml",
+  "https://news.sina.com.cn/o/2012-09-29/051925279306.shtml",
+  "https://paper.people.com.cn/hqrw/html/2015-07/26/content_1663877.htm",
+  "https://paper.people.com.cn/rmrb/html/2023-10/25/nw.D110000renmrb_20231025_3-04.htm",
+  "https://paper.people.com.cn/rmrbwap/html/2024-06/28/nw.D110000renmrb_20240628_3-04.htm",
+  "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
+  "https://www.bjnews.com.cn/detail/155145467314597.html",
+  "https://www.bjnews.com.cn/detail/155148542914881.html",
+  "https://www.court.gov.cn/fabu/xiangqing/14688.html",
+  "https://www.court.gov.cn/fabu/xiangqing/23001.html",
+  "https://www.court.gov.cn/fabu/xiangqing/35302.html",
+  "https://www.court.gov.cn/fabu/xiangqing/94792.html",
+  "https://www.gov.cn/yaowen/liebiao/202307/content_6894258.htm",
+  "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
+  "https://www.rmzxw.com.cn/sy/yw/2014/06/30/345859.shtml",
+  "https://www.rmzxw.com.cn/sy/yw/2014/10/23/396884.shtml",
+  "https://www.thepaper.cn/newsDetail_forward_2534652",
+  "https://www.xinhuanet.com/politics/2015-06/11/c_1115590304.htm"
+ ],
+ "summary": {
+  "headline": {
+   "definition": "副国级 or above (rank at removal or highest previously held), removed since the 18th Party Congress (Nov 2012), all removal types; CMC members who were not vice-chairs are excluded and shown in their own tier.",
+   "total_all_types": 14,
+   "by_type": {
+    "a": 12,
+    "b": 1,
+    "c": 1,
+    "d": 0
+   },
+   "corpus_verified_all_types": 13,
+   "of_which_正国级": 1,
+   "plus_flagged_before_congress": [
+    "薄熙来"
+   ],
+   "cmc_member_tier": 4,
+   "cmc_member_tier_corpus_verified": 3
+  },
+  "cells": {
+   "正国级|a": {
+    "since_18th_congress": [
+     "周永康"
+    ],
+    "of_which_corpus_verified": [
+     "周永康"
+    ],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "正国级|b": {
+    "since_18th_congress": [],
+    "of_which_corpus_verified": [],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "正国级|c": {
+    "since_18th_congress": [],
+    "of_which_corpus_verified": [],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "正国级|d": {
+    "since_18th_congress": [],
+    "of_which_corpus_verified": [],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "副国级|a": {
+    "since_18th_congress": [
+     "徐才厚",
+     "郭伯雄",
+     "令计划",
+     "苏荣",
+     "孙政才",
+     "李尚福",
+     "魏凤和",
+     "何卫东",
+     "马兴瑞",
+     "张又侠",
+     "陈吉宁"
+    ],
+    "of_which_corpus_verified": [
+     "徐才厚",
+     "郭伯雄",
+     "令计划",
+     "苏荣",
+     "孙政才",
+     "李尚福",
+     "魏凤和",
+     "何卫东",
+     "马兴瑞",
+     "张又侠",
+     "陈吉宁"
+    ],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [
+     "薄熙来"
+    ],
+    "investigation_only": [
+     "陈吉宁"
+    ]
+   },
+   "副国级|b": {
+    "since_18th_congress": [
+     "秦刚"
+    ],
+    "of_which_corpus_verified": [
+     "秦刚"
+    ],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "副国级|c": {
+    "since_18th_congress": [
+     "杨晶"
+    ],
+    "of_which_corpus_verified": [],
+    "of_which_not_corpus_verified": [
+     "杨晶"
+    ],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "副国级|d": {
+    "since_18th_congress": [],
+    "of_which_corpus_verified": [],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "CMC member|a": {
+    "since_18th_congress": [
+     "房峰辉",
+     "张阳",
+     "苗华",
+     "刘振立"
+    ],
+    "of_which_corpus_verified": [
+     "房峰辉",
+     "张阳",
+     "刘振立"
+    ],
+    "of_which_not_corpus_verified": [
+     "苗华"
+    ],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "CMC member|b": {
+    "since_18th_congress": [],
+    "of_which_corpus_verified": [],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "CMC member|c": {
+    "since_18th_congress": [],
+    "of_which_corpus_verified": [],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   },
+   "CMC member|d": {
+    "since_18th_congress": [],
+    "of_which_corpus_verified": [],
+    "of_which_not_corpus_verified": [],
+    "flagged_before_18th_congress": [],
+    "investigation_only": []
+   }
+  },
+  "cc_expulsions_by_plenum": [
+   {
+    "plenum": "18-4",
+    "date": "2014-10-23",
+    "expelled": 6,
+    "full_members": null,
+    "alternate_members": null,
+    "evidence": "web, not in corpus"
+   },
+   {
+    "plenum": "18-5",
+    "date": "2015-10-29",
+    "expelled": 10,
+    "full_members": null,
+    "alternate_members": null,
+    "evidence": "corpus"
+   },
+   {
+    "plenum": "18-6",
+    "date": "2016-10-27",
+    "expelled": 4,
+    "full_members": null,
+    "alternate_members": null,
+    "evidence": "web, not in corpus"
+   },
+   {
+    "plenum": "18-7",
+    "date": "2017-10-14",
+    "expelled": null,
+    "full_members": null,
+    "alternate_members": null,
+    "evidence": "not in corpus"
+   },
+   {
+    "plenum": "19th CC, all plenums",
+    "date": null,
+    "expelled": null,
+    "full_members": null,
+    "alternate_members": null,
+    "evidence": "not in corpus"
+   },
+   {
+    "plenum": "20-3",
+    "date": "2024-07-18",
+    "expelled": 3,
+    "full_members": 2,
+    "alternate_members": 1,
+    "evidence": "corpus"
+   },
+   {
+    "plenum": "20-4",
+    "date": "2025-10-23",
+    "expelled": 14,
+    "full_members": 10,
+    "alternate_members": 4,
+    "evidence": "web, not in corpus"
+   },
+   {
+    "plenum": "20-5",
+    "date": "2026-10-29",
+    "expelled": 33,
+    "full_members": 24,
+    "alternate_members": 9,
+    "evidence": "corpus"
+   }
+  ],
+  "cc_totals": {
+   "20th_cc_full_members_expelled_corpus_verified": 26,
+   "20th_cc_full_members_expelled_incl_web": 36,
+   "20th_cc_alternates_expelled_corpus_verified": 10,
+   "20th_cc_alternates_expelled_incl_web": 14,
+   "note": "Central Committee full membership is a proxy for 正部级 and its military equivalents, not the rank itself. 18th CC rows cannot be split into full and alternate members from the corpus (no 18th CC name list is held)."
+  },
+  "timing": {
+   "window_months": 24,
+   "n_changes_listed": 8,
+   "base_rate": {
+    "months_with_a_change_in_next_24": 111,
+    "months_observed": 145,
+    "share": 0.766,
+    "span": "2012-11 to the last month whose 24-month window has closed"
+   },
+   "persons": [
+    {
+     "name_cn": "周永康",
+     "first_action": "2014-07-29",
+     "window_closed": true,
+     "changes_in_window": [
+      "2014-10 政法 / legal system",
+      "2015-11 军队 / CMC",
+      "2016-02 军队 / CMC"
+     ]
+    },
+    {
+     "name_cn": "薄熙来",
+     "first_action": "2012-03-15",
+     "window_closed": true,
+     "changes_in_window": []
+    },
+    {
+     "name_cn": "徐才厚",
+     "first_action": "2014-03-15",
+     "window_closed": true,
+     "changes_in_window": [
+      "2014-10 政法 / legal system",
+      "2015-11 军队 / CMC",
+      "2016-02 军队 / CMC"
+     ]
+    },
+    {
+     "name_cn": "郭伯雄",
+     "first_action": "2015-07-30",
+     "window_closed": true,
+     "changes_in_window": [
+      "2015-11 军队 / CMC",
+      "2016-02 军队 / CMC",
+      "2016-11 纪检监察"
+     ]
+    },
+    {
+     "name_cn": "令计划",
+     "first_action": "2014-12-22",
+     "window_closed": true,
+     "changes_in_window": [
+      "2015-11 军队 / CMC",
+      "2016-02 军队 / CMC",
+      "2016-11 纪检监察"
+     ]
+    },
+    {
+     "name_cn": "苏荣",
+     "first_action": "2014-06",
+     "window_closed": true,
+     "changes_in_window": [
+      "2014-10 政法 / legal system",
+      "2015-11 军队 / CMC",
+      "2016-02 军队 / CMC"
+     ]
+    },
+    {
+     "name_cn": "孙政才",
+     "first_action": "2017-07-15",
+     "window_closed": true,
+     "changes_in_window": [
+      "2018-03 党和国家机构",
+      "2019-01 政法"
+     ]
+    },
+    {
+     "name_cn": "杨晶",
+     "first_action": "2018-02-24",
+     "window_closed": true,
+     "changes_in_window": [
+      "2018-03 党和国家机构",
+      "2019-01 政法"
+     ]
+    },
+    {
+     "name_cn": "秦刚",
+     "first_action": "2023-07-25",
+     "window_closed": true,
+     "changes_in_window": [
+      "2024-04 军队 / CMC"
+     ]
+    },
+    {
+     "name_cn": "李尚福",
+     "first_action": "2023-10-24",
+     "window_closed": true,
+     "changes_in_window": [
+      "2024-04 军队 / CMC"
+     ]
+    },
+    {
+     "name_cn": "魏凤和",
+     "first_action": "2023-09-21",
+     "window_closed": true,
+     "changes_in_window": [
+      "2024-04 军队 / CMC"
+     ]
+    },
+    {
+     "name_cn": "何卫东",
+     "first_action": "2025-10-17",
+     "window_closed": false,
+     "changes_in_window": []
+    },
+    {
+     "name_cn": "马兴瑞",
+     "first_action": "2026-04-03",
+     "window_closed": false,
+     "changes_in_window": []
+    },
+    {
+     "name_cn": "张又侠",
+     "first_action": "2026-01-24",
+     "window_closed": false,
+     "changes_in_window": []
+    },
+    {
+     "name_cn": "陈吉宁",
+     "first_action": "2026-11-24",
+     "window_closed": false,
+     "changes_in_window": []
+    }
+   ],
+   "persons_closed_window": 11,
+   "persons_closed_window_with_change": 10,
+   "caveat": "The list of institutional changes is hand-selected (8 items) and the corpus dates several of them only through retrospective documents. Timing only; no causal claim."
+  }
+ }
+}
