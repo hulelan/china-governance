@@ -427,6 +427,47 @@ python3 -m crawlers.finmedia --site ce --max-docs 400
 # date_published, which date_quality flags `missing`. Deliberately NOT inferred
 # from the crawl day — that is the crawl_stamped failure documented above.
 
+# Structural outlets (2026-11-25): 13 outlets the research briefs cited and the corpus
+# missed, as recurring CHANNEL crawls. Same module; the registry is DATA in
+# crawlers/finmedia_outlets.py (its docstring has the measured volume per outlet and the
+# list surfaces that were probed and rejected). All byte-checked from the droplet; none
+# is blocked.
+#   tier 4  cnr 央广网 (财经原创/独家/科技, index_N pagination) · cctv 央视网 (law/tech/economy
+#           JSONP whole, `china` title-filtered, + local.cctv.com) · gmw 光明网 legal/tech/
+#           economy channels (NOT gmrb_theory) · bjd 北京日报 · cqn 中国质量报 (总局动态/政策
+#           法规/标准/反垄断/知识产权) · jschina 中国江苏网 江苏要闻 · chinanews 中新网 /cj/ + /gn/
+#   tier 5  sina 新浪财经 roll API and ithome IT之家 per-day list, BOTH title-filtered by
+#           POLICY_TITLE_RE (17% and 5.6% kept) · nbd 每日经济新闻 要闻 + 重磅原创
+#   tier 6  rthk 香港電台 大中華+財經 (admin_level 'foreign_media') · tc609 全国数据标准化
+#           技术委员会 (admin_level 'central', as tc260; on-site pages only, most of its items
+#           link out to WeChat) · szhgh 红歌会网 opinion/自媒体号
+# Also widened: yicai (paginated getlatest stream, ~500/day, tickers dropped by DENYLIST),
+# tmtpost (快讯 via api.tmtpost.com/v1/word/list, which returns `"data": {}` without an
+# `app-version: web1.0` header), xinhua (below). Expect ~675 new documents a night from
+# tiers 4-6 and ~350 + ~200 from yicai and tmtpost.
+python3 -m crawlers.finmedia --tier 4 --nightly          # each site at its own nightly_cap
+python3 -m crawlers.finmedia --site cctv --probe --url <article-url>   # one page, write NOTHING
+python3 -m crawlers.finmedia --site sina --pages 400 --db documents_outlets.db   # backfill depth
+python3 -m crawlers.finmedia --site ithome --no-filter --probe         # measure the allowlist
+# Four things found building it, each pinned in tests/test_finmedia_outlets.py:
+#  * A <p>-density body has no notion of WHERE a paragraph sits. yicai bodies ended with
+#    five OTHER articles' summaries, tmtpost's with the 快讯 ticker, chinanews' with the photo
+#    rail, sina's with its site map. `body_cut` (start/end markers on the RAW html) fixes
+#    new rows; the ~2,400 yicai and ~400 tmtpost rows already held are NOT repaired.
+#  * tc609's <meta name="PubDate"> is the CMS regeneration time (an article of 2026-01-07
+#    carries 2026-07-09). Only the page's own 发布时间 is read; a page without one stores ''.
+#    ingest_urls now parses a registry site by that site's rules and never falls through to
+#    the generic META_DATE guess.
+#  * cctv's 2026 template ships the body as a JS string (`var contentdate = '…'`) into an
+#    empty container: stripping <script> left 0 characters on the cited 网信办备案 article.
+#  * bjd's two hosts are NOT mirrors: an xinwen id on rss2 (and the reverse) answers HTTP
+#    200 with a ~110-byte stub. Never rewrite the host; "probe body not status" again.
+# Xinhua channels (2026-11-25, the 2026-11-05 Open Question): /politics/, /finance/,
+# /info/ and /legal/ are now paginated ds_<id>.json datasources (~1,000 items each, i.e.
+# months of archive), `general` runs FIRST because it alone has no archive, and a run is
+# capped at 200 new per section unless --max-new says otherwise.
+python3 -m crawlers.xinhua --section politics --max-new 0 --db documents_xinhua.db   # backfill
+
 # Party-theory journals and CASS (2026-11-12). One module, a site registry like finmedia.
 # Backfill 2026-11-12: 31,673 docs (qiushi 3,255 issue-by-issue 2019-, hongqi 2,133,
 # studytimes 4,766, gmrb_theory 11,080, rmlt 6,422, cssn 4,017). admin_level 'media' for
@@ -1420,8 +1461,12 @@ or add a site to the generic `crawlers/govcms.py` registry when its CMS matches 
   same residential/HK vantage as the MIIT stubs. A cheaper partial route: the 备案 (filing-for-
   review) records, if any source publishes which municipal regulations were returned or amended
   on review.
-- **(2026-11-05, and the first diagnosis of this was WRONG — kept here because the correction is
-  the useful part.) The Xinhua tier is a DAILY SAMPLE of Xinhua, not Xinhua.** `www.news.cn`
+- **(2026-11-05; MOSTLY RESOLVED 2026-11-25 — `politics`, `finance`, `info` and `legal` are
+  now paginated channel datasources in `crawlers/xinhua.py`, see the commands section. Still
+  open: `/world/`, `/local/`, `/money/` and `/comments/` have datasources too and are not
+  configured, and the bare-path items remain homepage-only.) The first diagnosis of this was
+  WRONG — kept here because the correction is the useful part. The Xinhua tier is a DAILY
+  SAMPLE of Xinhua, not Xinhua.** `www.news.cn`
   contributed **0 of 6** brief URLs while the corpus held 6,080 documents from that host,
   including a missing **二十届五中全会公报** (4,728 CJK). I first recorded that as "missing a whole
   path family". It is not: grouping every held `xinhua` URL into shapes shows all six shapes are

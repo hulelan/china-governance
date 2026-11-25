@@ -262,10 +262,37 @@ run_crawler "guancha" python3 -m crawlers.guancha --deep
 # to that budget on the strength of a guess. Measured first run: 784 documents in
 # 16 min across tier 1, which is the walk from EMPTY; a nightly diff is far smaller.
 # caixin (tier 3) is deliberately excluded — it yields only a paywall lede.
-run_crawler_t 600 "finmedia (7 financial/business sites)" \
-    python3 -m crawlers.finmedia --tier 1 --max-docs 150
-run_crawler_t 600 "finmedia tier 2" \
-    python3 -m crawlers.finmedia --tier 2 --max-docs 150
+# --nightly (2026-11-25) caps each site at its OWN nightly_cap from the registry
+# (150 unless stated) instead of one --max-docs for the tier: yicai now reads the
+# paginated getlatest stream (~500 items/day, tickers dropped by denylist) and is
+# capped at 400, which one shared number could not express. Tier 1 gets 1200s for
+# that reason; the walk is ~2s a document.
+run_crawler_t 1200 "finmedia tier 1 (ce, jjckb, yicai)" \
+    python3 -m crawlers.finmedia --tier 1 --nightly
+# Tier 2 gets 1200s: tmtpost now reads its 快讯 API (~300 flashes a day, tickers
+# dropped, cap 200) and its pages take ~2s each.
+run_crawler_t 1200 "finmedia tier 2" \
+    python3 -m crawlers.finmedia --tier 2 --nightly
+# Structural outlets (2026-11-25, crawlers/finmedia_outlets.py): outlets the research
+# briefs cited and the corpus missed, as recurring channel crawls. One slot per tier
+# so a slow outlet cannot eat another tier's budget. Expected NEW documents a night,
+# counted per publication day from each site's own lists on 2026-11-25 (the registry
+# docstring has the table):
+#   tier 4  state/party channels   cnr ~45, cctv ~40, gmw ~40, bjd ~45, cqn ~10,
+#           jschina ~48, chinanews ~140                   (~370/night; cap sum 660)
+#   tier 5  filtered firehoses     sina ~110 of ~650 roll items, ithome ~14 of ~250,
+#           nbd ~110                                      (~235/night; cap sum 310)
+#   tier 6  rthk ~55, szhgh ~15, tc609 <1 a week          (~70/night;  cap sum 170)
+# About 675 documents a night in all, plus yicai's ~350 above: this roughly
+# quadruples Phase 1's nightly intake, on purpose, and is ~25 min of wall time.
+# The caps bind on the FIRST run only (each list page also carries days-old items);
+# the one-time backfill belongs in a separate --db (see CLAUDE.md), not here.
+run_crawler_t 1500 "finmedia tier 4 (央广/央视/光明网/北京日报/质量报/江苏网/中新网)" \
+    python3 -m crawlers.finmedia --tier 4 --nightly
+run_crawler_t 900 "finmedia tier 5 (新浪财经/IT之家 filtered, 每经)" \
+    python3 -m crawlers.finmedia --tier 5 --nightly
+run_crawler_t 600 "finmedia tier 6 (RTHK/TC609/红歌会)" \
+    python3 -m crawlers.finmedia --tier 6 --nightly
 # Party-theory journals and CASS (2026-11-12, crawlers/theory.py): 求是 issues, 红旗文稿,
 # 学习时报, 光明日报 theory pages, 人民论坛, 中国社会科学网. --recent reads only the newest
 # issue lists / list pages / 3 days of e-paper; held URLs are skipped.
