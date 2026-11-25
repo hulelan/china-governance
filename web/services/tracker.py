@@ -50,7 +50,7 @@ DEFAULT_WEEKS = 8
 MAX_WEEKS = 52
 # Canonical column order for the weekly matrix (sub-national first after central).
 LEVEL_ORDER = ["central", "provincial", "municipal", "district", "department",
-               "media", "research"]
+               "media", "research", "foreign_media"]
 ACTIVE_LIMIT = 12       # anchors shown in "active cascades" — PER anchor_level
 NEWEST_PER_ANCHOR = 4   # newest implementing docs listed per anchor
 LEADERBOARD_LIMIT = 15

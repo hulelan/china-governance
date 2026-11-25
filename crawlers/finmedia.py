@@ -104,9 +104,10 @@ import json
 import re
 import time
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urljoin
+from urllib.parse import quote, urljoin
 
 from crawlers.finmedia_outlets import OUTLETS, POLICY_TITLE_RE, TICKER_RE
+from crawlers.claims_outlets import OUTLETS as CLAIMS_OUTLETS
 
 from crawlers.base import (
     REQUEST_DELAY, fetch, init_db, log, next_id,
@@ -281,6 +282,9 @@ SITES = {
 }
 
 SITES.update(OUTLETS)
+# Tier 7: overseas CLAIMS-ONLY sources (crawlers/claims_outlets.py). Every one is
+# admin_level 'foreign_media' and claims_only, and crawl() stamps its rows.
+SITES.update(CLAIMS_OUTLETS)
 
 # NO generic date fallback on purpose. A loose pattern such as (\d{4})/(\d{1,2})/(\d{1,2})
 # matches a CDN upload path long before it matches a publication date: measured
@@ -393,8 +397,9 @@ def extract_date(url: str, html: str, cfg: dict) -> str:
     if cfg.get("date_url"):
         m = re.search(cfg["date_url"], url)
         if m:
-            y, mo, d = m.groups()
-            return f"{int(y):04d}-{int(mo):02d}-{int(d):02d}"
+            y, mo, d = (int(g) for g in m.groups())
+            y = y + 2000 if y < 100 else y         # epochtimes /gb/26/11/23/
+            return f"{y:04d}-{mo:02d}-{d:02d}"
     for pat in cfg.get("date_pats", ()):
         m = re.search(pat, html)
         if m:
@@ -406,7 +411,7 @@ def extract_date(url: str, html: str, cfg: dict) -> str:
         m = re.search(cfg["date_utc"], html)
         if m:
             try:
-                dt = datetime.strptime(m.group(1), "%Y-%m-%dT%H:%M:%S")
+                dt = datetime.strptime(m.group(1).replace(" ", "T"), "%Y-%m-%dT%H:%M:%S")
                 return dt.replace(tzinfo=timezone.utc).astimezone(CST).strftime("%Y-%m-%d")
             except ValueError:
                 pass
@@ -454,8 +459,22 @@ def _feed_tmtpost_word(text: str) -> list:
             for i in data if str(i.get("guid", "")).isdigit()]
 
 
+def _feed_rss(text: str) -> list:
+    """Generic RSS 2.0 / RDF feed: one (link, title) per <item>. Titles matter,
+    because an allowlisted feed is filtered on them before any fetch."""
+    out = []
+    for item in re.findall(r'(?is)<item\b[^>]*>(.*?)</item>', text):
+        link = re.search(r'(?is)<link>\s*(?:<!\[CDATA\[)?\s*(.*?)\s*(?:\]\]>)?\s*</link>', item)
+        title = re.search(r'(?is)<title>\s*(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?\s*</title>', item)
+        if link:
+            out.append((H.unescape(link.group(1).strip()),
+                        H.unescape(title.group(1).strip()) if title else ""))
+    return out
+
+
 FEEDS = {"sina_roll": _feed_sina_roll, "cctv_jsonp": _feed_cctv_jsonp,
-         "yicai_latest": _feed_yicai_latest, "tmtpost_word": _feed_tmtpost_word}
+         "yicai_latest": _feed_yicai_latest, "tmtpost_word": _feed_tmtpost_word,
+         "rss": _feed_rss}
 
 _ANCHOR = re.compile(r'(?is)<a\b[^>]*?href=["\']([^"\'#]{6,300})["\'][^>]*>(.*?)</a>')
 
@@ -464,6 +483,10 @@ def canon(url: str, cfg: dict) -> str:
     """Canonical article URL for dedup (bjd lists one story as .json and .html)."""
     if cfg.get("url_sub"):
         url = re.sub(cfg["url_sub"][0], cfg["url_sub"][1], url)
+    if cfg.get("quote_url"):
+        # Opt-in per site (dw): percent-encode non-ASCII path characters, keeping
+        # any existing %XX escapes, so the URL is fetchable AND one string per article.
+        url = quote(url, safe=":/?#[]@!$&'()*+,;=%")
     return url
 
 
@@ -473,7 +496,10 @@ def keep_title(title: str, cfg: dict, filtered: bool) -> bool:
     if cfg.get("title_drop") and title and cfg["title_drop"].search(title):
         return False
     if filtered:
-        return bool(title) and bool(POLICY_TITLE_RE.search(title))
+        # A site may carry its own allowlist (the tier-7 claims sources use
+        # claims_outlets.ELITE_TITLE_RE); otherwise the policy allowlist.
+        keep = cfg.get("title_keep") or POLICY_TITLE_RE
+        return bool(title) and bool(keep.search(title))
     return True
 
 
@@ -615,6 +641,21 @@ def parse_article(url: str, html: str, cfg: dict, list_title: str = "") -> dict:
             "body_cjk": _cjk(body), "date": extract_date(url, html, cfg)}
 
 
+CLAIMS_RELATION = "claims=outlet_attributed"
+
+
+def relation_for(cfg: dict) -> str:
+    """The provenance tags a stored row carries. A claims_only site's rows are
+    marked so any reader of `relation` can tell a claim attributed to an outlet
+    from a document an issuing body published."""
+    tags = []
+    if cfg.get("paywalled"):
+        tags.append("body=paywall_teaser")
+    if cfg.get("claims_only"):
+        tags.append(CLAIMS_RELATION)
+    return ";".join(tags)
+
+
 def crawl(conn, site_key: str, *, max_docs: int = 0, probe: bool = False,
           max_pages: int = 99, fetch_bodies: bool = True, pages: int = 0,
           use_filter: bool = True, urls: list = None) -> int:
@@ -665,7 +706,7 @@ def crawl(conn, site_key: str, *, max_docs: int = 0, probe: bool = False,
             continue
 
         doc_id = next_id(conn)
-        rel = "body=paywall_teaser" if cfg.get("paywalled") else ""
+        rel = relation_for(cfg)
         raw = save_raw_html(site_key, doc_id, html) if body else ""
         if store_document(conn, site_key, {
             "id": doc_id, "title": title, "date_published": date_pub,
@@ -688,7 +729,8 @@ def crawl(conn, site_key: str, *, max_docs: int = 0, probe: bool = False,
 def main():
     ap = argparse.ArgumentParser(description="Chinese financial/business media crawler")
     ap.add_argument("--site", help="one site key")
-    ap.add_argument("--tier", type=int, choices=(1, 2, 3, 4, 5, 6), help="all sites in a tier")
+    ap.add_argument("--tier", type=int, choices=(1, 2, 3, 4, 5, 6, 7),
+                    help="all sites in a tier (7 = overseas claims-only sources)")
     ap.add_argument("--list-sites", action="store_true")
     ap.add_argument("--probe", action="store_true",
                     help="measure discovery + extraction on 3 articles, write NOTHING")
@@ -714,6 +756,7 @@ def main():
         for k, c in sorted(SITES.items(), key=lambda kv: (kv[1]["tier"], kv[0])):
             flag = " [PAYWALLED]" if c.get("paywalled") else ""
             flag += " [title-filtered]" if c.get("filter") else ""
+            flag += " [CLAIMS-ONLY]" if c.get("claims_only") else ""
             print(f"  tier{c['tier']}  {k:9} cap {c.get('nightly_cap', 150):3}  {c['name']}{flag}")
         return
 

@@ -158,7 +158,7 @@ def test_every_site_declares_what_extract_date_needs(key):
     cfg = SITES[key]
     assert cfg.get("date_url") or cfg.get("date_pats") or cfg.get("date_epoch") \
         or cfg.get("date_utc") or key == "caixin", f"{key} can never produce a date"
-    assert cfg["tier"] in (1, 2, 3, 4, 5, 6)
+    assert cfg["tier"] in (1, 2, 3, 4, 5, 6, 7)
     # `level` is the registry's one spelling; a stray `admin_level` key would be
     # silently ignored by crawl() and the site stored as 'media'.
     assert "admin_level" not in cfg

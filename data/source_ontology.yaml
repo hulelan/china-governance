@@ -236,6 +236,23 @@ tree:
         # rthk = 香港電台, Hong Kong's public broadcaster. 境外 in the label's
         # sense and admin_level='foreign_media': it must not read as mainland
         # media, nor as sub-national government, in any level-split measure.
+      - id: media_foreign_claims
+        label_en: Overseas Claims Sources (elite politics, uneven reliability)
+        label_zh: 境外传闻与评论来源
+        # Added 2026-11-25 (crawlers/claims_outlets.py, finmedia tier 7). Overseas
+        # outlets reporting on elite politics, personnel and discipline cases,
+        # often ahead of or instead of any announcement, with UNEVEN reliability
+        # (public broadcasters through movement-affiliated outlets that rely on
+        # unnamed insiders). Their content is a CLAIM attributed to the outlet,
+        # never a government act, so this leaf is separate from media_foreign
+        # (whose documents are ordinary reporting or mirrored texts) and carries
+        # `claims_only: true`, which web.services.ontology.claims_only_sites()
+        # exposes for the analysis layer. Also admin_level='foreign_media' and
+        # relation 'claims=outlet_attributed'. Under `media`, so "exclude news"
+        # drops it as well. tests/test_claims_sources.py pins all of this.
+        claims_only: true
+        site_keys:
+          [rfa, voa, bbc, dw, secretchina, epochtimes, ntdtv, zaobao, theinitium]
 
   # ── RESEARCH / THINK-TANK / OTHER ─────────────────────────────────────
   - id: research

@@ -152,7 +152,9 @@ async def get_documents(db, site_key=None, category=None, year=None,
     date_start/date_end are Unix timestamps (ints). When provided they
     take precedence over the year filter.
     source_type: 'government' excludes media, 'media' shows only media
-        (legacy admin_level-based flag; kept for back-compat).
+        (legacy admin_level-based flag; kept for back-compat). Both media levels
+        count as media: 'foreign_media' (overseas outlets, incl. the tier-7
+        claims-only sources) is never "government".
     include_sites / exclude_sites: optional lists of site_keys used by the
         source-TYPE ontology filter (web.services.ontology). include restricts
         to a branch; exclude drops a branch (e.g. "exclude news").
@@ -164,10 +166,10 @@ async def get_documents(db, site_key=None, category=None, year=None,
     join_sites = ""
     if source_type == "government":
         join_sites = "JOIN sites s ON s.site_key = d.site_key"
-        where.append("s.admin_level != 'media'")
+        where.append("s.admin_level NOT IN ('media', 'foreign_media')")
     elif source_type == "media":
         join_sites = "JOIN sites s ON s.site_key = d.site_key"
-        where.append("s.admin_level = 'media'")
+        where.append("s.admin_level IN ('media', 'foreign_media')")
 
     if site_key:
         param_idx += 1

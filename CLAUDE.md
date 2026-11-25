@@ -428,6 +428,30 @@ python3 -m crawlers.finmedia --site ce --max-docs 400
 # date_published, which date_quality flags `missing`. Deliberately NOT inferred
 # from the crawl day — that is the crawl_stamped failure documented above.
 
+# Overseas CLAIMS-ONLY sources (2026-11-25): finmedia tier 7, registry in
+# crawlers/claims_outlets.py. rfa (自由亚洲 政治 + RSS), voa (美国之音 中国), bbc (BBC中文 中国),
+# dw (德国之声 RSS), secretchina (看中国 中南海/大陆时政/官场/官吏/内幕), epochtimes (大纪元 大陆政治),
+# ntdtv (新唐人 大陆), zaobao (联合早报 中国), theinitium (端传媒 政治, PAYWALLED teaser).
+# Elite-politics channels taken whole; general China surfaces through ELITE_TITLE_RE.
+# Caps <= 30/site/night. Rejected: boxun (Cloudflare JS challenge, 403), dwnews (301s to
+# hk01.com), mingjing (shell over a Discourse forum). Reasons in the registry docstring.
+python3 -m crawlers.finmedia --tier 7 --probe       # measure, write nothing
+python3 -m crawlers.finmedia --tier 7 --nightly     # what daily_sync runs
+# THESE ARE CLAIM SOURCES WITH UNEVEN RELIABILITY (public broadcasters through outlets
+# affiliated with a movement in open conflict with the CCP whose elite stories often rest
+# on unnamed insiders). Research use must treat their content as CLAIMS ATTRIBUTED TO THE
+# OUTLET ("大纪元 reported that ..."), never as an announcement or a government act. They
+# are kept out of every government-document count by structure, not convention:
+# sites.admin_level='foreign_media'; ontology leaf media_foreign_claims (claims_only: true,
+# web.services.ontology.claims_only_sites(); under `media`, so "exclude news" drops them);
+# relation 'claims=outlet_attributed' on every row; build_doc_identity treats
+# foreign_media as a NON-ISSUER site level (before 2026-11-25 it did not, so a title naming
+# 中共中央纪律检查委员会 would have been levelled `central`), genre always `news`, rank below
+# every level so it never becomes an instrument's canonical copy; web source_type
+# 'government' excludes foreign_media (it used to count it); discourse speaker() is None.
+# All pinned in tests/test_claims_sources.py. Extracted claims go in data/claims/ (schema
+# in data/claims/README.md; nothing extracted yet).
+
 # Structural outlets (2026-11-25): 13 outlets the research briefs cited and the corpus
 # missed, as recurring CHANNEL crawls. Same module; the registry is DATA in
 # crawlers/finmedia_outlets.py (its docstring has the measured volume per outlet and the
