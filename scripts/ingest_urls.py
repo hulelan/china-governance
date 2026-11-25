@@ -50,6 +50,7 @@ from crawlers.base import (                                      # noqa: E402
 )
 from crawlers.finmedia import (                                  # noqa: E402
     BROWSER_UA, _cjk, extract_body, extract_title, MIN_BODY_CJK,
+    SITES as FIN_SITES, canon, extract_date, site_body,
 )
 
 CN_GOV, CN_MEDIA, FOREIGN = "central", "media", "foreign_media"
@@ -67,6 +68,11 @@ HOSTS = {
     "www.nea.gov.cn":        ("nea",      "National Energy Administration / 国家能源局", CN_GOV),
     "www.nda.gov.cn":        ("nda",      "National Data Administration / 国家数据局", CN_GOV),
     "www.mfa.gov.cn":        ("mfa",      "MFA / 外交部", CN_GOV),
+    "www.fmprc.gov.cn":      ("mfa",      "MFA / 外交部", CN_GOV),
+    "aqygzj.mofcom.gov.cn":  ("mofcom",   "MOFCOM / 商务部", CN_GOV),
+    "www.tc609.org.cn":      ("tc609",    "National Data Standardization TC / 全国数据标准化技术委员会", CN_GOV),
+    # --- sub-national government already in the corpus ---
+    "www.shanghai.gov.cn":   ("sh",       "Shanghai Municipal Government / 上海市人民政府", "provincial"),
     "www.sasac.gov.cn":      ("sasac",    "SASAC / 国务院国资委", CN_GOV),
     "www.12371.cn":          ("dangyuan", "CPC Members Network / 共产党员网", CN_GOV),
     "www.ndrc.gov.cn":       ("ndrc",     "National Development and Reform Commission", CN_GOV),
@@ -85,6 +91,7 @@ HOSTS = {
     "city.ce.cn":            ("ce",       "China Economic Net / 中国经济网", CN_MEDIA),
     "finance.ce.cn":         ("ce",       "China Economic Net / 中国经济网", CN_MEDIA),
     "www.jjckb.cn":          ("jjckb",    "Economic Information Daily / 经济参考报", CN_MEDIA),
+    "jjckb.xinhuanet.com":   ("jjckb",    "Economic Information Daily / 经济参考报", CN_MEDIA),
     "www.yicai.com":         ("yicai",    "Yicai / 第一财经", CN_MEDIA),
     "m.yicai.com":           ("yicai",    "Yicai / 第一财经", CN_MEDIA),
     "www.jiemian.com":       ("jiemian",  "Jiemian News / 界面新闻", CN_MEDIA),
@@ -92,6 +99,8 @@ HOSTS = {
     "www.21jingji.com":      ("21jingji", "21st Century Business Herald / 21世纪经济报道", CN_MEDIA),
     "m.21jingji.com":        ("21jingji", "21st Century Business Herald / 21世纪经济报道", CN_MEDIA),
     "www.chinanews.com.cn":  ("chinanews", "China News Service / 中国新闻网", CN_MEDIA),
+    "www.chinanews.com":     ("chinanews", "China News Service / 中国新闻网", CN_MEDIA),
+    "www.tmtpost.com":       ("tmtpost",  "TMTPost / 钛媒体", CN_MEDIA),
     "www.hn.chinanews.com.cn": ("chinanews_hn", "China News Service Hunan / 中新网湖南", CN_MEDIA),
     "www.cnfin.com":         ("cnfin",    "China Financial Information / 中国金融信息网", CN_MEDIA),
     "news.qq.com":           ("qqnews",   "Tencent News / 腾讯新闻", CN_MEDIA),
@@ -99,7 +108,28 @@ HOSTS = {
     "finance.eastmoney.com": ("eastmoney", "East Money / 东方财富网", CN_MEDIA),
     "cn.wicinternet.org":    ("wic",      "World Internet Conference / 世界互联网大会", CN_GOV),
     "www.wicinternet.org":   ("wic",      "World Internet Conference / 世界互联网大会", CN_GOV),
+    # --- structural outlets (crawlers/finmedia_outlets.py, 2026-11-25) ---
+    "www.cnr.cn":            ("cnr",      "China National Radio / 央广网", CN_MEDIA),
+    "finance.cnr.cn":        ("cnr",      "China National Radio / 央广网", CN_MEDIA),
+    "news.cnr.cn":           ("cnr",      "China National Radio / 央广网", CN_MEDIA),
+    "tech.cnr.cn":           ("cnr",      "China National Radio / 央广网", CN_MEDIA),
+    "news.cctv.com":         ("cctv",     "CCTV / 央视网", CN_MEDIA),
+    "local.cctv.com":        ("cctv",     "CCTV / 央视网", CN_MEDIA),
+    "finance.sina.com.cn":   ("sina",     "Sina Finance / 新浪财经", CN_MEDIA),
+    "legal.gmw.cn":          ("gmw",      "Guangming Online / 光明网", CN_MEDIA),
+    "tech.gmw.cn":           ("gmw",      "Guangming Online / 光明网", CN_MEDIA),
+    "economy.gmw.cn":        ("gmw",      "Guangming Online / 光明网", CN_MEDIA),
+    "xinwen.bjd.com.cn":     ("bjd",      "Beijing Daily / 北京日报", CN_MEDIA),
+    "rss2.bjd.com.cn":       ("bjd",      "Beijing Daily / 北京日报", CN_MEDIA),
+    "www.cqn.com.cn":        ("cqn",      "China Quality News / 中国质量报", CN_MEDIA),
+    "www.ithome.com":        ("ithome",   "ITHome / IT之家", CN_MEDIA),
+    "www.nbd.com.cn":        ("nbd",      "National Business Daily / 每日经济新闻", CN_MEDIA),
+    "jsnews.jschina.com.cn": ("jschina",  "China Jiangsu Net / 中国江苏网", CN_MEDIA),
+    "www.szhgh.com":         ("szhgh",    "Red Song Society / 红歌会网", CN_MEDIA),
     # --- foreign / English-language: separate admin_level on purpose ---
+    # RTHK is Hong Kong's public broadcaster: 境外 for this corpus's purposes,
+    # so it must not read as mainland media in a level-split measure.
+    "news.rthk.hk":          ("rthk",     "RTHK / 香港電台", FOREIGN),
     "www.reuters.com":       ("reuters",  "Reuters", FOREIGN),
     "www.nytimes.com":       ("nytimes",  "New York Times", FOREIGN),
     "www.brecorder.com":     ("brecorder", "Business Recorder (Pakistan)", FOREIGN),
@@ -118,9 +148,14 @@ URL_DATE = (
     r'/(\d{4})(\d{2})(\d{2})/[0-9a-f]{20,}/c\.html',    # news.cn, nea, jjckb
     r'/(\d{4})(\d{2})(\d{2})/[0-9a-f]{20,}',            # news.cn variants
     r'/n1/(\d{4})/(\d{2})(\d{2})/c\d',                  # people.com.cn
-    r'/t(\d{4})(\d{2})(\d{2})_\d+',                     # npc, ce, mfa
+    r'/t(\d{4})(\d{2})(\d{2})_\d+',                     # npc, ce, mfa, cnr
+    r'/t(\d{4})(\d{2})(\d{2})_s[0-9a-f]+\.shtml',        # jschina
     r'/(\d{4})/(\d{2})-(\d{2})/\d+\.shtml',             # chinanews
     r'/article/(\d{4})(\d{2})(\d{2})/',                 # 21jingji, guandian
+    r'/(\d{4})/(\d{2})/(\d{2})/ARTI[A-Za-z0-9]+\.shtml',  # cctv
+    r'/(\d{4})-(\d{2})-(\d{2})/doc-[a-z0-9]+\.shtml',    # sina
+    r'/(?:articles|WeMedia|[A-Za-z]+)/(\d{4})-(\d{2})-(\d{2})/\d+\.html',  # nbd, szhgh
+    r'/k2/\d+-(\d{4})(\d{2})(\d{2})\.htm',              # rthk
     r'/a/(\d{4})(\d{2})(\d{2})\d{8,}\.html',             # eastmoney /a/202611063924849165.html
     r'/detail/(\d{4})(\d{2})(\d{2})/',                  # cnfin
     r'FR-(\d{4})-(\d{2})-(\d{2})',                      # govinfo Federal Register
@@ -199,6 +234,14 @@ def ingest(conn, urls: list, *, tag: str, dry_run: bool, allow_new: bool,
             if got[0] not in tally["new_sites"]:
                 tally["new_sites"].append(got[0])
         site_key, site_name, level = got
+        # A host whose site is in the finmedia registry is parsed by THAT site's
+        # measured rules (title suffix, body container, date marker) and
+        # deduplicated on its canonical URL; tc609's <meta PubDate> is a
+        # regeneration stamp that the generic META_DATE fallback would have
+        # stored as the date.
+        cfg = FIN_SITES.get(site_key)
+        if cfg:
+            url = canon(url, cfg)
 
         if conn.execute("SELECT 1 FROM documents WHERE url=? AND url != ''", (url,)).fetchone():
             tally["held"] += 1
@@ -211,11 +254,16 @@ def ingest(conn, urls: list, *, tag: str, dry_run: bool, allow_new: bool,
             log.warning(f"  FAIL   {url}: {str(e)[:90]}")
             continue
 
-        title = extract_title(html)
-        body = extract_body(html)
+        title = extract_title(html, cfg)
+        body = site_body(html, cfg) if cfg else extract_body(html)
         # An operator-asserted --date wins: a URL date is the page's posting
         # date, which for a reposted instrument is not its promulgation date.
-        date_pub = date or url_date(url) or meta_date(html)
+        # A registry site with its own date markers NEVER falls through to the
+        # generic META_DATE guess: no match there means the date is unknown.
+        if cfg and (cfg.get("date_pats") or cfg.get("date_url")):
+            date_pub = date or extract_date(url, html, cfg) or url_date(url)
+        else:
+            date_pub = date or url_date(url) or meta_date(html)
         if not title:
             tally["failed"] += 1
             log.warning(f"  NOTITLE {url}")

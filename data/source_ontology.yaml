@@ -67,11 +67,14 @@ tree:
         label_en: Agencies, Administrations & Bureaus
         label_zh: 直属机构与总局
         # 直属机构 / 国家局 / 部管局 / 事业单位. ccg = 中国海警局 (Coast Guard, per
-        # sites.name — NOT the CCG think tank). tc260 = 网安标委.
+        # sites.name — NOT the CCG think tank). tc260 = 网安标委. tc609 = 全国数据
+        # 标准化技术委员会 (under 国家数据局), placed beside tc260 as the one
+        # precedent for a national standards committee; neither is an agency
+        # in the strict sense and a `standards_body` leaf would fit both better.
         site_keys:
           [samr, chinatax, cac, nda, nbs, nrta, nhsa, csrc, sic, pbc,
            caac, ccg, cma, cnao, cnipa, cnsa, natcm, ncha, nea, neac, nfsra, nia,
-           saac, safe, sasac, sastind, sfa, spb, tc260]
+           saac, safe, sasac, sastind, sfa, spb, tc260, tc609]
       - id: central_cpc
         label_en: CPC Central Organs
         label_zh: 党中央机关
@@ -153,7 +156,13 @@ tree:
         # media (commentary/articles), not a research body.
         site_keys:
           [xinhua, newscn, people, peopleapp, cctv, cnr, stdaily, qstheory,
-           xinhua_en, xinhua_lw, people_rmrb, chinanews, chinanews_hn]
+           xinhua_en, xinhua_lw, people_rmrb, chinanews, chinanews_hn,
+           gmw, bjd, cqn, jschina]
+        # Added 2026-11-25 (crawlers/finmedia_outlets.py): gmw = 光明网's legal /
+        # tech / economy CHANNELS (the 光明日报 theory pages stay gmrb_theory in
+        # media_party_theory); bjd = 北京日报; cqn = 中国质量报 (市场监管总局's
+        # paper); jschina = 中国江苏网. bjd and jschina are provincial-level Party
+        # outlets: the level is NOT encoded here, same rule as ownership below.
       - id: media_party_theory
         label_en: Party Theory Journals & Theory Pages
         label_zh: 党刊与理论报刊
@@ -170,7 +179,10 @@ tree:
       - id: media_commercial
         label_en: Commercial & Tech Media
         label_zh: 商业与科技媒体
-        site_keys: [guancha, ifeng, thepaper, qbitai, 36kr, latepost, elsewhere, qqnews]
+        # ithome = IT之家 (title-filtered to policy items). szhgh = 红歌会网, a
+        # commentary / self-media site, here with guancha as the argued register.
+        site_keys: [guancha, ifeng, thepaper, qbitai, 36kr, latepost, elsewhere, qqnews,
+                    ithome, szhgh]
       - id: media_financial
         label_en: Financial & Business Press
         label_zh: 财经媒体
@@ -195,7 +207,7 @@ tree:
         # hold the lede only (measured 484-658 CJK), never a full body.
         site_keys:
           [ce, jjckb, yicai, jiemian, 21jingji, eeo, tmtpost, huxiu, caixin,
-           cnfin, guandian, eastmoney]
+           cnfin, guandian, eastmoney, sina, nbd]
       - id: media_foreign
         label_en: Foreign & English-language Media
         label_zh: 境外媒体
@@ -209,7 +221,10 @@ tree:
         # be split without contaminating the other.
         site_keys:
           [reuters, nytimes, brecorder, investing, bloomberglaw, govinfo,
-           zhonglun, chinaon]
+           zhonglun, chinaon, rthk]
+        # rthk = 香港電台, Hong Kong's public broadcaster. 境外 in the label's
+        # sense and admin_level='foreign_media': it must not read as mainland
+        # media, nor as sub-national government, in any level-split measure.
 
   # ── RESEARCH / THINK-TANK / OTHER ─────────────────────────────────────
   - id: research

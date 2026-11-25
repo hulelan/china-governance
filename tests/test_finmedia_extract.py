@@ -157,6 +157,9 @@ def test_gb18030_without_a_declared_charset_still_recovers():
 def test_every_site_declares_what_extract_date_needs(key):
     cfg = SITES[key]
     assert cfg.get("date_url") or cfg.get("date_pats") or cfg.get("date_epoch") \
-        or key == "caixin", f"{key} can never produce a date"
-    assert cfg["tier"] in (1, 2, 3)
-    assert "admin_level" not in cfg, "level is set at store time, not per site"
+        or cfg.get("date_utc") or key == "caixin", f"{key} can never produce a date"
+    assert cfg["tier"] in (1, 2, 3, 4, 5, 6)
+    # `level` is the registry's one spelling; a stray `admin_level` key would be
+    # silently ignored by crawl() and the site stored as 'media'.
+    assert "admin_level" not in cfg
+    assert cfg.get("level", "media") in ("media", "foreign_media", "central")
