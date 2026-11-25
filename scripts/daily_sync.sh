@@ -509,7 +509,7 @@ fi
 BACKUP_OK=false
 if [ -n "$SPACES_KEY" ] && [ -n "$SPACES_SECRET" ]; then
     log "Phase 3c: Backing up DB to Spaces..."
-    if timeout 1800 python3 scripts/backup_db.py >> "$LOG" 2>&1; then
+    if timeout 7200 python3 scripts/backup_db.py >> "$LOG" 2>&1; then
         BACKUP_OK=true
     else
         log "  backup_db had errors"
