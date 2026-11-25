@@ -140,7 +140,10 @@ def main() -> int:
             log(f"SKIP {name}: not found at {db_path}")
             continue
 
-        with tempfile.TemporaryDirectory(prefix="dbbackup_") as tmp:
+        # BACKUP_WORKDIR: where the uncompressed snapshot is built. It needs free
+        # space about equal to the DB, which the root disk no longer has.
+        with tempfile.TemporaryDirectory(
+                prefix="dbbackup_", dir=os.environ.get("BACKUP_WORKDIR") or None) as tmp:
             workdir = Path(tmp)
             try:
                 gz = snapshot_and_compress(db_path, workdir, date_str)
