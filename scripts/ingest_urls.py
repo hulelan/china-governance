@@ -40,7 +40,7 @@ import re
 import sys
 import time
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -76,6 +76,10 @@ HOSTS = {
     "www.sasac.gov.cn":      ("sasac",    "SASAC / 国务院国资委", CN_GOV),
     "www.12371.cn":          ("dangyuan", "CPC Members Network / 共产党员网", CN_GOV),
     "www.ndrc.gov.cn":       ("ndrc",     "National Development and Reform Commission", CN_GOV),
+    # 最高人民法院 press releases (court.gov.cn/fabu/xiangqing/): the Court's own
+    # announcements of first-instance sentences of senior officials. Same body as
+    # the existing `spc` site key, so the same key.
+    "www.court.gov.cn":      ("spc",      "Supreme People's Court (最高人民法院)", CN_GOV),
     # --- Chinese state media already in the corpus ---
     "www.news.cn":           ("xinhua",   "Xinhua / 新华社", CN_MEDIA),
     "english.news.cn":       ("xinhua_en", "Xinhua English", CN_MEDIA),
@@ -126,6 +130,16 @@ HOSTS = {
     "www.nbd.com.cn":        ("nbd",      "National Business Daily / 每日经济新闻", CN_MEDIA),
     "jsnews.jschina.com.cn": ("jschina",  "China Jiangsu Net / 中国江苏网", CN_MEDIA),
     "www.szhgh.com":         ("szhgh",    "Red Song Society / 红歌会网", CN_MEDIA),
+    # --- purge-source URLs (data/purges/officials.json, 2026-11-25) ---
+    "cn.chinadaily.com.cn":  ("chinadaily", "China Daily / 中国日报网", CN_MEDIA),
+    "language.chinadaily.com.cn": ("chinadaily", "China Daily / 中国日报网", CN_MEDIA),
+    "news.ifeng.com":        ("ifeng",    "Phoenix News (凤凰网)", CN_MEDIA),
+    "news.sina.com.cn":      ("sina",     "Sina Finance / 新浪财经", CN_MEDIA),
+    "news.sina.cn":          ("sina",     "Sina Finance / 新浪财经", CN_MEDIA),
+    "www.bjnews.com.cn":     ("bjnews",   "Beijing News / 新京报", CN_MEDIA),
+    "m.mp.oeeee.com":        ("oeeee",    "Southern Metropolis Daily / 南方都市报 (奥一网)", CN_MEDIA),
+    "www.rmzxw.com.cn":      ("rmzxw",    "CPPCC Daily / 人民政协网 (人民政协报)", CN_MEDIA),
+    "www.thepaper.cn":       ("thepaper", "The Paper (澎湃新闻)", CN_MEDIA),
     # --- foreign / English-language: separate admin_level on purpose ---
     # RTHK is Hong Kong's public broadcaster: 境外 for this corpus's purposes,
     # so it must not read as mainland media in a level-split measure.
@@ -138,6 +152,13 @@ HOSTS = {
     "www.govinfo.gov":       ("govinfo",  "US GPO / Federal Register", FOREIGN),
     "en.zhonglun.com":       ("zhonglun", "Zhong Lun Law Firm (EN analysis)", FOREIGN),
     "www.chinaon.ai":        ("chinaon",  "ChinaOn.ai", FOREIGN),
+    # 香港01, a Hong Kong outlet: 境外 like rthk.
+    "global.hk01.com":       ("hk01",     "HK01 / 香港01", FOREIGN),
+    # China Digital Times (Berkeley-founded, overseas). An AGGREGATOR that mirrors
+    # PRC texts, often ones since deleted at the source: foreign_media because the
+    # PUBLISHER is overseas, even when the text it carries is a PRC document. A
+    # mirror is evidence that a text existed, not a PRC issuance.
+    "chinadigitaltimes.net": ("cdt",      "China Digital Times / 中国数字时代", FOREIGN),
 }
 
 BASE_URL = {h: f"{urlparse('https://' + h).scheme}://{h}" for h in HOSTS}
@@ -154,6 +175,8 @@ URL_DATE = (
     r'/article/(\d{4})(\d{2})(\d{2})/',                 # 21jingji, guandian
     r'/(\d{4})/(\d{2})/(\d{2})/ARTI[A-Za-z0-9]+\.shtml',  # cctv
     r'/(\d{4})-(\d{2})-(\d{2})/doc-[a-z0-9]+\.shtml',    # sina
+    r'/(\d{4})-(\d{2})-(\d{2})/detail-[a-z0-9]+\.d\.html',  # news.sina.cn
+    r'/(\d{4})-(\d{2})-(\d{2})/\d{8,}\.shtml',         # news.sina.com.cn (2012)
     r'/(?:articles|WeMedia|[A-Za-z]+)/(\d{4})-(\d{2})-(\d{2})/\d+\.html',  # nbd, szhgh
     r'/k2/\d+-(\d{4})(\d{2})(\d{2})\.htm',              # rthk
     r'/a/(\d{4})(\d{2})(\d{2})\d{8,}\.html',             # eastmoney /a/202611063924849165.html
@@ -195,6 +218,39 @@ def meta_date(html: str) -> str:
             if 1990 <= y <= 2035 and 1 <= mo <= 12 and 1 <= d <= 31:
                 return f"{y:04d}-{mo:02d}-{d:02d}"
     return ""
+
+
+# Per-site title rules for hosts outside the finmedia registry, tried BEFORE the
+# generic extractor: (one-group page patterns, a prefix/suffix to cut). Each was
+# measured on the live page (2026-11-25): court.gov.cn's <title> is the section
+# name "权威发布 - 中华人民共和国最高人民法院" on every press release, with the
+# headline in the first class="title"; rmzxw's first <h1> is the breadcrumb
+# "首页>要闻要闻"; rmrbwap's <title> is "人民日报\r\n-\r\n<headline>".
+TITLE_RULES = {
+    # 2015 pages wrap the headline in a <span>: <div class="title"><span>…</span>
+    "spc":         ((r'class="title">\s*(?:<span>)?\s*([^<]{6,200}?)\s*<',), ""),
+    "rmzxw":       ((r'<title>\s*([^<]{6,200}?)\s*——人民政协网',), ""),
+    "people_rmrb": ((), r'^人民日报\s*-\s*'),
+}
+
+
+def site_title(html: str, site_key: str, cfg) -> str:
+    pats, cut = TITLE_RULES.get(site_key, ((), ""))
+    for pat in pats:
+        m = re.search(pat, html)
+        if m and _cjk(m.group(1)) >= 4:
+            return re.sub(r'\s+', ' ', m.group(1)).strip()
+    t = extract_title(html, cfg)
+    if cut:
+        t = re.sub(cut, "", t).strip()
+    return re.sub(r'\s+', ' ', t).strip() if cut else t
+
+
+def iri_to_uri(url: str) -> str:
+    """Percent-encode a non-ASCII path (global.hk01.com/即时中国/...): urllib
+    refuses an IRI with 'ascii codec can't encode'. The row keeps the URL as
+    given, so it still matches the URL a brief or dataset cites."""
+    return quote(url, safe=":/?#[]@!$&'()*+,;=%~")
 
 
 def read_urls(path: str | None) -> list:
@@ -248,13 +304,13 @@ def ingest(conn, urls: list, *, tag: str, dry_run: bool, allow_new: bool,
             log.info(f"  HELD   {url}")
             continue
         try:
-            html = fetch(url, headers=BROWSER_UA)
+            html = fetch(iri_to_uri(url), headers=BROWSER_UA)
         except Exception as e:
             tally["failed"] += 1
             log.warning(f"  FAIL   {url}: {str(e)[:90]}")
             continue
 
-        title = extract_title(html, cfg)
+        title = site_title(html, site_key, cfg)
         body = site_body(html, cfg) if cfg else extract_body(html)
         # An operator-asserted --date wins: a URL date is the page's posting
         # date, which for a reposted instrument is not its promulgation date.
@@ -279,7 +335,11 @@ def ingest(conn, urls: list, *, tag: str, dry_run: bool, allow_new: bool,
                               "title": title[:62], "url": url}, ensure_ascii=False))
             continue
 
-        if site_key not in seen_sites:
+        # store_site's upsert rewrites sid / tree_json / last_crawled, which a
+        # crawler-owned site (gkmlpt keeps its sid and tree there) must not lose to
+        # a one-URL ingest: create the site only when it does not exist yet.
+        if site_key not in seen_sites and not conn.execute(
+                "SELECT 1 FROM sites WHERE site_key=?", (site_key,)).fetchone():
             store_site(conn, site_key, {"name": site_name,
                                         "base_url": BASE_URL.get(host, f"https://{host}"),
                                         "admin_level": level})

@@ -320,3 +320,33 @@ alternate Central Committee members.
   match is rejected by the verifier and by `tests/test_purges_verifier.py`.
 - Web search results were summarised by the search tool; `fetched: false` in the data marks
   the 21 URLs whose text we did not open.
+
+## Revision 2026-11-25: web sources ingested
+
+The 26 URLs in `web_urls_to_ingest` were ingested (`scripts/ingest_urls.py --tag
+purge-sources-2026-11-25`): 24 stored, 2 not retrievable (language.chinadaily.com.cn 2013 page
+returns 404; m.mp.oeeee.com returns 493 "JFE Forbidden" from the droplet). 36 of the 39 `[web]`
+items whose URL had been recorded were then relabelled `[corpus]` by hand-chosen exact quotes
+(`data/purges/web_upgrades.json`, applied by `scripts/rnd/purges/upgrade_web_evidence.py`, all 176
+corpus quotes re-verified). The three left as `[web]` are the two unretrievable URLs and the
+18th CC Fourth Plenum list: the stored 人民政协网 page (900266957) is a 人民网 retrospective that
+names only 李东生 and 蒋洁敏, not the six.
+
+What moved:
+
+| measure | before | after |
+|---|---|---|
+| 副国级+ since the congress, corpus-verified | 13 of 14 | **14 of 14** (杨晶's demotion, from the Phoenix relay of the 24 Feb 2018 CCDI decision, 900266939) |
+| CMC-member tier, corpus-verified | 3 of 4 | **4 of 4** (苗华's expulsion, from the 17 Oct 2025 Xinhua release, 900266955, and the 20th CC Fourth Plenum communique on 12371.cn, 900266947) |
+| 20th CC full members expelled, corpus-verified | 26 (36 incl. web) | **36** |
+| 20th CC alternates expelled, corpus-verified | 10 (14 incl. web) | **14** |
+| plenum lists held in the corpus | 18-5, 20-3, 20-5 | + **18-6, 20-4** |
+
+Two of the newly corpus-backed items are carried by foreign-media rows and say so in their
+`note`: the 18-6 communique text is a China Digital Times mirror (`cdt`, admin_level
+`foreign_media`; no official copy is held), and 何卫东's 28 Oct 2025 removal as state CMC
+vice-chair is a sentence inside a Hong Kong 01 report (`hk01`, `foreign_media`); the NPC notice
+itself is not held. Where an upgraded event removes the person (investigation, removal from
+post, demotion, expulsion, plenum confirmation, sentence), its `establishes_removal` was set,
+following the file's convention that the flag sits on corpus-backed removal events. The headline
+numbers in section 1 above are as first written; this table supersedes them.

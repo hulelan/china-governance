@@ -17,6 +17,19 @@ quote fails. Fields marked (derived) below are written by the script; do not han
 
 `scripts/rnd/purges/tally_announcements.py` produces the one own-tally row in `ladder`.
 
+## Upgrading web evidence once its URL is ingested
+
+    python3 scripts/ingest_urls.py --urls-file <web_urls_to_ingest> --tag purge-sources-2026-11-25   # droplet
+    python3 scripts/rnd/purges/upgrade_web_evidence.py --ssh root@104.236.88.45 --list    # read the stored texts
+    #   hand-write data/purges/web_upgrades.json: one {path, url, doc_id, quote, note?} per item
+    python3 scripts/rnd/purges/upgrade_web_evidence.py --ssh root@104.236.88.45 --apply   # all-or-nothing
+    python3 scripts/rnd/purges/build_purges.py --ssh root@104.236.88.45                   # verify + re-summarise
+
+The quote is chosen by READING the stored text for the specific fact the item supports,
+never generated: a sentence naming the person can belong to a different event. An upgraded
+item is an ordinary `corpus` item plus `upgraded_from` (the old label, url, fetched, note),
+and the verifier treats it exactly like any other corpus quote.
+
 ## Schema
 
 Top level: `meta`, `persons`, `cc_expulsions`, `ladder`, `institutional_changes`, `ties`,
@@ -26,7 +39,7 @@ Top level: `meta`, `persons`, `cc_expulsions`, `ladder`, `institutional_changes`
 
 | label | fields | counted as verified |
 |---|---|---|
-| `corpus` | `doc_id`, `quote`, optional `note`; (derived) `verified`, `where` (`title`/`body`), `site`, `url`, `doc_date`, `doc_title` | yes, when `verified` is true |
+| `corpus` | `doc_id`, `quote`, optional `note`, optional `upgraded_from` (the former web item, kept when it was upgraded after ingest); (derived) `verified`, `where` (`title`/`body`), `site`, `url`, `doc_date`, `doc_title` | yes, when `verified` is true |
 | `web, not in corpus` | `url`, `fetched` (true = page opened and the key sentence read; false = URL and wording from a search summary only), `note` | never |
 | `not in corpus` | `note` (the fact is recalled from general knowledge) | never |
 | `own tally` | `script`, `note` | n/a |

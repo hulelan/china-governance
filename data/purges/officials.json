@@ -129,13 +129,24 @@
      "date": "2014-07-29",
      "action": "investigation_announced",
      "detail_en": "Politburo decides to open a case review (立案审查).",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266949,
+       "quote": "2014年7月29日，中央政治局召开会议，听取了中央纪委开展核查工作情况的汇报，决定对周永康立案审查。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.bjnews.com.cn/detail/155148542914881.html",
+        "fetched": false,
+        "note": "Beijing News reprint of the Xinhua 6 Dec 2014 release, which recounts the 29 July decision. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "bjnews",
        "url": "https://www.bjnews.com.cn/detail/155148542914881.html",
-       "fetched": false,
-       "note": "Beijing News reprint of the Xinhua 6 Dec 2014 release, which recounts the 29 July decision. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2014-12-06",
+       "doc_title": "最高检依法决定对周永康立案侦查予以逮捕"
       }
      ]
     },
@@ -143,13 +154,24 @@
      "date": "2014-12-05",
      "action": "expelled",
      "detail_en": "Politburo expels him from the Party and transfers the case to the judiciary.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266949,
+       "quote": "决定给予周永康开除党籍处分，将周永康涉嫌犯罪问题及线索移送司法机关依法处理。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.bjnews.com.cn/detail/155148542914881.html",
+        "fetched": false,
+        "note": "Beijing News reprint of the Xinhua release dated 6 Dec 2014. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "bjnews",
        "url": "https://www.bjnews.com.cn/detail/155148542914881.html",
-       "fetched": false,
-       "note": "Beijing News reprint of the Xinhua release dated 6 Dec 2014. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2014-12-06",
+       "doc_title": "最高检依法决定对周永康立案侦查予以逮捕"
       }
      ]
     },
@@ -176,19 +198,41 @@
      "date": "2015-06-11",
      "action": "sentenced",
      "detail_en": "Tianjin No. 1 Intermediate Court: life imprisonment.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266959,
+       "quote": "认定周永康犯受贿罪，判处无期徒刑，剥夺政治权利终身，并处没收个人财产",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.xinhuanet.com/politics/2015-06/11/c_1115590304.htm",
+        "fetched": false,
+        "note": "Xinhua. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "xinhua",
        "url": "https://www.xinhuanet.com/politics/2015-06/11/c_1115590304.htm",
-       "fetched": false,
-       "note": "Xinhua. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2015-06-11",
+       "doc_title": "周永康一审被判处无期徒刑"
       },
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266950,
+       "quote": "认定周永康犯受贿罪，判处无期徒刑，剥夺政治权利终身，并处没收个人财产",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.court.gov.cn/fabu/xiangqing/14688.html",
+        "fetched": false,
+        "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "spc",
        "url": "https://www.court.gov.cn/fabu/xiangqing/14688.html",
-       "fetched": false,
-       "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2015-06-11",
+       "doc_title": "周永康一审被判处无期徒刑"
       }
      ],
      "sentence": "life imprisonment"
@@ -234,7 +278,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "2 of 5"
+   "events_with_corpus_evidence": "5 of 5"
   },
   {
    "id": "bo-xilai",
@@ -296,13 +340,24 @@
      "date": "2012-04-10",
      "action": "investigation_announced",
      "detail_en": "Suspended from the Politburo and Central Committee; case opened by the CCDI.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266943,
+       "quote": "中央决定，停止薄熙来担任的中央政治局委员、中央委员职务，并由中央纪委对其立案检查。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://news.sina.com.cn/o/2012-09-29/051925279306.shtml",
+        "fetched": false,
+        "note": "Sina reprint; the September 2012 release recounts the April decision. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "sina",
        "url": "https://news.sina.com.cn/o/2012-09-29/051925279306.shtml",
-       "fetched": false,
-       "note": "Sina reprint; the September 2012 release recounts the April decision. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2012-09-29",
+       "doc_title": "中共中央决定给予薄熙来开除党籍、开除公职处分"
       }
      ]
     },
@@ -310,13 +365,24 @@
      "date": "2012-09-28",
      "action": "expelled",
      "detail_en": "Politburo expels him from the Party and from public office.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266948,
+       "quote": "决定给予薄熙来开除党籍、开除公职处分，对其涉嫌犯罪问题及犯罪问题线索移送司法机关依法处理。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.bjnews.com.cn/detail/155145467314597.html",
+        "fetched": false,
+        "note": "Beijing News reprint of the Xinhua release. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "bjnews",
        "url": "https://www.bjnews.com.cn/detail/155145467314597.html",
-       "fetched": false,
-       "note": "Beijing News reprint of the Xinhua release. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2012-09-28",
+       "doc_title": "中共中央决定给予薄熙来开除党籍、开除公职处分"
       }
      ]
     },
@@ -394,7 +460,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "2 of 6"
+   "events_with_corpus_evidence": "4 of 6"
   },
   {
    "id": "xu-caihou",
@@ -451,13 +517,24 @@
      "date": "2014-03-15",
      "action": "investigation_announced",
      "detail_en": "Organisational investigation opened (made public on 30 June 2014).",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266956,
+       "quote": "2014年3月15日，中共中央依照党的纪律条例，决定对徐才厚涉嫌违纪问题进行组织调查。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.rmzxw.com.cn/sy/yw/2014/06/30/345859.shtml",
+        "fetched": false,
+        "note": "CPPCC Daily site reprint of the Xinhua 30 June 2014 release. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "rmzxw",
        "url": "https://www.rmzxw.com.cn/sy/yw/2014/06/30/345859.shtml",
-       "fetched": false,
-       "note": "CPPCC Daily site reprint of the Xinhua 30 June 2014 release. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2014-06-30",
+       "doc_title": "中共中央决定给予徐才厚开除党籍处分"
       }
      ]
     },
@@ -465,13 +542,24 @@
      "date": "2014-06-30",
      "action": "expelled",
      "detail_en": "Politburo expels him; bribery case sent to the military procuratorate.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266956,
+       "quote": "决定给予徐才厚开除党籍处分，对其涉嫌受贿犯罪问题及问题线索移送最高人民检察院授权军事检察机关依法处理。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.rmzxw.com.cn/sy/yw/2014/06/30/345859.shtml",
+        "fetched": false,
+        "note": "CPPCC Daily site reprint of the Xinhua release. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "rmzxw",
        "url": "https://www.rmzxw.com.cn/sy/yw/2014/06/30/345859.shtml",
-       "fetched": false,
-       "note": "CPPCC Daily site reprint of the Xinhua release. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2014-06-30",
+       "doc_title": "中共中央决定给予徐才厚开除党籍处分"
       }
      ]
     },
@@ -547,7 +635,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "2 of 5"
+   "events_with_corpus_evidence": "4 of 5"
   },
   {
    "id": "guo-boxiong",
@@ -614,13 +702,24 @@
      "date": "2016-07-25",
      "action": "sentenced",
      "detail_en": "Military court: life imprisonment, stripped of the rank of general.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266940,
+       "quote": "认定郭伯雄犯受贿罪，判处无期徒刑，剥夺政治权利终身，并处没收个人全部财产，追缴的赃款赃物上缴国库，剥夺上将军衔。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://news.ifeng.com/c/7fc8SRXHKpo",
+        "fetched": false,
+        "note": "Phoenix reprint of the Xinhua release. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "ifeng",
        "url": "https://news.ifeng.com/c/7fc8SRXHKpo",
-       "fetched": false,
-       "note": "Phoenix reprint of the Xinhua release. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2016-07-25",
+       "doc_title": "郭伯雄一审被判处无期徒刑 剥夺上将军衔"
       }
      ],
      "sentence": "life imprisonment"
@@ -666,7 +765,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "2 of 3"
+   "events_with_corpus_evidence": "3 of 3"
   },
   {
    "id": "ling-jihua",
@@ -730,13 +829,24 @@
      "date": "2014-12-22",
      "action": "investigation_announced",
      "detail_en": "Case review opened.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266944,
+       "quote": "2014年12月22日，中央政治局常委会召开会议，决定对令计划立案审查。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://paper.people.com.cn/hqrw/html/2015-07/26/content_1663877.htm",
+        "fetched": false,
+        "note": "People's Daily group paper; the July 2015 release recounts the 22 Dec 2014 decision. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "people_rmrb",
        "url": "https://paper.people.com.cn/hqrw/html/2015-07/26/content_1663877.htm",
-       "fetched": false,
-       "note": "People's Daily group paper; the July 2015 release recounts the 22 Dec 2014 decision. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2015-07-26",
+       "doc_title": "中共中央决定给予令计划开除党籍开除公职处分"
       }
      ]
     },
@@ -765,13 +875,24 @@
      "date": "2015-07-20",
      "action": "expelled",
      "detail_en": "Politburo expels him from the Party and public office.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266944,
+       "quote": "决定给予令计划开除党籍、开除公职处分，将令计划涉嫌犯罪问题及线索移送司法机关依法处理。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://paper.people.com.cn/hqrw/html/2015-07/26/content_1663877.htm",
+        "fetched": false,
+        "note": "People's Daily group paper. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "people_rmrb",
        "url": "https://paper.people.com.cn/hqrw/html/2015-07/26/content_1663877.htm",
-       "fetched": false,
-       "note": "People's Daily group paper. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2015-07-26",
+       "doc_title": "中共中央决定给予令计划开除党籍开除公职处分"
       }
      ]
     },
@@ -798,13 +919,24 @@
      "date": "2016-07-04",
      "action": "sentenced",
      "detail_en": "Tianjin No. 1 Intermediate Court: life imprisonment.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266951,
+       "quote": "认定令计划犯受贿罪，判处无期徒刑，剥夺政治权利终身，并处没收个人全部财产",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.court.gov.cn/fabu/xiangqing/23001.html",
+        "fetched": false,
+        "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "spc",
        "url": "https://www.court.gov.cn/fabu/xiangqing/23001.html",
-       "fetched": false,
-       "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2016-07-04",
+       "doc_title": "令计划一审被判处无期徒刑"
       }
      ],
      "sentence": "life imprisonment"
@@ -850,7 +982,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "2 of 5"
+   "events_with_corpus_evidence": "5 of 5"
   },
   {
    "id": "su-rong",
@@ -952,13 +1084,24 @@
      "date": "2017-01-23",
      "action": "sentenced",
      "detail_en": "Jinan Intermediate Court: life imprisonment.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266952,
+       "quote": "对被告人苏荣以受贿罪判处无期徒刑，剥夺政治权利终身，并处没收个人全部财产",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.court.gov.cn/fabu/xiangqing/35302.html",
+        "fetched": false,
+        "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "spc",
        "url": "https://www.court.gov.cn/fabu/xiangqing/35302.html",
-       "fetched": false,
-       "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2017-01-24",
+       "doc_title": "全国政协原副主席苏荣一审被判处无期徒刑"
       }
      ],
      "sentence": "life imprisonment"
@@ -1023,7 +1166,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "2 of 6"
+   "events_with_corpus_evidence": "3 of 6"
   },
   {
    "id": "sun-zhengcai",
@@ -1136,13 +1279,24 @@
      "date": "2018-05-08",
      "action": "sentenced",
      "detail_en": "Tianjin No. 1 Intermediate Court: life imprisonment for bribery.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266953,
+       "quote": "对被告人孙政才以受贿罪判处无期徒刑，剥夺政治权利终身，并处没收个人全部财产",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.court.gov.cn/fabu/xiangqing/94792.html",
+        "fetched": false,
+        "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "spc",
        "url": "https://www.court.gov.cn/fabu/xiangqing/94792.html",
-       "fetched": false,
-       "note": "Supreme People's Court site. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2018-05-08",
+       "doc_title": "第十八届中央政治局原委员、重庆市委原书记孙政才受贿案一审公开宣判"
       }
      ],
      "sentence": "life imprisonment"
@@ -1188,7 +1342,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "3 of 5"
+   "events_with_corpus_evidence": "4 of 5"
   },
   {
    "id": "yang-jing",
@@ -1224,10 +1378,21 @@
     "en": "Serious violations of discipline; one year of Party probation, administrative dismissal, demotion to full-ministerial rank. Wording is from a web reprint, not the corpus.",
     "evidence": [
      {
-      "label": "web, not in corpus",
+      "label": "corpus",
+      "doc_id": 900266939,
+      "quote": "决定给予杨晶同志留党察看一年、行政撤职处分，降为正部长级，按程序办理。",
+      "upgraded_from": {
+       "label": "web, not in corpus",
+       "url": "https://news.ifeng.com/c/7fZtSUsPh8Z",
+       "fetched": true,
+       "note": "Phoenix page relaying the 24 Feb 2018 Xinhua release; fetched, key sentence: 决定给予杨晶同志留党察看一年、行政撤职处分，降为正部长级，按程序办理"
+      },
+      "verified": true,
+      "where": "body",
+      "site": "ifeng",
       "url": "https://news.ifeng.com/c/7fZtSUsPh8Z",
-      "fetched": true,
-      "note": "Phoenix page relaying the 24 Feb 2018 Xinhua release; fetched, key sentence: 决定给予杨晶同志留党察看一年、行政撤职处分，降为正部长级，按程序办理"
+      "doc_date": "2018-02-24",
+      "doc_title": "[夜读]认错后，副国级被降一级"
      }
     ]
    },
@@ -1236,13 +1401,25 @@
      "date": "2018-02-24",
      "action": "demoted",
      "detail_en": "One year of Party probation, administrative dismissal, demoted to full-ministerial rank.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266939,
+       "quote": "决定给予杨晶同志留党察看一年、行政撤职处分，降为正部长级，按程序办理。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://news.ifeng.com/c/7fZtSUsPh8Z",
+        "fetched": true,
+        "note": "Phoenix page relaying the Xinhua release; fetched"
+       },
+       "note": "Phoenix relay of the 24 Feb 2018 CCDI decision, followed by commentary; the quoted sentence is the decision text.",
+       "verified": true,
+       "where": "body",
+       "site": "ifeng",
        "url": "https://news.ifeng.com/c/7fZtSUsPh8Z",
-       "fetched": true,
-       "note": "Phoenix page relaying the Xinhua release; fetched"
+       "doc_date": "2018-02-24",
+       "doc_title": "[夜读]认错后，副国级被降一级"
       }
      ]
     }
@@ -1275,8 +1452,8 @@
      ]
     }
    ],
-   "corpus_verified": false,
-   "events_with_corpus_evidence": "0 of 1"
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "1 of 1"
   },
   {
    "id": "qin-gang",
@@ -1329,13 +1506,24 @@
      "date": "2023-07-25",
      "action": "removed_from_post",
      "detail_en": "NPC Standing Committee removes him as foreign minister.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266954,
+       "quote": "决定免去秦刚兼任的外交部部长职务，任命王毅为外交部部长",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.gov.cn/yaowen/liebiao/202307/content_6894258.htm",
+        "fetched": false,
+        "note": "gov.cn. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "gov",
        "url": "https://www.gov.cn/yaowen/liebiao/202307/content_6894258.htm",
-       "fetched": false,
-       "note": "gov.cn. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2023-07-25",
+       "doc_title": "十四届全国人大常委会举行第四次会议"
       }
      ]
     },
@@ -1343,13 +1531,24 @@
      "date": "2023-10-24",
      "action": "removed_from_post",
      "detail_en": "NPC Standing Committee removes him as State Councilor.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266945,
+       "quote": "二、免去秦刚的国务委员职务。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://paper.people.com.cn/rmrb/html/2023-10/25/nw.D110000renmrb_20231025_3-04.htm",
+        "fetched": false,
+        "note": "People's Daily 25 Oct 2023, list of removals. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "people_rmrb",
        "url": "https://paper.people.com.cn/rmrb/html/2023-10/25/nw.D110000renmrb_20231025_3-04.htm",
-       "fetched": false,
-       "note": "People's Daily 25 Oct 2023, list of removals. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2023-10-25",
+       "doc_title": "全国人民代表大会常务委员会决定任免的名单"
       }
      ]
     },
@@ -1387,10 +1586,21 @@
      "date": "2023-07-25",
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266954,
+       "quote": "免去秦刚兼任的外交部部长职务，任命王毅为外交部部长",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.gov.cn/yaowen/liebiao/202307/content_6894258.htm",
+        "fetched": false,
+        "note": "gov.cn. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "gov",
        "url": "https://www.gov.cn/yaowen/liebiao/202307/content_6894258.htm",
-       "fetched": false,
-       "note": "gov.cn. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2023-07-25",
+       "doc_title": "十四届全国人大常委会举行第四次会议"
       }
      ]
     },
@@ -1407,7 +1617,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "1 of 3"
+   "events_with_corpus_evidence": "3 of 3"
   },
   {
    "id": "li-shangfu",
@@ -1472,13 +1682,25 @@
      "date": "2023-10-24",
      "action": "removed_from_post",
      "detail_en": "NPC Standing Committee removes him as State Councilor, defence minister and member of the state Central Military Commission; no reason stated at the time.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266945,
+       "quote": "一、免去李尚福的国务委员、国防部部长职务。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://paper.people.com.cn/rmrb/html/2023-10/25/nw.D110000renmrb_20231025_3-04.htm",
+        "fetched": false,
+        "note": "People's Daily 25 Oct 2023. search-result URL, page not fetched; wording from the search summary"
+       },
+       "note": "The list covers the State Councilor and defence-minister posts; the state CMC membership removal is not in this text.",
+       "verified": true,
+       "where": "body",
+       "site": "people_rmrb",
        "url": "https://paper.people.com.cn/rmrb/html/2023-10/25/nw.D110000renmrb_20231025_3-04.htm",
-       "fetched": false,
-       "note": "People's Daily 25 Oct 2023. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2023-10-25",
+       "doc_title": "全国人民代表大会常务委员会决定任免的名单"
       }
      ]
     },
@@ -1486,13 +1708,24 @@
      "date": "2024-06-27",
      "action": "expelled",
      "detail_en": "Politburo expels him; case sent to the military procuratorate.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266946,
+       "quote": "决定给予李尚福开除党籍处分，终止其党的二十大代表资格，将李尚福涉嫌犯罪问题移送军事检察机关依法审查起诉。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://paper.people.com.cn/rmrbwap/html/2024-06/28/nw.D110000renmrb_20240628_3-04.htm",
+        "fetched": false,
+        "note": "People's Daily 28 June 2024. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "people_rmrb",
        "url": "https://paper.people.com.cn/rmrbwap/html/2024-06/28/nw.D110000renmrb_20240628_3-04.htm",
-       "fetched": false,
-       "note": "People's Daily 28 June 2024. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2024-06-28",
+       "doc_title": "中央军委原委员、原国务委员兼国防部长李尚福受到开除党籍处分"
       }
      ]
     },
@@ -1580,7 +1813,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "2 of 4"
+   "events_with_corpus_evidence": "4 of 4"
   },
   {
    "id": "wei-fenghe",
@@ -1645,13 +1878,24 @@
      "date": "2023-09-21",
      "action": "investigation_announced",
      "detail_en": "Military discipline body opens a case (made public 27 June 2024).",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266941,
+       "quote": "2023年9月21日，由军委纪委监委对魏凤和严重违纪违法问题立案审查调查",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://news.sina.cn/2024-06-27/detail-incaemyn6936185.d.html",
+        "fetched": true,
+        "note": "Sina reprint of CCTV/Beijing Youth Daily; fetched, key sentence: 2023年9月21日，由军委纪委监委对魏凤和严重违纪违法问题立案审查调查"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "sina",
        "url": "https://news.sina.cn/2024-06-27/detail-incaemyn6936185.d.html",
-       "fetched": true,
-       "note": "Sina reprint of CCTV/Beijing Youth Daily; fetched, key sentence: 2023年9月21日，由军委纪委监委对魏凤和严重违纪违法问题立案审查调查"
+       "doc_date": "2024-06-27",
+       "doc_title": "李尚福、魏凤和被开除党籍、军籍，取消上将军衔"
       }
      ]
     },
@@ -1659,13 +1903,24 @@
      "date": "2024-06-27",
      "action": "expelled",
      "detail_en": "Politburo expels him; case sent to the military procuratorate.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266941,
+       "quote": "决定给予魏凤和开除党籍处分，终止其党的二十大代表资格。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://news.sina.cn/2024-06-27/detail-incaemyn6936185.d.html",
+        "fetched": true,
+        "note": "fetched, key sentence: 决定给予魏凤和开除党籍处分，终止其党的二十大代表资格"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "sina",
        "url": "https://news.sina.cn/2024-06-27/detail-incaemyn6936185.d.html",
-       "fetched": true,
-       "note": "fetched, key sentence: 决定给予魏凤和开除党籍处分，终止其党的二十大代表资格"
+       "doc_date": "2024-06-27",
+       "doc_title": "李尚福、魏凤和被开除党籍、军籍，取消上将军衔"
       }
      ]
     },
@@ -1711,7 +1966,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "1 of 3"
+   "events_with_corpus_evidence": "3 of 3"
   },
   {
    "id": "he-weidong",
@@ -1775,13 +2030,24 @@
      "date": "2025-10-17",
      "action": "expelled",
      "detail_en": "Defence ministry spokesman: the Party centre expels nine generals, He first among them; army expulsion decided earlier.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266955,
+       "quote": "给予何卫东、苗华、何宏军、王秀斌、林向阳、秦树桐、袁华智、王春宁8名中央委员开除党籍处分",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
+        "fetched": true,
+        "note": "Xinhua; fetched, key sentence: 党中央决定给予9人开除党籍处分"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "xinhua",
        "url": "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
-       "fetched": true,
-       "note": "Xinhua; fetched, key sentence: 党中央决定给予9人开除党籍处分"
+       "doc_date": "2025-10-17",
+       "doc_title": "何卫东、苗华等9人严重违纪违法被开除党籍军籍"
       }
      ]
     },
@@ -1789,13 +2055,24 @@
      "date": "2025-10-23",
      "action": "expulsion_confirmed_by_plenum",
      "detail_en": "Fourth Plenum of the 20th Central Committee confirms 14 expulsions.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266947,
+       "quote": "确认中央政治局之前作出的给予何卫东、苗华、唐仁健、金湘军、何宏军、王秀斌、林向阳、秦树桐、袁华智、王春宁、李石松、杨发森、朱芝松、张凤中开除党籍的处分。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
+        "fetched": true,
+        "note": "12371.cn full communique; fetched"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "dangyuan",
        "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
-       "fetched": true,
-       "note": "12371.cn full communique; fetched"
+       "doc_date": "2025-10-23",
+       "doc_title": "中国共产党第二十届中央委员会第四次全体会议公报"
       }
      ]
     },
@@ -1803,13 +2080,25 @@
      "date": "2025-10-28",
      "action": "removed_from_post",
      "detail_en": "NPC Standing Committee removes him as vice-chair of the state Central Military Commission.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266938,
+       "quote": "2025年10月28日，十四届全国人大常委会第十八次会议经表决，免去何卫东的中华人民共和国中央军事委员会副主席职务。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://global.hk01.com/即时中国/60307375/何卫东等8人被罢免全国人大代表职务",
+        "fetched": false,
+        "note": "HK01 relay of the NPC notice; no official URL retrieved. search-result URL, page not fetched; wording from the search summary"
+       },
+       "note": "HK01 (admin_level foreign_media) restating the NPC Standing Committee vote inside a 27 Dec 2025 report; the NPC notice itself is not held.",
+       "verified": true,
+       "where": "body",
+       "site": "hk01",
        "url": "https://global.hk01.com/即时中国/60307375/何卫东等8人被罢免全国人大代表职务",
-       "fetched": false,
-       "note": "HK01 relay of the NPC notice; no official URL retrieved. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2025-12-27",
+       "doc_title": "何卫东等8人被罢免全国人大代表职务"
       }
      ]
     },
@@ -1847,10 +2136,21 @@
      "date": "2025-10-23",
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266947,
+       "quote": "全会决定，增补张升民为中共中央军事委员会副主席。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
+        "fetched": true,
+        "note": "Fourth Plenum communique; fetched, key sentence: 全会决定，增补张升民为中共中央军事委员会副主席"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "dangyuan",
        "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
-       "fetched": true,
-       "note": "Fourth Plenum communique; fetched, key sentence: 全会决定，增补张升民为中共中央军事委员会副主席"
+       "doc_date": "2025-10-23",
+       "doc_title": "中国共产党第二十届中央委员会第四次全体会议公报"
       },
       {
        "label": "corpus",
@@ -1868,7 +2168,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "1 of 4"
+   "events_with_corpus_evidence": "4 of 4"
   },
   {
    "id": "ma-xingrui",
@@ -2124,13 +2424,24 @@
      "date": "2026-01-24",
      "action": "investigation_announced",
      "detail_en": "Defence ministry: case review and investigation opened into Zhang Youxia and Liu Zhenli.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266937,
+       "quote": "决定对张又侠、刘振立立案审查调查。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://cn.chinadaily.com.cn/a/202601/24/WS697478f6a310942cc499ca5d.html",
+        "fetched": false,
+        "note": "China Daily Chinese site. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "chinadaily",
        "url": "https://cn.chinadaily.com.cn/a/202601/24/WS697478f6a310942cc499ca5d.html",
-       "fetched": false,
-       "note": "China Daily Chinese site. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2026-01-24",
+       "doc_title": "张又侠、刘振立涉嫌严重违纪违法被立案审查调查"
       }
      ]
     },
@@ -2253,7 +2564,7 @@
     }
    ],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "3 of 4"
+   "events_with_corpus_evidence": "4 of 4"
   },
   {
    "id": "chen-jining",
@@ -2404,13 +2715,24 @@
      "date": "2018-10-16",
      "action": "expelled",
      "detail_en": "Party centre expels him; case sent for prosecution.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266958,
+       "quote": "决定给予房峰辉开除党籍处分。军事检察机关对房峰辉案侦查终结，移送审查起诉。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.thepaper.cn/newsDetail_forward_2534652",
+        "fetched": true,
+        "note": "The Paper reprint of Xinhua; fetched, key sentence: 决定给予房峰辉开除党籍处分，移送审查起诉"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "thepaper",
        "url": "https://www.thepaper.cn/newsDetail_forward_2534652",
-       "fetched": true,
-       "note": "The Paper reprint of Xinhua; fetched, key sentence: 决定给予房峰辉开除党籍处分，移送审查起诉"
+       "doc_date": "2018-10-16",
+       "doc_title": "中共中央决定给予房峰辉开除党籍处分，移送审查起诉"
       }
      ]
     },
@@ -2418,13 +2740,24 @@
      "date": "2019-02-20",
      "action": "sentenced",
      "detail_en": "Military court: life imprisonment.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266942,
+       "quote": "认定房峰辉犯受贿罪、行贿罪、巨额财产来源不明罪，数罪并罚，决定执行无期徒刑",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://news.sina.com.cn/c/2019-02-21/doc-ihqfskcp7300935.shtml",
+        "fetched": false,
+        "note": "Sina reprint of Xinhua. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "sina",
        "url": "https://news.sina.com.cn/c/2019-02-21/doc-ihqfskcp7300935.shtml",
-       "fetched": false,
-       "note": "Sina reprint of Xinhua. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2019-02-21",
+       "doc_title": "房峰辉被判无期徒刑 出身农家与郭伯雄是陕西同乡"
       }
      ],
      "sentence": "life imprisonment"
@@ -2457,7 +2790,7 @@
    },
    "flags": [],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "1 of 3"
+   "events_with_corpus_evidence": "3 of 3"
   },
   {
    "id": "zhang-yang",
@@ -2598,10 +2931,21 @@
     "en": "Not in corpus. Web: serious violations of Party discipline, suspected serious duty crimes.",
     "evidence": [
      {
-      "label": "web, not in corpus",
+      "label": "corpus",
+      "doc_id": 900266955,
+      "quote": "经查，这9人严重违反党的纪律，涉嫌严重职务犯罪，数额特别巨大，性质极为严重，影响极其恶劣",
+      "upgraded_from": {
+       "label": "web, not in corpus",
+       "url": "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
+       "fetched": true,
+       "note": "Xinhua 17 Oct 2025; fetched"
+      },
+      "verified": true,
+      "where": "body",
+      "site": "xinhua",
       "url": "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
-      "fetched": true,
-      "note": "Xinhua 17 Oct 2025; fetched"
+      "doc_date": "2025-10-17",
+      "doc_title": "何卫东、苗华等9人严重违纪违法被开除党籍军籍"
      }
     ]
    },
@@ -2624,13 +2968,24 @@
      "date": "2025-10-17",
      "action": "expelled",
      "detail_en": "Defence ministry: expelled from Party and army with eight others.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266955,
+       "quote": "给予何卫东、苗华、何宏军、王秀斌、林向阳、秦树桐、袁华智、王春宁8名中央委员开除党籍处分",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
+        "fetched": true,
+        "note": "Xinhua; fetched"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "xinhua",
        "url": "https://www.news.cn/20251017/eb11aa8c9e0044f3980bda5cd19037a2/c.html",
-       "fetched": true,
-       "note": "Xinhua; fetched"
+       "doc_date": "2025-10-17",
+       "doc_title": "何卫东、苗华等9人严重违纪违法被开除党籍军籍"
       }
      ]
     },
@@ -2638,13 +2993,24 @@
      "date": "2025-10-23",
      "action": "expulsion_confirmed_by_plenum",
      "detail_en": "Fourth Plenum of the 20th Central Committee confirms the expulsion.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266947,
+       "quote": "确认中央政治局之前作出的给予何卫东、苗华、唐仁健、金湘军、何宏军、王秀斌、林向阳、秦树桐、袁华智、王春宁、李石松、杨发森、朱芝松、张凤中开除党籍的处分。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
+        "fetched": true,
+        "note": "12371.cn; fetched"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "dangyuan",
        "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
-       "fetched": true,
-       "note": "12371.cn; fetched"
+       "doc_date": "2025-10-23",
+       "doc_title": "中国共产党第二十届中央委员会第四次全体会议公报"
       }
      ]
     }
@@ -2656,8 +3022,8 @@
     "is_psc": 0
    },
    "flags": [],
-   "corpus_verified": false,
-   "events_with_corpus_evidence": "0 of 3"
+   "corpus_verified": true,
+   "events_with_corpus_evidence": "2 of 3"
   },
   {
    "id": "liu-zhenli",
@@ -2721,13 +3087,24 @@
      "date": "2026-01-24",
      "action": "investigation_announced",
      "detail_en": "Defence ministry: case opened with Zhang Youxia.",
-     "establishes_removal": false,
+     "establishes_removal": true,
      "evidence": [
       {
-       "label": "web, not in corpus",
+       "label": "corpus",
+       "doc_id": 900266937,
+       "quote": "决定对张又侠、刘振立立案审查调查。",
+       "upgraded_from": {
+        "label": "web, not in corpus",
+        "url": "https://cn.chinadaily.com.cn/a/202601/24/WS697478f6a310942cc499ca5d.html",
+        "fetched": false,
+        "note": "China Daily Chinese site. search-result URL, page not fetched; wording from the search summary"
+       },
+       "verified": true,
+       "where": "body",
+       "site": "chinadaily",
        "url": "https://cn.chinadaily.com.cn/a/202601/24/WS697478f6a310942cc499ca5d.html",
-       "fetched": false,
-       "note": "China Daily Chinese site. search-result URL, page not fetched; wording from the search summary"
+       "doc_date": "2026-01-24",
+       "doc_title": "张又侠、刘振立涉嫌严重违纪违法被立案审查调查"
       }
      ]
     },
@@ -2808,7 +3185,7 @@
    },
    "flags": [],
    "corpus_verified": true,
-   "events_with_corpus_evidence": "3 of 4"
+   "events_with_corpus_evidence": "4 of 4"
   }
  ],
  "cc_expulsions": [
@@ -2878,10 +3255,22 @@
    "other": [],
    "evidence": [
     {
-     "label": "web, not in corpus",
+     "label": "corpus",
+     "doc_id": 900266936,
+     "quote": "确认中央政治局之前作出的给予王珉、吕锡文、范长秘、牛志忠开除党籍的处分。",
+     "upgraded_from": {
+      "label": "web, not in corpus",
+      "url": "https://chinadigitaltimes.net/chinese/543552.html",
+      "fetched": false,
+      "note": "non-official mirror of the Xinhua communique text; no official URL retrieved. search-result URL, page not fetched; wording from the search summary"
+     },
+     "note": "China Digital Times (overseas, admin_level foreign_media) mirror of the Xinhua communique text; no official copy is held.",
+     "verified": true,
+     "where": "body",
+     "site": "cdt",
      "url": "https://chinadigitaltimes.net/chinese/543552.html",
-     "fetched": false,
-     "note": "non-official mirror of the Xinhua communique text; no official URL retrieved. search-result URL, page not fetched; wording from the search summary"
+     "doc_date": "2016-10-27",
+     "doc_title": "六中全会公报：习核心"
     }
    ]
   },
@@ -2985,10 +3374,21 @@
    "other": [],
    "evidence": [
     {
-     "label": "web, not in corpus",
+     "label": "corpus",
+     "doc_id": 900266947,
+     "quote": "确认中央政治局之前作出的给予何卫东、苗华、唐仁健、金湘军、何宏军、王秀斌、林向阳、秦树桐、袁华智、王春宁、李石松、杨发森、朱芝松、张凤中开除党籍的处分。",
+     "upgraded_from": {
+      "label": "web, not in corpus",
+      "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
+      "fetched": true,
+      "note": "12371.cn full communique; fetched. The corpus holds this communique only as rows with empty bodies (stic 12454787)"
+     },
+     "verified": true,
+     "where": "body",
+     "site": "dangyuan",
      "url": "https://www.12371.cn/2025/10/23/ARTI1761209942911315.shtml",
-     "fetched": true,
-     "note": "12371.cn full communique; fetched. The corpus holds this communique only as rows with empty bodies (stic 12454787)"
+     "doc_date": "2025-10-23",
+     "doc_title": "中国共产党第二十届中央委员会第四次全体会议公报"
     }
    ],
    "membership": {
@@ -4233,13 +4633,13 @@
     "c": 1,
     "d": 0
    },
-   "corpus_verified_all_types": 13,
+   "corpus_verified_all_types": 14,
    "of_which_正国级": 1,
    "plus_flagged_before_congress": [
     "薄熙来"
    ],
    "cmc_member_tier": 4,
-   "cmc_member_tier_corpus_verified": 3
+   "cmc_member_tier_corpus_verified": 4
   },
   "cells": {
    "正国级|a": {
@@ -4324,10 +4724,10 @@
     "since_18th_congress": [
      "杨晶"
     ],
-    "of_which_corpus_verified": [],
-    "of_which_not_corpus_verified": [
+    "of_which_corpus_verified": [
      "杨晶"
     ],
+    "of_which_not_corpus_verified": [],
     "flagged_before_18th_congress": [],
     "investigation_only": []
    },
@@ -4348,11 +4748,10 @@
     "of_which_corpus_verified": [
      "房峰辉",
      "张阳",
+     "苗华",
      "刘振立"
     ],
-    "of_which_not_corpus_verified": [
-     "苗华"
-    ],
+    "of_which_not_corpus_verified": [],
     "flagged_before_18th_congress": [],
     "investigation_only": []
    },
@@ -4401,7 +4800,7 @@
     "expelled": 4,
     "full_members": null,
     "alternate_members": null,
-    "evidence": "web, not in corpus"
+    "evidence": "corpus"
    },
    {
     "plenum": "18-7",
@@ -4433,7 +4832,7 @@
     "expelled": 14,
     "full_members": 10,
     "alternate_members": 4,
-    "evidence": "web, not in corpus"
+    "evidence": "corpus"
    },
    {
     "plenum": "20-5",
@@ -4445,9 +4844,9 @@
    }
   ],
   "cc_totals": {
-   "20th_cc_full_members_expelled_corpus_verified": 26,
+   "20th_cc_full_members_expelled_corpus_verified": 36,
    "20th_cc_full_members_expelled_incl_web": 36,
-   "20th_cc_alternates_expelled_corpus_verified": 10,
+   "20th_cc_alternates_expelled_corpus_verified": 14,
    "20th_cc_alternates_expelled_incl_web": 14,
    "note": "Central Committee full membership is a proxy for 正部级 and its military equivalents, not the rank itself. 18th CC rows cannot be split into full and alternate members from the corpus (no 18th CC name list is held)."
   },

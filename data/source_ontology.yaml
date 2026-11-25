@@ -157,7 +157,10 @@ tree:
         site_keys:
           [xinhua, newscn, people, peopleapp, cctv, cnr, stdaily, qstheory,
            xinhua_en, xinhua_lw, people_rmrb, chinanews, chinanews_hn,
-           gmw, bjd, cqn, jschina]
+           gmw, bjd, cqn, jschina, chinadaily, rmzxw]
+        # Added 2026-11-25 for the purge-source ingest (data/purges/officials.json):
+        # chinadaily = 中国日报网 (cn. and language. hosts); rmzxw = 人民政协网, the
+        # CPPCC National Committee's paper 人民政协报 online.
         # Added 2026-11-25 (crawlers/finmedia_outlets.py): gmw = 光明网's legal /
         # tech / economy CHANNELS (the 光明日报 theory pages stay gmrb_theory in
         # media_party_theory); bjd = 北京日报; cqn = 中国质量报 (市场监管总局's
@@ -182,7 +185,10 @@ tree:
         # ithome = IT之家 (title-filtered to policy items). szhgh = 红歌会网, a
         # commentary / self-media site, here with guancha as the argued register.
         site_keys: [guancha, ifeng, thepaper, qbitai, 36kr, latepost, elsewhere, qqnews,
-                    ithome, szhgh]
+                    ithome, szhgh, bjnews, oeeee]
+        # bjnews = 新京报 and oeeee = 南方都市报 / 奥一网 (2026-11-25, purge-source
+        # ingest): market-oriented metro papers inside state groups (北京日报 /
+        # 南方报业); ownership stays off this axis, as for media_financial.
       - id: media_financial
         label_en: Financial & Business Press
         label_zh: 财经媒体
@@ -221,7 +227,12 @@ tree:
         # be split without contaminating the other.
         site_keys:
           [reuters, nytimes, brecorder, investing, bloomberglaw, govinfo,
-           zhonglun, chinaon, rthk]
+           zhonglun, chinaon, rthk, hk01, cdt]
+        # hk01 = 香港01 (Hong Kong). cdt = China Digital Times / 中国数字时代, an
+        # overseas AGGREGATOR that mirrors PRC texts (often ones since deleted at
+        # the source). The publisher is overseas, so the row is foreign_media even
+        # when the text it carries is a PRC document: a mirror is evidence that a
+        # text existed, never a PRC issuance or a PRC-media document.
         # rthk = 香港電台, Hong Kong's public broadcaster. 境外 in the label's
         # sense and admin_level='foreign_media': it must not read as mainland
         # media, nor as sub-national government, in any level-split measure.
