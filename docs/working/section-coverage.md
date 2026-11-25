@@ -1,5 +1,14 @@
 # Section-level coverage — what to crawl, what's empty, what needs a new scraper
 
+> **Superseded as the live view (2026-11-25).** This is a one-off probe from 2026-09-14 and
+> its buckets have not been refreshed. The maintained picture is `/admin/sections`: the
+> nightly `section_registry` table (`scripts/build_section_registry.py`, sections read from
+> the crawler code) beside `data/known_missing_sections.yaml`. Its `crawl_now` queue below is
+> still a useful candidate list; check a candidate with
+> `scripts/rnd/discovery/probe_section.py` before adding it. Note `gov /yaowen/` and
+> `/lianbo/` were listed here as crawl_now for ten weeks and only added on 2026-11-25, and
+> that the probe's "8 arts" for them were nav links: those pages are JSON-fed shells.
+
 Supplements the source-level coverage (`coverage.csv`, `gov-website-catalogue.csv`,
 `source-access-map.md`) with a level DOWN: which document SECTIONS (`/yaowen/`, `/zwgk/`,
 `/zxgk/`…) within each crawled host we cover vs. miss. Built 2026-09-14.

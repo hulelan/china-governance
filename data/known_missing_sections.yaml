@@ -346,7 +346,7 @@ sections:
     example_url: http://www.moe.gov.cn/srcsite/A16/s3336/200207/t20020724_82273.html
     status: added
     found: 2026-11-25
-    note: "Was in no line of daily_sync.sh: run by hand in April 2026, and only for section a16. The other six configured sections (政策法规司 414 rows, 规范性文件 228, 部令 82, 发展规划司 121 list pages, 高等教育司, 部文) have never been crawled. Crawler works from the droplet. Now a weekly Monday run; backfill of the six sections owed."
+    note: "Was in no line of daily_sync.sh: run by hand in April 2026, and only for section a16. The other six configured sections (政策法规司 414 rows, 规范性文件 228, 部令 82, then 发展规划司 121 / 高等教育司 73 / 部文 198 list pages, roughly 6,000 rows) have never been crawled. Crawler works from the droplet. Now a weekly Monday run; backfill of the six sections owed."
   - site_key: moe
     name: 新闻发布会
     path: /jyb_xwfb/xw_fbh/
