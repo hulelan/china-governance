@@ -600,6 +600,102 @@ def _truncate_snippet(snippet: str, max_len: int = 150) -> str:
     return cut + "…"
 
 
+_BM25 = "bm25(doc_search_seg, 12.0, 6.0, 4.0, 2.0, 1.0)"
+
+
+def _has_cased_non_ascii(q: str) -> bool:
+    """True when q holds a letter with case outside ASCII (Ａ, Ω). SQLite's LIKE folds
+    ASCII case only, while the trigram tokenizer and str.lower fold all of it, so
+    for such a query those stand-ins are not exactly `title LIKE '%q%'`."""
+    return any(ord(ch) > 127 and ch.lower() != ch.upper() for ch in q)
+
+
+async def _title_match_ids(db, clean_query: str):
+    """The set of document ids whose title satisfies `title LIKE '%clean_query%'`,
+    computed WITHOUT reading `documents` rows, or None when that is not possible
+    exactly (the caller then keeps the old query).
+
+    >= 3 chars: the trigram index's title column (a literal substring match, ASCII
+    case folded like LIKE). Shorter: a LIKE scan of the covering index
+    idx_documents_lens (~60 MB, not the ~16 GB table)."""
+    q = clean_query
+    if not q or "%" in q or "_" in q or _has_cased_non_ascii(q):
+        return None
+    if len(q) >= 3 and await _fts_available(db):
+        match = 'title : "' + q.replace('"', '""') + '"'
+        rows = await db.fetch(
+            "SELECT rowid FROM doc_search WHERE doc_search MATCH $1", match)
+        return {r[0] for r in rows}
+    if await _index_exists(db, "idx_documents_lens"):
+        rows = await db.fetch(
+            "SELECT id FROM documents INDEXED BY idx_documents_lens "
+            "WHERE title LIKE $1", f"%{q}%")
+        return {r[0] for r in rows}
+    return None
+
+
+async def _search_seg_title_first(db, match, clean_query, search_pattern,
+                                  per_page, offset):
+    """Exact shortcut for the unfiltered BM25 path. Returns (rows, total) or None.
+
+    The ranked query orders by (title contains the query, bm25, date DESC). So when
+    at least offset+per_page matches have the query in their TITLE, the requested
+    page consists only of title matches, and their order needs bm25 for THOSE rows
+    alone: a row's bm25 depends on the row and corpus statistics, not on which other
+    rows match. Scoring the title matches instead of every match is what turns
+    发展 (210k matches) from ~1.5s into a fraction of that, with an identical page.
+    Rare terms and queries whose page reaches past the title matches return None,
+    and the caller runs the full query exactly as before.
+    """
+    title_ids = await _title_match_ids(db, clean_query)
+    need = offset + per_page
+    if title_ids is None or len(title_ids) < need:
+        return None
+    import json as _json
+    scored = await db.fetch(
+        f"""SELECT rowid, {_BM25} AS score FROM doc_search_seg
+            WHERE doc_search_seg MATCH $1
+              AND rowid IN (SELECT value FROM json_each($2))""",
+        match, _json.dumps(sorted(title_ids)))
+    if len(scored) < need:
+        return None
+    scored = sorted(((r[0], r[1]) for r in scored), key=lambda x: x[1])
+    # Every row tied with the last one on the page must be in the date tiebreak.
+    cut = scored[need - 1][1]
+    cand = [x for x in scored if x[1] <= cut]
+    dates = {r[0]: r[1] for r in await db.fetch(
+        "SELECT id, date_written FROM documents WHERE id = ANY($1::int[])",
+        [x[0] for x in cand])}
+
+    def key(x):
+        dw = dates.get(x[0])
+        return (x[1], 0 if dw is not None else 1, -(dw or 0))
+    page_ids = [x[0] for x in sorted(cand, key=key)[offset:need]]
+    rows = await db.fetch(
+        """SELECT d.id, d.title, d.document_number, d.publisher,
+                  d.date_written, d.site_key, d.classify_main_name,
+                  d.title_en, d.importance, d.category,
+                  d.title as snippet
+           FROM documents d WHERE d.id = ANY($1::int[])""", page_ids)
+    order = {i: n for n, i in enumerate(page_ids)}
+    rows = sorted(rows, key=lambda r: order[r["id"]])
+    total = await db.fetchval(
+        "SELECT COUNT(*) FROM doc_search_seg WHERE doc_search_seg MATCH $1", match)
+    return rows, total
+
+
+_index_cache: dict = {}
+
+
+async def _index_exists(db, name: str) -> bool:
+    """Cached sqlite_master check for an index (built by the nightly; a restart
+    clears the cache)."""
+    if name not in _index_cache:
+        _index_cache[name] = bool(await db.fetchval(
+            "SELECT 1 FROM sqlite_master WHERE type='index' AND name = $1", name))
+    return _index_cache[name]
+
+
 async def _search_seg_bm25(db, match, date_clause, date_params, site_clause,
                            site_params, next_idx, search_pattern, per_page, offset):
     """Run the word-segmented BM25 path. Returns (rows, total).
@@ -725,9 +821,16 @@ async def _search_documents(db, query: str, page: int = 1, per_page: int = 50,
         try:
             seg_match = segment.query_match(clean_query)
             if seg_match:
-                rows, total = await _search_seg_bm25(
-                    db, seg_match, date_clause, date_params, site_clause,
-                    site_params, next_idx, search_pattern, per_page, offset)
+                hit = None
+                if not date_clause and not site_clause:
+                    hit = await _search_seg_title_first(
+                        db, seg_match, clean_query, search_pattern, per_page, offset)
+                if hit is not None:
+                    rows, total = hit
+                else:
+                    rows, total = await _search_seg_bm25(
+                        db, seg_match, date_clause, date_params, site_clause,
+                        site_params, next_idx, search_pattern, per_page, offset)
         except Exception:
             rows, total = None, 0  # any failure → fall through to trigram/LIKE
 

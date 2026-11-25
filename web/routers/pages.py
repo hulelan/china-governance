@@ -516,11 +516,10 @@ async def coverage_page(request: Request):
     if org_map_path.exists():
         org_data = json.loads(org_map_path.read_text(encoding="utf-8"))
 
-    # Get live doc counts by site_key
-    site_counts = {}
-    rows = await db.fetch("SELECT site_key, COUNT(*) FROM documents GROUP BY site_key")
-    for row in rows:
-        site_counts[row[0]] = row[1]
+    # Doc counts by site_key from the cached, nightly-precomputed site list
+    # (site_stats) instead of a GROUP BY over every row of `documents`.
+    site_counts = {s["site_key"]: s["doc_count"] for s in await get_sites(db)
+                   if s["doc_count"]}
 
     return templates.TemplateResponse("coverage.html", {
         "request": request, "stats": stats,
