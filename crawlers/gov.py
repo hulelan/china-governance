@@ -13,7 +13,8 @@ Two document templates exist:
   Both share #UCAP-CONTENT for body text and <meta> tags in <head>.
 
 Usage:
-    python -m crawlers.gov                  # Crawl all documents from JSON feed
+    python -m crawlers.gov                  # Crawl every feed in FEEDS (政策文件, 要闻, 新闻发布)
+    python -m crawlers.gov --feed yaowen    # One feed only
     python -m crawlers.gov --stats          # Show database stats
     python -m crawlers.gov --list-only      # List document URLs without fetching bodies
 """
@@ -48,6 +49,43 @@ SITE_CFG = {
 
 # The "latest policies" rolling feed — recent docs only, NO history.
 JSON_FEED_URL = "https://www.gov.cn/zhengce/zuixin/ZUIXINZHENGCE.json"
+
+# Every gov.cn list page is filled by a static JSON file of the SAME shape
+# ([{TITLE, URL, DOCRELPUBTIME}, ...]); the list page's own HTML carries no articles
+# (it is ~20 KB of shell, which is why a generic link-lister sees "8 articles" that
+# are all nav). Until 2026-11-25 only `zuixin` was read, so "we crawl gov.cn" meant a
+# few policy documents a week and NONE of 要闻 or the press-release column.
+#   name            -> stored as classify_main_name (the section label)
+#   refetch_bodyless-> zuixin keeps its old behaviour (retry a held row with no body);
+#                      the news feeds skip any held URL, so a video-only item is not
+#                      re-fetched every night forever.
+#   articles_only   -> keep only gov.cn article pages (.../content_<id>.htm). Measured
+#                      on a scratch crawl 2026-11-25: 107 of 395 要闻 rows are
+#                      tv.cctv.com video links, and 75 of 480 新闻发布 rows are the
+#                      index page of a per-briefing mini-site (/xinwen/2026zccfh/<n>/
+#                      index.htm, /zhuanti/...). Neither yields a body here, and storing
+#                      them would file bodiless cctv.com URLs under site_key 'gov'.
+#                      The briefing mini-sites are a real gap (国务院政策例行吹风会
+#                      transcripts): see data/known_missing_sections.yaml.
+FEEDS = {
+    "zuixin": {
+        "name": "政策文件",
+        "url": JSON_FEED_URL,                       # ~1,100 rows, 2020-
+        "refetch_bodyless": True,
+    },
+    "yaowen": {
+        "name": "要闻",
+        "url": "https://www.gov.cn/yaowen/liebiao/YAOWENLIEBIAO.json",   # rolling 400 rows, ~4 weeks
+        "refetch_bodyless": False,
+        "articles_only": True,
+    },
+    "fabu": {
+        "name": "新闻发布",
+        "url": "https://www.gov.cn/lianbo/fabu/TONGYONGLIEBIAODRQ.json",  # ~700 rows, 2022-10-
+        "refetch_bodyless": False,
+        "articles_only": True,
+    },
+}
 
 # ---------------------------------------------------------------------------
 # Historical archive: the State Council Policy Document Library (政策文件库).
@@ -399,19 +437,43 @@ def _extract_body(html: str) -> str:
     return ""
 
 
-def fetch_document_list() -> list[dict]:
-    """Fetch the JSON feed and return document entries."""
-    log.info(f"Fetching document list from {JSON_FEED_URL}")
-    data = fetch_json(JSON_FEED_URL)
+_ARTICLE_URL_RE = re.compile(r"^https?://www\.gov\.cn/.*/content_\d+\.html?$")
+
+
+def fetch_document_list(url: str = JSON_FEED_URL) -> list[dict]:
+    """Fetch one JSON feed and return document entries."""
+    log.info(f"Fetching document list from {url}")
+    data = fetch_json(url)
     log.info(f"  Found {len(data)} documents in JSON feed")
     return data
 
 
-def crawl_all(conn, fetch_bodies: bool = True):
-    """Crawl all documents from the JSON feed."""
+def crawl_all(conn, fetch_bodies: bool = True, feeds: list[str] | None = None):
+    """Crawl every feed in FEEDS (or the named ones). One feed failing does not
+    stop the others; a failure is logged and makes the run exit non-zero."""
     store_site(conn, SITE_KEY, SITE_CFG)
+    failed = []
+    for key in (feeds or list(FEEDS)):
+        try:
+            crawl_feed(conn, key, FEEDS[key], fetch_bodies=fetch_bodies)
+        except Exception as e:
+            failed.append(key)
+            log.error(f"  feed {key} failed: {e}")
+    if failed:
+        raise SystemExit(f"gov: feed(s) failed: {', '.join(failed)}")
 
-    entries = fetch_document_list()
+
+def crawl_feed(conn, feed_key: str, feed: dict, fetch_bodies: bool = True):
+    """Crawl all documents from one JSON feed."""
+    section_name = feed["name"]
+    refetch_bodyless = feed.get("refetch_bodyless", True)
+    log.info(f"--- Feed: {section_name} ({feed_key}) ---")
+    entries = fetch_document_list(feed["url"])
+    if feed.get("articles_only"):
+        kept = [e for e in entries if _ARTICLE_URL_RE.match(e.get("URL", "") or "")]
+        log.info(f"  articles_only: kept {len(kept)} of {len(entries)} "
+                 f"(dropped external video links and mini-site index pages)")
+        entries = kept
     stored = 0
     bodies = 0
 
@@ -427,7 +489,7 @@ def crawl_all(conn, fetch_bodies: bool = True):
         existing = conn.execute(
             "SELECT id, body_text_cn FROM documents WHERE url = ? AND url != ''", (doc_url,)
         ).fetchone()
-        if existing and existing[1]:
+        if existing and (existing[1] or not refetch_bodyless):
             stored += 1
             continue
 
@@ -491,7 +553,7 @@ def crawl_all(conn, fetch_bodies: bool = True):
             "body_text_cn": body_text,
             "url": doc_url,
             "classify_theme_name": classify_theme,
-            "classify_main_name": "政策文件",
+            "classify_main_name": section_name,
             "raw_html_path": raw_html_path,
         })
         stored += 1
@@ -501,7 +563,7 @@ def crawl_all(conn, fetch_bodies: bool = True):
             log.info(f"  Progress: {stored}/{len(entries)} stored, {bodies} bodies")
 
     conn.commit()
-    log.info(f"=== State Council total: {stored} documents, {bodies} bodies ===")
+    log.info(f"=== State Council {section_name}: {stored} documents, {bodies} bodies ===")
 
 
 def main():
@@ -520,6 +582,8 @@ def main():
                              "library crawl stops after 2 all-held pages (incremental).")
     parser.add_argument("--limit", type=int, default=0,
                         help="With --library: stop after N stored docs (0 = no cap)")
+    parser.add_argument("--feed", action="append", choices=list(FEEDS),
+                        help="Crawl only this JSON feed (repeatable). Default: all of FEEDS")
     parser.add_argument("--db", type=str, help="Path to SQLite database (default: documents.db)")
     args = parser.parse_args()
 
@@ -535,7 +599,7 @@ def main():
         crawl_library(conn, categories=cats, deep=args.deep, limit=args.limit,
                       fetch_bodies=not args.list_only)
     else:
-        crawl_all(conn, fetch_bodies=not args.list_only)
+        crawl_all(conn, fetch_bodies=not args.list_only, feeds=args.feed)
     show_stats(conn)
     conn.close()
 

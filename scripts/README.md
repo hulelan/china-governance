@@ -27,6 +27,7 @@ scratch (`check_*.py`) has been deleted — it's in git history if ever needed.
 | `extract_pdf_text.py` | Extract text from PDF/DOC attachments. | CLAUDE.md |
 | `warm_web_cache.py` | Request every cached page once after the restart so the shared publish-keyed page cache (`web/services/pubcache.py`) is warm for both workers. `--list` prints the URLs; `--base` targets another port. Exits 0 unless the app never comes up. | daily_sync Phase 3 |
 | `merge_db.py` | Merge a separate SQLite DB into documents.db. | CLAUDE.md (separate-DB workflow) |
+| `build_section_registry.py` | `section_registry` table for `/admin/sections`: every crawler's CONFIGURED sections, read from the crawler code by shape (no hand table), joined to per-section docs / with-body / newest date, plus whether `daily_sync.sh` runs the site at all. Sites with no section structure are rows saying so. `--dry-run [--site X]` previews, `--out-db` writes the table elsewhere, `--write` for the nightly. One header-only table scan + two covering-index reads, ~1-1.5 min. | daily_sync Phase 2c, after build_site_stats |
 | `match_clt_translations.py` | Link China Law Translate posts to native docs by source URL. | CLAUDE.md |
 | `compute_overlaps.py` | Build the `overlaps` table in **officials.db**. | CLAUDE.md (officials.db build) |
 | `fix_baike_collisions.py` | Fix name-collision records in **officials.db**. | CLAUDE.md (officials.db build) |
@@ -39,7 +40,7 @@ scratch (`check_*.py`) has been deleted — it's in git history if ever needed.
 | `references/` | `extract_references_regex.py`, `compare_references_regex_vs_deepseek.py` | Regex reference extraction + a regex-vs-DeepSeek quality comparison. |
 | `translation/` | `translate_chain.py`, `translate_titles_google.py`, `translate_titles_deepseek_premium.py`, `translate_titles_compare.py` | Title/chain translation passes + a Google-vs-DeepSeek eval. |
 | `subsidies/` | `extract_subsidy_data.py`, `analyze_subsidies.py` | Structured subsidy-amount extraction + aggregate stats. |
-| `discovery/` | `discover_sources.py`, `probe_gkmlpt.py`, `probe_provinces.py` | Find uncrawled sites / probe for gkmlpt + provincial endpoints. |
+| `discovery/` | `discover_sources.py`, `probe_gkmlpt.py`, `probe_provinces.py`, `probe_section.py`, `press_section_audit.py` | Find uncrawled sites / probe for gkmlpt + provincial endpoints. `probe_section.py <list-url>` byte-checks ONE candidate section before it is added to a crawler (rows listed, rows held, body lengths; writes nothing). `press_section_audit.py` finds and byte-checks the press-conference section of every central site (→ `docs/working/press-conference-coverage.md`). Both run on the droplet. |
 | `backfill/` | `backfill_ai.py`, `wayback_backfill.py`, `merge_extractions.py` | Targeted body-text backfills (AI docs, Wayback) + NPC/PDF merge. |
 | `eval/` | `eval_classification.py` | Test the classification prompt against an eval set. |
 | `misc/` | `search_vc.py` | Ad-hoc corpus query (venture-capital content). |

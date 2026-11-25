@@ -31,8 +31,17 @@ document family the portal exposes (same archive/pagination/body mechanism) that
 previously uncrawled — ~156 docs, 2018+. Two caveats: (1) its newest year archive can
 be empty (e.g. 2025 had 0 docs mid-year), which trips the non-deep early-exit and
 halts the section — run a backfill with SHANGHAI_DEEP=1. (2) 沪府任 (nw44931,
-appointments) uses a different listing markup that _parse_listing does not match, so
-it is intentionally NOT added.
+appointments) used a different listing markup (date span nested INSIDE the anchor)
+that _parse_listing did not match, so it was left out.
+
+2026-11-25: the WHOLE site moved to that nested-span markup around January 2026, so
+every section parsed to 0 items, "0 new" was read as "fully held", and the crawler
+reported success nightly while storing nothing after 2026-01-20. Fixed in
+_parse_listing (both shapes match), _parse_year_archives (the newest-year link was
+also being resolved to the first nav tab), and crawl_section (an empty parse is now a
+WARNING, never "held"). 沪府任 is STILL not a section: its section index lists
+rows in the nested-span shape, but its year-archive pages (/hfrwj2026/index.html,
+~11 KB) carry a third markup that parses to 0 items (probed 2026-11-25).
 
 Usage:
     python -m crawlers.shanghai                     # Crawl all sections
@@ -93,16 +102,29 @@ def _get_year_archive_urls(section_id: str) -> list[tuple[str, str]]:
     so we discover them dynamically rather than hardcoding.
     """
     url = f"{_BASE_URL}/{section_id}/index.html"
-    html = fetch(url)
+    return _parse_year_archives(fetch(url))
+
+
+def _parse_year_archives(html: str) -> list[tuple[str, str]]:
+    """Pure half of _get_year_archive_urls (no network), pinned by tests."""
     archives = []
     # Year links may have nested tags: <a href="..."><h4>2024年</h4></a>
     # or plain text: <a href="...">2024年</a>
+    # The anchor body is tempered with (?!</a>) so a match cannot START at an
+    # earlier anchor and run on to the first "2026年". Without it (the bug found
+    # 2026-11-25) the newest year resolved to the first nav tab on the page
+    # (/nw2407/index.html) for EVERY section, and the real newest-year archive
+    # was swallowed by that match.
     for m in re.finditer(
-        r'<a\s+href="(/[^"]+/index\.html)"[^>]*>.*?(\d{4})\s*年.*?</a>',
+        r'<a\s+href="(/[^"]+/index\.html)"[^>]*>((?:(?!</a>).)*?)(\d{4})\s*年(?:(?!</a>).)*?</a>',
         html,
         re.DOTALL,
     ):
-        href, year = m.group(1).strip(), m.group(2)
+        # 沪府办发 2025 and 2026 really live at "/ hfbf2026/index.html": the
+        # directory NAME starts with a space (byte-checked 2026-11-25: /%20hfbf2026/
+        # is 200 with 40 rows, /hfbf2026/ is 404). urllib refuses a raw space, so
+        # percent-encode it rather than strip it.
+        href, year = m.group(1).strip().replace(" ", "%20"), m.group(3)
         full_url = urljoin(_BASE_URL, href)
         archives.append((year, full_url))
     return archives
@@ -141,13 +163,18 @@ def _parse_listing(html: str, base_url: str) -> list[dict]:
 
     items = []
     # Pattern: <li>...<a href="URL" title="TITLE">...</a>...<span class="time">DATE</span></li>
+    # The (?:</a>\s*)? is optional because the template now nests the date span
+    # INSIDE the anchor (<a ...>title <span class="time">DATE</span></a>). With
+    # </a> required, every listing parsed to 0 items, and the caller read
+    # "0 new" as "year fully held" — which is why the site sat at 2026-01-20
+    # for ten months while the nightly reported success (found 2026-11-25).
     for m in re.finditer(
         r'<li[\s>][^<]*<a\s+href="([^"]+)"[^>]*title="([^"]*)"[^>]*>'
-        r'[^<]*</a>\s*<span[^>]*class="time"[^>]*>(\d{4}-\d{2}-\d{2})</span>',
+        r'[^<]*(?:</a>\s*)?<span[^>]*class="time"[^>]*>(\d{4}-\d{2}-\d{2})</span>',
         clean,
     ):
         href, title, date_str = m.group(1), m.group(2), m.group(3)
-        doc_url = urljoin(base_url, href.strip())
+        doc_url = urljoin(base_url, href.strip()).replace(" ", "%20")  # "/ hfbf2025/" dirs
         items.append({
             "url": doc_url,
             "title": unescape(title.strip()),
@@ -164,7 +191,7 @@ def _parse_listing(html: str, base_url: str) -> list[dict]:
         clean,
     ):
         href, title, date_str = m.group(1), m.group(2), m.group(3)
-        doc_url = urljoin(base_url, href.strip())
+        doc_url = urljoin(base_url, href.strip()).replace(" ", "%20")  # "/ hfbf2025/" dirs
         items.append({
             "url": doc_url,
             "title": unescape(title.strip()),
@@ -303,6 +330,13 @@ def crawl_section(
 
         total_pages = _get_total_pages(html)
         page_items = _parse_listing(html, archive_url)
+        if not page_items:
+            # An EMPTY parse is not "fully held". Treating it as such is what hid a
+            # template change for ten months: say so and try the next year instead.
+            log.warning(f"  {year}: listing parsed to 0 items ({len(html)} bytes) — "
+                        f"template change or empty year, NOT treated as held: {archive_url}")
+            time.sleep(REQUEST_DELAY)
+            continue
         year_new, page = [], 1
         while page_items is not None:
             new_on_page = [it for it in page_items if not _held(it["url"])]

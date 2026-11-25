@@ -75,6 +75,20 @@ SECTIONS = {
         "name": "政府信息公开目录",
         "path": "/sjj/xxgk/gknr/list/",
     },
+    # 时务动态 columns (added 2026-11-25): same list/index_pc_N.html template as the
+    # 政务公开 ones above; byte-checked from the droplet (16 rows on page 1 each).
+    "sjdt": {
+        "name": "数据局动态",
+        "path": "/sjj/swdt/sjdt/list/",
+    },
+    "dfdt": {
+        "name": "地方动态",
+        "path": "/sjj/swdt/dfdt/list/",
+    },
+    "mtsy": {
+        "name": "媒体声音",
+        "path": "/sjj/swdt/mtsy/list/",
+    },
 }
 
 

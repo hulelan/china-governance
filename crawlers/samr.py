@@ -20,6 +20,11 @@ Sections crawled:
   - xw_zj: 新闻-总局 (Bureau news, ~3,600 docs)
   - xw_sj: 新闻-司局 (Division news, ~900 docs)
   - xw_df: 新闻-地方 (Local/regional news, ~8,000 docs)
+  - xw_mtjj: 媒体聚焦
+  - xwfbt: 新闻发布厅 (press conferences / 专题新闻发布会; added 2026-11-25)
+  - ggjgs_tzgg, bzjss_zqyj: two 司局 columns (广告监管司 通知公告, 标准技术司 征求意见).
+    Every 司局 has its own columns; these two are the ones a reader asked for, not
+    the full set (see docs/working/press-conference-coverage.md).
 
 Usage:
     python -m crawlers.samr                    # Crawl all sections
@@ -109,6 +114,25 @@ SECTIONS = {
         "page_id": "fd590d1789974f8b9f1db6d2e7da751a",
         "referer": "/xw/mtjj/index.html",
     },
+    # Added 2026-11-25 (section-coverage audit). page_id is the <meta name="ColId">
+    # of each section's index.html, the same way the six above were found.
+    "xwfbt": {
+        "name": "新闻发布厅",
+        "page_id": "5fb1ceb699444ed2a679754ec3cc020d",
+        "referer": "/xw/xwfbt/index.html",
+    },
+    "ggjgs_tzgg": {
+        "name": "广告监管司-通知公告",
+        "page_id": "2ae297a1236648ef93d95b6f9838fc1d",
+        "tag_id": "ajax分页",
+        "referer": "/ggjgs/tzgg/index.html",
+    },
+    "bzjss_zqyj": {
+        "name": "标准技术司-征求意见",
+        "page_id": "c556a93c7baf431dada20ec9fdca5cb1",
+        "tag_id": "ajax分页",
+        "referer": "/bzjss/zqyj/index.html",
+    },
 }
 
 
@@ -122,7 +146,61 @@ def _parse_date(date_str: str) -> int:
         return 0
 
 
-def _fetch_listing_page(page_id: str, page_no: int, referer: str) -> tuple[list[dict], int]:
+# The two listing templates the site serves. (A) is the main column template
+# (tagId "内容区域", 20 rows); (B) is the 司局 sub-site template (tagId "ajax分页",
+# 10 rows). Both carry the pager's total in count="N".
+DEFAULT_TAG_ID = "内容区域"
+_ITEM_PATTERNS = (
+    # (A) <li class="nav04Left02_content"><a href title>..</a></li>
+    #     <li class="nav04Left02_contenttime">YYYY-MM-DD</li>
+    re.compile(
+        r'<li\s+class="nav04Left02_content">\s*<a\s+href="([^"]+)"[^>]*'
+        r'title="([^"]+)"[^>]*>.*?</a>\s*</li>\s*'
+        r'<li\s+class="nav04Left02_contenttime">([\d-]+)</li>',
+        re.DOTALL,
+    ),
+    # (B) <a href title>..</a> <div class="contentRight01time">YYYY-MM-DD</div>
+    re.compile(
+        r'<a\s+href="([^"]+)"[^>]*title="([^"]+)"[^>]*>.*?</a>\s*'
+        r'<div\s+class="contentRight01time">([\d-]+)</div>',
+        re.DOTALL,
+    ),
+)
+
+
+def _clean_title(title: str) -> str:
+    """title="" attributes are hard-wrapped by the CMS; a line break inside a
+    Chinese title is layout, not content."""
+    return re.sub(r"\s*[\r\n]+\s*", "", title).strip()
+
+
+def _parse_listing_html(html: str) -> tuple[list[dict], int]:
+    """Parse the HTML fragment the listing API returns -> (items, total_count).
+
+    Pure (no network) so tests can pin both templates.
+    """
+    items = []
+    for pat in _ITEM_PATTERNS:
+        for m in pat.finditer(html):
+            href, title, date_str = m.group(1), _clean_title(m.group(2)), m.group(3)
+            doc_url = href if href.startswith("http") else BASE_URL + href
+            # Skip external links (gov.cn central, etc.)
+            if "samr.gov.cn" not in doc_url and not href.startswith("/"):
+                continue
+            items.append({"url": doc_url, "title": title, "date_str": date_str})
+        if items:
+            break
+
+    total = 0
+    count_m = re.search(r'count="(\d+)"', html)
+    if count_m:
+        total = int(count_m.group(1))
+    return items, total
+
+
+def _fetch_listing_page(page_id: str, page_no: int, referer: str,
+                        tag_id: str = DEFAULT_TAG_ID,
+                        page_size: int = ROWS_PER_PAGE) -> tuple[list[dict], int]:
     """Fetch one listing page via the jpaas API.
 
     Returns (items, total_count).
@@ -133,13 +211,13 @@ def _fetch_listing_page(page_id: str, page_no: int, referer: str) -> tuple[list[
         "webId": WEB_ID,
         "tplSetId": TPL_SET_ID,
         "pageType": "column",
-        "tagId": "内容区域",
+        "tagId": tag_id,
         "editType": "null",
         "pageId": page_id,
     }
     if page_no > 1:
         params["paramJson"] = json.dumps(
-            {"pageNo": page_no, "pageSize": ROWS_PER_PAGE}
+            {"pageNo": page_no, "pageSize": page_size}
         )
 
     qs = urllib.parse.urlencode(params)
@@ -155,32 +233,7 @@ def _fetch_listing_page(page_id: str, page_no: int, referer: str) -> tuple[list[
     html = data.get("data", {}).get("html", "")
     if not html:
         return [], 0
-
-    # Parse items from HTML: each doc is in a <ul> with title link and date
-    # Pattern: <li class="nav04Left02_content"><a href="..." title="...">...</a></li>
-    #          <li class="nav04Left02_contenttime">YYYY-MM-DD</li>
-    items = []
-    for m in re.finditer(
-        r'<li\s+class="nav04Left02_content">\s*<a\s+href="([^"]+)"[^>]*'
-        r'title="([^"]+)"[^>]*>.*?</a>\s*</li>\s*'
-        r'<li\s+class="nav04Left02_contenttime">([\d-]+)</li>',
-        html,
-        re.DOTALL,
-    ):
-        href, title, date_str = m.group(1), m.group(2).strip(), m.group(3)
-        doc_url = href if href.startswith("http") else BASE_URL + href
-        # Skip external links (gov.cn central, etc.)
-        if "samr.gov.cn" not in doc_url and not href.startswith("/"):
-            continue
-        items.append({"url": doc_url, "title": title, "date_str": date_str})
-
-    # Total count from pagination div
-    total = 0
-    count_m = re.search(r'count="(\d+)"', html)
-    if count_m:
-        total = int(count_m.group(1))
-
-    return items, total
+    return _parse_listing_html(html)
 
 
 def _extract_meta(html: str) -> dict:
@@ -197,10 +250,15 @@ def _extract_meta(html: str) -> dict:
     return meta
 
 
+_BODY_DIV_RE = re.compile(r'<div\s+class="(?:Three|zt)_xilan_07[^"]*"[^>]*>')
+
+
 def _extract_body(html: str) -> str:
-    """Extract body text from <div class="Three_xilan_07 ...">."""
-    # Find the content div -- may have additional classes like "article-pagenation"
-    m = re.search(r'<div\s+class="Three_xilan_07[^"]*"[^>]*>', html)
+    """Extract body text from <div class="Three_xilan_07 ..."> (main site) or
+    <div class="zt_xilan_07"> (the 司局 sub-site article template)."""
+    # Find the content div -- may have additional classes like "article-pagenation".
+    # Without the zt_ alternative the 司局 columns stored 1 body in 26 (2026-11-25).
+    m = _BODY_DIV_RE.search(html)
     if not m:
         return ""
 
@@ -285,7 +343,8 @@ def _extract_attachments(html: str) -> list[dict]:
     """
     attachments = []
     # Look in the content area after Three_xilan_07
-    idx = html.find("Three_xilan_07")
+    bm = _BODY_DIV_RE.search(html)
+    idx = bm.start() if bm else -1
     if idx == -1:
         return attachments
     region = html[idx:idx + 100000]
@@ -310,18 +369,22 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
     name = section["name"]
     page_id = section["page_id"]
     referer = section["referer"]
+    tag_id = section.get("tag_id", DEFAULT_TAG_ID)
     log.info(f"--- Section: {name} ({section_key}) ---")
 
     # Fetch first page to get total count
     try:
-        items, total = _fetch_listing_page(page_id, 1, referer)
+        items, total = _fetch_listing_page(page_id, 1, referer, tag_id)
     except Exception as e:
         log.error(f"Failed to fetch listing page 1: {e}")
         return 0
 
     if total == 0:
         total = len(items) * 10  # rough estimate
-    total_pages = (total + ROWS_PER_PAGE - 1) // ROWS_PER_PAGE
+    # Page size is whatever page 1 actually returned (20 on the main template,
+    # 10 on the 司局 one); assuming 20 would walk only half of a 10-row section.
+    page_size = len(items) if 0 < len(items) < ROWS_PER_PAGE and total > len(items) else ROWS_PER_PAGE
+    total_pages = (total + page_size - 1) // page_size
     log.info(f"  {total} documents across {total_pages} pages")
 
     all_items = list(items)
@@ -342,7 +405,7 @@ def crawl_section(conn, section_key: str, section: dict, fetch_bodies: bool = Tr
             log.info(f"  page {page-1} all already held — stopping walk (older held)")
             break
         try:
-            page_items, _ = _fetch_listing_page(page_id, page, referer)
+            page_items, _ = _fetch_listing_page(page_id, page, referer, tag_id, page_size)
             all_items.extend(page_items)
             if not deep and page_items and all(_held(i["url"]) for i in page_items):
                 keep_walking = False

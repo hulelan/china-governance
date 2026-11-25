@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Section coverage · Governance Archive{% endblock %}
+{% block content %}
+{% macro flag(st) -%}
+<span class="mono text-[11px] {% if st in ('stale', 'no docs matched', 'empty') %}level-central{% elif st in ('aging', 'undated') %}level-provincial{% elif st == 'fresh' %}text-teal{% else %}text-muted{% endif %}">{{ st }}</span>
+{%- endmacro %}
+{% macro gapstatus(st) -%}
+<span class="mono text-[11px] px-1.5 py-0.5 border border-rule {% if st in ('missing', 'broken') %}level-central{% elif st == 'blocked' %}level-provincial{% elif st == 'added' %}text-teal{% else %}text-muted{% endif %}">{{ st }}</span>
+{%- endmacro %}
+<div class="max-w-7xl mx-auto">
+
+    <div class="border-b border-rule pb-4 mb-5">
+        <div class="text-xs mb-1"><a href="/admin">← Operations console</a></div>
+        <h1 class="text-xl font-semibold tracking-tight text-ink">Section coverage</h1>
+        <p class="text-muted mt-1 max-w-4xl">
+            What each crawler is <em>configured</em> to crawl, section by section, against what the corpus holds —
+            and, beside it, the sections we know a site has and we do not crawl.
+            "We crawl the ministry" is not the claim this page checks; "we crawl this section of it" is.
+        </p>
+    </div>
+
+    {% if not built %}
+    <p class="border border-rule bg-panel px-4 py-3 text-sm">
+        The <span class="mono">section_registry</span> table has not been built yet. Run
+        <span class="mono">python3 scripts/build_section_registry.py --write</span> (the nightly does this in Phase 2c).
+        The known-missing list below is still shown.
+    </p>
+    {% else %}
+    <div class="flex border border-rule bg-panel mb-5">
+        <div class="flex-1 px-5 py-3 border-r border-rule">
+            <div class="text-2xl font-semibold text-ink">{{ meta.sections }}</div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Configured sections · {{ meta.sites }} sites</div>
+        </div>
+        <div class="flex-1 px-5 py-3 border-r border-rule">
+            <div class="text-2xl font-semibold level-central">{{ meta.sections_stale }}</div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Sections stale (&gt;45 days)</div>
+        </div>
+        <div class="flex-1 px-5 py-3 border-r border-rule">
+            <div class="text-2xl font-semibold level-central">{{ meta.sections_no_docs }}</div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Sections with no docs matched</div>
+        </div>
+        <div class="flex-1 px-5 py-3 border-r border-rule">
+            <div class="text-2xl font-semibold level-provincial">{{ meta.sites_sections_unknown }}</div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Sites · sections unknown</div>
+        </div>
+        <div class="flex-1 px-5 py-3 border-r border-rule">
+            <div class="text-2xl font-semibold level-central">{{ meta.sites_not_scheduled }}</div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Sites not in the nightly</div>
+        </div>
+        <div class="flex-1 px-5 py-3">
+            <div class="text-2xl font-semibold level-central">{{ missing_counts.missing + missing_counts.broken }}<span class="text-muted text-base"> / {{ missing_counts.blocked }} / {{ missing_counts.added }}</span></div>
+            <div class="text-muted text-[11px] uppercase tracking-wider mt-0.5">Known gaps: open / blocked / added</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="flex flex-wrap items-center gap-2 mb-5 text-xs">
+        <span class="lab mr-1">Level</span>
+        <a href="/admin/sections?level=all{% if issues_only %}&issues=1{% endif %}" class="px-2 py-1 border border-rule {% if not level and not site %}bg-panel text-ink font-semibold{% endif %}">all</a>
+        {% for l in levels %}
+        <a href="/admin/sections?level={{ l }}{% if issues_only %}&issues=1{% endif %}" class="px-2 py-1 border border-rule {% if level == l and not site %}bg-panel text-ink font-semibold{% endif %}">{{ l }}</a>
+        {% endfor %}
+        <span class="mx-2 text-muted">·</span>
+        <a href="/admin/sections?level={{ level or 'all' }}{% if not issues_only %}&issues=1{% endif %}" class="px-2 py-1 border border-rule {% if issues_only %}bg-panel text-ink font-semibold{% endif %}">only sites with an issue</a>
+        {% if site %}<span class="mx-2 text-muted">·</span><span class="mono">site = {{ site }}</span> <a href="/admin/sections">clear</a>{% endif %}
+        <span class="ml-auto text-muted mono">{{ sites|length }} sites{% if built %} · built {{ meta.built_at }}{% endif %} · {{ render_ms }} ms</span>
+    </div>
+
+    {% for s in sites %}
+    {% set st = s.site %}
+    <section class="mb-7" id="{{ s.site_key }}">
+        <div class="flex flex-wrap items-baseline gap-x-3 border-b border-rule pb-1 mb-2">
+            <a href="/admin/sections?site={{ s.site_key }}" class="text-ink font-semibold no-underline hover:text-brand">{{ (st.site_name if st else '') or s.site_key }}</a>
+            <span class="mono text-muted text-[11px]">{{ s.site_key }}</span>
+            {% if st %}
+            <span class="text-muted text-xs">{{ st.admin_level }}{% if st.module %} · crawlers.{{ st.module }}{% endif %}</span>
+            <span class="mono text-[11px] {% if st.schedule in ('not scheduled', 'no crawler') %}level-central{% elif st.schedule == 'weekly' %}level-provincial{% else %}text-muted{% endif %}">{{ st.schedule }}</span>
+            <span class="ml-auto mono text-xs text-muted">
+                <a href="/browse?site={{ s.site_key }}">{{ "{:,}".format(st.docs or 0) }} docs</a>
+                · {{ "{:,}".format(st.with_body or 0) }} with body · newest {{ st.newest or '—' }} {{ flag(st.staleness) }}
+            </span>
+            {% else %}
+            <span class="text-muted text-xs">no registry row under this filter</span>
+            {% endif %}
+        </div>
+        <div class="grid grid-cols-5 gap-6">
+            <div class="col-span-3 table-scroll">
+                {% if s.unknown %}
+                <p class="text-sm level-provincial mb-2">{{ s.unknown.name }}</p>
+                {% endif %}
+                {% if s.sections or s.unattributed or s.observed %}
+                <table class="data-table">
+                    <thead><tr><th>Crawled section</th><th>Path</th><th class="text-right">Docs</th><th class="text-right">Body</th><th>Newest</th><th>Flag</th></tr></thead>
+                    <tbody>
+                    {% for x in s.sections %}
+                    <tr>
+                        <td>{{ x.name }}{% if x.cap %} <span class="mono text-[11px] text-muted">cap {{ x.cap }}</span>{% endif %}</td>
+                        <td class="mono text-[11px] text-muted">{{ x.config_path or x.section_key }}</td>
+                        <td class="text-right mono">{{ "{:,}".format(x.docs or 0) }}</td>
+                        <td class="text-right mono text-muted">{{ "{:,}".format(x.with_body or 0) }}</td>
+                        <td class="mono text-xs">{% if x.example_url and x.newest %}<a href="{{ x.example_url }}" rel="noopener" target="_blank">{{ x.newest }}</a>{% else %}{{ x.newest or '—' }}{% endif %}</td>
+                        <td>{{ flag(x.staleness) }}{% if x.docs and x.match %} <span class="mono text-[10px] text-muted">by {{ x.match }}</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if s.unattributed %}
+                    <tr>
+                        <td class="italic text-muted" colspan="2">{{ s.unattributed.name }}</td>
+                        <td class="text-right mono">{{ "{:,}".format(s.unattributed.docs or 0) }}</td>
+                        <td class="text-right mono text-muted">{{ "{:,}".format(s.unattributed.with_body or 0) }}</td>
+                        <td class="mono text-xs">{{ s.unattributed.newest or '—' }}</td>
+                        <td>{{ flag(s.unattributed.staleness) }}</td>
+                    </tr>
+                    {% endif %}
+                    {% for x in s.observed %}
+                    <tr>
+                        <td class="text-muted text-xs pl-6" colspan="2">observed URL family <span class="mono">{{ x.name }}</span></td>
+                        <td class="text-right mono text-xs">{{ "{:,}".format(x.docs or 0) }}</td>
+                        <td class="text-right mono text-xs text-muted">{{ "{:,}".format(x.with_body or 0) }}</td>
+                        <td class="mono text-xs">{% if x.example_url and x.newest %}<a href="{{ x.example_url }}" rel="noopener" target="_blank">{{ x.newest }}</a>{% else %}{{ x.newest or '—' }}{% endif %}</td>
+                        <td>{{ flag(x.staleness) }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% elif not s.unknown %}
+                <p class="text-muted text-sm italic">Nothing held.</p>
+                {% endif %}
+            </div>
+            <div class="col-span-2">
+                <span class="lab">Known-missing sections</span>
+                {% if s.missing %}
+                {% for m in s.missing %}
+                <div class="border-b border-rule py-1.5 text-sm">
+                    {{ gapstatus(m.status) }}
+                    <span class="text-ink">{{ m.name }}</span>
+                    {% if m.path %}<span class="mono text-[11px] text-muted">{{ m.path }}</span>{% endif %}
+                    {% if m.example_url %}<a href="{{ m.example_url }}" rel="noopener" target="_blank" class="text-xs">example ↗</a>{% endif %}
+                    {% if m.note %}<div class="text-muted text-xs mt-0.5">{{ m.note }}</div>{% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted text-xs italic">None recorded. That means nobody has audited this site's sections, not that it has no gaps.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    {% else %}
+    <p class="text-muted text-sm italic">No sites under this filter.</p>
+    {% endfor %}
+
+    <p class="text-muted text-xs border-t border-rule pt-3 mt-8 max-w-4xl">
+        Left: derived from the crawler code by <span class="mono">scripts/build_section_registry.py</span> (rebuilt nightly),
+        matched to documents by the section label a crawler stores or by URL path prefix; "no docs matched" means neither rule found any.
+        Right: <span class="mono">data/known_missing_sections.yaml</span>, kept by hand and by
+        <span class="mono">scripts/rnd/discovery/press_section_audit.py</span>. Flags: fresh ≤14 days, aging ≤45, stale &gt;45, by the newest document date held.
+    </p>
+</div>
+{% endblock %}

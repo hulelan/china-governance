@@ -72,7 +72,16 @@ SITES = {
         # TRS_UEDITOR container (matched by _BODY_CONTAINERS), so bodies populate.
         "name": "外交部 (Ministry of Foreign Affairs)",
         "base_url": "https://www.mfa.gov.cn", "admin_level": "central",
-        "sections": ["/zyxw/", "/wjbzhd/", "/fyrbt_674889/", "/wjbxw_new/"],  # +外交部新闻 (section sweep: 61 arts, 0 held)
+        # CORRECTED 2026-11-25. "/fyrbt_674889/" (above) redirects to a /web/system/
+        # landing whose newest row is 2026-01-13: it answers 200 and lists rows, so it
+        # looked alive, and it had gone stale. The live spokesperson column is
+        # /fyrbt_673021/ (例行记者会 + 发言人表态, newest row = today). Also added:
+        # 声明公报 and 讲话全文. /web/wjdt_674879/fyrbt_674889/ serves the SAME pressers
+        # under a second URL, so it is deliberately NOT listed (it would duplicate).
+        # NOTE this site was configured but absent from daily_sync.sh until this date,
+        # which is why it sat at 153 documents.
+        "sections": ["/zyxw/", "/wjbzhd/", "/fyrbt_673021/", "/wjbxw_new/",
+                     "/web/ziliao_674904/1179_674909/", "/web/ziliao_674904/zyjh_674906/"],
     },
     "mct": {
         "name": "Ministry of Culture & Tourism (文旅部)",
@@ -82,7 +91,8 @@ SITES = {
     "nbs": {
         "name": "National Bureau of Statistics (国家统计局)",
         "base_url": "http://www.stats.gov.cn", "admin_level": "central",
-        "sections": ["/xw/tjxw/tzgg/", "/sj/zxfb/", "/xxgk/", "/gk/"],
+        # +新闻发布会 2026-11-25 (/sj/xwfbh/: 19 rows, 全文 + 答记者问 5-12k chars; 3 held)
+        "sections": ["/xw/tjxw/tzgg/", "/sj/zxfb/", "/xxgk/", "/gk/", "/sj/xwfbh/"],
     },
     "mva": {
         "name": "Ministry of Veterans Affairs (退役军人事务部)",
@@ -97,7 +107,8 @@ SITES = {
     "mot": {
         "name": "Ministry of Transport (交通运输部)",
         "base_url": "http://www.mot.gov.cn", "admin_level": "central",
-        "sections": ["/gongkai/zcjd/", "/xinwen/jiaotongyaowen/"],
+        # +新闻发布会 2026-11-25 (16 rows, transcripts 9-10k chars; 2 of 16 were held)
+        "sections": ["/gongkai/zcjd/", "/xinwen/jiaotongyaowen/", "/xinwen/xinwenfabuhui/"],
     },
     "cppcc": {
         "name": "CPPCC National Committee (全国政协)",
@@ -743,16 +754,20 @@ SITES = {
     "nea": {
         # 国家能源局 — news uses /YYYYMMDD/<hex>/c.html; policy sections use the older
         # /YYYY-MM/DD/c_ID.htm. Both handled by the content/NEA dialects.
-        # DEFERRED — PROXY-GATED (re-verified 2026-08-26): the droplet IP serves the
-        # homepage (200) but 404s ALL these section pages — datacenter geo-fence. A
-        # 2026-08 run confirmed 0 docs. NOT a quick win despite homepage-200: the
-        # homepage/individual-article 200s are a FALSE POSITIVE; the listing pages
-        # (which the crawler needs to discover articles) are geo-fenced. Do NOT wire
-        # into daily_sync — it belongs in the residential-proxy bucket with NHC/MNR/etc.
+        # CORRECTED 2026-11-25. This entry was marked "PROXY-GATED: the droplet IP
+        # 404s ALL these section pages — datacenter geo-fence" and kept out of the
+        # nightly on that basis. It was never a geo-fence: every configured path
+        # carried a "/n/" prefix the site does not have (/n/xwzx/index.htm is 404
+        # from anywhere; /xwzx/index.htm is 200 from the droplet). A 404 on every
+        # section of a host whose homepage and articles answer is a wrong PATH until
+        # proven otherwise — read the homepage's own nav links before blaming the IP.
+        # Sections below are that nav, byte-checked from the droplet.
         "name": "National Energy Administration (国家能源局)",
         "base_url": "http://www.nea.gov.cn", "admin_level": "central",
-        "sections": ["/n/xwzx/index.htm", "/n/policy/zxwj.htm", "/n/nyflfg/index.htm",
-                     "/n/politics/2015v/wj.htm", "/n/politics/2015v/zc.htm"],
+        "sections": ["/xwzx/index.htm", "/xwfb/index.htm",
+                     "/policy/zxwj.htm", "/policy/tz.htm", "/policy/gg.htm",
+                     "/policy/jd.htm", "/policy/xmsp.htm", "/policy/qt.htm",
+                     "/politics/2015v/wj.htm", "/politics/2015v/zc.htm"],
     },
     "liaoning": {
         # 辽宁省 — web-idx dialect: /web/SECTION/<timestamp-id>/index.shtml. Section
@@ -1862,6 +1877,43 @@ def _api_search_pages(base: str, api: dict, deep: bool, max_pages: int):
             time.sleep(REQUEST_DELAY)
 
 
+_DATASOURCE_RE = re.compile(r'<ul[^>]*\bdata="datasource:([0-9a-f]{32})"')
+DATASOURCE_RECENT = 60   # rows read from a datasource on a non-deep run
+
+
+def _datasource_parse(payload: dict, page_url: str, deep: bool = False) -> list:
+    """Xinhua-CMS datasource JSON -> [{url,title,date}] (pure; pinned by tests).
+
+    The file holds the section's WHOLE history newest-first (最新文件 is ~1 MB), so a
+    non-deep run keeps only the first DATASOURCE_RECENT rows — the nightly must not
+    turn into an archive walk; `--deep` takes everything.
+    """
+    rows = []
+    for it in (payload or {}).get("datasource", []) or []:
+        url = (it.get("publishUrl") or "").strip()
+        if not url or it.get("contentType") == "Link":
+            continue
+        title = re.sub(r"<[^>]+>", "", it.get("showTitle") or it.get("title") or "").strip()
+        m = re.match(r"(\d{4})-(\d{2})-(\d{2})", it.get("publishTime") or "")
+        rows.append({"url": urljoin(page_url, url), "title": title,
+                     "date": m.group(0) if m else ""})
+        if not deep and len(rows) >= DATASOURCE_RECENT:
+            break
+    return rows
+
+
+def _datasource_rows(page_html: str, page_url: str, deep: bool = False) -> list:
+    m = _DATASOURCE_RE.search(page_html or "")
+    if not m:
+        return []
+    ds_url = urljoin(page_url, f"ds_{m.group(1)}.json")
+    try:
+        return _datasource_parse(json.loads(fetch(ds_url, headers=UA)), page_url, deep)
+    except Exception as e:
+        log.warning(f"    datasource {ds_url}: {e}")
+        return []
+
+
 def _site_pages(base: str, cfg: dict, deep: bool, max_pages: int):
     """Unified list source: yields (section, page_label, rows) from the static
     `sections` walk (_pages + _list_articles) and/or the `api_search` channels (AD)."""
@@ -1872,7 +1924,12 @@ def _site_pages(base: str, cfg: dict, deep: bool, max_pages: int):
     sections = list(dict.fromkeys(sections))
     for section in sections:
         for page_url, html in _pages(base, section, deep, max_pages, cfg):
-            yield section, page_url.split("/")[-1], _list_articles(html, page_url)
+            rows = _list_articles(html, page_url)
+            if not rows:
+                # (DS) script-rendered list on the Xinhua "superEdit" CMS: no rows in
+                # the HTML, a JSON datasource beside the page instead (国家能源局).
+                rows = _datasource_rows(html, page_url, deep)
+            yield section, page_url.split("/")[-1], rows
     if cfg.get("api_search"):
         yield from _api_search_pages(base, cfg["api_search"], deep,
                                      int(cfg.get("max_pages", max_pages)))

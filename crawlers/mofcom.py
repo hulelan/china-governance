@@ -72,6 +72,28 @@ SECTIONS = {
     "zcfb": {
         "name": "政策发布",
         "source": "main",
+        "referer": "/zwgk/zcfb/",
+    },
+    # Press columns of the main site (added 2026-11-25). Same jpaas listing API as
+    # zcfb — same webId / tplSetId / tagId — and only the pageId differs; it is the
+    # <meta name="ColId"> of each column's index.html.
+    "xwfyrth": {
+        "name": "新闻发言人谈话",
+        "source": "main",
+        "page_id": "625b494d0adc47c885f5e1a18ee42b94",
+        "referer": "/xwfb/xwfyrth/index.html",
+    },
+    "xwfbh": {
+        "name": "新闻发布会",
+        "source": "main",
+        "page_id": "8b2070bd42444e2db135724c912e13d8",
+        "referer": "/xwfbh/index.html",
+    },
+    "ldrhd": {
+        "name": "领导人活动",
+        "source": "main",
+        "page_id": "ee2cfa3f1f534d108378ece1327ee791",
+        "referer": "/xwfb/ldrhd/index.html",
     },
     # Export control subdomain — paginated news via getColumnList API
     "ec_gndt": {
@@ -152,31 +174,8 @@ MAIN_ROWS_PER_PAGE = 15
 MAIN_BASE = "https://www.mofcom.gov.cn"
 
 
-def _fetch_main_listing(page_no: int) -> tuple[list[dict], int]:
-    """Fetch one page from the main MOFCOM policy listing API.
-
-    Returns (items, total_count).
-    Each item: {"url": ..., "title": ..., "date_str": ...}
-    """
-    params = dict(MAIN_API_PARAMS)
-    if page_no > 1:
-        params["paramJson"] = json.dumps(
-            {"pageNo": page_no, "pageSize": MAIN_ROWS_PER_PAGE}
-        )
-    qs = urllib.parse.urlencode(params)
-    url = f"{MAIN_API_URL}?{qs}"
-
-    headers = {
-        "Referer": "https://www.mofcom.gov.cn/zwgk/zcfb/",
-        "User-Agent": (
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        ),
-    }
-    text = fetch(url, headers=headers)
-    data = json.loads(text)
-    html = data.get("data", {}).get("html", "")
-
+def _parse_main_listing(html: str) -> tuple[list[dict], int]:
+    """Listing-API HTML fragment -> (items, total). Pure; pinned by tests."""
     items = []
     for m in re.finditer(
         r'<a\s+href="([^"]+)"[^>]*title="([^"]+)"[^>]*>.*?</a>\s*<span>\[(\d{4}-\d{2}-\d{2})\]</span>',
@@ -185,14 +184,44 @@ def _fetch_main_listing(page_no: int) -> tuple[list[dict], int]:
     ):
         href, title, date_str = m.group(1), m.group(2), m.group(3)
         doc_url = href if href.startswith("http") else MAIN_BASE + href
-        items.append({"url": doc_url, "title": title.strip(), "date_str": date_str})
-
+        # the CMS hard-wraps title="" attributes; a line break is layout, not content
+        title = re.sub(r"\s*[\r\n]+\s*", "", title).strip()
+        items.append({"url": doc_url, "title": title, "date_str": date_str})
     total = 0
     count_m = re.search(r'count="(\d+)"', html)
     if count_m:
         total = int(count_m.group(1))
-
     return items, total
+
+
+def _fetch_main_listing(page_no: int, page_id: str = "",
+                        referer: str = "/zwgk/zcfb/") -> tuple[list[dict], int]:
+    """Fetch one page from the main MOFCOM policy listing API.
+
+    Returns (items, total_count).
+    Each item: {"url": ..., "title": ..., "date_str": ...}
+    """
+    params = dict(MAIN_API_PARAMS)
+    if page_id:
+        params["pageId"] = page_id
+    if page_no > 1:
+        params["paramJson"] = json.dumps(
+            {"pageNo": page_no, "pageSize": MAIN_ROWS_PER_PAGE}
+        )
+    qs = urllib.parse.urlencode(params)
+    url = f"{MAIN_API_URL}?{qs}"
+
+    headers = {
+        "Referer": MAIN_BASE + referer,
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        ),
+    }
+    text = fetch(url, headers=headers)
+    data = json.loads(text)
+    html = data.get("data", {}).get("html", "")
+    return _parse_main_listing(html)
 
 
 def _extract_main_body(html: str) -> str:
@@ -255,13 +284,18 @@ def _extract_main_meta(html: str) -> dict:
     return meta
 
 
-def crawl_main_section(conn, fetch_bodies: bool = True):
-    """Crawl the main MOFCOM policy release listing."""
-    log.info("--- Section: 政策发布 (zcfb, main site) ---")
+def crawl_main_section(conn, fetch_bodies: bool = True, section_key: str = "zcfb",
+                       section: dict = None):
+    """Crawl one main-site column (政策发布 by default) via the jpaas listing API."""
+    section = section or SECTIONS["zcfb"]
+    section_name = section["name"]
+    page_id = section.get("page_id", "")
+    referer = section.get("referer", "/zwgk/zcfb/")
+    log.info(f"--- Section: {section_name} ({section_key}, main site) ---")
 
     # First page to get total count
     try:
-        items, total = _fetch_main_listing(1)
+        items, total = _fetch_main_listing(1, page_id, referer)
     except Exception as e:
         log.error(f"Failed to fetch main listing page 1: {e}")
         return 0
@@ -288,7 +322,7 @@ def crawl_main_section(conn, fetch_bodies: bool = True):
             log.info(f"  page {page-1} all already held — stopping walk (older held)")
             break
         try:
-            page_items, _ = _fetch_main_listing(page)
+            page_items, _ = _fetch_main_listing(page, page_id, referer)
             all_items.extend(page_items)
             if not deep and page_items and all(_held(i["url"]) for i in page_items):
                 keep_walking = False
@@ -354,7 +388,7 @@ def crawl_main_section(conn, fetch_bodies: bool = True):
             "date_published": date_published,
             "body_text_cn": body_text,
             "url": doc_url,
-            "classify_main_name": "政策发布",
+            "classify_main_name": section_name,
             "raw_html_path": raw_html_path,
         })
         stored += 1
@@ -736,7 +770,7 @@ def crawl_all(conn, sections: dict = None, fetch_bodies: bool = True):
     for key, section in sections.items():
         source = section["source"]
         if source == "main":
-            total += crawl_main_section(conn, fetch_bodies)
+            total += crawl_main_section(conn, fetch_bodies, key, section)
         elif source == "ec_list":
             total += crawl_ec_list_section(conn, key, section, fetch_bodies)
         elif source == "ec_zcfg":

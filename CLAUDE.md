@@ -267,6 +267,47 @@ Chinese government document corpus + web app. Crawls policy documents from centr
   vantage). KEY METHOD: HTTP 200 is unreliable for CN gov sites (200 + 160-byte redirect
   stub / ~1KB anti-bot shell) — always byte-check + follow redirects. Reachable-new
   targets found 2026-09: 青海/云南/新疆 provinces + 民委 NEAC (no proxy needed).
+- **SECTION coverage (2026-11-25): "we crawl the ministry" is not "we crawl its sections".**
+  Measured: samr had six sections and no 新闻发布厅; gov.cn read one JSON feed (a few
+  policy documents a week) and none of 要闻; mfa and nea were fully configured in
+  `govcms.SITES` and **in no line of `daily_sync.sh`**, so nobody crawled them (153 and 2
+  documents); Shanghai parsed every listing to 0 rows after a template change and reported
+  success for ten months. Site-level counts (`site_stats`, `coverage.csv`) can see none of
+  that. Three pieces now do:
+  - **`section_registry`** table, built by `scripts/build_section_registry.py --write`
+    (nightly Phase 2c, ~1-1.5 min). It reads every crawler's sections FROM THE CODE by
+    shape (`SECTIONS` / `DEPARTMENTS` / `FEEDS` / `INDEX_URLS` / a `SITES` registry's
+    `sections` ...), so a section added to a crawler shows up with no second table to
+    maintain. Per section: docs, with-body, newest date, staleness (fresh <=14 d, aging
+    <=45, stale), matched by the stored `classify_main_name` label first and URL path
+    prefix second. A site whose crawler exposes no section structure is a row saying
+    **sections unknown** (107 sites), with the URL families we hold beside it; a site in
+    the DB that no crawler declares says **no crawler**. It also parses `daily_sync.sh`
+    and marks each site nightly / weekly / **not scheduled**.
+    `tests/test_section_registry.py` fails if a central site is unscheduled without a
+    stated reason.
+  - **`data/known_missing_sections.yaml`**: the sections we know a site has and do not
+    crawl (status missing / broken / blocked / added, each with an example URL). Hand-kept
+    on purpose: the registry can only describe what a crawler declares.
+  - **`/admin/sections`** (`web/services/sections.py`, `admin_sections.html`): both side
+    by side, per site, filter by level or `?issues=1`. Reads only the table and the YAML
+    (40 ms for all 564 sites).
+  Press sections specifically: `docs/working/press-conference-coverage.md` (61 central
+  bodies; built by `scripts/rnd/discovery/press_section_audit.py`). Before adding a
+  section, run `scripts/rnd/discovery/probe_section.py <list URL>` ON THE DROPLET: it
+  uses the govcms lister and body extractor and reports rows, rows already held, and body
+  lengths. **Four traps this audit hit, each of which had been read as something else:**
+  (1) *a 404 on every section of a host whose homepage answers is a wrong PATH, not a
+  geo-fence* — nea's paths carried a `/n/` prefix that never existed and the entry said
+  "PROXY-GATED"; (2) *an empty parse is not "fully held"* — Shanghai's early exit turned a
+  template change into ten months of "0 new"; (3) *a listing that works says nothing about
+  the article template* — samr's 司局 columns listed 26 rows and extracted 1 body until the
+  second body container was added; (4) *a feed row is not an article* — 107 of 395 gov.cn
+  要闻 rows are tv.cctv.com videos and 75 of 480 新闻发布 rows are mini-site index pages.
+  Also: **`body_text_cn != ''` reads the whole body** (overflow pages and all) while
+  `octet_length(body_text_cn) > 0` is answered from the record header on SQLite 3.43+:
+  213 s against 54 s cold for the same scan. And `url` / `classify_main_name` sit AFTER
+  the body in the record, so read them from their covering indexes, never in a table scan.
 
 ## Key Commands
 
@@ -280,6 +321,11 @@ python3 -m crawlers.gkmlpt --stats              # Show DB stats
 
 python3 -m crawlers.ndrc                        # NDRC crawler
 python3 -m crawlers.gov                         # State Council crawler
+python3 -m crawlers.gov --feed yaowen          # one feed of gov.FEEDS: zuixin 政策文件 / yaowen 要闻 / fabu 新闻发布
+python3 scripts/build_section_registry.py --dry-run --site samr   # configured sections vs held, one site
+python3 scripts/build_section_registry.py --write                 # rebuild section_registry (nightly Phase 2c)
+python3 scripts/rnd/discovery/probe_section.py <list-url>         # DROPLET: rows / held / body lengths, writes nothing
+python3 scripts/rnd/discovery/press_section_audit.py --out p.csv  # DROPLET: press sections of every central site
 python3 -m crawlers.mof                         # Ministry of Finance
 python3 -m crawlers.mee                         # Ministry of Ecology & Environment
 

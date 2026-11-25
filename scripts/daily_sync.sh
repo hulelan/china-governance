@@ -199,6 +199,10 @@ for crawler in gov ndrc mof mee cac nda samr mofcom spp csrc chinatax pbc; do
 done
 run_weekly 2 "sic" python3 -m crawlers.sic
 run_weekly 3 "ipc_court" python3 -m crawlers.ipc_court
+# moe (added 2026-11-25): the crawler existed, worked, and was in no line of this file, so
+# the site sat at its April hand-run. Weekly, not nightly: it re-walks ~200 search-result
+# pages each run and its newest held document in the one section ever crawled is April.
+run_weekly 1 "moe" python3 -m crawlers.moe
 
 # TRS WCM central bodies (recordset dialect — see crawlers/trs.py)
 for site in nhsa nrta; do
@@ -206,7 +210,10 @@ for site in nhsa nrta; do
 done
 
 # Generic gov t-date list crawlers (central ministries + provinces — see crawlers/govcms.py)
-for site in mwr nbs mva mct mara mot cppcc jilin fujian hunan shenyang shandong jinan chinapeace liaoning xizang ningxia qingdao sasac tc260 cas cnao nsfc mem moj spc qstheory cma ncha natcm safe nfsra nia sfa spb caac sastind cnsa saac qinghai neac xinjiang; do
+# mfa + nea added 2026-11-25: both were CONFIGURED in govcms.SITES and never listed
+# here, so they were crawled by nobody (mfa sat at 153 docs, nea at 2). The section
+# registry (Phase 2c, /admin/sections) now flags any such site as "not scheduled".
+for site in mwr nbs mva mct mara mot cppcc jilin fujian hunan shenyang shandong jinan chinapeace liaoning xizang ningxia qingdao sasac tc260 cas cnao nsfc mem moj spc qstheory cma ncha natcm safe nfsra nia sfa spb caac sastind cnsa saac qinghai neac xinjiang mfa nea; do
     run_crawler "govcms ($site)" python3 -m crawlers.govcms --site $site
 done
 # Provincial departments (tagged group=dept in SITES) — crawled as one group so
@@ -400,6 +407,13 @@ timeout 3600 nice -n 19 python3 scripts/build_search_index_seg.py >> "$LOG" 2>&1
 # Also ensures idx_documents_classify_main. See docs/working/perf-diagnosis.md.
 log "Phase 2c: Rebuilding site_stats (per-site doc/body/docnum counts)..."
 timeout 600 python3 scripts/build_site_stats.py >> "$LOG" 2>&1 || log "  build_site_stats had errors"
+
+# Section registry for /admin/sections: every crawler's CONFIGURED sections (read from
+# the crawler code, not a hand table) joined to per-section doc / body / newest-date
+# counts, plus which sites this script never runs. One header-only table scan and two
+# covering-index reads; measured 96 s cold on the droplet (2026-11-25).
+log "Phase 2c: Rebuilding section_registry (configured sections vs held)..."
+timeout 600 nice -n 19 python3 scripts/build_section_registry.py --write >> "$LOG" 2>&1 || log "  build_section_registry had errors"
 
 # Daily policy tracker data layer (docs/research/daily-tracker-concept.md). Two
 # precomputed tables, rebuilt from scratch each night (both idempotent DELETE+INSERT):
