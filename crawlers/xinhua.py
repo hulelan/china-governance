@@ -8,6 +8,11 @@ with title, date, keywords, author, and source — but no body text.
 Body text is fetched from individual article pages (HTML).
 
 Sections:
+    general       — 首页综合 (homepage scrape; no archive, so it runs first)
+    politics      — 时政 channel   } paginated channel datasources added
+    finance(_top) — 财经 channel   } 2026-11-25; ~1,000 items each, so the
+    info          — 信息化 channel } first run is a backfill: use
+    legal         — 法治 channel   } --max-new 0 --db <separate file>
     tech          — 科技 (technology, AI, digital economy)
     fortune       — 财经 (finance/economy)
     politics_docs — 中央文件发布 (central government documents)
@@ -20,6 +25,7 @@ Usage:
     python -m crawlers.xinhua --stats                # Show database stats
     python -m crawlers.xinhua --list-only            # List article URLs
     python -m crawlers.xinhua --db alt.db            # Alternate database
+    python -m crawlers.xinhua --max-new 0            # No per-section cap (default 200)
 """
 
 import argparse
@@ -66,7 +72,32 @@ BROWSER_UA = (
 # domestic/world/政时 stories that the homepage curates and that none of
 # the JSON datasources cover. We pull them by direct HTML scraping
 # because there's no JSON feed for the homepage stream.
+#
+# CHANNEL DATASOURCES (2026-11-25). Until then /politics/, /finance/, /info/ and
+# /legal/ items reached the corpus only when the homepage scrape happened to
+# catch them, and a homepage has no archive (CLAUDE.md Open Question
+# 2026-11-05: 0 of 6 brief URLs held, a missing 五中全会公报 in /politics/). Each
+# channel page declares its lists as `data="datasource:<id>"`; the ids below are
+# the MAIN list of each channel, chosen by sizing every datasource on the page
+# and keeping the one whose items are mostly that channel's own path. Each holds up to 1,000
+# items, i.e. months of archive, not a day:
+#     politics  a6d6…  1,000 items back to 2026-05-29 (~5.5/day, 98% /politics/)
+#     finance   d6a9…  1,000 items back to 2024-03    + 3c67… the 50 newest
+#     info      ecad…  1,000 items back to 2024-06
+#     legal     09a5…  1,000 items back to 2025-09
+# So the first run is a ~4,000-document backfill. MAX_NEW_PER_SECTION bounds a
+# nightly run; `--max-new 0` lifts it for the one-time backfill (run that with
+# --db into a separate file). `general` is listed FIRST for the same reason:
+# it is the one surface with no archive, so it must never be the section a
+# timeout cuts off.
+MAX_NEW_PER_SECTION = 200
+
 SECTIONS = {
+    "general": {
+        "name": "首页综合 (Homepage General News)",
+        "discovery_type": "homepage",
+        "homepage_url": "https://www.xinhuanet.com/",
+    },
     "tech": {
         "name": "科技 (Technology)",
         "path_prefix": "tech",
@@ -87,10 +118,30 @@ SECTIONS = {
         "path_prefix": "politics/zywj",
         "datasource_id": "751e4d15841642e5b6b636377247b397",
     },
-    "general": {
-        "name": "首页综合 (Homepage General News)",
-        "discovery_type": "homepage",
-        "homepage_url": "https://www.xinhuanet.com/",
+    "politics": {
+        "name": "时政 (Politics channel)",
+        "path_prefix": "politics",
+        "datasource_id": "a6d618872de143bdafa2556915a7ae12",
+    },
+    "finance": {
+        "name": "财经频道 (Finance channel, main list)",
+        "path_prefix": "finance",
+        "datasource_id": "d6a989536f4e4dd9a476ca59013a8492",
+    },
+    "finance_top": {
+        "name": "财经频道 (Finance channel, newest 50)",
+        "path_prefix": "finance",
+        "datasource_id": "3c674891ced54785ae4f7431204fc5ba",
+    },
+    "info": {
+        "name": "信息化 (Info channel)",
+        "path_prefix": "info",
+        "datasource_id": "ecad31336b7843e8b8057a4f607db36a",
+    },
+    "legal": {
+        "name": "法治 (Legal channel)",
+        "path_prefix": "legal",
+        "datasource_id": "09a5e1e961ce4763bdb58e87a80363c5",
     },
 }
 
@@ -349,8 +400,19 @@ def _extract_meta_from_html(html: str) -> dict:
     return meta
 
 
-def crawl(conn, sections: list[str] = None, list_only: bool = False):
+def section_cap(max_new) -> int:
+    """New documents allowed per section: None -> the nightly default, 0 -> no cap.
+
+    An EXPLICIT value always wins over the default, because the default guards
+    the nightly and not the operator (the crawlers.pbc `--max-pages` lesson).
+    """
+    return MAX_NEW_PER_SECTION if max_new is None else max_new
+
+
+def crawl(conn, sections: list[str] = None, list_only: bool = False,
+          max_new: int = None):
     """Crawl Xinhua articles from the specified sections."""
+    cap = section_cap(max_new)
     store_site(conn, SITE_KEY, SITE_CFG)
 
     if sections is None:
@@ -379,6 +441,10 @@ def crawl(conn, sections: list[str] = None, list_only: bool = False):
         skipped = 0
 
         for i, article in enumerate(articles):
+            if cap and stored >= cap:
+                log.info(f"  reached --max-new {cap} for {section_key}; "
+                         f"{len(articles) - i} listed items left for the next run")
+                break
             url = article["url"]
 
             # Skip if already crawled with body text
@@ -461,6 +527,11 @@ def main():
         help=f"Crawl a specific section: {', '.join(SECTIONS.keys())}",
     )
     parser.add_argument(
+        "--max-new", type=int, default=None,
+        help=f"New documents per section (default {MAX_NEW_PER_SECTION}; 0 = no cap, "
+             "for the one-time channel backfill into a separate --db)",
+    )
+    parser.add_argument(
         "--db", type=str,
         help="Path to SQLite database (default: documents.db)",
     )
@@ -474,7 +545,7 @@ def main():
         return
 
     sections = [args.section] if args.section else None
-    crawl(conn, sections=sections, list_only=args.list_only)
+    crawl(conn, sections=sections, list_only=args.list_only, max_new=args.max_new)
     show_stats(conn)
     conn.close()
 
