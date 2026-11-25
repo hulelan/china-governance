@@ -343,6 +343,7 @@ python3 -m crawlers.spp                          # Supreme People's Procuratorat
 python3 -m crawlers.csrc                         # Securities regulator 证监会 (政策法规库, ~150 docs)
 python3 -m crawlers.chinatax                     # Tax admin 税务总局 政策法规库 (~9,900 docs; C3VK cookie + JSON API)
 python3 -m crawlers.chinatax --max-docs 500      # Bounded backfill chunk
+python3 -m crawlers.ccdi --probe                 # 中央纪委国家监委 CCDI: PROBE ONLY. BLOCKED 2026-11-25 from droplet AND Mac: every path (robots.txt too) is HTTP 200 + ~750-byte Wangsu seccaptcha.haplat.net slider page, infoString decodes to typ=blacklist. Not bypassed on purpose; needs a non-blacklisted vantage. Its 审查调查 notices arrive meanwhile via dangyuan (12371) / Xinhua reposts.
 python3 -m crawlers.pbc                          # People's Bank of China 央行 条法司 (规范性文件+部门规章; 541 docs, 1993–)
 python3 -m crawlers.pbc --probe                  # enumerate the section lists, write NOTHING (reachability check)
 python3 -m crawlers.pbc --max-pages 3            # bound the walk (default 40; the 条法司 sections are <= 22 pages)
