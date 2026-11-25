@@ -161,6 +161,17 @@ def crawl(conn, list_only: bool = False):
 
     articles = _parse_rss(xml)
     log.info(f"Found {len(articles)} articles in RSS feed")
+    if not articles:
+        # The feed never legitimately has 0 items. Since 2026-08-05 36kr.com answers
+        # the droplet with HTTP 200 + a ~25 KB text/html challenge page on EVERY URL
+        # (feed and site alike, any User-Agent, with or without TLS impersonation),
+        # and this crawler reported "0 new" and exited 0 for 113 nights. An empty
+        # feed is a failure: say what came back and exit non-zero so the nightly
+        # report shows a warning instead of a tick.
+        kind = "an HTML page (WAF challenge?)" if "<html" in xml[:2000].lower() else "no <item> elements"
+        log.error(f"36Kr feed returned {len(xml)} bytes with 0 items — {kind}. "
+                  f"Blocked from this vantage, not an empty day.")
+        raise SystemExit(1)
 
     if list_only:
         for a in articles:
